@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Logo } from '../components/Logo'
+import { OrgMenu } from '../components/OrgMenu'
 import { OrgTabs } from '../components/OrgTabs'
 import { OrgSwitcher } from '../components/OrgSwitcher'
 import { SiteNav } from '../components/SiteNav'
@@ -738,6 +739,7 @@ export function Workspace({
             {APP_MODE === 'template' && !sample ? <OrgSwitcher slug={bundle.id} name={company.org.name} tab={tabForView(view)} /> : null}
             {editable ? <Button variant="secondary" type="button" className="org-sync" onClick={() => { setSyncOpen(true); void loadSync() }}><SyncIcon />{syncButtonLabel(sync?.plan?.writes ?? 0, outgoing(sync?.plan ?? null, sync?.requests ?? [], seats).ready.length)}</Button> : null}
             <OrgTabs slug={bundle.id} current={tabForView(view)} template={sample} />
+            {editable && !sample ? <OrgMenu slug={bundle.id} name={company.org.name} /> : null}
           </div>
         ) : null}
       </header>

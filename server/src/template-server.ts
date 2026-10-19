@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { readText } from './text-file.ts'
 import { normalizeText } from './normalize-text.ts'
 import { dirname, resolve, sep } from 'node:path'
@@ -1310,6 +1310,24 @@ export function seatFile(root: string, slug: string): string | null {
   return full
 }
 
+/** Deleted orgs move here, out of the app, so a mistake can be undone by moving the folder back. */
+export const DELETED_DIR = '.deleted'
+
+/** Moves an org folder to orgs/.deleted/. The name must be typed exactly, and the last org stays. */
+export function deleteOrg(orgsDir: string, slug: string, confirm: string): { ok: true; next: string } | { ok: false; status: number; error: string } {
+  const root = orgRoot(orgsDir, slug)
+  if (!root || !orgExists(root)) return { ok: false, status: 404, error: 'Org not found.' }
+  const read = readOrgDir(root, slug)
+  const name = read.ok ? read.bundle.org.company.name.trim() : slug
+  if (confirm.trim() !== name) return { ok: false, status: 422, error: `Type ${name} to delete this organization.` }
+  const others = listOrgSlugs(orgsDir).filter((other) => other !== slug)
+  if (!others.length) return { ok: false, status: 409, error: 'This is your only organization. Create another one first.' }
+  const bin = resolve(orgsDir, DELETED_DIR)
+  mkdirSync(bin, { recursive: true })
+  renameSync(root, resolve(bin, `${slug}-${new Date().toISOString().replace(/[:.]/g, '-')}`))
+  return { ok: true, next: others[0]! }
+}
+
 export function orgRoot(orgsDir: string, slug: string): string | null {
   if (!SEAT_SLUG.test(slug)) return null
   const root = resolve(orgsDir)
@@ -1728,6 +1746,24 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const read = readOrgDir(root, slug)
       if (!read.ok) return send(res, 422, { errors: read.errors })
       send(res, 200, read.bundle)
+      return
+    }
+    if (orgMatch && req.method === 'DELETE') {
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may delete an organization.' })
+      if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { error: 'Send JSON.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      let confirm = ''
+      try {
+        const value = (JSON.parse(body) as { confirm?: unknown }).confirm
+        confirm = typeof value === 'string' ? value : ''
+      } catch {
+        return send(res, 422, { error: 'That body is not JSON.' })
+      }
+      const deleted = deleteOrg(orgsDir, orgMatch[1]!, confirm)
+      if (!deleted.ok) return send(res, deleted.status, { error: deleted.error })
+      send(res, 200, { next: deleted.next })
       return
     }
     if ((url.pathname === '/api/template' && req.method === 'PUT') || (orgMatch && req.method === 'PUT')) {

@@ -1682,6 +1682,14 @@ a.site-nav-cta:focus {
 }
 .org-tabs a[aria-current='page'] { border-bottom-color: var(--color-ink); font-weight: var(--weight-semibold); }
 .org-tabs a:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+.org-menu { position: relative; }
+.org-menu summary { list-style: none; cursor: pointer; padding: var(--space-2) var(--space-3); border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); color: var(--color-ink); font-size: var(--btn-font-size); }
+.org-menu summary::-webkit-details-marker { display: none; }
+.org-menu summary::after { content: ""; display: inline-block; width: 12px; height: 12px; margin-left: var(--space-2); vertical-align: middle; background: var(--select-chevron) center / 12px no-repeat; }
+.org-menu summary:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+.org-menu-list { position: absolute; right: 0; top: calc(100% + var(--space-1)); z-index: var(--z-modal); min-width: 200px; display: flex; flex-direction: column; background: var(--color-white); border: var(--border-strong); border-radius: var(--control-radius); box-shadow: var(--shadow-dialog); }
+.org-menu-list .org-menu-item { justify-content: flex-start; width: 100%; color: var(--color-amber-700); }
+.org-menu-list .org-menu-item:hover, .org-menu-list .org-menu-item:focus-visible { background: var(--color-paper); }
 .org-sub .be-top-cta { margin-left: auto; }
 .org-connection { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); min-width: 0; padding: var(--space-2) var(--space-3); border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); font-size: var(--text-sm); color: var(--color-ink); }
 .org-connection-folder { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
