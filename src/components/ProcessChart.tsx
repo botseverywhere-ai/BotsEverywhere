@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import {
   EVENT_SOURCES,
-  GROK_PROCESSES_PROMPT,
+  grokProcessesPrompt,
   deriveSteps,
   processSlug,
   routinePrompt,
@@ -60,6 +60,7 @@ export function ProcessChart({
   const approvals = useMemo(() => waitingLines(runLines, processes), [processes, runLines])
   const feed = useMemo(() => newestFirst(runLines), [runLines])
   const seatRefs = useMemo(() => seats.map((seat) => ({ slug: seat.slug, title: seat.title, kind: seat.kind, mustAskBefore: seat.mustAskBefore })), [seats])
+  const processesPrompt = useMemo(() => grokProcessesPrompt(seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired').map((seat) => seat.title)), [seats])
   const used = useMemo(() => new Set(processes.flatMap((process) => process.steps.map((step) => step.seat))), [processes])
   const idle = seats.filter((seat) => seat.status !== 'retired' && !used.has(seat.slug))
   const focusName = seats.find((seat) => seat.slug === focusSeat)?.title || focusSeat
@@ -225,9 +226,9 @@ export function ProcessChart({
           </summary>
           <div className="link-panel-body">
             <p>Paste this into Grok Bot. It asks for the routines and handoffs its bots already run.</p>
-            <pre className="dir-prompt">{GROK_PROCESSES_PROMPT}</pre>
+            <pre className="dir-prompt">{processesPrompt}</pre>
             <div className="dir-actions">
-              <CopyPromptButton text={GROK_PROCESSES_PROMPT} onCopied={(message) => setNotice(saveNotice(true, message))} />
+              <CopyPromptButton text={processesPrompt} onCopied={(message) => setNotice(saveNotice(true, message))} />
               <Button variant="secondary" type="button" onClick={() => fileRef.current?.click()} disabled={busy}>Import processes file</Button>
             </div>
             <input ref={fileRef} className="be-file" type="file" accept="application/json,.json" onChange={(event) => {

@@ -391,7 +391,13 @@ export function triggerLabel(trigger: ProcessTrigger): string {
   return 'Manual'
 }
 
-export const GROK_PROCESSES_PROMPT = `List the routines and handoffs your bots already run for this organization, and save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.
+/** The work chart import prompt. With bot names, Grok Bot lists only those bots' routines, since one account runs bots for every organization. */
+export function grokProcessesPrompt(botNames: string[] = []): string {
+  const names = [...new Set(botNames.map((name) => name.trim()).filter(Boolean))]
+  const scope = names.length
+    ? `List the routines and handoffs that these bots already run: ${names.join(', ')}. Leave out every other bot.`
+    : 'List the routines and handoffs your bots already run for this organization.'
+  return `${scope} Save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.
 
 Use exactly this JSON format and nothing else:
 
@@ -403,3 +409,6 @@ steps are in order. seat is the name of the bot or person who does that step. ac
 doneWhen is one string. next is the name of another process this hands off to, or leave it out.
 Do not add fields that are not in this object.
 Send me the file to download. If you can't, reply with only the JSON so I can save it myself.`
+}
+
+export const GROK_PROCESSES_PROMPT = grokProcessesPrompt()

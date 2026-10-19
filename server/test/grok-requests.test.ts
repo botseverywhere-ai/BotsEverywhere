@@ -43,7 +43,8 @@ test('a request replaces an older one for the same seat and drops when fulfilled
 })
 
 test('only an active bot that Grok Bot does not have can be requested', () => {
-  assert.equal(canRequest({ kind: 'bot', status: 'active', grokSync: 'missing', grokBotUrl: 'grokbot://x' }), true, 'a snapshot that lacked it wins over a stale link')
+  assert.equal(canRequest({ kind: 'bot', status: 'active', grokSync: 'missing', grokBotUrl: 'grokbot://x' }), false, 'a link means the bot exists, so asking again would make a duplicate')
+  assert.equal(canRequest({ kind: 'bot', status: 'active', grokSync: 'missing' }), true, 'missing with no link can be created')
   assert.equal(canRequest({ kind: 'bot', status: 'active' }), true, 'nothing known yet')
   assert.equal(canRequest({ kind: 'bot', status: 'active', grokSync: 'synced' }), false)
   assert.equal(canRequest({ kind: 'bot', status: 'active', grokBotUrl: 'grokbot://x' }), false)

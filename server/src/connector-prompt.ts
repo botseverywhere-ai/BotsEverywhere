@@ -62,11 +62,11 @@ Every folder in ${path} that contains an org.md file is one organization. Its na
 Run this routine every 15 minutes.
 
 On each run, for every organization:
-1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". When "promptFile" is set, use the text of that file below its frontmatter as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". That bot belongs to this organization.
-2. Write <org>/${SNAPSHOT_PATH} with the bots that belong to this organization and every routine they run, in the snapshot format below. A bot belongs to an organization when you created it from that organization's requests, when its link matches a seat file there, or when its name matches a seat title there, or "Title · Organization name". Put each bot in at most one organization. Do not list yourself.
+1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. When "promptFile" is set, use the text of that file below its frontmatter as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". That bot belongs to this organization.
+2. Write <org>/${SNAPSHOT_PATH} with the bots that belong to this organization and every routine they run, in the snapshot format below. A bot belongs to an organization when you created it from that organization's requests, when its link matches a seat file there, or when its name matches a seat title there, or "Title · Organization name". One Grok Bot account runs every bot, and the same bot can belong to several organizations: list it in every organization it belongs to. Do not list yourself.
 3. Read <org>/org.md, every file in <org>/seats/, and every file in <org>/processes/.
 4. For each process, create or update a Grok Bot routine for the owning bot (the seat on the first step) using that process trigger.
-5. Read reportsTo in each seat file and tell that bot who its manager is.
+5. Read reportsTo in each seat file and tell that bot who its manager is in this organization. A bot in several organizations has a manager in each one.
 6. Tell each bot that at the start of every run it must read its process file and its seat file.
 7. After each step, that bot appends one line to <org>/log/YYYY-MM-DD.md. If the file is missing, start it with the header "# Run log YYYY-MM-DD". Use this line and nothing else:
 - HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -

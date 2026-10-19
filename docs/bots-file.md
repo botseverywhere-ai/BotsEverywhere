@@ -43,6 +43,7 @@ Use exactly this JSON format and nothing else:
 
 Rules:
 - One entry per bot, using each bot's real name.
+- Leave out any bot named "Connector - BotsEverywhere" or "Connector - BotsEverywhere (…)". It only syncs files.
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
 - owns, may, and needsApproval are lists of short strings.
 - doneWhen is one string.

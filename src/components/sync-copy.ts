@@ -108,7 +108,11 @@ export function outgoing(plan: Pick<SyncPlan, 'rows'> | null, requests: GrokRequ
     seen.add(slug)
     ready.push({ slug, name })
   }
-  for (const row of plan?.rows ?? []) if (row.kind === 'missing') add(row.slug, row.name)
+  const bySlug = new Map(seats.map((seat) => [seat.slug, seat]))
+  for (const row of plan?.rows ?? []) {
+    const seat = bySlug.get(row.kind === 'missing' ? row.slug : '')
+    if (row.kind === 'missing' && (!seat || canRequest(seat))) add(row.slug, row.name)
+  }
   for (const seat of seats) if (canRequest(seat)) add(seat.slug, seat.title)
   return { waiting, ready }
 }

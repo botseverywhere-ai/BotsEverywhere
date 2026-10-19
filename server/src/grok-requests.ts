@@ -57,9 +57,8 @@ export function fulfilledSeats(plan: Pick<SyncPlan, 'rows'>): Set<string> {
   return new Set(plan.rows.flatMap((row) => (row.kind === 'updated' || row.kind === 'unchanged' ? [row.slug] : [])))
 }
 
-/** Same rule as the card tag: a snapshot that lacked the bot wins over a link; a link alone counts as in Grok Bot. */
+/** Only a bot seat with no Grok Bot link can be created. A link means the bot exists, even when a snapshot lacked it, so asking again would make a duplicate. */
 export function canRequest(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokSync' | 'grokBotUrl'>): boolean {
-  if (seat.kind !== 'bot' || seat.status === 'retired') return false
-  if (seat.grokSync === 'missing') return true
-  return !seat.grokSync && !seat.grokBotUrl?.trim()
+  if (seat.kind !== 'bot' || seat.status === 'retired' || seat.grokBotUrl?.trim()) return false
+  return seat.grokSync !== 'synced' && seat.grokSync !== 'new'
 }
