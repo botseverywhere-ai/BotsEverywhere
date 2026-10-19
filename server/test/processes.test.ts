@@ -1,0 +1,154 @@
+import assert from 'node:assert/strict'
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import test from 'node:test'
+import {
+  deriveSteps,
+  matchStepSeats,
+  parseProcessMarkdown,
+  parseProcessesFile,
+  processSlug,
+  routinePrompt,
+  scheduleFasterThanHourly,
+  serializeProcess,
+  type ProcessFile,
+} from '../src/processes.ts'
+import { importProcessRows, readProcessDir, writeProcessFile } from '../src/process-files.ts'
+
+const invoice: ProcessFile = {
+  slug: 'invoice-arrives',
+  name: 'Invoice arrives',
+  trigger: { type: 'event', schedule: '', source: 'email', description: 'A supplier invoice lands in the inbox.' },
+  steps: [
+    { seat: 'invoice-bot', action: 'Match the invoice to the open bill' },
+    { seat: 'you', action: 'Approve payment' },
+  ],
+  doneWhen: 'The invoice is matched and payment is approved or sent back.',
+  next: '',
+  notes: 'Finance follows the match.',
+}
+
+test('a process file round-trips through markdown', () => {
+  const parsed = parseProcessMarkdown(invoice.slug, serializeProcess(invoice))
+  assert.equal(parsed.ok, true)
+  if (!parsed.ok) return
+  assert.deepEqual(parsed.process, invoice)
+  const dir = mkdtempSync(join(tmpdir(), 'be-process-'))
+  const written = writeProcessFile(dir, invoice)
+  assert.equal(written.ok, true)
+  const again = readProcessDir(dir).processes[0]
+  assert.deepEqual(again, invoice)
+  assert.match(readFileSync(join(dir, 'processes', 'invoice-arrives.md'), 'utf8'), /^name: Invoice arrives$/m)
+})
+
+test('a step is a checkpoint when the action contains a gated verb or the seat must ask', () => {
+  const steps = deriveSteps(
+    [
+      { seat: 'invoice-bot', action: 'Match the invoice to the open bill' },
+      { seat: 'you', action: 'Approve payment' },
+      { seat: 'mail-bot', action: 'Send the receipt' },
+    ],
+    [
+      { slug: 'you', title: 'You', kind: 'human', mustAskBefore: [] },
+      { slug: 'invoice-bot', title: 'Invoice Bot', kind: 'bot', mustAskBefore: ['Sending a message outside the organization'] },
+      { slug: 'mail-bot', title: 'Mail Bot', kind: 'bot', mustAskBefore: ['Sending a message outside the organization'] },
+    ],
+  )
+  assert.equal(steps[0]?.checkpoint, false)
+  assert.equal(steps[1]?.checkpoint, true)
+  assert.equal(steps[1]?.because, 'pay')
+  assert.equal(steps[1]?.approver, 'you')
+  assert.equal(steps[2]?.checkpoint, true)
+  assert.equal(steps[2]?.because, 'send')
+  const asking = deriveSteps(
+    [{ seat: 'invoice-bot', action: 'Draft the message outside the organization' }],
+    [{ slug: 'invoice-bot', title: 'Invoice Bot', kind: 'bot', mustAskBefore: ['Sending a message outside the organization'] }],
+  )
+  assert.equal(asking[0]?.checkpoint, true)
+  assert.equal(asking[0]?.approver, 'you')
+})
+
+test('process import keeps loose fields and reports an unknown seat', () => {
+  const parsed = parseProcessesFile(JSON.stringify({
+    processes: [
+      {
+        name: 'Loose',
+        trigger: { type: 'event', source: 'carrier-pigeon', schedule: 15, description: ['Inbox'] },
+        steps: 'Invoice Bot: Match it\nYou | Approve payment',
+        doneWhen: ['Matched', 'Approved'],
+        next: null,
+        extra: true,
+      },
+      { trigger: { type: 'manual' } },
+    ],
+  }))
+  assert.equal(parsed.ok, true)
+  if (!parsed.ok) return
+  assert.equal(parsed.rows[0]?.error, '')
+  assert.equal(parsed.rows[0]?.trigger.source, '')
+  assert.equal(parsed.rows[0]?.trigger.schedule, '15')
+  assert.equal(parsed.rows[0]?.trigger.description, 'Inbox')
+  assert.match(parsed.rows[0]?.notes.join(' ') ?? '', /source was left out/)
+  assert.equal(parsed.rows[0]?.doneWhen, 'Matched Approved')
+  assert.equal(parsed.rows[0]?.next, '')
+  assert.equal(parsed.rows[1]?.error, 'Name is required.')
+  const matched = matchStepSeats(parsed.rows[0]!.steps, [
+    { slug: 'invoice-bot', title: 'Invoice Bot' },
+    { slug: 'you', title: 'You' },
+  ])
+  assert.deepEqual(matched.steps, [
+    { seat: 'invoice-bot', action: 'Match it' },
+    { seat: 'you', action: 'Approve payment' },
+  ])
+  const unknown = matchStepSeats([{ seat: 'Brand Bot', action: 'Post the note' }], [{ slug: 'you', title: 'You' }])
+  assert.deepEqual(unknown.notes, ['Unknown seat Brand Bot.'])
+  assert.equal(unknown.steps[0]?.seat, 'Brand Bot')
+  assert.equal(parseProcessesFile('not json').ok, false)
+  assert.equal(parseProcessesFile('{"bots":[]}').ok, false)
+  assert.equal(processSlug('Invoice arrives'), 'invoice-arrives')
+})
+
+test('a schedule that fires more than once an hour is flagged', () => {
+  assert.equal(scheduleFasterThanHourly('Mon 09:00'), false)
+  assert.equal(scheduleFasterThanHourly('weekdays 08:00'), false)
+  assert.equal(scheduleFasterThanHourly('0 * * * *'), false)
+  assert.equal(scheduleFasterThanHourly('0 9 * * 1'), false)
+  assert.equal(scheduleFasterThanHourly('*/15 * * * *'), true)
+  assert.equal(scheduleFasterThanHourly('* * * * *'), true)
+  assert.equal(scheduleFasterThanHourly('0,30 * * * *'), true)
+  assert.equal(scheduleFasterThanHourly('every 15 minutes'), true)
+  assert.equal(scheduleFasterThanHourly('every minute'), true)
+  assert.equal(scheduleFasterThanHourly('every hour'), false)
+})
+
+test('the Grok Bot routine names the schedule, the steps, and the ask', () => {
+  const prompt = routinePrompt(invoice, [
+    { slug: 'invoice-bot', title: 'Invoice Bot', kind: 'bot', mustAskBefore: [] },
+    { slug: 'you', title: 'You', kind: 'human', mustAskBefore: [] },
+  ])
+  assert.match(prompt, /You are Invoice Bot\./)
+  assert.match(prompt, /Trigger: email — A supplier invoice lands in the inbox\./)
+  assert.match(prompt, /1\. Invoice Bot: Match the invoice to the open bill/)
+  assert.match(prompt, /2\. You: Approve payment/)
+  assert.match(prompt, /Ask me before Approve payment\./)
+  assert.match(prompt, /Done when: The invoice is matched/)
+  assert.match(prompt, /processes\/invoice-arrives\.md/)
+  assert.match(prompt, /write waiting and ask the owner/)
+})
+
+test('process import skips a process that already exists instead of writing a -2 copy', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'be-process-import-'))
+  const seats = [{ slug: 'invoice-bot', title: 'Invoice Bot' }]
+  const row = { name: 'Invoice arrives', trigger: { type: 'manual' }, steps: [{ seat: 'Invoice Bot', action: 'Match it' }], doneWhen: 'Matched' }
+  const parsed = parseProcessesFile(JSON.stringify({ processes: [row, row] }))
+  assert.equal(parsed.ok, true)
+  if (!parsed.ok) return
+  const first = importProcessRows(dir, parsed.rows, seats)
+  assert.deepEqual(first.imported.map((item) => item.slug), ['invoice-arrives'])
+  assert.deepEqual(first.errors, [{ name: 'Invoice arrives', error: 'Already in this organization. The existing process was kept.' }])
+  const again = importProcessRows(dir, parsed.rows, seats)
+  assert.equal(again.imported.length, 0)
+  assert.equal(again.errors.length, 2)
+  assert.deepEqual(readdirSync(join(dir, 'processes')).sort(), ['invoice-arrives.md'])
+})

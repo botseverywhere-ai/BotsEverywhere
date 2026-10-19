@@ -1,0 +1,300 @@
+{
+  "company": {
+    "name": "botseverywhere",
+    "tagline": "Org chart for bots. Work chart for humans.",
+    "industry": "Software",
+    "mark": "BE",
+    "markColor": "#0b1220"
+  },
+  "departments": [
+    {
+      "id": "owner",
+      "name": "Owner"
+    },
+    {
+      "id": "manager",
+      "name": "Manager"
+    },
+    {
+      "id": "research-to-prompts-approves",
+      "name": "Turn research into a build prompt"
+    },
+    {
+      "id": "builds-via-cursor",
+      "name": "Build the change"
+    },
+    {
+      "id": "research",
+      "name": "Research"
+    },
+    {
+      "id": "brand-and-marketing",
+      "name": "Marketing Bot"
+    },
+    {
+      "id": "x-com",
+      "name": "x.com"
+    },
+    {
+      "id": "hr",
+      "name": "HR"
+    },
+    {
+      "id": "Write the spec",
+      "name": "Write the spec"
+    },
+    {
+      "id": "Test the build",
+      "name": "Test the build"
+    },
+    {
+      "id": "sales-and-partnerships",
+      "name": "Sales Bot"
+    },
+    {
+      "id": "finance-and-ops",
+      "name": "Finance Bot"
+    },
+    {
+      "id": "security",
+      "name": "Security"
+    },
+    {
+      "id": "automations",
+      "name": "Automations"
+    },
+    {
+      "id": "ux-ui",
+      "name": "Design Bot"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-seat-miguel",
+      "name": "Miguel Rovira",
+      "title": "Owner",
+      "department": "owner",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Miguel Rovira, Owner.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-grok",
+      "name": "Grok Bot",
+      "title": "Manager",
+      "department": "manager",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Manager.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-planning-bot",
+      "name": "Planning Bot",
+      "title": "Turns research into a build prompt",
+      "department": "research-to-prompts-approves",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Turns research into a build prompt.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-build-bot",
+      "name": "Build Bot",
+      "title": "Builds the change",
+      "department": "builds-via-cursor",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Builds the change.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-research-bot",
+      "name": "Research Bot",
+      "title": "Researches the question",
+      "department": "research",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Researches the question.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-marketing-bot",
+      "name": "Marketing Bot",
+      "title": "Drafts brand and marketing",
+      "department": "brand-and-marketing",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Drafts brand and marketing.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-social-bot",
+      "name": "Social Post Bot",
+      "title": "Drafts social posts",
+      "department": "x-com",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Drafts social posts.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-hr-bot",
+      "name": "HR Bot",
+      "title": "Handles hiring and the roster",
+      "department": "hr",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Handles hiring and the roster.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-product-bot",
+      "name": "Product Bot",
+      "title": "Writes the spec",
+      "department": "Write the spec",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Writes the spec.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-qa-bot",
+      "name": "QA Bot",
+      "title": "Tests the build",
+      "department": "Test the build",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Tests the build.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-sales-bot",
+      "name": "Sales Bot",
+      "title": "Handles sales follow-up",
+      "department": "sales-and-partnerships",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Handles sales follow-up.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-finance-bot",
+      "name": "Finance Bot",
+      "title": "Handles invoices and spend",
+      "department": "finance-and-ops",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Handles invoices and spend.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-security-bot",
+      "name": "Security Bot",
+      "title": "Checks for security issues",
+      "department": "security",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Checks for security issues.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-automation-bot",
+      "name": "Automation Bot",
+      "title": "Keeps the routines running",
+      "department": "automations",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Keeps the routines running.",
+      "startedOn": "2026-10-14"
+    },
+    {
+      "id": "person-seat-design-bot",
+      "name": "Design Bot",
+      "title": "Designs the screens",
+      "department": "ux-ui",
+      "email": "",
+      "phone": "",
+      "location": "Alicante",
+      "bio": "Designs the screens.",
+      "startedOn": "2026-10-14"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "seat-miguel",
+      "reportsTo": null
+    },
+    {
+      "slug": "seat-grok",
+      "reportsTo": "seat-miguel"
+    },
+    {
+      "slug": "seat-planning-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-build-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-research-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-marketing-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-social-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-hr-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-product-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-qa-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-sales-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-finance-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-security-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-automation-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-design-bot",
+      "reportsTo": "seat-grok"
+    }
+  ]
+}

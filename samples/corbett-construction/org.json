@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Corbett Construction Group",
+    "tagline": "Commercial builds for owners who want one accountable superintendent.",
+    "industry": "Construction",
+    "mark": "CC",
+    "markColor": "#9a3412"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "vice-president-of-operations",
+      "name": "Vice President of Operations"
+    },
+    {
+      "id": "chief-estimator",
+      "name": "Chief Estimator"
+    },
+    {
+      "id": "project-executive",
+      "name": "Project Executive"
+    },
+    {
+      "id": "superintendent",
+      "name": "Superintendent"
+    },
+    {
+      "id": "project-engineer",
+      "name": "Project Engineer"
+    },
+    {
+      "id": "safety-manager",
+      "name": "Safety Manager"
+    },
+    {
+      "id": "document-control-clerk",
+      "name": "Document Control Clerk"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "rfi-intake",
+      "name": "RFI intake"
+    },
+    {
+      "id": "spec-matching",
+      "name": "Spec matching"
+    },
+    {
+      "id": "response-draft",
+      "name": "Response draft"
+    },
+    {
+      "id": "distribution",
+      "name": "Distribution"
+    },
+    {
+      "id": "old-submittal-drafts",
+      "name": "Old submittal drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-corbett-construction-owner",
+      "name": "Patrick Corbett",
+      "title": "President",
+      "department": "leadership",
+      "email": "patrick.corbett@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Patrick Corbett is president at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-dana",
+      "name": "Dana Ruiz",
+      "title": "Vice President of Operations",
+      "department": "vice-president-of-operations",
+      "email": "dana.ruiz@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Dana Ruiz is vice president of operations at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-mike",
+      "name": "Mike Ellison",
+      "title": "Chief Estimator",
+      "department": "chief-estimator",
+      "email": "mike.ellison@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Mike Ellison is chief estimator at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-helen",
+      "name": "Helen Park",
+      "title": "Project Executive",
+      "department": "project-executive",
+      "email": "helen.park@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Helen Park is project executive at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-andy",
+      "name": "Andy Brooks",
+      "title": "Superintendent",
+      "department": "superintendent",
+      "email": "andy.brooks@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Andy Brooks is superintendent at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-rosa",
+      "name": "Rosa Nguyen",
+      "title": "Project Engineer",
+      "department": "project-engineer",
+      "email": "rosa.nguyen@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Rosa Nguyen is project engineer at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-tom",
+      "name": "Tom Gallagher",
+      "title": "Safety Manager",
+      "department": "safety-manager",
+      "email": "tom.gallagher@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Tom Gallagher is safety manager at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-kim",
+      "name": "Kim Alvarez",
+      "title": "Document Control Clerk",
+      "department": "document-control-clerk",
+      "email": "kim.alvarez@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Kim Alvarez is document control clerk at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-email-inbox",
+      "name": "Project Email Inbox",
+      "title": "Receives project email",
+      "department": "operations",
+      "email": "corbett-construction-email-inbox@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Handles inbound files for Corbett Construction Group before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-request-bot",
+      "name": "Request Bot",
+      "title": "Takes in project questions",
+      "department": "rfi-intake",
+      "email": "corbett-construction-request-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Takes in project questions.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-spec-bot",
+      "name": "Spec Bot",
+      "title": "Matches the spec",
+      "department": "spec-matching",
+      "email": "corbett-construction-spec-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Matches the spec.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-reply-bot",
+      "name": "Reply Bot",
+      "title": "Drafts the reply",
+      "department": "response-draft",
+      "email": "corbett-construction-reply-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Drafts the reply.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-send-bot",
+      "name": "Send Bot",
+      "title": "Sends the approved reply",
+      "department": "distribution",
+      "email": "corbett-construction-send-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Sends the approved reply.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-old-draft-bot",
+      "name": "Old Draft Bot",
+      "title": "Holds old drafts",
+      "department": "old-submittal-drafts",
+      "email": "corbett-construction-old-draft-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Holds old drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "corbett-construction-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "corbett-construction-dana",
+      "reportsTo": "corbett-construction-owner"
+    },
+    {
+      "slug": "corbett-construction-mike",
+      "reportsTo": "corbett-construction-owner"
+    },
+    {
+      "slug": "corbett-construction-helen",
+      "reportsTo": "corbett-construction-owner"
+    },
+    {
+      "slug": "corbett-construction-andy",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-rosa",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-tom",
+      "reportsTo": "corbett-construction-dana"
+    },
+    {
+      "slug": "corbett-construction-kim",
+      "reportsTo": "corbett-construction-rosa"
+    },
+    {
+      "slug": "corbett-construction-email-inbox",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-request-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-spec-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-reply-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-send-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-old-draft-bot",
+      "reportsTo": "corbett-construction-helen"
+    }
+  ]
+}

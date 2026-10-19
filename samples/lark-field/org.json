@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Lark & Field",
+    "tagline": "Brand and campaign work for regional consumer organizations.",
+    "industry": "Marketing agency",
+    "mark": "LF",
+    "markColor": "#7c3aed"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "head-of-client-services",
+      "name": "Head of Client Services"
+    },
+    {
+      "id": "creative-director",
+      "name": "Creative Director"
+    },
+    {
+      "id": "head-of-production",
+      "name": "Head of Production"
+    },
+    {
+      "id": "account-director",
+      "name": "Account Director"
+    },
+    {
+      "id": "media-planner",
+      "name": "Media Planner"
+    },
+    {
+      "id": "studio-manager",
+      "name": "Studio Manager"
+    },
+    {
+      "id": "traffic-coordinator",
+      "name": "Traffic Coordinator"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "brief-intake",
+      "name": "Brief intake"
+    },
+    {
+      "id": "asset-matching",
+      "name": "Asset matching"
+    },
+    {
+      "id": "first-draft-copy",
+      "name": "First-draft copy"
+    },
+    {
+      "id": "schedule-and-handoff",
+      "name": "Schedule and handoff"
+    },
+    {
+      "id": "old-social-drafts",
+      "name": "Old social drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-lark-field-owner",
+      "name": "Claire Fenwick",
+      "title": "Managing Director",
+      "department": "leadership",
+      "email": "claire.fenwick@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Claire Fenwick is managing director at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-nina",
+      "name": "Nina Berg",
+      "title": "Head of Client Services",
+      "department": "head-of-client-services",
+      "email": "nina.berg@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Nina Berg is head of client services at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-samir",
+      "name": "Samir Qureshi",
+      "title": "Creative Director",
+      "department": "creative-director",
+      "email": "samir.qureshi@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Samir Qureshi is creative director at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-ruth",
+      "name": "Ruth Adler",
+      "title": "Head of Production",
+      "department": "head-of-production",
+      "email": "ruth.adler@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Ruth Adler is head of production at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-leah",
+      "name": "Leah Ortiz",
+      "title": "Account Director",
+      "department": "account-director",
+      "email": "leah.ortiz@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Leah Ortiz is account director at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-chris",
+      "name": "Chris Daley",
+      "title": "Media Planner",
+      "department": "media-planner",
+      "email": "chris.daley@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Chris Daley is media planner at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-paulo",
+      "name": "Paulo Mendes",
+      "title": "Studio Manager",
+      "department": "studio-manager",
+      "email": "paulo.mendes@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Paulo Mendes is studio manager at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-ivy",
+      "name": "Ivy Tran",
+      "title": "Traffic Coordinator",
+      "department": "traffic-coordinator",
+      "email": "ivy.tran@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Ivy Tran is traffic coordinator at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-brief-inbox",
+      "name": "Brief Inbox",
+      "title": "Receives campaign briefs",
+      "department": "operations",
+      "email": "lark-field-brief-inbox@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Handles inbound files for Lark & Field before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-brief-bot",
+      "name": "Brief Bot",
+      "title": "Takes in campaign briefs",
+      "department": "brief-intake",
+      "email": "lark-field-brief-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Takes in campaign briefs.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-asset-bot",
+      "name": "Asset Bot",
+      "title": "Matches campaign assets",
+      "department": "asset-matching",
+      "email": "lark-field-asset-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Matches campaign assets.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-copy-bot",
+      "name": "Copy Bot",
+      "title": "Drafts campaign copy",
+      "department": "first-draft-copy",
+      "email": "lark-field-copy-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Drafts campaign copy.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-schedule-bot",
+      "name": "Schedule Bot",
+      "title": "Schedules the handoff",
+      "department": "schedule-and-handoff",
+      "email": "lark-field-schedule-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Schedules the handoff.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-old-post-bot",
+      "name": "Old Post Bot",
+      "title": "Holds old social drafts",
+      "department": "old-social-drafts",
+      "email": "lark-field-old-post-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Holds old social drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "lark-field-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "lark-field-nina",
+      "reportsTo": "lark-field-owner"
+    },
+    {
+      "slug": "lark-field-samir",
+      "reportsTo": "lark-field-owner"
+    },
+    {
+      "slug": "lark-field-ruth",
+      "reportsTo": "lark-field-owner"
+    },
+    {
+      "slug": "lark-field-leah",
+      "reportsTo": "lark-field-nina"
+    },
+    {
+      "slug": "lark-field-chris",
+      "reportsTo": "lark-field-nina"
+    },
+    {
+      "slug": "lark-field-paulo",
+      "reportsTo": "lark-field-samir"
+    },
+    {
+      "slug": "lark-field-ivy",
+      "reportsTo": "lark-field-paulo"
+    },
+    {
+      "slug": "lark-field-brief-inbox",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-brief-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-asset-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-copy-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-schedule-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-old-post-bot",
+      "reportsTo": "lark-field-ruth"
+    }
+  ]
+}

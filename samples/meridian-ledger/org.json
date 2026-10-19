@@ -1,0 +1,241 @@
+{
+  "company": {
+    "name": "Meridian Ledger Partners",
+    "tagline": "Independent finance advice for closely held organizations.",
+    "industry": "Finance",
+    "mark": "ML",
+    "markColor": "#1e3a5f"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "finance",
+      "name": "Finance"
+    },
+    {
+      "id": "client-service",
+      "name": "Client service"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-meridian-ledger-helen",
+      "name": "Helen Cho",
+      "title": "Managing Partner",
+      "department": "leadership",
+      "email": "helen.cho@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Helen Cho is managing partner at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-marcus",
+      "name": "Marcus Adeyemi",
+      "title": "Chief Operating Officer",
+      "department": "operations",
+      "email": "marcus.adeyemi@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Marcus Adeyemi is chief operating officer at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-priya",
+      "name": "Priya Shah",
+      "title": "Finance Lead",
+      "department": "finance",
+      "email": "priya.shah@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Priya Shah is finance lead at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-owen",
+      "name": "Owen Blake",
+      "title": "Client Delivery Lead",
+      "department": "client-service",
+      "email": "owen.blake@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Owen Blake is client delivery lead at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-nora",
+      "name": "Nora Pell",
+      "title": "Controller",
+      "department": "finance",
+      "email": "nora.pell@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Nora Pell is controller at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-jonah",
+      "name": "Jonah Ellis",
+      "title": "Accounts Payable Coordinator",
+      "department": "finance",
+      "email": "jonah.ellis@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Jonah Ellis is accounts payable coordinator at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-camille",
+      "name": "Camille Ortiz",
+      "title": "Vendor Relations Manager",
+      "department": "operations",
+      "email": "camille.ortiz@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Camille Ortiz is vendor relations manager at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-drew",
+      "name": "Drew Okonkwo",
+      "title": "Billing Clerk",
+      "department": "finance",
+      "email": "drew.okonkwo@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Drew Okonkwo is billing clerk at Meridian Ledger Partners, working with Northshore Components.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-invoice-inbox",
+      "name": "Invoice Inbox",
+      "title": "Receives invoices",
+      "department": "finance",
+      "email": "meridian-ledger-invoice-inbox@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Handles inbound files for Meridian Ledger Partners before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-meridian-ledger-invoice-bot",
+      "name": "Invoice Bot",
+      "title": "Matches invoices",
+      "department": "finance",
+      "email": "meridian-ledger-invoice-bot@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Matches invoices.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-meridian-ledger-purchase-order-bot",
+      "name": "Purchase Order Bot",
+      "title": "Matches purchase orders",
+      "department": "finance",
+      "email": "meridian-ledger-purchase-order-bot@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Matches purchase orders.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-meridian-ledger-exception-bot",
+      "name": "Exception Bot",
+      "title": "Drafts exception notes",
+      "department": "finance",
+      "email": "meridian-ledger-exception-bot@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Drafts exception notes.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-meridian-ledger-payment-bot",
+      "name": "Payment Bot",
+      "title": "Schedules payments",
+      "department": "finance",
+      "email": "meridian-ledger-payment-bot@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Schedules payments.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-meridian-ledger-collections-bot",
+      "name": "Collections Bot",
+      "title": "Drafts payment reminders",
+      "department": "finance",
+      "email": "meridian-ledger-collections-bot@meridianledger.com",
+      "phone": "(312) 555-0184",
+      "location": "Chicago",
+      "bio": "Drafts payment reminders.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "meridian-ledger-helen",
+      "reportsTo": null
+    },
+    {
+      "slug": "meridian-ledger-marcus",
+      "reportsTo": "meridian-ledger-helen"
+    },
+    {
+      "slug": "meridian-ledger-priya",
+      "reportsTo": "meridian-ledger-helen"
+    },
+    {
+      "slug": "meridian-ledger-owen",
+      "reportsTo": "meridian-ledger-helen"
+    },
+    {
+      "slug": "meridian-ledger-nora",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-jonah",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-camille",
+      "reportsTo": "meridian-ledger-marcus"
+    },
+    {
+      "slug": "meridian-ledger-drew",
+      "reportsTo": "meridian-ledger-jonah"
+    },
+    {
+      "slug": "meridian-ledger-invoice-inbox",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-invoice-bot",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-purchase-order-bot",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-exception-bot",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-payment-bot",
+      "reportsTo": "meridian-ledger-priya"
+    },
+    {
+      "slug": "meridian-ledger-collections-bot",
+      "reportsTo": "meridian-ledger-priya"
+    }
+  ]
+}

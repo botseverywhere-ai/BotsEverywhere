@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "sable-goods-trigger",
+      "source": "customer",
+      "label": "A return request arrives",
+      "example": "A buyer asks to return a cracked lamp and includes the order number."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "sable-goods-main",
+      "triggerId": "sable-goods-trigger",
+      "outcome": "The buyer gets a refund or a replacement, or a clear refusal.",
+      "ownerSeatId": "sable-goods-oscar",
+      "kind": "main",
+      "stepIds": [
+        "sable-goods-step-extract",
+        "sable-goods-step-match",
+        "sable-goods-step-draft",
+        "sable-goods-step-approve",
+        "sable-goods-step-schedule"
+      ]
+    },
+    {
+      "id": "sable-goods-exception",
+      "triggerId": "sable-goods-trigger",
+      "outcome": "The order is found, or the buyer is asked for the missing detail.",
+      "ownerSeatId": "sable-goods-oscar",
+      "kind": "contingency",
+      "stepIds": [
+        "sable-goods-step-query",
+        "sable-goods-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "sable-goods-step-extract",
+      "workstreamId": "sable-goods-main",
+      "name": "Read the request",
+      "level": 4,
+      "executorSeatId": "sable-goods-order-inbox",
+      "inputs": [
+        "Repeat buyers source document"
+      ],
+      "outputs": [
+        "Read the request for Repeat buyers"
+      ]
+    },
+    {
+      "id": "sable-goods-step-match",
+      "workstreamId": "sable-goods-main",
+      "name": "Match the order and the item",
+      "level": 4,
+      "executorSeatId": "sable-goods-order-bot",
+      "inputs": [
+        "Repeat buyers source document"
+      ],
+      "outputs": [
+        "Match the order and the item for Repeat buyers"
+      ]
+    },
+    {
+      "id": "sable-goods-step-draft",
+      "workstreamId": "sable-goods-main",
+      "name": "Draft the reply",
+      "level": 2,
+      "executorSeatId": "sable-goods-reply-bot",
+      "inputs": [
+        "Repeat buyers source document"
+      ],
+      "outputs": [
+        "Draft the reply for Repeat buyers"
+      ]
+    },
+    {
+      "id": "sable-goods-step-approve",
+      "workstreamId": "sable-goods-main",
+      "name": "Approve the refund or replacement",
+      "level": 3,
+      "executorSeatId": "sable-goods-oscar",
+      "inputs": [
+        "Repeat buyers source document"
+      ],
+      "outputs": [
+        "Approve the refund or replacement for Repeat buyers"
+      ],
+      "checkpointId": "sable-goods-cp-approve"
+    },
+    {
+      "id": "sable-goods-step-schedule",
+      "workstreamId": "sable-goods-main",
+      "name": "Schedule the refund",
+      "level": 4,
+      "executorSeatId": "sable-goods-refund-bot",
+      "inputs": [
+        "Repeat buyers source document"
+      ],
+      "outputs": [
+        "Schedule the refund for Repeat buyers"
+      ]
+    },
+    {
+      "id": "sable-goods-step-query",
+      "workstreamId": "sable-goods-exception",
+      "name": "Draft the question to the buyer",
+      "level": 4,
+      "executorSeatId": "sable-goods-reply-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the question to the buyer"
+      ]
+    },
+    {
+      "id": "sable-goods-step-msg",
+      "workstreamId": "sable-goods-exception",
+      "name": "Approve the question",
+      "level": 3,
+      "executorSeatId": "sable-goods-oscar",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the question"
+      ],
+      "checkpointId": "sable-goods-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "sable-goods-hand-1",
+      "fromStepId": "sable-goods-step-extract",
+      "toStepId": "sable-goods-step-match"
+    },
+    {
+      "id": "sable-goods-hand-2",
+      "fromStepId": "sable-goods-step-match",
+      "toStepId": "sable-goods-step-draft"
+    },
+    {
+      "id": "sable-goods-hand-3",
+      "fromStepId": "sable-goods-step-draft",
+      "toStepId": "sable-goods-step-approve"
+    },
+    {
+      "id": "sable-goods-hand-4",
+      "fromStepId": "sable-goods-step-approve",
+      "toStepId": "sable-goods-step-schedule"
+    },
+    {
+      "id": "sable-goods-hand-exception",
+      "fromStepId": "sable-goods-step-match",
+      "toStepId": "sable-goods-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "sable-goods-hand-extra",
+      "fromStepId": "sable-goods-step-query",
+      "toStepId": "sable-goods-step-msg"
+    },
+    {
+      "id": "sable-goods-hand-rejoin",
+      "fromStepId": "sable-goods-step-msg",
+      "toStepId": "sable-goods-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "sable-goods-cp-approve",
+      "stepId": "sable-goods-step-approve",
+      "rule": "Any refund over $150, or a refusal.",
+      "approverSeatId": "sable-goods-oscar",
+      "required": true
+    },
+    {
+      "id": "sable-goods-cp-msg",
+      "stepId": "sable-goods-step-msg",
+      "rule": "Any message that offers money or refuses the return.",
+      "approverSeatId": "sable-goods-oscar",
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "meridian-ledger-trigger",
+      "source": "email",
+      "label": "Invoice arrives",
+      "example": "A vendor emails a PDF invoice, or accounts payable drops the file in the intake folder."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "meridian-ledger-main",
+      "triggerId": "meridian-ledger-trigger",
+      "outcome": "The invoice is paid correctly or rejected with a reason.",
+      "ownerSeatId": "meridian-ledger-priya",
+      "kind": "main",
+      "stepIds": [
+        "meridian-ledger-step-extract",
+        "meridian-ledger-step-match",
+        "meridian-ledger-step-packet",
+        "meridian-ledger-step-approve",
+        "meridian-ledger-step-schedule"
+      ]
+    },
+    {
+      "id": "meridian-ledger-exception",
+      "triggerId": "meridian-ledger-trigger",
+      "outcome": "The mismatch is corrected, or the invoice is rejected.",
+      "ownerSeatId": "meridian-ledger-priya",
+      "kind": "contingency",
+      "stepIds": [
+        "meridian-ledger-step-query",
+        "meridian-ledger-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "meridian-ledger-step-extract",
+      "workstreamId": "meridian-ledger-main",
+      "name": "Read the invoice",
+      "level": 4,
+      "executorSeatId": "meridian-ledger-invoice-inbox",
+      "inputs": [
+        "Northshore Components source document"
+      ],
+      "outputs": [
+        "Extract invoice fields for Northshore Components"
+      ]
+    },
+    {
+      "id": "meridian-ledger-step-match",
+      "workstreamId": "meridian-ledger-main",
+      "name": "Match the invoice to the purchase order",
+      "level": 4,
+      "executorSeatId": "meridian-ledger-purchase-order-bot",
+      "inputs": [
+        "Northshore Components source document"
+      ],
+      "outputs": [
+        "Match to PO and vendor for Northshore Components"
+      ]
+    },
+    {
+      "id": "meridian-ledger-step-packet",
+      "workstreamId": "meridian-ledger-main",
+      "name": "Prepare the payment",
+      "level": 2,
+      "executorSeatId": "meridian-ledger-invoice-bot",
+      "inputs": [
+        "Northshore Components source document"
+      ],
+      "outputs": [
+        "Prepare the pay packet for Northshore Components"
+      ]
+    },
+    {
+      "id": "meridian-ledger-step-approve",
+      "workstreamId": "meridian-ledger-main",
+      "name": "Approve the payment",
+      "level": 3,
+      "executorSeatId": "meridian-ledger-priya",
+      "inputs": [
+        "Northshore Components source document"
+      ],
+      "outputs": [
+        "Approve payment for Northshore Components"
+      ],
+      "checkpointId": "meridian-ledger-cp-approve"
+    },
+    {
+      "id": "meridian-ledger-step-schedule",
+      "workstreamId": "meridian-ledger-main",
+      "name": "Schedule the payment",
+      "level": 4,
+      "executorSeatId": "meridian-ledger-payment-bot",
+      "inputs": [
+        "Northshore Components source document"
+      ],
+      "outputs": [
+        "Schedule payment for Northshore Components"
+      ]
+    },
+    {
+      "id": "meridian-ledger-step-query",
+      "workstreamId": "meridian-ledger-exception",
+      "name": "Draft the vendor query",
+      "level": 4,
+      "executorSeatId": "meridian-ledger-exception-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the vendor query"
+      ]
+    },
+    {
+      "id": "meridian-ledger-step-msg",
+      "workstreamId": "meridian-ledger-exception",
+      "name": "Approve the vendor message",
+      "level": 3,
+      "executorSeatId": "meridian-ledger-priya",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the vendor message"
+      ],
+      "checkpointId": "meridian-ledger-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "meridian-ledger-hand-1",
+      "fromStepId": "meridian-ledger-step-extract",
+      "toStepId": "meridian-ledger-step-match"
+    },
+    {
+      "id": "meridian-ledger-hand-2",
+      "fromStepId": "meridian-ledger-step-match",
+      "toStepId": "meridian-ledger-step-packet"
+    },
+    {
+      "id": "meridian-ledger-hand-3",
+      "fromStepId": "meridian-ledger-step-packet",
+      "toStepId": "meridian-ledger-step-approve"
+    },
+    {
+      "id": "meridian-ledger-hand-4",
+      "fromStepId": "meridian-ledger-step-approve",
+      "toStepId": "meridian-ledger-step-schedule"
+    },
+    {
+      "id": "meridian-ledger-hand-exception",
+      "fromStepId": "meridian-ledger-step-match",
+      "toStepId": "meridian-ledger-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "meridian-ledger-hand-extra",
+      "fromStepId": "meridian-ledger-step-query",
+      "toStepId": "meridian-ledger-step-msg"
+    },
+    {
+      "id": "meridian-ledger-hand-rejoin",
+      "fromStepId": "meridian-ledger-step-msg",
+      "toStepId": "meridian-ledger-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "meridian-ledger-cp-approve",
+      "stepId": "meridian-ledger-step-approve",
+      "rule": "Amount over $5,000, a new vendor, or any mismatch.",
+      "approverSeatId": "meridian-ledger-priya",
+      "required": true
+    },
+    {
+      "id": "meridian-ledger-cp-msg",
+      "stepId": "meridian-ledger-step-msg",
+      "rule": "Any message that leaves the firm, or a decision to reject the invoice.",
+      "approverSeatId": "meridian-ledger-priya",
+      "required": true
+    }
+  ]
+}

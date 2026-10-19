@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Kindling Labs",
+    "tagline": "Workflow software for field service organizations.",
+    "industry": "Software",
+    "mark": "KL",
+    "markColor": "#0369a1"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "head-of-product",
+      "name": "Head of Product"
+    },
+    {
+      "id": "engineering-manager",
+      "name": "Engineering Manager"
+    },
+    {
+      "id": "support-lead",
+      "name": "Support Lead"
+    },
+    {
+      "id": "product-manager",
+      "name": "Product Manager"
+    },
+    {
+      "id": "senior-engineer",
+      "name": "Senior Engineer"
+    },
+    {
+      "id": "support-specialist",
+      "name": "Support Specialist"
+    },
+    {
+      "id": "qa-analyst",
+      "name": "QA Analyst"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "ticket-intake",
+      "name": "Ticket intake"
+    },
+    {
+      "id": "reproduction-notes",
+      "name": "Reproduction notes"
+    },
+    {
+      "id": "patch-summary",
+      "name": "Patch summary"
+    },
+    {
+      "id": "release-checklist",
+      "name": "Release checklist"
+    },
+    {
+      "id": "old-status-drafts",
+      "name": "Old status drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-kindling-labs-owner",
+      "name": "Jordan Hale",
+      "title": "Chief Executive",
+      "department": "leadership",
+      "email": "jordan.hale@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Jordan Hale is chief executive at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-priya",
+      "name": "Priya Raman",
+      "title": "Head of Product",
+      "department": "head-of-product",
+      "email": "priya.raman@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Priya Raman is head of product at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-chris",
+      "name": "Chris Ellison",
+      "title": "Engineering Manager",
+      "department": "engineering-manager",
+      "email": "chris.ellison@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Chris Ellison is engineering manager at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-nora",
+      "name": "Nora Feldman",
+      "title": "Support Lead",
+      "department": "support-lead",
+      "email": "nora.feldman@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Nora Feldman is support lead at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-sam",
+      "name": "Sam Ortega",
+      "title": "Product Manager",
+      "department": "product-manager",
+      "email": "sam.ortega@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Sam Ortega is product manager at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-leah",
+      "name": "Leah Brooks",
+      "title": "Senior Engineer",
+      "department": "senior-engineer",
+      "email": "leah.brooks@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Leah Brooks is senior engineer at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-owen",
+      "name": "Owen Cho",
+      "title": "Support Specialist",
+      "department": "support-specialist",
+      "email": "owen.cho@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Owen Cho is support specialist at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-mia",
+      "name": "Mia Grant",
+      "title": "QA Analyst",
+      "department": "qa-analyst",
+      "email": "mia.grant@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Mia Grant is qa analyst at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-error-inbox",
+      "name": "Error Inbox",
+      "title": "Receives production errors",
+      "department": "operations",
+      "email": "kindling-labs-error-inbox@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Handles inbound files for Kindling Labs before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-ticket-bot",
+      "name": "Ticket Bot",
+      "title": "Takes in support tickets",
+      "department": "ticket-intake",
+      "email": "kindling-labs-ticket-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Takes in support tickets.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-repro-bot",
+      "name": "Repro Bot",
+      "title": "Writes the steps to reproduce",
+      "department": "reproduction-notes",
+      "email": "kindling-labs-repro-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Writes the steps to reproduce.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-patch-bot",
+      "name": "Patch Bot",
+      "title": "Summarizes the fix",
+      "department": "patch-summary",
+      "email": "kindling-labs-patch-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Summarizes the fix.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-release-bot",
+      "name": "Release Bot",
+      "title": "Runs the release checklist",
+      "department": "release-checklist",
+      "email": "kindling-labs-release-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Runs the release checklist.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-old-status-bot",
+      "name": "Old Status Bot",
+      "title": "Holds old status drafts",
+      "department": "old-status-drafts",
+      "email": "kindling-labs-old-status-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Holds old status drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "kindling-labs-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "kindling-labs-priya",
+      "reportsTo": "kindling-labs-owner"
+    },
+    {
+      "slug": "kindling-labs-chris",
+      "reportsTo": "kindling-labs-owner"
+    },
+    {
+      "slug": "kindling-labs-nora",
+      "reportsTo": "kindling-labs-owner"
+    },
+    {
+      "slug": "kindling-labs-sam",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-leah",
+      "reportsTo": "kindling-labs-chris"
+    },
+    {
+      "slug": "kindling-labs-owen",
+      "reportsTo": "kindling-labs-nora"
+    },
+    {
+      "slug": "kindling-labs-mia",
+      "reportsTo": "kindling-labs-leah"
+    },
+    {
+      "slug": "kindling-labs-error-inbox",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-ticket-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-repro-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-patch-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-release-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-old-status-bot",
+      "reportsTo": "kindling-labs-priya"
+    }
+  ]
+}

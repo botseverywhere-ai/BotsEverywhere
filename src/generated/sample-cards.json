@@ -1,0 +1,102 @@
+[
+  {
+    "id": "corbett-construction",
+    "name": "Corbett Construction Group",
+    "industry": "Construction",
+    "tagline": "Commercial builds for owners who want one accountable superintendent.",
+    "mark": "CC",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "halvorsen-ruiz",
+    "name": "Halvorsen & Ruiz LLP",
+    "industry": "Law firm",
+    "tagline": "Counsel for growing organizations on contracts, disputes, and employment.",
+    "mark": "HR",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "harborlight-clinic",
+    "name": "Harborlight Clinic",
+    "industry": "Medical clinic",
+    "tagline": "Primary care for the harbor neighborhoods.",
+    "mark": "HC",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "kindling-labs",
+    "name": "Kindling Labs",
+    "industry": "Software",
+    "tagline": "Workflow software for field service organizations.",
+    "mark": "KL",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "lark-field",
+    "name": "Lark & Field",
+    "industry": "Marketing agency",
+    "tagline": "Brand and campaign work for regional consumer organizations.",
+    "mark": "LF",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "meridian-ledger",
+    "name": "Meridian Ledger Partners",
+    "industry": "Finance",
+    "tagline": "Independent finance advice for closely held organizations.",
+    "mark": "ML",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "redline-freight",
+    "name": "Redline Freight",
+    "industry": "Logistics",
+    "tagline": "Regional freight for shippers who call when a load goes quiet.",
+    "mark": "RF",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "rowan-accountants",
+    "name": "Rowan & Co.",
+    "industry": "Accounting",
+    "tagline": "Audit and advisory for owner-managed organizations.",
+    "mark": "RC",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "sable-goods",
+    "name": "Sable Goods",
+    "industry": "E-commerce",
+    "tagline": "Home goods, sold direct, with a small team on returns.",
+    "mark": "SG",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  },
+  {
+    "id": "vesper-signal",
+    "name": "Vesper Signal",
+    "industry": "Data analytics",
+    "tagline": "Decision support for operators who still want a person on the hook.",
+    "mark": "VS",
+    "humans": 0,
+    "bots": 0,
+    "label": "0 humans · 0 bots"
+  }
+]

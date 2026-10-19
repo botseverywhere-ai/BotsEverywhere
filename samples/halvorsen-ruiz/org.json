@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Halvorsen & Ruiz LLP",
+    "tagline": "Counsel for growing organizations on contracts, disputes, and employment.",
+    "industry": "Law firm",
+    "mark": "HR",
+    "markColor": "#312e81"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "disputes-partner",
+      "name": "Disputes Partner"
+    },
+    {
+      "id": "corporate-partner",
+      "name": "Corporate Partner"
+    },
+    {
+      "id": "employment-partner",
+      "name": "Employment Partner"
+    },
+    {
+      "id": "senior-associate",
+      "name": "Senior Associate"
+    },
+    {
+      "id": "associate",
+      "name": "Associate"
+    },
+    {
+      "id": "conflicts-manager",
+      "name": "Conflicts Manager"
+    },
+    {
+      "id": "matter-clerk",
+      "name": "Matter Clerk"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "matter-intake",
+      "name": "Matter intake"
+    },
+    {
+      "id": "clause-matching",
+      "name": "Clause matching"
+    },
+    {
+      "id": "engagement-draft",
+      "name": "Engagement draft"
+    },
+    {
+      "id": "closing-checklist",
+      "name": "Closing checklist"
+    },
+    {
+      "id": "old-form-letters",
+      "name": "Old form letters"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-halvorsen-ruiz-owner",
+      "name": "Ingrid Halvorsen",
+      "title": "Managing Partner",
+      "department": "leadership",
+      "email": "ingrid.halvorsen@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Ingrid Halvorsen is managing partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-rafael",
+      "name": "Rafael Ruiz",
+      "title": "Disputes Partner",
+      "department": "disputes-partner",
+      "email": "rafael.ruiz@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Rafael Ruiz is disputes partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-maya",
+      "name": "Maya Stein",
+      "title": "Corporate Partner",
+      "department": "corporate-partner",
+      "email": "maya.stein@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Maya Stein is corporate partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-ellen",
+      "name": "Ellen Cho",
+      "title": "Employment Partner",
+      "department": "employment-partner",
+      "email": "ellen.cho@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Ellen Cho is employment partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-jon",
+      "name": "Jon Adler",
+      "title": "Senior Associate",
+      "department": "senior-associate",
+      "email": "jon.adler@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Jon Adler is senior associate at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-priya",
+      "name": "Priya Nair",
+      "title": "Associate",
+      "department": "associate",
+      "email": "priya.nair@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Priya Nair is associate at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-greg",
+      "name": "Greg Holt",
+      "title": "Conflicts Manager",
+      "department": "conflicts-manager",
+      "email": "greg.holt@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Greg Holt is conflicts manager at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-ann",
+      "name": "Ann Duffy",
+      "title": "Matter Clerk",
+      "department": "matter-clerk",
+      "email": "ann.duffy@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Ann Duffy is matter clerk at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-conflict-check",
+      "name": "Conflict Check",
+      "title": "Checks new matters for conflicts",
+      "department": "operations",
+      "email": "halvorsen-ruiz-conflict-check@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Handles inbound files for Halvorsen & Ruiz LLP before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-halvorsen-ruiz-intake-bot",
+      "name": "Intake Bot",
+      "title": "Takes in new matters",
+      "department": "matter-intake",
+      "email": "halvorsen-ruiz-intake-bot@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Takes in new matters.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-halvorsen-ruiz-clause-bot",
+      "name": "Clause Bot",
+      "title": "Matches contract clauses",
+      "department": "clause-matching",
+      "email": "halvorsen-ruiz-clause-bot@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Matches contract clauses.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-halvorsen-ruiz-letter-bot",
+      "name": "Letter Bot",
+      "title": "Drafts the engagement letter",
+      "department": "engagement-draft",
+      "email": "halvorsen-ruiz-letter-bot@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Drafts the engagement letter.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-halvorsen-ruiz-closing-bot",
+      "name": "Closing Bot",
+      "title": "Runs the closing checklist",
+      "department": "closing-checklist",
+      "email": "halvorsen-ruiz-closing-bot@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Runs the closing checklist.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-halvorsen-ruiz-old-letter-bot",
+      "name": "Old Letter Bot",
+      "title": "Holds old form letters",
+      "department": "old-form-letters",
+      "email": "halvorsen-ruiz-old-letter-bot@halvorsenruiz.com",
+      "phone": "(415) 555-0199",
+      "location": "San Francisco",
+      "bio": "Holds old form letters.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "halvorsen-ruiz-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "halvorsen-ruiz-rafael",
+      "reportsTo": "halvorsen-ruiz-owner"
+    },
+    {
+      "slug": "halvorsen-ruiz-maya",
+      "reportsTo": "halvorsen-ruiz-owner"
+    },
+    {
+      "slug": "halvorsen-ruiz-ellen",
+      "reportsTo": "halvorsen-ruiz-owner"
+    },
+    {
+      "slug": "halvorsen-ruiz-jon",
+      "reportsTo": "halvorsen-ruiz-maya"
+    },
+    {
+      "slug": "halvorsen-ruiz-priya",
+      "reportsTo": "halvorsen-ruiz-rafael"
+    },
+    {
+      "slug": "halvorsen-ruiz-greg",
+      "reportsTo": "halvorsen-ruiz-ellen"
+    },
+    {
+      "slug": "halvorsen-ruiz-ann",
+      "reportsTo": "halvorsen-ruiz-jon"
+    },
+    {
+      "slug": "halvorsen-ruiz-conflict-check",
+      "reportsTo": "halvorsen-ruiz-maya"
+    },
+    {
+      "slug": "halvorsen-ruiz-intake-bot",
+      "reportsTo": "halvorsen-ruiz-maya"
+    },
+    {
+      "slug": "halvorsen-ruiz-clause-bot",
+      "reportsTo": "halvorsen-ruiz-maya"
+    },
+    {
+      "slug": "halvorsen-ruiz-letter-bot",
+      "reportsTo": "halvorsen-ruiz-maya"
+    },
+    {
+      "slug": "halvorsen-ruiz-closing-bot",
+      "reportsTo": "halvorsen-ruiz-maya"
+    },
+    {
+      "slug": "halvorsen-ruiz-old-letter-bot",
+      "reportsTo": "halvorsen-ruiz-maya"
+    }
+  ]
+}

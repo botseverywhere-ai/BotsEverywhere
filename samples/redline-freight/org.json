@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Redline Freight",
+    "tagline": "Regional freight for shippers who call when a load goes quiet.",
+    "industry": "Logistics",
+    "mark": "RF",
+    "markColor": "#b91c1c"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "vice-president-of-operations",
+      "name": "Vice President of Operations"
+    },
+    {
+      "id": "customer-care-director",
+      "name": "Customer Care Director"
+    },
+    {
+      "id": "dispatch-manager",
+      "name": "Dispatch Manager"
+    },
+    {
+      "id": "senior-dispatcher",
+      "name": "Senior Dispatcher"
+    },
+    {
+      "id": "care-supervisor",
+      "name": "Care Supervisor"
+    },
+    {
+      "id": "claims-analyst",
+      "name": "Claims Analyst"
+    },
+    {
+      "id": "trace-clerk",
+      "name": "Trace Clerk"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "exception-intake",
+      "name": "Exception intake"
+    },
+    {
+      "id": "load-matching",
+      "name": "Load matching"
+    },
+    {
+      "id": "customer-update-draft",
+      "name": "Customer update draft"
+    },
+    {
+      "id": "recovery-schedule",
+      "name": "Recovery schedule"
+    },
+    {
+      "id": "old-claim-letters",
+      "name": "Old claim letters"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-redline-freight-owner",
+      "name": "Donna Keane",
+      "title": "President",
+      "department": "leadership",
+      "email": "donna.keane@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Donna Keane is president at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-marcus",
+      "name": "Marcus Bell",
+      "title": "Vice President of Operations",
+      "department": "vice-president-of-operations",
+      "email": "marcus.bell@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Marcus Bell is vice president of operations at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-cindy",
+      "name": "Cindy Zhao",
+      "title": "Customer Care Director",
+      "department": "customer-care-director",
+      "email": "cindy.zhao@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Cindy Zhao is customer care director at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-alan",
+      "name": "Alan Brooks",
+      "title": "Dispatch Manager",
+      "department": "dispatch-manager",
+      "email": "alan.brooks@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Alan Brooks is dispatch manager at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-joe",
+      "name": "Joe Harlan",
+      "title": "Senior Dispatcher",
+      "department": "senior-dispatcher",
+      "email": "joe.harlan@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Joe Harlan is senior dispatcher at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-rina",
+      "name": "Rina Shah",
+      "title": "Care Supervisor",
+      "department": "care-supervisor",
+      "email": "rina.shah@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Rina Shah is care supervisor at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-erik",
+      "name": "Erik Moss",
+      "title": "Claims Analyst",
+      "department": "claims-analyst",
+      "email": "erik.moss@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Erik Moss is claims analyst at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-beth",
+      "name": "Beth Cooper",
+      "title": "Trace Clerk",
+      "department": "trace-clerk",
+      "email": "beth.cooper@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Beth Cooper is trace clerk at Redline Freight, working with Oakline Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-load-monitor",
+      "name": "Load Monitor",
+      "title": "Watches tracking exceptions",
+      "department": "operations",
+      "email": "redline-freight-load-monitor@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Handles inbound files for Redline Freight before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-redline-freight-exception-bot",
+      "name": "Exception Bot",
+      "title": "Takes in delivery exceptions",
+      "department": "exception-intake",
+      "email": "redline-freight-exception-bot@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Takes in delivery exceptions.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-redline-freight-load-bot",
+      "name": "Load Bot",
+      "title": "Matches the load",
+      "department": "load-matching",
+      "email": "redline-freight-load-bot@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Matches the load.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-redline-freight-update-bot",
+      "name": "Customer Update Bot",
+      "title": "Drafts the customer update",
+      "department": "customer-update-draft",
+      "email": "redline-freight-update-bot@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Drafts the customer update.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-redline-freight-recovery-bot",
+      "name": "Recovery Bot",
+      "title": "Schedules the recovery",
+      "department": "recovery-schedule",
+      "email": "redline-freight-recovery-bot@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Schedules the recovery.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-redline-freight-old-claim-bot",
+      "name": "Old Claim Bot",
+      "title": "Holds old claim letters",
+      "department": "old-claim-letters",
+      "email": "redline-freight-old-claim-bot@redlinefreight.com",
+      "phone": "(614) 555-0177",
+      "location": "Columbus",
+      "bio": "Holds old claim letters.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "redline-freight-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "redline-freight-marcus",
+      "reportsTo": "redline-freight-owner"
+    },
+    {
+      "slug": "redline-freight-cindy",
+      "reportsTo": "redline-freight-owner"
+    },
+    {
+      "slug": "redline-freight-alan",
+      "reportsTo": "redline-freight-owner"
+    },
+    {
+      "slug": "redline-freight-joe",
+      "reportsTo": "redline-freight-alan"
+    },
+    {
+      "slug": "redline-freight-rina",
+      "reportsTo": "redline-freight-cindy"
+    },
+    {
+      "slug": "redline-freight-erik",
+      "reportsTo": "redline-freight-marcus"
+    },
+    {
+      "slug": "redline-freight-beth",
+      "reportsTo": "redline-freight-rina"
+    },
+    {
+      "slug": "redline-freight-load-monitor",
+      "reportsTo": "redline-freight-cindy"
+    },
+    {
+      "slug": "redline-freight-exception-bot",
+      "reportsTo": "redline-freight-cindy"
+    },
+    {
+      "slug": "redline-freight-load-bot",
+      "reportsTo": "redline-freight-cindy"
+    },
+    {
+      "slug": "redline-freight-update-bot",
+      "reportsTo": "redline-freight-cindy"
+    },
+    {
+      "slug": "redline-freight-recovery-bot",
+      "reportsTo": "redline-freight-cindy"
+    },
+    {
+      "slug": "redline-freight-old-claim-bot",
+      "reportsTo": "redline-freight-cindy"
+    }
+  ]
+}

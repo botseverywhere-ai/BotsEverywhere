@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Vesper Signal",
+    "tagline": "Decision support for operators who still want a person on the hook.",
+    "industry": "Data analytics",
+    "mark": "VS",
+    "markColor": "#0f766e"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "head-of-delivery",
+      "name": "Head of Delivery"
+    },
+    {
+      "id": "head-of-data",
+      "name": "Head of Data"
+    },
+    {
+      "id": "engagement-lead",
+      "name": "Engagement Lead"
+    },
+    {
+      "id": "analytics-manager",
+      "name": "Analytics Manager"
+    },
+    {
+      "id": "data-engineer",
+      "name": "Data Engineer"
+    },
+    {
+      "id": "client-partner",
+      "name": "Client Partner"
+    },
+    {
+      "id": "reporting-associate",
+      "name": "Reporting Associate"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "question-intake",
+      "name": "Question intake"
+    },
+    {
+      "id": "metric-check",
+      "name": "Metric check"
+    },
+    {
+      "id": "insight-draft",
+      "name": "Insight draft"
+    },
+    {
+      "id": "pack-and-send-prep",
+      "name": "Pack and send prep"
+    },
+    {
+      "id": "legacy-dashboard-notes",
+      "name": "Legacy dashboard notes"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-vesper-signal-owner",
+      "name": "Elena Voss",
+      "title": "Chief Executive",
+      "department": "leadership",
+      "email": "elena.voss@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Elena Voss is chief executive at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-theo",
+      "name": "Theo Lang",
+      "title": "Head of Delivery",
+      "department": "head-of-delivery",
+      "email": "theo.lang@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Theo Lang is head of delivery at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-amira",
+      "name": "Amira Hassan",
+      "title": "Head of Data",
+      "department": "head-of-data",
+      "email": "amira.hassan@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Amira Hassan is head of data at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-joel",
+      "name": "Joel Prieto",
+      "title": "Engagement Lead",
+      "department": "engagement-lead",
+      "email": "joel.prieto@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Joel Prieto is engagement lead at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-sara",
+      "name": "Sara Nguyen",
+      "title": "Analytics Manager",
+      "department": "analytics-manager",
+      "email": "sara.nguyen@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Sara Nguyen is analytics manager at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-ben",
+      "name": "Ben Adler",
+      "title": "Data Engineer",
+      "department": "data-engineer",
+      "email": "ben.adler@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Ben Adler is data engineer at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-kate",
+      "name": "Kate Morrow",
+      "title": "Client Partner",
+      "department": "client-partner",
+      "email": "kate.morrow@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Kate Morrow is client partner at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-luis",
+      "name": "Luis Ortega",
+      "title": "Reporting Associate",
+      "department": "reporting-associate",
+      "email": "luis.ortega@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Luis Ortega is reporting associate at Vesper Signal, working with Cedar Route Transit.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-data-pull",
+      "name": "Data Pull",
+      "title": "Pulls the source data",
+      "department": "operations",
+      "email": "vesper-signal-data-pull@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Handles inbound files for Vesper Signal before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-vesper-signal-question-bot",
+      "name": "Question Bot",
+      "title": "Takes in customer questions",
+      "department": "question-intake",
+      "email": "vesper-signal-question-bot@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Takes in customer questions.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-vesper-signal-metric-bot",
+      "name": "Metric Bot",
+      "title": "Checks the numbers",
+      "department": "metric-check",
+      "email": "vesper-signal-metric-bot@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Checks the numbers.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-vesper-signal-insight-bot",
+      "name": "Insight Bot",
+      "title": "Drafts the insight",
+      "department": "insight-draft",
+      "email": "vesper-signal-insight-bot@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Drafts the insight.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-vesper-signal-send-bot",
+      "name": "Send Prep Bot",
+      "title": "Prepares the pack to send",
+      "department": "pack-and-send-prep",
+      "email": "vesper-signal-send-bot@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Prepares the pack to send.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-vesper-signal-old-dashboard-bot",
+      "name": "Old Dashboard Bot",
+      "title": "Holds old dashboard notes",
+      "department": "legacy-dashboard-notes",
+      "email": "vesper-signal-old-dashboard-bot@vespersignal.com",
+      "phone": "(206) 555-0172",
+      "location": "Seattle",
+      "bio": "Holds old dashboard notes.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "vesper-signal-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "vesper-signal-theo",
+      "reportsTo": "vesper-signal-owner"
+    },
+    {
+      "slug": "vesper-signal-amira",
+      "reportsTo": "vesper-signal-owner"
+    },
+    {
+      "slug": "vesper-signal-joel",
+      "reportsTo": "vesper-signal-owner"
+    },
+    {
+      "slug": "vesper-signal-sara",
+      "reportsTo": "vesper-signal-amira"
+    },
+    {
+      "slug": "vesper-signal-ben",
+      "reportsTo": "vesper-signal-amira"
+    },
+    {
+      "slug": "vesper-signal-kate",
+      "reportsTo": "vesper-signal-theo"
+    },
+    {
+      "slug": "vesper-signal-luis",
+      "reportsTo": "vesper-signal-sara"
+    },
+    {
+      "slug": "vesper-signal-data-pull",
+      "reportsTo": "vesper-signal-joel"
+    },
+    {
+      "slug": "vesper-signal-question-bot",
+      "reportsTo": "vesper-signal-joel"
+    },
+    {
+      "slug": "vesper-signal-metric-bot",
+      "reportsTo": "vesper-signal-joel"
+    },
+    {
+      "slug": "vesper-signal-insight-bot",
+      "reportsTo": "vesper-signal-joel"
+    },
+    {
+      "slug": "vesper-signal-send-bot",
+      "reportsTo": "vesper-signal-joel"
+    },
+    {
+      "slug": "vesper-signal-old-dashboard-bot",
+      "reportsTo": "vesper-signal-joel"
+    }
+  ]
+}

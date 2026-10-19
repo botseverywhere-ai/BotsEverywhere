@@ -1,0 +1,21 @@
+{
+  "bots": [
+    {
+      "name": "Invoice Bot",
+      "grokBotUrl": "",
+      "reportsTo": "You",
+      "owns": ["Match the invoice to the purchase order"],
+      "may": ["Read the bill and the purchase order"],
+      "needsApproval": ["Pay the vendor"],
+      "doneWhen": "The match is recorded"
+    },
+    {
+      "name": "Collections Bot",
+      "reportsTo": "Invoice Bot",
+      "owns": ["Chase the unpaid invoice"],
+      "may": ["Read the open invoices"],
+      "needsApproval": ["Send a legal notice"],
+      "doneWhen": "The reminder is sent or the invoice is marked paid"
+    }
+  ]
+}

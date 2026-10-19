@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "redline-freight-trigger",
+      "source": "alert",
+      "label": "A load goes quiet",
+      "example": "The monitor flags a Glasshouse Packaging load with no ping for two hours."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "redline-freight-main",
+      "triggerId": "redline-freight-trigger",
+      "outcome": "The customer has a true status, and the load is moving or formally delayed.",
+      "ownerSeatId": "redline-freight-cindy",
+      "kind": "main",
+      "stepIds": [
+        "redline-freight-step-extract",
+        "redline-freight-step-match",
+        "redline-freight-step-draft",
+        "redline-freight-step-approve",
+        "redline-freight-step-schedule"
+      ]
+    },
+    {
+      "id": "redline-freight-exception",
+      "triggerId": "redline-freight-trigger",
+      "outcome": "The receiver is rebooked, or the customer accepts the delay.",
+      "ownerSeatId": "redline-freight-cindy",
+      "kind": "contingency",
+      "stepIds": [
+        "redline-freight-step-query",
+        "redline-freight-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "redline-freight-step-extract",
+      "workstreamId": "redline-freight-main",
+      "name": "Read the exception",
+      "level": 4,
+      "executorSeatId": "redline-freight-load-monitor",
+      "inputs": [
+        "Oakline Grocery source document"
+      ],
+      "outputs": [
+        "Read the exception for Oakline Grocery"
+      ]
+    },
+    {
+      "id": "redline-freight-step-match",
+      "workstreamId": "redline-freight-main",
+      "name": "Match the load and the last ping",
+      "level": 4,
+      "executorSeatId": "redline-freight-load-bot",
+      "inputs": [
+        "Oakline Grocery source document"
+      ],
+      "outputs": [
+        "Match the load and the last ping for Oakline Grocery"
+      ]
+    },
+    {
+      "id": "redline-freight-step-draft",
+      "workstreamId": "redline-freight-main",
+      "name": "Draft the customer update",
+      "level": 2,
+      "executorSeatId": "redline-freight-update-bot",
+      "inputs": [
+        "Oakline Grocery source document"
+      ],
+      "outputs": [
+        "Draft the customer update for Oakline Grocery"
+      ]
+    },
+    {
+      "id": "redline-freight-step-approve",
+      "workstreamId": "redline-freight-main",
+      "name": "Approve the customer update",
+      "level": 3,
+      "executorSeatId": "redline-freight-cindy",
+      "inputs": [
+        "Oakline Grocery source document"
+      ],
+      "outputs": [
+        "Approve the customer update for Oakline Grocery"
+      ],
+      "checkpointId": "redline-freight-cp-approve"
+    },
+    {
+      "id": "redline-freight-step-schedule",
+      "workstreamId": "redline-freight-main",
+      "name": "Send the update and reset the watch",
+      "level": 4,
+      "executorSeatId": "redline-freight-recovery-bot",
+      "inputs": [
+        "Oakline Grocery source document"
+      ],
+      "outputs": [
+        "Send the update and reset the watch for Oakline Grocery"
+      ]
+    },
+    {
+      "id": "redline-freight-step-query",
+      "workstreamId": "redline-freight-exception",
+      "name": "Draft the rebooking note",
+      "level": 4,
+      "executorSeatId": "redline-freight-update-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the rebooking note"
+      ]
+    },
+    {
+      "id": "redline-freight-step-msg",
+      "workstreamId": "redline-freight-exception",
+      "name": "Approve the note",
+      "level": 3,
+      "executorSeatId": "redline-freight-cindy",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the note"
+      ],
+      "checkpointId": "redline-freight-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "redline-freight-hand-1",
+      "fromStepId": "redline-freight-step-extract",
+      "toStepId": "redline-freight-step-match"
+    },
+    {
+      "id": "redline-freight-hand-2",
+      "fromStepId": "redline-freight-step-match",
+      "toStepId": "redline-freight-step-draft"
+    },
+    {
+      "id": "redline-freight-hand-3",
+      "fromStepId": "redline-freight-step-draft",
+      "toStepId": "redline-freight-step-approve"
+    },
+    {
+      "id": "redline-freight-hand-4",
+      "fromStepId": "redline-freight-step-approve",
+      "toStepId": "redline-freight-step-schedule"
+    },
+    {
+      "id": "redline-freight-hand-exception",
+      "fromStepId": "redline-freight-step-match",
+      "toStepId": "redline-freight-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "redline-freight-hand-extra",
+      "fromStepId": "redline-freight-step-query",
+      "toStepId": "redline-freight-step-msg"
+    },
+    {
+      "id": "redline-freight-hand-rejoin",
+      "fromStepId": "redline-freight-step-msg",
+      "toStepId": "redline-freight-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "redline-freight-cp-approve",
+      "stepId": "redline-freight-step-approve",
+      "rule": "Any delay over four hours, or a claim.",
+      "approverSeatId": "redline-freight-cindy",
+      "required": true
+    },
+    {
+      "id": "redline-freight-cp-msg",
+      "stepId": "redline-freight-step-msg",
+      "rule": "Any message that changes an appointment or offers a credit.",
+      "approverSeatId": "redline-freight-cindy",
+      "required": true
+    }
+  ]
+}

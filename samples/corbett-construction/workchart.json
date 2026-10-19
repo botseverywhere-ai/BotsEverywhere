@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "corbett-construction-trigger",
+      "source": "email",
+      "label": "An RFI arrives",
+      "example": "The mechanical subcontractor asks which roof drain detail applies at grid C."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "corbett-construction-main",
+      "triggerId": "corbett-construction-trigger",
+      "outcome": "The RFI is answered against the spec, or sent back with a named owner.",
+      "ownerSeatId": "corbett-construction-helen",
+      "kind": "main",
+      "stepIds": [
+        "corbett-construction-step-extract",
+        "corbett-construction-step-match",
+        "corbett-construction-step-draft",
+        "corbett-construction-step-approve",
+        "corbett-construction-step-schedule"
+      ]
+    },
+    {
+      "id": "corbett-construction-exception",
+      "triggerId": "corbett-construction-trigger",
+      "outcome": "The conflict is clarified with the architect or the RFI is rejected.",
+      "ownerSeatId": "corbett-construction-helen",
+      "kind": "contingency",
+      "stepIds": [
+        "corbett-construction-step-query",
+        "corbett-construction-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "corbett-construction-step-extract",
+      "workstreamId": "corbett-construction-main",
+      "name": "Log the RFI",
+      "level": 4,
+      "executorSeatId": "corbett-construction-email-inbox",
+      "inputs": [
+        "Front Range Schools source document"
+      ],
+      "outputs": [
+        "Log the RFI for Front Range Schools"
+      ]
+    },
+    {
+      "id": "corbett-construction-step-match",
+      "workstreamId": "corbett-construction-main",
+      "name": "Match it to the spec section",
+      "level": 4,
+      "executorSeatId": "corbett-construction-spec-bot",
+      "inputs": [
+        "Front Range Schools source document"
+      ],
+      "outputs": [
+        "Match it to the spec section for Front Range Schools"
+      ]
+    },
+    {
+      "id": "corbett-construction-step-draft",
+      "workstreamId": "corbett-construction-main",
+      "name": "Draft the response",
+      "level": 2,
+      "executorSeatId": "corbett-construction-reply-bot",
+      "inputs": [
+        "Front Range Schools source document"
+      ],
+      "outputs": [
+        "Draft the response for Front Range Schools"
+      ]
+    },
+    {
+      "id": "corbett-construction-step-approve",
+      "workstreamId": "corbett-construction-main",
+      "name": "Approve the answer",
+      "level": 3,
+      "executorSeatId": "corbett-construction-helen",
+      "inputs": [
+        "Front Range Schools source document"
+      ],
+      "outputs": [
+        "Approve the answer for Front Range Schools"
+      ],
+      "checkpointId": "corbett-construction-cp-approve"
+    },
+    {
+      "id": "corbett-construction-step-schedule",
+      "workstreamId": "corbett-construction-main",
+      "name": "Issue the answer",
+      "level": 4,
+      "executorSeatId": "corbett-construction-send-bot",
+      "inputs": [
+        "Front Range Schools source document"
+      ],
+      "outputs": [
+        "Issue the answer for Front Range Schools"
+      ]
+    },
+    {
+      "id": "corbett-construction-step-query",
+      "workstreamId": "corbett-construction-exception",
+      "name": "Draft the question to the architect",
+      "level": 4,
+      "executorSeatId": "corbett-construction-reply-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the question to the architect"
+      ]
+    },
+    {
+      "id": "corbett-construction-step-msg",
+      "workstreamId": "corbett-construction-exception",
+      "name": "Approve the outbound question",
+      "level": 3,
+      "executorSeatId": "corbett-construction-helen",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the outbound question"
+      ],
+      "checkpointId": "corbett-construction-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "corbett-construction-hand-1",
+      "fromStepId": "corbett-construction-step-extract",
+      "toStepId": "corbett-construction-step-match"
+    },
+    {
+      "id": "corbett-construction-hand-2",
+      "fromStepId": "corbett-construction-step-match",
+      "toStepId": "corbett-construction-step-draft"
+    },
+    {
+      "id": "corbett-construction-hand-3",
+      "fromStepId": "corbett-construction-step-draft",
+      "toStepId": "corbett-construction-step-approve"
+    },
+    {
+      "id": "corbett-construction-hand-4",
+      "fromStepId": "corbett-construction-step-approve",
+      "toStepId": "corbett-construction-step-schedule"
+    },
+    {
+      "id": "corbett-construction-hand-exception",
+      "fromStepId": "corbett-construction-step-match",
+      "toStepId": "corbett-construction-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "corbett-construction-hand-extra",
+      "fromStepId": "corbett-construction-step-query",
+      "toStepId": "corbett-construction-step-msg"
+    },
+    {
+      "id": "corbett-construction-hand-rejoin",
+      "fromStepId": "corbett-construction-step-msg",
+      "toStepId": "corbett-construction-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "corbett-construction-cp-approve",
+      "stepId": "corbett-construction-step-approve",
+      "rule": "Any answer that changes cost, schedule, or a life-safety detail.",
+      "approverSeatId": "corbett-construction-helen",
+      "required": true
+    },
+    {
+      "id": "corbett-construction-cp-msg",
+      "stepId": "corbett-construction-step-msg",
+      "rule": "Any message to the architect or owner.",
+      "approverSeatId": "corbett-construction-helen",
+      "required": true
+    }
+  ]
+}

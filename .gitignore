@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+dist-server
+/data
+test-results
+playwright-report
+*.sqlite
+*.sqlite-journal
+*.local
+.env
+
+# Organizations are each person's own data. Only the starter org ships with the app.
+orgs/*
+# Written on each computer: this copy's id, and what its Connector writes.
+orgs/project.json
+orgs/connector.json
+orgs/connector-log.json
+orgs/*/grok/
+orgs/*/log/
+
+# Local browser screenshots and logs from Playwright MCP.
+.playwright-mcp
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

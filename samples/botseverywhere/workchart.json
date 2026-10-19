@@ -1,0 +1,112 @@
+{
+  "triggers": [
+    {
+      "id": "trigger-nov7",
+      "source": "management",
+      "label": "Nov 7 2026 demo",
+      "example": "Miguel sets the Nov 7 demo as the outcome for this stream."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "ws-nov7",
+      "triggerId": "trigger-nov7",
+      "outcome": "Nov 7 2026 demo",
+      "ownerSeatId": "seat-miguel",
+      "kind": "main",
+      "stepIds": [
+        "step-spec",
+        "step-outer",
+        "step-inner",
+        "step-qa"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "step-spec",
+      "workstreamId": "ws-nov7",
+      "name": "Write the spec",
+      "level": 2,
+      "executorSeatId": "seat-product-bot",
+      "inputs": [
+        "The current preview branch"
+      ],
+      "outputs": [
+        "Write the spec"
+      ]
+    },
+    {
+      "id": "step-outer",
+      "workstreamId": "ws-nov7",
+      "name": "Turn research into a build prompt",
+      "level": 2,
+      "executorSeatId": "seat-planning-bot",
+      "inputs": [
+        "The current preview branch"
+      ],
+      "outputs": [
+        "Turn research into a build prompt"
+      ],
+      "checkpointId": "cp-miguel-merge"
+    },
+    {
+      "id": "step-inner",
+      "workstreamId": "ws-nov7",
+      "name": "Build the change",
+      "level": 2,
+      "executorSeatId": "seat-build-bot",
+      "inputs": [
+        "The current preview branch"
+      ],
+      "outputs": [
+        "Build the change"
+      ]
+    },
+    {
+      "id": "step-qa",
+      "workstreamId": "ws-nov7",
+      "name": "Test the build",
+      "level": 2,
+      "executorSeatId": "seat-qa-bot",
+      "inputs": [
+        "The current preview branch"
+      ],
+      "outputs": [
+        "Test the build"
+      ]
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "hand-spec-outer",
+      "fromStepId": "step-spec",
+      "toStepId": "step-outer"
+    },
+    {
+      "id": "hand-outer-inner",
+      "fromStepId": "step-outer",
+      "toStepId": "step-inner"
+    },
+    {
+      "id": "hand-inner-qa",
+      "fromStepId": "step-inner",
+      "toStepId": "step-qa"
+    },
+    {
+      "id": "hand-qa-outer",
+      "fromStepId": "step-qa",
+      "toStepId": "step-outer",
+      "condition": "report back"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "cp-miguel-merge",
+      "stepId": "step-outer",
+      "rule": "Miguel approves merges to main and production deploys.",
+      "approverSeatId": "seat-miguel",
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate bot catalog
+        run: npm run validate:bots
+      - name: Auth and team tests
+        run: npm test
+      - name: Build web and API
+        run: npm run build

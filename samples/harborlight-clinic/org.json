@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Harborlight Clinic",
+    "tagline": "Primary care for the harbor neighborhoods.",
+    "industry": "Medical clinic",
+    "mark": "HC",
+    "markColor": "#0e7490"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "practice-manager",
+      "name": "Practice Manager"
+    },
+    {
+      "id": "nursing-lead",
+      "name": "Nursing Lead"
+    },
+    {
+      "id": "referral-coordinator-lead",
+      "name": "Referral Coordinator Lead"
+    },
+    {
+      "id": "front-desk-supervisor",
+      "name": "Front Desk Supervisor"
+    },
+    {
+      "id": "nurse",
+      "name": "Nurse"
+    },
+    {
+      "id": "billing-supervisor",
+      "name": "Billing Supervisor"
+    },
+    {
+      "id": "referral-clerk",
+      "name": "Referral Clerk"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "referral-intake",
+      "name": "Referral intake"
+    },
+    {
+      "id": "record-matching",
+      "name": "Record matching"
+    },
+    {
+      "id": "schedule-draft",
+      "name": "Schedule draft"
+    },
+    {
+      "id": "patient-message-draft",
+      "name": "Patient message draft"
+    },
+    {
+      "id": "old-reminder-drafts",
+      "name": "Old reminder drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-harborlight-clinic-owner",
+      "name": "Dr. Anne Lind",
+      "title": "Medical Director",
+      "department": "leadership",
+      "email": "dr.anne.lind@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Dr. Anne Lind is medical director at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-joan",
+      "name": "Joan Keller",
+      "title": "Practice Manager",
+      "department": "practice-manager",
+      "email": "joan.keller@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Joan Keller is practice manager at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-robert",
+      "name": "Robert Hale",
+      "title": "Nursing Lead",
+      "department": "nursing-lead",
+      "email": "robert.hale@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Robert Hale is nursing lead at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-sofia",
+      "name": "Sofia Marin",
+      "title": "Referral Coordinator Lead",
+      "department": "referral-coordinator-lead",
+      "email": "sofia.marin@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Sofia Marin is referral coordinator lead at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-amy",
+      "name": "Amy Cho",
+      "title": "Front Desk Supervisor",
+      "department": "front-desk-supervisor",
+      "email": "amy.cho@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Amy Cho is front desk supervisor at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-pete",
+      "name": "Pete Nowak",
+      "title": "Nurse",
+      "department": "nurse",
+      "email": "pete.nowak@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Pete Nowak is nurse at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-lina",
+      "name": "Lina Abbas",
+      "title": "Billing Supervisor",
+      "department": "billing-supervisor",
+      "email": "lina.abbas@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Lina Abbas is billing supervisor at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-ned",
+      "name": "Ned Brooks",
+      "title": "Referral Clerk",
+      "department": "referral-clerk",
+      "email": "ned.brooks@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Ned Brooks is referral clerk at Harborlight Clinic, working with Maine Coast Referrals.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-referral-inbox",
+      "name": "Referral Inbox",
+      "title": "Receives referrals",
+      "department": "operations",
+      "email": "harborlight-clinic-referral-inbox@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Handles inbound files for Harborlight Clinic before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-harborlight-clinic-referral-bot",
+      "name": "Referral Bot",
+      "title": "Takes in referrals",
+      "department": "referral-intake",
+      "email": "harborlight-clinic-referral-bot@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Takes in referrals.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-harborlight-clinic-record-bot",
+      "name": "Record Bot",
+      "title": "Matches patient records",
+      "department": "record-matching",
+      "email": "harborlight-clinic-record-bot@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Matches patient records.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-harborlight-clinic-schedule-bot",
+      "name": "Schedule Bot",
+      "title": "Drafts the visit schedule",
+      "department": "schedule-draft",
+      "email": "harborlight-clinic-schedule-bot@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Drafts the visit schedule.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-harborlight-clinic-message-bot",
+      "name": "Message Bot",
+      "title": "Drafts patient messages",
+      "department": "patient-message-draft",
+      "email": "harborlight-clinic-message-bot@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Drafts patient messages.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-harborlight-clinic-old-reminder-bot",
+      "name": "Old Reminder Bot",
+      "title": "Holds old reminder drafts",
+      "department": "old-reminder-drafts",
+      "email": "harborlight-clinic-old-reminder-bot@harborlightclinic.com",
+      "phone": "(207) 555-0133",
+      "location": "Portland",
+      "bio": "Holds old reminder drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "harborlight-clinic-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "harborlight-clinic-joan",
+      "reportsTo": "harborlight-clinic-owner"
+    },
+    {
+      "slug": "harborlight-clinic-robert",
+      "reportsTo": "harborlight-clinic-owner"
+    },
+    {
+      "slug": "harborlight-clinic-sofia",
+      "reportsTo": "harborlight-clinic-owner"
+    },
+    {
+      "slug": "harborlight-clinic-amy",
+      "reportsTo": "harborlight-clinic-joan"
+    },
+    {
+      "slug": "harborlight-clinic-pete",
+      "reportsTo": "harborlight-clinic-robert"
+    },
+    {
+      "slug": "harborlight-clinic-lina",
+      "reportsTo": "harborlight-clinic-joan"
+    },
+    {
+      "slug": "harborlight-clinic-ned",
+      "reportsTo": "harborlight-clinic-sofia"
+    },
+    {
+      "slug": "harborlight-clinic-referral-inbox",
+      "reportsTo": "harborlight-clinic-sofia"
+    },
+    {
+      "slug": "harborlight-clinic-referral-bot",
+      "reportsTo": "harborlight-clinic-sofia"
+    },
+    {
+      "slug": "harborlight-clinic-record-bot",
+      "reportsTo": "harborlight-clinic-sofia"
+    },
+    {
+      "slug": "harborlight-clinic-schedule-bot",
+      "reportsTo": "harborlight-clinic-sofia"
+    },
+    {
+      "slug": "harborlight-clinic-message-bot",
+      "reportsTo": "harborlight-clinic-sofia"
+    },
+    {
+      "slug": "harborlight-clinic-old-reminder-bot",
+      "reportsTo": "harborlight-clinic-sofia"
+    }
+  ]
+}

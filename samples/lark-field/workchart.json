@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "lark-field-trigger",
+      "source": "customer",
+      "label": "Campaign brief arrives",
+      "example": "Hale Grocery sends a brief for the spring circular and the assets they already have."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "lark-field-main",
+      "triggerId": "lark-field-trigger",
+      "outcome": "The campaign is approved, scheduled, and ready for the client to publish.",
+      "ownerSeatId": "lark-field-ruth",
+      "kind": "main",
+      "stepIds": [
+        "lark-field-step-intake",
+        "lark-field-step-match",
+        "lark-field-step-draft",
+        "lark-field-step-approve",
+        "lark-field-step-schedule"
+      ]
+    },
+    {
+      "id": "lark-field-exception",
+      "triggerId": "lark-field-trigger",
+      "outcome": "The off-brand item is rewritten or pulled.",
+      "ownerSeatId": "lark-field-ruth",
+      "kind": "contingency",
+      "stepIds": [
+        "lark-field-step-query",
+        "lark-field-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "lark-field-step-intake",
+      "workstreamId": "lark-field-main",
+      "name": "File the brief and assets",
+      "level": 4,
+      "executorSeatId": "lark-field-brief-inbox",
+      "inputs": [
+        "Hale Grocery source document"
+      ],
+      "outputs": [
+        "File the brief and assets for Hale Grocery"
+      ]
+    },
+    {
+      "id": "lark-field-step-match",
+      "workstreamId": "lark-field-main",
+      "name": "Match assets to the brief",
+      "level": 4,
+      "executorSeatId": "lark-field-asset-bot",
+      "inputs": [
+        "Hale Grocery source document"
+      ],
+      "outputs": [
+        "Match assets to the brief for Hale Grocery"
+      ]
+    },
+    {
+      "id": "lark-field-step-draft",
+      "workstreamId": "lark-field-main",
+      "name": "Draft the first version",
+      "level": 2,
+      "executorSeatId": "lark-field-copy-bot",
+      "inputs": [
+        "Hale Grocery source document"
+      ],
+      "outputs": [
+        "Draft the first version for Hale Grocery"
+      ]
+    },
+    {
+      "id": "lark-field-step-approve",
+      "workstreamId": "lark-field-main",
+      "name": "Approve the client version",
+      "level": 3,
+      "executorSeatId": "lark-field-ruth",
+      "inputs": [
+        "Hale Grocery source document"
+      ],
+      "outputs": [
+        "Approve the client version for Hale Grocery"
+      ],
+      "checkpointId": "lark-field-cp-approve"
+    },
+    {
+      "id": "lark-field-step-schedule",
+      "workstreamId": "lark-field-main",
+      "name": "Schedule production",
+      "level": 4,
+      "executorSeatId": "lark-field-schedule-bot",
+      "inputs": [
+        "Hale Grocery source document"
+      ],
+      "outputs": [
+        "Schedule production for Hale Grocery"
+      ]
+    },
+    {
+      "id": "lark-field-step-query",
+      "workstreamId": "lark-field-exception",
+      "name": "Draft the revision note",
+      "level": 4,
+      "executorSeatId": "lark-field-copy-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the revision note"
+      ]
+    },
+    {
+      "id": "lark-field-step-msg",
+      "workstreamId": "lark-field-exception",
+      "name": "Approve the note to the client",
+      "level": 3,
+      "executorSeatId": "lark-field-ruth",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the note to the client"
+      ],
+      "checkpointId": "lark-field-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "lark-field-hand-1",
+      "fromStepId": "lark-field-step-intake",
+      "toStepId": "lark-field-step-match"
+    },
+    {
+      "id": "lark-field-hand-2",
+      "fromStepId": "lark-field-step-match",
+      "toStepId": "lark-field-step-draft"
+    },
+    {
+      "id": "lark-field-hand-3",
+      "fromStepId": "lark-field-step-draft",
+      "toStepId": "lark-field-step-approve"
+    },
+    {
+      "id": "lark-field-hand-4",
+      "fromStepId": "lark-field-step-approve",
+      "toStepId": "lark-field-step-schedule"
+    },
+    {
+      "id": "lark-field-hand-exception",
+      "fromStepId": "lark-field-step-match",
+      "toStepId": "lark-field-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "lark-field-hand-extra",
+      "fromStepId": "lark-field-step-query",
+      "toStepId": "lark-field-step-msg"
+    },
+    {
+      "id": "lark-field-hand-rejoin",
+      "fromStepId": "lark-field-step-msg",
+      "toStepId": "lark-field-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "lark-field-cp-approve",
+      "stepId": "lark-field-step-approve",
+      "rule": "Anything a client will see, or a spend change over $2,500.",
+      "approverSeatId": "lark-field-ruth",
+      "required": true
+    },
+    {
+      "id": "lark-field-cp-msg",
+      "stepId": "lark-field-step-msg",
+      "rule": "Any note that leaves the agency.",
+      "approverSeatId": "lark-field-ruth",
+      "required": true
+    }
+  ]
+}
