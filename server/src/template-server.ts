@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { readText } from './text-file.ts'
 import { normalizeText } from './normalize-text.ts'
 import { dirname, resolve, sep } from 'node:path'
@@ -1324,7 +1324,18 @@ export function deleteOrg(orgsDir: string, slug: string, confirm: string): { ok:
   if (!others.length) return { ok: false, status: 409, error: 'This is your only organization. Create another one first.' }
   const bin = resolve(orgsDir, DELETED_DIR)
   mkdirSync(bin, { recursive: true })
-  renameSync(root, resolve(bin, `${slug}-${new Date().toISOString().replace(/[:.]/g, '-')}`))
+  const target = resolve(bin, `${slug}-${new Date().toISOString().replace(/[:.]/g, '-')}`)
+  try {
+    renameSync(root, target)
+  } catch {
+    // Windows refuses to move a folder another program watches (the dev server does). Copy first, so nothing is lost, then remove.
+    try {
+      cpSync(root, target, { recursive: true })
+      rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+    } catch {
+      if (existsSync(resolve(root, 'org.md'))) return { ok: false, status: 409, error: `A copy is in orgs/${DELETED_DIR}/, but the folder is in use. Close any program that has it open, then try again.` }
+    }
+  }
   return { ok: true, next: others[0]! }
 }
 
