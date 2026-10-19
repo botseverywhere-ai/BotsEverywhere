@@ -93,6 +93,7 @@ export function Workspace({
   const [highlightId, setHighlightId] = useState('')
   const [hire, setHire] = useState<{ entry: DirectoryEntry | null; stepId: string } | null>(null)
   const [retireSlug, setRetireSlug] = useState('')
+  const [retiring, setRetiring] = useState(false)
   const [reason, setReason] = useState('')
   const [adding, setAdding] = useState(false)
   const [existingBot, setExistingBot] = useState(false)
@@ -678,7 +679,8 @@ export function Workspace({
 
   async function retire() {
     const seat = seats.find((item) => item.slug === retireSlug)
-    if (!seat || (seat.kind === 'human' && !otherPerson(seats, seat.slug))) return
+    if (!seat || retiring || (seat.kind === 'human' && !otherPerson(seats, seat.slug))) return
+    setRetiring(true)
     const retiredAt = new Date().toISOString()
     // Direct reports move up to the retired seat's manager, so none are left under an empty seat.
     const nextSeats = seats.map((item) => {
@@ -696,7 +698,7 @@ export function Workspace({
       id: `fire-${seat.slug}-${Date.now()}`,
       orgId: bundle.id,
       type: 'fire',
-      actorSeatId: seats.find((item) => item.kind === 'human')?.slug || seat.slug,
+      actorSeatId: seats.find((item) => item.kind === 'human' && item.status !== 'retired' && item.slug !== seat.slug)?.slug || seat.slug,
       actorType: 'human',
       timestamp: retiredAt,
       summary: reason.trim() ? `Retired ${seat.title} · ${reason.trim()}` : `Retired ${seat.title}`,
@@ -704,6 +706,7 @@ export function Workspace({
     }
     const next = bundleFromState(bundle.id, org, nextSeats, work, activity)
     const saved = await save(next, [event])
+    setRetiring(false)
     if (!saved.ok) return
     setSeats(nextSeats)
     setRetireSlug('')
@@ -1004,7 +1007,7 @@ export function Workspace({
             <input value={reason} onChange={(event) => setReason(event.target.value)} />
           </label>
           <Button variant="secondary" type="button" onClick={() => setRetireSlug('')}>Cancel</Button>
-          <Button variant="secondary" type="button" onClick={() => void retire()}>Retire</Button>
+          <Button variant="secondary" type="button" disabled={retiring} onClick={() => void retire()}>{retiring ? 'Retiring…' : 'Retire'}</Button>
         </div>
       ) : null}
     </div>

@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { bundleFromState, cardUnchanged, parseSeatMarkdown, serializeSeat, validateBundle } from '../src/org-files.ts'
+import { bundleFromState, cardUnchanged, parseSeatMarkdown, serializeExistingSeat, serializeSeat, validateBundle } from '../src/org-files.ts'
 import { createHiredSeat, createOrgFiles, readOrgDir } from '../src/template-server.ts'
 
 test('a person can be retired while another person stays in the org', () => {
@@ -40,4 +40,19 @@ test('a save checks only the cards that are new or changed', () => {
   assert.equal(cardUnchanged({ ...card, may: ['Read'] }, card), false, 'an edited card is checked')
   assert.equal(cardUnchanged(card, undefined), false, 'a new seat is checked')
   assert.equal(cardUnchanged(card, { ...card, status: 'retired' }), false, 'a seat brought back is checked')
+})
+
+test('a retired imported bot stays retired in its file', () => {
+  const source = serializeExistingSeat({ name: 'Inbox Bot', grokBotUrl: 'grokbot://app/v1/agent?id=inbox', reportsTo: 'you', owns: [], may: [], mustAskBefore: [], doneWhen: [] })
+  const read = parseSeatMarkdown('inbox-bot', source)
+  assert.equal(read.ok, true)
+  if (!read.ok) return
+  assert.equal(read.seat.status, 'active')
+  assert.doesNotMatch(source, /^status:/m, 'an active imported bot keeps the short file')
+  const retired = parseSeatMarkdown('inbox-bot', serializeSeat({ ...read.seat, status: 'retired', retiredAt: '2026-10-19T18:11:46.235Z' }))
+  assert.equal(retired.ok, true)
+  if (!retired.ok) return
+  assert.equal(retired.seat.status, 'retired')
+  assert.equal(retired.seat.retiredAt, '2026-10-19T18:11:46.235Z')
+  assert.equal(retired.seat.seatOrigin, 'existing')
 })

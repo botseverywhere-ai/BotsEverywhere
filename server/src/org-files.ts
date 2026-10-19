@@ -297,6 +297,8 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
       grokSync: seat.grokSync,
       grokSyncedAt: seat.grokSyncedAt,
       grokMissingSince: seat.grokMissingSince,
+      status: seat.status,
+      retiredAt: seat.retiredAt,
     })
   }
   const lines = [
@@ -353,6 +355,9 @@ export function serializeExistingSeat(seat: {
   grokSync?: GrokSyncState
   grokSyncedAt?: string
   grokMissingSince?: string
+  /** Written only when retired. An imported bot with no status line is active. */
+  status?: 'active' | 'retired'
+  retiredAt?: string
 }): string {
   const lines = [
     '---',
@@ -362,6 +367,7 @@ export function serializeExistingSeat(seat: {
     `grokBotUrl: ${quote(seat.grokBotUrl ?? '')}`,
     `reportsTo: ${quote(seat.reportsTo)}`,
   ]
+  if (seat.status === 'retired') lines.push('status: retired', `retiredAt: ${quote(seat.retiredAt ?? '')}`)
   if (seat.addToGrokBotUrl) lines.push(`addToGrokBotUrl: ${quote(seat.addToGrokBotUrl)}`)
   const described = seat.description?.trim()
   if (described) lines.push(`description: ${quote(described)}`)
