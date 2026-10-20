@@ -562,7 +562,8 @@ Plain notes for the people reading the file.`}</CodeBlock>
 
         <h2 id="performance-logs">Performance and Logs</h2>
         <p>
-          <strong>Performance</strong> lists each bot with when it was created, its usage and tasks done in the last 30 days, and when it was last active.
+          <strong>Performance</strong> lists each bot with when it was created, the times it was used and the automated tasks it finished in the last 30 days, and when it was last active.
+          Times used counts the chats it logged (process <code>chat</code>); automated tasks done counts the routine steps it logged as done. The Connector tells each bot to log every chat.
           The numbers come from the run log and from Grok Bot; the app never estimates them.
         </p>
         <p>

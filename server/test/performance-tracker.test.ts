@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
+import { shownBotMetrics } from '../src/bot-metrics.ts'
+import { connectorPrompt } from '../src/connector-prompt.ts'
+
+const local = (day: number, hours: number, minutes: number) => new Date(2026, 9, day, hours, minutes)
+const now = local(20, 20, 0).getTime()
+const line = (date: string, time: string, bot: string, process: string, status: string) => ({ date, time, bot, process, status })
+
+test('times used counts chats; automated tasks done counts finished routine steps', () => {
+  const shown = shownBotMetrics({
+    title: 'Invoice Bot',
+    slug: 'invoice-bot',
+    now,
+    log: [
+      line('2026-10-20', '09:00', 'Invoice Bot', 'chat', 'done'),
+      line('2026-10-20', '09:30', 'Invoice Bot', 'chat', 'failed'),
+      line('2026-10-20', '09:45', 'Invoice Bot', 'chat', 'running'),
+      line('2026-10-20', '10:00', 'Invoice Bot', 'Invoice arrives', 'running'),
+      line('2026-10-20', '10:01', 'Invoice Bot', 'Invoice arrives', 'done'),
+      line('2026-10-20', '10:02', 'Invoice Bot', 'Invoice arrives', 'skipped'),
+      line('2026-10-20', '10:03', 'Someone else', 'chat', 'done'),
+    ],
+  })
+  assert.equal(shown.usage, 2, 'two chats; a running line is not a second use')
+  assert.equal(shown.tasks, 1, 'one routine step finished; a chat is not an automated task')
+  assert.equal(shown.lastActive, local(20, 10, 2).toISOString(), 'the newest line of this bot')
+})
+
+test("Grok Bot's last active time no longer hides the log when Grok Bot reported no counts", () => {
+  const shown = shownBotMetrics({
+    title: 'Grok Bot',
+    slug: 'grok-bot',
+    lastActive: local(20, 18, 30).toISOString(),
+    now,
+    log: [line('2026-10-19', '18:50', 'Grok Bot', 'botseverywhere daily summary', 'done'), line('2026-10-20', '08:00', 'Grok Bot', 'chat', 'done')],
+  })
+  assert.equal(shown.tasks, 1, 'before the fix, a lastActive newer than every line made this 0')
+  assert.equal(shown.usage, 1)
+  assert.equal(shown.lastActive, local(20, 18, 30).toISOString())
+})
+
+test('counts Grok Bot reported are a baseline, and only newer lines add to them', () => {
+  const shown = shownBotMetrics({
+    title: 'Invoice Bot',
+    slug: 'invoice-bot',
+    lastActive: local(20, 12, 0).toISOString(),
+    runs30d: 14,
+    tasksDone30d: 9,
+    now,
+    log: [line('2026-10-20', '11:00', 'Invoice Bot', 'chat', 'done'), line('2026-10-20', '13:00', 'Invoice Bot', 'chat', 'done'), line('2026-10-20', '13:05', 'Invoice Bot', 'Invoice arrives', 'done')],
+  })
+  assert.equal(shown.usage, 15, '14 reported plus the chat after the report')
+  assert.equal(shown.tasks, 10)
+})
+
+test("the Connector's own lines, signed Connector, count for its seat", () => {
+  const shown = shownBotMetrics({
+    title: 'Connector - BotsEverywhere (uft5)',
+    slug: 'connector-botseverywhere-uft5',
+    now,
+    log: [line('2026-10-20', '18:17', 'Connector', 'botseverywhere-sync', 'done'), line('2026-10-20', '18:18', 'Connector - BotsEverywhere (uft5)', 'BotsEverywhere sync', 'done')],
+  })
+  assert.equal(shown.tasks, 2)
+})
+
+test('the Connector tells every bot to log each chat, and Performance names the two numbers', () => {
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
+  assert.match(prompt, /Every time someone uses you in a chat, append one line to that organization's log\/YYYY-MM-DD\.md/)
+  assert.match(prompt, /- HH:MM \| your name \| chat \| what you were asked, in a few words \| done\|failed\|waiting \| note or -/)
+  const page = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  const drawer = readFileSync(new URL('../../src/components/SeatDrawer.tsx', import.meta.url), 'utf8')
+  assert.match(page, /<th>Times used \(30d\)<\/th><th>Automated tasks done \(30d\)<\/th>/)
+  assert.match(drawer, /<dt>Times used \(30d\)<\/dt>/)
+  assert.match(drawer, /<dt>Automated tasks done \(30d\)<\/dt>/)
+})

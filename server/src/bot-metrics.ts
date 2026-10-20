@@ -1,3 +1,5 @@
+import { CONNECTOR_BOT_NAME, CONNECTOR_LOG_BOT } from './connector-prompt.ts'
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const WINDOW_MS = 30 * 24 * 60 * 60 * 1000
 
@@ -5,20 +7,28 @@ export interface MetricLogLine {
   date: string
   time: string
   bot: string
+  /** `chat` when someone used the bot in a chat; otherwise the routine it ran. */
+  process?: string
   status: string
 }
+
+/** The process name a bot writes for a chat, so chats and routine work are counted apart. */
+export const CHAT_PROCESS = 'chat'
 
 export interface ShownBotMetrics {
   createdAt: string
   /** ISO datetime. Empty when neither the import nor the live log has a time. */
   lastActive: string
-  /** null when Grok Bot did not report it and the log adds nothing. */
+  /** Times used: chats the bot logged. null when Grok Bot did not report it and the log adds nothing. */
   usage: number | null
+  /** Automated tasks done: routine steps the bot logged as done. */
   tasks: number | null
 }
 
 /**
- * Imported baseline plus live log lines after that snapshot.
+ * Times used and automated tasks done in the last 30 days, from the run log, plus any count Grok Bot reported.
+ * A chat line (process `chat`) is one use, unless it only says running. A done line of any other process is one
+ * automated task. When Grok Bot reported counts, only lines after its report add to them; otherwise every line counts.
  * A hire event is not a last-active time; this function never reads one.
  */
 export function shownBotMetrics(input: {
@@ -41,16 +51,19 @@ export function shownBotMetrics(input: {
   const newest = stamped.reduce((max, item) => Math.max(max, item.at), 0)
   const importedAt = Number.isNaN(watermark) ? 0 : watermark
   const last = Math.max(importedAt, newest)
+  const reported = input.runs30d !== undefined || input.tasksDone30d !== undefined
   const fresh = stamped.filter((item) => {
     if (item.at < windowStart || item.at > now) return false
-    if (!Number.isNaN(watermark)) return item.at > watermark
-    return input.runs30d === undefined && input.tasksDone30d === undefined
+    // A reported count already holds the lines up to its report. Without one, Grok Bot's last-active time says nothing about the log.
+    if (reported && !Number.isNaN(watermark)) return item.at > watermark
+    return true
   })
+  const chat = (item: { line: MetricLogLine }) => (item.line.process ?? '').trim().toLowerCase() === CHAT_PROCESS
   return {
     createdAt: input.createdAt || '',
     lastActive: last ? new Date(last).toISOString() : '',
-    usage: combine(input.runs30d, fresh.length),
-    tasks: combine(input.tasksDone30d, fresh.filter((item) => item.line.status === 'done').length),
+    usage: combine(input.runs30d, fresh.filter((item) => chat(item) && item.line.status !== 'running').length),
+    tasks: combine(input.tasksDone30d, fresh.filter((item) => !chat(item) && item.line.status === 'done').length),
   }
 }
 
@@ -61,7 +74,10 @@ function combine(baseline: number | undefined, extra: number): number | null {
 
 function matchesBot(bot: string, title: string, slug: string): boolean {
   const name = bot.trim().toLowerCase()
-  return name === title.trim().toLowerCase() || name === slug.trim().toLowerCase()
+  const seat = title.trim().toLowerCase()
+  if (name === seat || name === slug.trim().toLowerCase()) return true
+  // The Connector signs its own lines with the short name, whatever its seat is called.
+  return name === CONNECTOR_LOG_BOT.toLowerCase() && seat.startsWith(CONNECTOR_BOT_NAME.toLowerCase())
 }
 
 /** Run-log lines carry the wall-clock time of this computer, so they are read in local time. */

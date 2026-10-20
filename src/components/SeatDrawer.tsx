@@ -138,8 +138,8 @@ export function SeatDrawer({
         seat.type === 'bot' ? (
           <dl className="stat-list">
             <div><dt>Created</dt><dd>{formatShortDate(seat.shown?.createdAt || seat.createdAt || '')}</dd></div>
-            <div><dt>Usage (30d)</dt><dd>{formatCount(seat.shown ? seat.shown.usage : seat.runs30d ?? seat.stats?.usageCount30d)}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
-            <div><dt>Tasks done (30d)</dt><dd>{formatCount(seat.shown ? seat.shown.tasks : seat.importedTasks30d ?? seat.stats?.tasksDone30d)}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
+            <div><dt>Times used (30d)</dt><dd>{formatCount(seat.shown ? seat.shown.usage : seat.runs30d ?? seat.stats?.usageCount30d)}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
+            <div><dt>Automated tasks done (30d)</dt><dd>{formatCount(seat.shown ? seat.shown.tasks : seat.importedTasks30d ?? seat.stats?.tasksDone30d)}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
             <div><dt>Last active</dt><dd>{formatShortDate(seat.shown?.lastActive || seat.importedLastActive || (seat.shown || seat.importedLastActive ? '' : seat.stats?.lastActiveAt || ''))}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
             <div><dt>Status</dt><dd>{seat.status === 'retired' ? 'Retired' : 'Active'}</dd></div>
             <div><dt>Grok Bot</dt><dd>{grokSyncLine(seat)}</dd></div>

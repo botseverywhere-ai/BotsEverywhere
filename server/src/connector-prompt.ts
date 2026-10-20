@@ -72,6 +72,9 @@ On each run, for every organization:
 6. Tell each bot that at the start of every run it must read its process file and its seat file.
 7. After each step, that bot appends one line to <org>/log/YYYY-MM-DD.md. If the file is missing, start it with the header "# Run log YYYY-MM-DD". Use this line and nothing else:
 - HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -
+   Every time someone uses you in a chat, append one line to that organization's log/YYYY-MM-DD.md (the organization the work was for, or the first one you belong to), with chat as the process:
+   - HH:MM | your name | chat | what you were asked, in a few words | done|failed|waiting | note or -
+   BotsEverywhere counts these lines as the times each bot was used, and routine lines with done as its automated tasks.
 8. Before any checkpoint, write status waiting and ask the owner before continuing.
 9. Append your own sync lines to that organization's log. The bot field on those lines is ${CONNECTOR_LOG_BOT}.
 10. When a process file changes, update that bot's routine.

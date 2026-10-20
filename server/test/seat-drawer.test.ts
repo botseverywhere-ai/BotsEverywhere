@@ -16,7 +16,7 @@ test('seat drawer tabs switch the panel content', () => {
   const drawer = readFileSync(path.join(root, 'src/components/SeatDrawer.tsx'), 'utf8')
   assert.match(drawer, /onClick=\{\(\) => onTab\(item\)\}/)
   assert.match(drawer, /tab === 'performance'/)
-  assert.match(drawer, /Usage \(30d\)/)
+  assert.match(drawer, /Times used \(30d\)/)
   assert.match(drawer, /tab === 'profile' && seat\.type === 'bot'/)
   assert.match(drawer, /profile\.prompt/)
   assert.match(drawer, /aria-label="Close"/)

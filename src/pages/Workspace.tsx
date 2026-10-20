@@ -1035,7 +1035,7 @@ function PerformanceTable({
     <>
       <table className="be-performance">
         <thead>
-          <tr><th>Bot</th><th>Created</th><th>Usage (30d)</th><th>Tasks done (30d)</th><th>Last active</th><th>Action</th></tr>
+          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Action</th></tr>
         </thead>
         <tbody>
           {rows.map((seat) => (
@@ -1050,7 +1050,10 @@ function PerformanceTable({
           ))}
         </tbody>
       </table>
-      <p className="be-performance-note">Numbers come from Grok Bot's export and the live log. — means Grok Bot didn't report it.</p>
+      <p className="be-performance-note">
+        Times used counts the chats a bot logged. Automated tasks done counts the routine steps it logged as done. Both come from the run log, with any count Grok Bot reported.
+        — means nothing is logged yet: the Connector prompt on Connect bots tells each bot to log its chats.
+      </p>
     </>
   )
 }

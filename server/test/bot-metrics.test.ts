@@ -29,8 +29,8 @@ test('last active uses the import or a newer log line, and counts add after that
   })
   assert.equal(shown.createdAt, '2026-03-02')
   assert.equal(shown.lastActive, local(19, 41).toISOString())
-  assert.equal(shown.usage, 16)
-  assert.equal(shown.tasks, 10)
+  assert.equal(shown.usage, 14, 'routine lines are automated tasks, not uses: the reported 14 stays')
+  assert.equal(shown.tasks, 10, 'the reported 9 plus the done line after the report')
   assert.equal(formatShortDate(shown.createdAt), '2 Mar 2026')
   assert.equal(formatShortDate('2026-10-17T19:41:00.000Z'), '17 Oct 2026, 19:41')
   assert.equal(formatShortDate(''), '—')
@@ -47,7 +47,7 @@ test('last active uses the import or a newer log line, and counts add after that
 
   const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
   assert.match(page, /<th>Created<\/th>/)
-  assert.match(page, /Numbers come from Grok Bot's export and the live log\. — means Grok Bot didn't report it\./)
+  assert.match(page, /Times used counts the chats a bot logged\. Automated tasks done counts the routine steps it logged as done\./)
   assert.equal(page.includes('toLocaleString'), false)
   const drawer = readFileSync(fileURLToPath(new URL('../../src/components/SeatDrawer.tsx', import.meta.url)), 'utf8')
   assert.match(drawer, /1 routine/)
@@ -64,7 +64,7 @@ test('a run-log line stamped this evening in local time counts today', () => {
       { date: '2026-10-17', time: '22:20', bot: 'aurafarming.world orchestrator', status: 'done' },
     ],
   })
-  assert.equal(shown.usage, 2)
+  assert.equal(shown.usage, null, 'no chat logged')
   assert.equal(shown.tasks, 1)
   assert.equal(shown.lastActive, local(22, 20).toISOString())
 })
