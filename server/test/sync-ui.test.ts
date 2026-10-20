@@ -112,8 +112,8 @@ test('the Sync button, drawer, tags, and Reports to select are wired in template
   assert.match(chart, /grokSyncClass\(seat\)/, 'bot cards carry the in or off Grok Bot class')
   assert.match(chart, /org-sync-tag/)
   assert.match(chart, /grokStates\b/, 'the green and dashed states are opt-in, so templates and samples stay plain')
-  assert.match(chart, /<i className="swatch swatch-grok" \/> In Grok Bot/)
-  assert.match(chart, /<i className="swatch swatch-off-grok" \/> Not in Grok Bot/)
+  assert.match(chart, /legendItem\('in-grok', 'swatch-grok', 'In Grok Bot', counts\.inGrok\)/)
+  assert.match(chart, /legendItem\('off-grok', 'swatch-off-grok', 'Not in Grok Bot', counts\.offGrok\)/)
   assert.match(workspace, /grokStates=\{editable\}/)
   const seatDrawer = read('../../src/components/SeatDrawer.tsx')
   assert.match(seatDrawer, /grokSyncLine\(seat\)/)
@@ -146,8 +146,9 @@ test('the org chart legend counts each category', async () => {
   ]
   assert.deepEqual(legendCounts(seats, ['open']), { human: 1, bot: 4, system: 1, inGrok: 2, offGrok: 1 }, 'an open seat is not counted; a bot nothing is known about is in neither Grok Bot count')
   const chart = readFileSync(new URL('../../src/components/OrgChart.tsx', import.meta.url), 'utf8')
-  for (const [swatch, label, key] of [['human', 'Human', 'human'], ['bot', 'Bot', 'bot'], ['system', 'System', 'system'], ['grok', 'In Grok Bot', 'inGrok'], ['off-grok', 'Not in Grok Bot', 'offGrok']]) {
-    assert.match(chart, new RegExp(`<i className="swatch swatch-${swatch}" /> ${label} <span className="legend-count">\{counts\.${key}\}</span>`), label)
+  assert.match(chart, /<i className=\{`swatch \$\{swatch\}`\} \/> \{label\} <span className="legend-count">\{count\}<\/span>/, 'swatch, label, and count')
+  for (const [group, swatch, label, key] of [['human', 'human', 'Human', 'human'], ['bot', 'bot', 'Bot', 'bot'], ['system', 'system', 'System', 'system'], ['in-grok', 'grok', 'In Grok Bot', 'inGrok'], ['off-grok', 'off-grok', 'Not in Grok Bot', 'offGrok']]) {
+    assert.match(chart, new RegExp(`legendItem\\('${group}', 'swatch-${swatch}', '${label}', counts\\.${key}\\)`), label)
   }
 })
 

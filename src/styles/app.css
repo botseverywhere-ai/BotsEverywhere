@@ -1756,7 +1756,7 @@ a.site-nav-cta:focus {
 .org-legend .legend-button { height: auto; padding: 0; gap: 6px; border: 0; background: none; font: inherit; color: inherit; }
 .org-legend .legend-button:hover:not(:disabled) { background: none; text-decoration: underline; }
 .org-legend .legend-button:disabled { background: none; color: inherit; cursor: default; }
-.be-drawer button.legend-row { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; height: auto; padding: 0; border: 0; background: none; color: var(--color-ink); font: inherit; font-size: var(--text-sm); text-align: left; white-space: normal; cursor: pointer; }
+.be-drawer button.legend-row, .be-drawer button.legend-row:hover, .be-drawer button.legend-row:focus { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px; width: 100%; height: auto; padding: 0; border: 0; background: none; color: var(--color-ink); font: inherit; font-size: var(--text-sm); font-weight: inherit; line-height: 1.4; text-align: left; white-space: normal; cursor: pointer; }
 .be-drawer button.legend-row:hover strong { text-decoration: underline; }
 .be-drawer button.legend-row:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); }
 .retired-list { margin: var(--space-3) 0 0; padding: 0; list-style: none; }

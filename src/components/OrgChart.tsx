@@ -401,14 +401,14 @@ export function OrgChart({
               <ul className="retired-list">
                 {listedSeats.map((seat) => (
                   <li key={seat.id}>
-                    <button type="button" className="legend-row" onClick={() => { setListed(null); focusOn(seat) }}>
+                    <Button variant="ghost" type="button" className="legend-row" onClick={() => { setListed(null); focusOn(seat) }}>
                       <strong>{seat.name}</strong>
                       <span className="retired-meta">
                         {seat.role && seat.role !== seat.name ? `${seat.role} · ` : ''}
                         {seat.reportsTo ? `reports to ${seats.find((item) => item.id === seat.reportsTo)?.name ?? seat.reportsTo}` : 'top of the chart'}
                       </span>
                       {grokStates && seat.type === 'bot' ? <span className="retired-meta">{grokSyncTag(seat)}</span> : null}
-                    </button>
+                    </Button>
                   </li>
                 ))}
               </ul>
