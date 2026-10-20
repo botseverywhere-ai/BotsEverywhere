@@ -22,3 +22,8 @@ test('Find seat: the seat panel opening re-fits the chart, and the chart scrolls
   assert.match(chart, /const clamped = clamp\(next, ZOOM_MIN, ZOOM_MAX\)\n {4}focusRef\.current = ''/, 'zooming by hand lets go of it')
   assert.match(chart, /focusRef\.current = ''\n {4}panRef\.current = /, 'and so does dragging')
 })
+
+test('Find seat: after a jump the box is empty again, so the list offers every seat for the next pick', () => {
+  const chart = readFileSync(new URL('../../src/components/OrgChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /setFoundId\(match\.id\)\n {4}\/\/ [^\n]*\n {4}setQuery\(''\)/)
+})

@@ -243,7 +243,8 @@ export function OrgChart({
       return next
     })
     setFoundId(match.id)
-    setQuery(match.name)
+    // The browser's list only offers names matching the box, so an emptied box offers every seat for the next pick.
+    setQuery('')
     focusRef.current = match.id
     onSelect(match.id)
     window.setTimeout(scrollToFocus, 40)
