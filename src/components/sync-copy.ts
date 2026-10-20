@@ -199,6 +199,25 @@ export function connectorState(status: Pick<SyncStatus, 'snapshot' | 'error' | '
   return { state: 'connected', line: `Connected · last run ${ago(ran, now)}` }
 }
 
+/** When the Connector last ran, from the same file connectorState reads. Undefined when nothing says. */
+export function connectorRanAt(status: Pick<SyncStatus, 'snapshot' | 'project'> | null): number | undefined {
+  const project = status?.project?.connector
+  const source = project ? { stamp: project.stamp, syncedAt: project.syncedAt } : status?.snapshot
+  if (!source) return undefined
+  const ran = lastRunAt(source)
+  return Number.isNaN(ran) ? undefined : ran
+}
+
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** The Connector's last run under the header badge, in local time: 15:01 today, else 19 Oct, 18:25. */
+export function lastRunShort(ran: number, now = Date.now()): string {
+  const date = new Date(ran)
+  if (Number.isNaN(date.getTime())) return ''
+  const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  return date.toDateString() === new Date(now).toDateString() ? time : `${date.getDate()} ${SHORT_MONTHS[date.getMonth()]}, ${time}`
+}
+
 /** The one word in the header badge, above "Grok Bot". Empty while loading. */
 export function headerBadgeLabel(state: ConnectorState): string {
   if (state === 'connected') return 'Connected'

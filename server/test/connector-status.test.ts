@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { connectorChangeNotice, connectorState, CONNECTOR_STALE_MINUTES, headerBadgeLabel } from '../../src/components/sync-copy.ts'
+import { connectorChangeNotice, connectorState, CONNECTOR_STALE_MINUTES, headerBadgeLabel, connectorRanAt, lastRunShort } from '../../src/components/sync-copy.ts'
 
 const NOW = Date.parse('2026-10-18T12:00:00.000Z')
 const at = (minutesAgo: number) => `${NOW - minutesAgo * 60_000}:812`
@@ -75,4 +75,15 @@ test('the connection bar sits above the organization row on every tab and never 
   assert.match(bar, /connectorState\(status, now\)/)
   assert.match(bar, /status\?\.project\?\.orgsFolder \|\| status\?\.folder \|\| orgFolder\(slug\)/, 'the project folder from the writer, else the org folder')
   assert.equal(/\bcompany\b/i.test(bar), false)
+})
+
+test('the header shows the time of the last run under Connected, with the day when it was not today', () => {
+  const ran = new Date(2026, 9, 20, 15, 1).getTime()
+  assert.equal(lastRunShort(ran, new Date(2026, 9, 20, 15, 9).getTime()), '15:01')
+  assert.equal(lastRunShort(ran, new Date(2026, 9, 21, 9, 0).getTime()), '20 Oct, 15:01')
+  assert.equal(lastRunShort(NaN), '')
+  assert.equal(connectorRanAt(status({ stamp: at(4), syncedAt: '' })), NOW - 4 * 60_000)
+  assert.equal(connectorRanAt(null), undefined)
+  const badge = readFileSync(fileURLToPath(new URL('../../src/components/GrokStatusBadge.tsx', import.meta.url)), 'utf8')
+  assert.match(badge, /Grok Bot · \$\{ran\}/)
 })

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { SyncStatus } from '../../server/src/grok-sync.ts'
 import { canEditFiles } from '../mode'
-import { connectorState, headerBadgeLabel } from './sync-copy'
+import { connectorRanAt, connectorState, headerBadgeLabel, lastRunShort } from './sync-copy'
 
 const SAVING_OFF = 'The file writer is not running.'
 
@@ -46,13 +46,15 @@ export function GrokStatusBadge() {
   if (!canEditFiles || !status) return null
   const { state, line } = connectorState(status, now)
   const label = headerBadgeLabel(state)
+  const ranAt = state === 'connected' || state === 'stale' ? connectorRanAt(status) : undefined
+  const ran = ranAt === undefined ? '' : lastRunShort(ranAt, now)
   if (!label) return null
   return (
     <a className={`grok-status is-${state}`} href={slug ? `#/org/${slug}/connect-bots` : '#/orgs'} title={line} aria-label={`Grok Bot: ${line}`}>
       <i aria-hidden="true" />
       <span className="grok-status-text">
         <strong>{label}</strong>
-        <small>Grok Bot</small>
+        <small>{ran ? `Grok Bot · ${ran}` : 'Grok Bot'}</small>
       </span>
     </a>
   )
