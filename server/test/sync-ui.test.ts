@@ -163,3 +163,10 @@ test('Organization Overview shows counts from the org chart, not typed numbers',
   for (const label of ['People', 'Bots', 'In Grok Bot', 'Not in Grok Bot', 'System', 'Retired']) assert.ok(overview.includes(`countBox('${label}', `), label)
   assert.match(overview, /JSON\.stringify\(\{ \.\.\.profile, people: counts\.human, bots: counts\.bot \}\)/, 'a save writes the chart counts')
 })
+
+test('Sync drawer layout: the buttons are centered in their footer, and the one-off panel is spaced from the list above', () => {
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.sync-drawer \.be-hire-foot \{ padding-top: var\(--space-4\); padding-bottom: var\(--space-4\); \}/, 'same space above and below the buttons')
+  assert.match(css, /\.sync-drawer \.be-hire-foot \.dir-actions \{ margin-top: 0; justify-content: center; \}/)
+  assert.match(css, /\.sync-drawer \.link-panel \{ margin-top: var\(--space-5\); \}/)
+})
