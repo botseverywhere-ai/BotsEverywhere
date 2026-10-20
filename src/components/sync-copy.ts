@@ -84,6 +84,24 @@ export function retiredKindLabel(kind: SeatDocument['kind']): string {
   return kind === 'system' ? 'System' : 'Bot'
 }
 
+/**
+ * Retired seats as the Retired list shows them: seats of one bot (the same Grok Bot link) are one row, newest
+ * retirement first. Retiring a re-imported bot again leaves two seats on one bot; it is still one bot.
+ */
+export function retiredGroups<T extends Pick<SeatDocument, 'slug' | 'kind' | 'status' | 'grokBotUrl' | 'retiredAt'>>(seats: T[]): T[][] {
+  const groups = new Map<string, T[]>()
+  for (const seat of seats) {
+    if (seat.status !== 'retired') continue
+    const link = seat.kind === 'bot' ? seat.grokBotUrl?.trim() : ''
+    const key = link ? `link:${link}` : `seat:${seat.slug}`
+    groups.set(key, [...(groups.get(key) ?? []), seat])
+  }
+  const newest = (group: T[]) => group.map((seat) => seat.retiredAt || '').sort().at(-1) ?? ''
+  return [...groups.values()]
+    .map((group) => [...group].sort((a, b) => (b.retiredAt || '').localeCompare(a.retiredAt || '')))
+    .sort((a, b) => newest(b).localeCompare(newest(a)))
+}
+
 /** A retired bot's line in the Retired list: deleted, or still in Grok Bot. */
 export function retiredGrokLine(seat: Pick<SeatDocument, 'grokBotUrl' | 'grokDeletedAt'>): string {
   if (seat.grokDeletedAt) return `Deleted from Grok Bot on ${formatShortDate(seat.grokDeletedAt)}`
@@ -362,4 +380,10 @@ export function grokSyncLine(seat: SyncSeat): string {
   if (seat.grokSync === 'new') return `new since ${formatShortDate(seat.grokSyncedAt ?? '')}`
   if (seat.grokSync === 'missing') return `not found since ${formatShortDate(seat.grokMissingSince ?? '')}`
   return 'not synced yet'
+}
+
+/** "Founder · reports to You", or "top of the chart". */
+export function seatListMeta(role: string, name: string, manager: string): string {
+  const shownRole = role && role !== name ? `${role} · ` : ''
+  return `${shownRole}${manager ? `reports to ${manager}` : 'top of the chart'}`
 }

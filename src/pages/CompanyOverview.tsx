@@ -8,7 +8,9 @@ import { LinkCompany } from '../components/LinkCompany'
 import { OrgFiles } from '../components/OrgFiles'
 import { SaveAlert } from '../components/SaveAlert'
 import { saveNotice, type SaveNotice } from '../components/save-notice'
-import { legendCounts } from '../components/sync-copy'
+import { grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, retiredGroups, seatListMeta, type LegendGroup } from '../components/sync-copy'
+import { RetiredDrawer } from '../components/RetiredDrawer'
+import { SeatListDrawer } from '../components/SeatListDrawer'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then save this overview.'
 
@@ -24,6 +26,7 @@ export function CompanyOverview({
   onAddExisting,
   sync = null,
   onSyncChanged,
+  chartHref = '',
 }: {
   /** Organization Overview, Connect bots, or Backup. */
   section: 'overview' | 'connect' | 'backup'
@@ -39,6 +42,8 @@ export function CompanyOverview({
   onAddExisting: () => void
   /** Re-reads the sync status after the Connector interval is saved. */
   onSyncChanged?: () => Promise<void>
+  /** The org chart of this organization. A name in an Overview list opens it on that seat. */
+  chartHref?: string
 }) {
   const derived = profileFromOrg(org, seats)
   const stored = storedProfile(sample ? 'sample' : 'user', slug)
@@ -46,7 +51,39 @@ export function CompanyOverview({
   const [notice, setNotice] = useState<SaveNotice | null>(null)
   const [saving, setSaving] = useState(false)
   // Counted from the org chart, the same way as its legend. They are not typed in.
-  const counts = legendCounts(seats.filter((seat) => seat.status !== 'retired').map((seat) => ({ id: seat.slug, type: seat.kind, grokSync: seat.grokSync, grokBotUrl: seat.grokBotUrl })))
+  const active = seats.filter((seat) => seat.status !== 'retired').map((seat) => ({ id: seat.slug, type: seat.kind, grokSync: seat.grokSync, grokBotUrl: seat.grokBotUrl }))
+  const counts = legendCounts(active)
+  const retired = seats.filter((seat) => seat.status === 'retired')
+  // The box whose seats are listed: a legend group, or Retired.
+  const [listed, setListed] = useState<LegendGroup | 'retired' | null>(null)
+  const listable = editable && Boolean(chartHref)
+  const titleOf = new Map(seats.map((seat) => [seat.slug, seat.title]))
+  const listedRows = listed && listed !== 'retired'
+    ? legendGroup(active, listed).flatMap((item) => {
+      const seat = seats.find((entry) => entry.slug === item.id)
+      if (!seat) return []
+      return [{
+        id: seat.slug,
+        name: seat.title,
+        meta: seatListMeta(seat.role, seat.title, seat.reportsTo ? titleOf.get(seat.reportsTo) ?? seat.reportsTo : ''),
+        tag: seat.kind === 'bot' ? grokSyncTag(seat) : undefined,
+      }]
+    })
+    : []
+
+  /** One count box. On an org of your own it opens the seats it counts. */
+  function countBox(label: string, value: number, group: LegendGroup | 'retired') {
+    return (
+      <div>
+        <dt>{label}</dt>
+        <dd>
+          {listable ? (
+            <Button variant="ghost" type="button" className="overview-count" disabled={value === 0} onClick={() => setListed(group)} aria-label={`${label}: ${value}. Show the list`}>{value}</Button>
+          ) : value}
+        </dd>
+      </div>
+    )
+  }
 
   useEffect(() => {
     if (!editable) return
@@ -136,13 +173,24 @@ export function CompanyOverview({
       </label>
       <Field label="Industry" placeholder="Industry" value={profile.industry} disabled={!editable} onChange={(industry) => setProfile({ ...profile, industry })} />
       <dl className="overview-counts">
-        <div><dt>People</dt><dd>{counts.human}</dd></div>
-        <div><dt>Bots</dt><dd>{counts.bot}</dd></div>
-        <div><dt>In Grok Bot</dt><dd>{counts.inGrok}</dd></div>
-        <div><dt>Not in Grok Bot</dt><dd>{counts.offGrok}</dd></div>
-        <div><dt>System</dt><dd>{counts.system}</dd></div>
+        {countBox('People', counts.human, 'human')}
+        {countBox('Bots', counts.bot, 'bot')}
+        {countBox('In Grok Bot', counts.inGrok, 'in-grok')}
+        {countBox('Not in Grok Bot', counts.offGrok, 'off-grok')}
+        {countBox('System', counts.system, 'system')}
+        {countBox('Retired', retiredGroups(retired).length, 'retired')}
       </dl>
-      <p className="overview-note">Counted from the org chart.</p>
+      <p className="overview-note">Counted from the org chart.{listable ? ' Choose a number to see who it counts.' : ''}</p>
+      {listed === 'retired' ? (
+        <RetiredDrawer seats={retired} activeElsewhere={sync?.retiredElsewhere ?? {}} onClose={() => setListed(null)} />
+      ) : listed ? (
+        <SeatListDrawer
+          title={listed === 'human' ? 'People' : LEGEND_TITLES[listed]}
+          rows={listedRows}
+          onPick={(id) => { window.location.hash = `${chartHref}?seat=${encodeURIComponent(id)}` }}
+          onClose={() => setListed(null)}
+        />
+      ) : null}
       {editable ? (
         <Button variant="primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save overview'}</Button>
       ) : (

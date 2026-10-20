@@ -20,7 +20,7 @@ import { SyncDrawer } from '../components/SyncDrawer'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
-import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel } from '../components/sync-copy'
+import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups } from '../components/sync-copy'
 import { managerChoices } from '../org/manager-choices'
 import { slugify, type SyncStatus } from '../../server/src/grok-sync.ts'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
@@ -828,6 +828,7 @@ export function Workspace({
               onAddExisting={() => setExistingBot(true)}
               sync={sync}
               onSyncChanged={loadSync}
+              chartHref={hrefFor(bundle.id, sample, 'org')}
             />
           ) : null}
           {view === 'work' ? (
@@ -865,7 +866,8 @@ export function Workspace({
                 live={liveMap}
                 grokStates={editable}
                 legendLists={editable}
-                retired={editable ? { count: retired.length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
+                focusId={view === 'org' ? focusSeat : ''}
+                retired={editable ? { count: retiredGroups(retired).length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
                 actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
               />
               {editable && soloYou ? <p className="be-caption">No bots yet. Import them from <a href={hrefFor(bundle.id, sample, 'connect')}>Connect bots</a>.</p> : null}

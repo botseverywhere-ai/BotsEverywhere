@@ -3,8 +3,9 @@ import type { Seat } from '../data/mock-companies'
 import { SeatCardCue } from './SeatCardCue'
 import { anchoredScroll, fitScale, formatZoom, pickedSeatName } from './org-zoom'
 import { Button } from './Button'
+import { SeatListDrawer } from './SeatListDrawer'
 import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
-import { grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, type LegendGroup } from './sync-copy'
+import { grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
 
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 1.8
@@ -33,6 +34,7 @@ export function OrgChart({
   actions,
   retired,
   legendLists = false,
+  focusId = '',
 }: {
   seats: Seat[]
   selectedId: string
@@ -55,6 +57,8 @@ export function OrgChart({
   retired?: { count: number; onOpen: () => void }
   /** Each legend number opens the seats it counts. Off on templates and samples. */
   legendLists?: boolean
+  /** A seat to find once, from the address (`?seat=`), as Find seat does. */
+  focusId?: string
 }) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLUListElement>(null)
@@ -70,6 +74,7 @@ export function OrgChart({
   const [query, setQuery] = useState('')
   const [foundId, setFoundId] = useState('')
   const [listed, setListed] = useState<LegendGroup | null>(null)
+  const focusedRef = useRef('')
 
   const forest = useMemo(() => buildForest(seats), [seats])
   const seatNames = useMemo(() => seats.map((seat) => seat.name), [seats])
@@ -292,6 +297,17 @@ export function OrgChart({
   }
 
   const listedSeats = listed ? legendGroup(seats, listed, emptyIds) : []
+
+  useEffect(() => {
+    if (!focusId || focusedRef.current === focusId) return
+    const match = seats.find((seat) => seat.id === focusId)
+    if (!match) return
+    focusedRef.current = focusId
+    focusOn(match)
+    // focusOn reads the chart as drawn now; it runs once per address.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusId, seats])
+
   const solo = seats.length <= 1
   return (
     <div className={solo ? 'org-chart is-solo' : 'org-chart'} data-testid="org-chart" data-highlight={highlightId || undefined}>
@@ -390,36 +406,21 @@ export function OrgChart({
         ) : null}
       </ul>
       {listed ? (
-        <div className="be-scrim" onClick={() => setListed(null)}>
-          <aside className="be-drawer be-hire legend-drawer" role="dialog" aria-labelledby="legend-list-title" onClick={(event) => event.stopPropagation()}>
-            <div className="be-hire-scroll">
-              <header className="be-hire-head">
-                <h2 id="legend-list-title">{LEGEND_TITLES[listed]} ({listedSeats.length})</h2>
-                <button type="button" className="be-icon" onClick={() => setListed(null)} aria-label="Close">×</button>
-              </header>
-              <p className="overview-note">Choose a seat to find it on the chart.</p>
-              <ul className="retired-list">
-                {listedSeats.map((seat) => (
-                  <li key={seat.id}>
-                    <Button variant="ghost" type="button" className="legend-row" onClick={() => { setListed(null); focusOn(seat) }}>
-                      <strong>{seat.name}</strong>
-                      <span className="retired-meta">
-                        {seat.role && seat.role !== seat.name ? `${seat.role} · ` : ''}
-                        {seat.reportsTo ? `reports to ${seats.find((item) => item.id === seat.reportsTo)?.name ?? seat.reportsTo}` : 'top of the chart'}
-                      </span>
-                      {grokStates && seat.type === 'bot' ? <span className="retired-meta">{grokSyncTag(seat)}</span> : null}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <footer className="be-hire-foot">
-              <div className="dir-actions">
-                <Button variant="secondary" type="button" onClick={() => setListed(null)}>Close</Button>
-              </div>
-            </footer>
-          </aside>
-        </div>
+        <SeatListDrawer
+          title={LEGEND_TITLES[listed]}
+          rows={listedSeats.map((seat) => ({
+            id: seat.id,
+            name: seat.name,
+            meta: seatListMeta(seat.role, seat.name, seat.reportsTo ? seats.find((item) => item.id === seat.reportsTo)?.name ?? seat.reportsTo : ''),
+            tag: grokStates && seat.type === 'bot' ? grokSyncTag(seat) : undefined,
+          }))}
+          onPick={(id) => {
+            setListed(null)
+            const seat = seats.find((item) => item.id === id)
+            if (seat) focusOn(seat)
+          }}
+          onClose={() => setListed(null)}
+        />
       ) : null}
     </div>
   )
