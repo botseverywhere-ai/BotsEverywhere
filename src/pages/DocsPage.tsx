@@ -413,9 +413,9 @@ npm run dev`}</CodeBlock>
         </p>
         <p>
           <strong>Retired</strong> in the legend lists every seat you retired, human or bot, with the date. Retire takes a seat out of this organization only; the bot keeps
-          running in Grok Bot, where another organization may still use it. Grok Bot does not let the Connector delete bots, so you delete one there: right-click it in the Grok Bot sidebar and choose Delete.
-          Choose <strong>Delete in Grok Bot…</strong> on its row first, and the app warns you when another organization still has the bot active, then waits: the row says <strong>Deleted from Grok Bot</strong>
-          after the Connector&apos;s next run no longer lists it. <strong>Cancel</strong> stops waiting. Retire a bot before you delete it in Grok Bot, or its card shows Not in Grok Bot.
+          running in Grok Bot, where another organization may still use it. Grok Bot does not let the Connector delete bots, so you delete one there: <strong>Delete in Grok Bot</strong> on its row opens the bot,
+          then right-click it in the Grok Bot sidebar, choose Delete, and confirm. The row warns you when another organization still has the bot active, and says <strong>Deleted from Grok Bot</strong>
+          after the Connector&apos;s next run no longer lists it. Retire a bot before you delete it in Grok Bot, or its card shows Not in Grok Bot.
         </p>
         <p>On your own organizations, each bot card shows what the app knows about it in Grok Bot:</p>
         <ul>
@@ -534,7 +534,6 @@ Plain notes for the people reading the file.`}</CodeBlock>
         <h3>Going to Grok Bot</h3>
         <ul>
           <li>Every active bot Grok Bot does not have yet is listed, including bots on a template copy or a hand-built chart. Tick the ones to create; the Connector creates them on its next run.</li>
-          <li>Retired bots waiting for you to delete them in Grok Bot are listed too, each with <strong>Cancel</strong>.</li>
           <li>
             Grok Bot keeps one bot per name. If another organization in the folder already has a bot with the same name, the drawer says it will be created as, for example,
             {' '}<strong>Invoice Bot · Meridian Ledger Partners</strong>. The next sync matches that name back to the right seat.
@@ -579,7 +578,7 @@ Plain notes for the people reading the file.`}</CodeBlock>
           <li><strong>Connector</strong>: one line per day, updated on every run: runs today, first and last run, bots in Grok Bot, requests waiting, and bots with no organization.</li>
           <li><strong>Stopped</strong>: the Connector missed two runs, with the time of its last run.</li>
           <li><strong>Error</strong>: the Connector wrote a snapshot the app cannot read, and why.</li>
-          <li><strong>Request</strong>, <strong>Created</strong>, <strong>Deleted</strong>, <strong>Sync</strong>, and <strong>Added</strong>: bots you sent to Grok Bot and retired bots you said you would delete there, bots it created, bots gone from Grok Bot after a delete, confirmed syncs with the bots they changed, and bots added from the no-organization list.</li>
+          <li><strong>Request</strong>, <strong>Created</strong>, <strong>Deleted</strong>, <strong>Sync</strong>, and <strong>Added</strong>: bots you sent to Grok Bot, bots it created, retired bots gone from Grok Bot after you deleted them there, confirmed syncs with the bots they changed, and bots added from the no-organization list.</li>
         </ul>
         <p>The run log is one file per day, <code>log/YYYY-MM-DD.md</code>, starting with <code># Run log YYYY-MM-DD</code>, then one line per step:</p>
         <p><code>- HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -</code></p>

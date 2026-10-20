@@ -1760,7 +1760,6 @@ a.site-nav-cta:focus {
 .retired-list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: var(--hairline); }
 .retired-row { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: var(--text-sm); }
 .retired-meta { color: var(--color-muted); }
-.sync-waiting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .sync-group h3 { margin: var(--space-3) 0 var(--space-1); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .sync-group ul { margin: 0; padding-left: var(--space-4); font-size: var(--text-sm); }
 .sync-group li { margin: 0 0 var(--space-1); }

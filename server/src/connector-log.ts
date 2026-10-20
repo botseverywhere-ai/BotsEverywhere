@@ -5,7 +5,7 @@ import type { FileActivity, SeatDocument } from './org-files.ts'
 import { normalizeText } from './normalize-text.ts'
 import { staleMinutes } from './connector-timing.ts'
 import { readConnector, readSyncMinutes } from './project.ts'
-import { appendActivity, clearDeletedBots, listOrgSlugs, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
+import { appendActivity, listOrgSlugs, markDeletedBots, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
 
 /** The app's memory of what it already logged about the Connector, so a run is never logged twice. */
 export const CONNECTOR_LOG_FILE = 'connector-log.json'
@@ -115,8 +115,8 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
   const wasStopped = memory.state === 'stopped'
   const previousRun = memory.lastRunAt ? new Date(memory.lastRunAt) : null
   const stamp = at.toISOString()
-  // Deletes the run confirmed get their own line, so the bot is not also logged as gone.
-  const deleted = clearDeletedBots(orgsDir)
+  // Retired bots this run shows deleted get their own line, so they are not also logged as gone.
+  const deleted = markDeletedBots(orgsDir)
   for (const orgId of listOrgSlugs(orgsDir)) {
     const root = resolve(orgsDir, orgId)
     const read = readOrgDir(root, orgId)
@@ -168,8 +168,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     const sameDay = before.day === day
     const runs = sameDay ? before.runs + 1 : 1
     const firstRunAt = sameDay && before.firstRunAt ? before.firstRunAt : stamp
-    const pending = readRequests(root)
-    const waiting = pending.requests.length + pending.deletes.length
+    const waiting = readRequests(root).requests.length
     appendActivity(root, event(orgId, `connector-day-${day}`, at, 'connector-run', 'Connector runs today', {
       stats: stats([
         ['Runs today', runs],

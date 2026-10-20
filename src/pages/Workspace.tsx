@@ -575,47 +575,6 @@ export function Workspace({
     }
   }
 
-  /** POST starts waiting for a retired bot to be deleted in Grok Bot; DELETE stops waiting. */
-  async function deleteRequest(method: 'POST' | 'DELETE', slug: string, name: string): Promise<boolean> {
-    setBotNotice(null)
-    try {
-      const response = await fetch(`/api/orgs/${bundle.id}/grok/deletes`, {
-        method,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ seat: slug }),
-      })
-      const text = await response.text()
-      if (response.status === 404 && !text.includes('Org not found')) {
-        tell(saveNotice(false, 'The file writer needs a restart. Stop npm run dev and start it again.'))
-        return false
-      }
-      const body = (text.trimStart().startsWith('{') ? JSON.parse(text) : {}) as { errors?: string[]; error?: string }
-      if (!response.ok) {
-        tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not ask the Connector.'))
-        return false
-      }
-      await loadSync()
-      tell(saveNotice(true, method === 'POST' ? `Delete ${name} in Grok Bot. The app marks it Deleted after the Connector's next run.` : `Stopped waiting for ${name} to be deleted in Grok Bot`))
-      return true
-    } catch {
-      setWriter('down')
-      tell(saveNotice(false, SAVING_OFF))
-      return false
-    }
-  }
-
-  /** Organizations that still have this bot active, for the warning before a delete. */
-  async function activeElsewhere(slug: string): Promise<string[]> {
-    try {
-      const response = await fetch(`/api/orgs/${bundle.id}/grok/deletes?seat=${encodeURIComponent(slug)}`)
-      if (!response.ok) return []
-      const body = (await response.json()) as { activeIn?: string[] }
-      return Array.isArray(body.activeIn) ? body.activeIn : []
-    } catch {
-      return []
-    }
-  }
-
   async function moveSeat(slug: string, reportsTo: string) {
     setBotNotice(null)
     try {
@@ -996,13 +955,9 @@ export function Workspace({
       ) : null}
       {retiredOpen && editable ? (
         <RetiredDrawer
-          syncMinutes={sync?.project?.syncMinutes}
           seats={retired}
-          deletes={sync?.deletes ?? []}
+          activeElsewhere={sync?.retiredElsewhere ?? {}}
           onClose={() => setRetiredOpen(false)}
-          onDelete={(seat) => deleteRequest('POST', seat.slug, seat.title)}
-          onCancel={async (seat) => { await deleteRequest('DELETE', seat.slug, seat.title) }}
-          checkDelete={(seat) => activeElsewhere(seat.slug)}
         />
       ) : null}
       {syncOpen && editable ? (
@@ -1012,7 +967,6 @@ export function Workspace({
           seats={seats}
           onClose={() => setSyncOpen(false)}
           onRefresh={loadSync}
-          onCancelDelete={async (slug) => { await deleteRequest('DELETE', slug, seats.find((seat) => seat.slug === slug)?.title || slug) }}
           onApplied={async (message) => {
             setSyncOpen(false)
             try {

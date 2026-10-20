@@ -5,57 +5,37 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { connectorPrompt } from '../src/connector-prompt.ts'
 import { recordConnectorRun } from '../src/connector-log.ts'
-import { REQUESTS_PATH, canDelete, deleteFor, parseRequests, serializeRequests, stillInGrok, type GrokDelete } from '../src/grok-requests.ts'
+import { REQUESTS_PATH, canDelete, parseRequests, serializeRequests, stillInGrok } from '../src/grok-requests.ts'
 import { parseLogMarkdown } from '../src/org-markdown.ts'
 import { parseSeatMarkdown, type FileActivity } from '../src/org-files.ts'
 import { CONNECTOR_FILE } from '../src/project.ts'
-import { createOrgFiles, readRequests, requestGrokDelete, startTemplateServer } from '../src/template-server.ts'
+import { createOrgFiles, readRequests, startTemplateServer } from '../src/template-server.ts'
 
-const AT = '2026-10-20T13:03:00.000Z'
 const INBOX = 'grokbot://app/v1/agent?id=inbox'
-const json = { 'content-type': 'application/json' }
 
-function removal(extra: Partial<GrokDelete> = {}): GrokDelete {
-  return { grokBotUrl: INBOX, name: 'Inbox Bot', seats: ['inbox-bot'], requestedAt: AT, ...extra }
-}
-
-test('deletes sit under their own key, and a file of creates reads and writes as before', () => {
-  assert.doesNotMatch(serializeRequests([]), /deletes/, 'no deletes, no key')
-  const text = serializeRequests([], [removal()])
-  assert.match(text, /"deletes": \[/)
-  const parsed = parseRequests(`﻿${text.replace(/\n/g, '\r\n')}`)
-  assert.equal(parsed.ok, true)
-  if (parsed.ok) assert.deepEqual(parsed.deletes, [removal()])
-  const old = parseRequests(JSON.stringify({ requests: [{ seat: 'a-bot', name: 'A Bot' }] }))
-  assert.equal(old.ok && old.deletes.length, 0)
-  const mixed = parseRequests(JSON.stringify({ requests: [], deletes: [{ name: 'No Link' }, { grokBotUrl: INBOX, seats: ['inbox-bot', 'Bad Slug', 4] }, 7] }))
-  assert.equal(mixed.ok, true)
-  if (mixed.ok) assert.deepEqual(mixed.deletes, [{ grokBotUrl: INBOX, name: INBOX, seats: ['inbox-bot'], requestedAt: '' }], 'an entry without a link is skipped')
+test('Grok Bot cannot delete bots: the Connector prompt has no delete step, and old delete entries are dropped', () => {
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/home/me/orgs' })
+  assert.doesNotMatch(prompt, /deletes/)
+  const parsed = parseRequests(JSON.stringify({ requests: [{ seat: 'a-bot', name: 'A Bot' }], deletes: [{ grokBotUrl: INBOX }] }))
+  assert.equal(parsed.ok && parsed.requests.length, 1, 'a file an earlier version wrote still reads')
+  assert.doesNotMatch(serializeRequests([]), /deletes/, 'the next write drops it')
 })
 
-test('only a retired bot with a link and not yet deleted can be deleted in Grok Bot', () => {
+test('only a retired bot with a link and not yet deleted gets Delete in Grok Bot', () => {
   assert.equal(canDelete({ kind: 'bot', status: 'retired', grokBotUrl: INBOX }), true)
   assert.equal(canDelete({ kind: 'bot', status: 'active', grokBotUrl: INBOX }), false, 'retire it first')
-  assert.equal(canDelete({ kind: 'bot', status: 'retired' }), false, 'no link, no safe way to find it')
+  assert.equal(canDelete({ kind: 'bot', status: 'retired' }), false, 'no link to open')
   assert.equal(canDelete({ kind: 'human', status: 'retired', grokBotUrl: INBOX }), false)
-  assert.equal(canDelete({ kind: 'bot', status: 'retired', grokBotUrl: INBOX, grokDeletedAt: AT }), false, 'already gone')
-  assert.equal(deleteFor([removal()], { slug: 'inbox-bot-2', grokBotUrl: INBOX })?.grokBotUrl, INBOX, 'a seat with the same link shares the request')
-  assert.equal(deleteFor([removal()], { slug: 'inbox-bot', grokBotUrl: '' })?.grokBotUrl, INBOX)
-  assert.equal(deleteFor([removal()], { slug: 'other-bot', grokBotUrl: '' }), undefined)
+  assert.equal(canDelete({ kind: 'bot', status: 'retired', grokBotUrl: INBOX, grokDeletedAt: '2026-10-20T13:03:00.000Z' }), false, 'already gone')
 })
 
 test('a bot counts as still in Grok Bot by its link, or by its name when the entry has no link', () => {
-  assert.equal(stillInGrok(removal(), [{ name: 'Other', grokBotUrl: INBOX }]), true)
-  assert.equal(stillInGrok(removal(), [{ name: 'Inbox Bot', grokBotUrl: '' }]), true, 'same name, no link: still there')
-  assert.equal(stillInGrok(removal(), [{ name: 'Inbox Bot · Desk', grokBotUrl: '' }]), true)
-  assert.equal(stillInGrok(removal(), [{ name: 'Inbox Bot', grokBotUrl: 'grokbot://app/v1/agent?id=other' }]), false, 'a different bot with the same name is not this one')
-  assert.equal(stillInGrok(removal(), []), false)
-})
-
-test('Grok Bot cannot delete bots, so the Connector ignores deletes and the owner deletes them', () => {
-  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/home/me/orgs' })
-  assert.match(prompt, /Ignore "deletes": the owner deletes those bots in Grok Bot/)
-  assert.doesNotMatch(prompt, /delete the bot in Grok Bot whose link/)
+  const inbox = { grokBotUrl: INBOX, name: 'Inbox Bot' }
+  assert.equal(stillInGrok(inbox, [{ name: 'Other', grokBotUrl: INBOX }]), true)
+  assert.equal(stillInGrok(inbox, [{ name: 'Inbox Bot', grokBotUrl: '' }]), true, 'same name, no link: still there')
+  assert.equal(stillInGrok(inbox, [{ name: 'Inbox Bot · Desk', grokBotUrl: '' }]), true)
+  assert.equal(stillInGrok(inbox, [{ name: 'Inbox Bot', grokBotUrl: 'grokbot://other' }]), false, 'a different bot with the same name is not this one')
+  assert.equal(stillInGrok(inbox, []), false)
 })
 
 function seat(root: string, slug: string, title: string, extra: string) {
@@ -74,45 +54,8 @@ function project() {
   return { orgs, make, done: () => rmSync(dir, { recursive: true, force: true }) }
 }
 
-const retired = (link: string) => `status: retired\nretiredAt: "${AT}"\ngrokBotUrl: "${link}"\n`
-
-test('the writer asks for a delete, warns about another organization, and can cancel it', async () => {
-  const { orgs, make, done } = project()
-  const desk = make('Desk')
-  const ledger = make('Ledger')
-  const root = join(orgs, desk)
-  seat(root, 'inbox-bot', 'Inbox Bot', retired(INBOX))
-  seat(root, 'inbox-bot-2', 'Inbox Bot', retired(INBOX))
-  seat(root, 'live-bot', 'Live Bot', `status: active\ngrokBotUrl: "grokbot://live"\n`)
-  seat(join(orgs, ledger), 'inbox-bot', 'Inbox Bot', `status: active\ngrokBotUrl: "${INBOX}"\n`)
-  const started = await startTemplateServer({ port: 0, orgsDir: orgs, host: '127.0.0.1' })
-  const base = `http://127.0.0.1:${started.port}/api/orgs/${desk}`
-  try {
-    const check = (await (await fetch(`${base}/grok/deletes?seat=inbox-bot`)).json()) as { activeIn: string[] }
-    assert.deepEqual(check.activeIn, ['Ledger'], 'the warning names the organization that still uses it')
-
-    assert.equal((await fetch(`${base}/grok/deletes`, { method: 'POST', headers: json, body: JSON.stringify({ seat: 'live-bot' }) })).status, 422, 'an active bot is refused')
-    assert.equal((await fetch(`${base}/grok/deletes`, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify({ seat: 'inbox-bot' }) })).status, 415)
-    assert.equal((await fetch(`${base}/grok/deletes`, { method: 'POST', headers: { ...json, origin: 'https://evil.example' }, body: JSON.stringify({ seat: 'inbox-bot' }) })).status, 403)
-
-    assert.equal((await fetch(`${base}/grok/deletes`, { method: 'POST', headers: json, body: JSON.stringify({ seat: 'inbox-bot-2' }) })).status, 200)
-    const file = readRequests(root)
-    assert.equal(file.deletes.length, 1)
-    assert.deepEqual(file.deletes[0]!.seats, ['inbox-bot', 'inbox-bot-2'], 'one request per link, for every retired seat with it')
-    const status = (await (await fetch(`${base}/sync`)).json()) as { deletes: GrokDelete[] }
-    assert.equal(status.deletes.length, 1, 'the sync status carries the deletes')
-
-    assert.equal((await fetch(`${base}/grok/deletes`, { method: 'DELETE', headers: json, body: JSON.stringify({ seat: 'inbox-bot' }) })).status, 200)
-    assert.deepEqual(readRequests(root).deletes, [])
-    assert.equal((await fetch(`${base}/grok/deletes`, { method: 'DELETE', headers: json, body: JSON.stringify({ seat: 'inbox-bot' }) })).status, 422, 'nothing left to cancel')
-    const summaries = readdirSync(join(root, 'log')).map((name) => readFileSync(join(root, 'log', name), 'utf8')).join('\n')
-    assert.match(summaries, /Waiting for Inbox Bot to be deleted in Grok Bot/)
-    assert.match(summaries, /Stopped waiting for Inbox Bot to be deleted in Grok Bot/)
-  } finally {
-    await started.close()
-    done()
-  }
-})
+const minute = (n: number) => new Date(Date.now() + n * 60_000)
+const retired = (link: string, at = minute(-20)) => `status: retired\nretiredAt: "${at.toISOString()}"\ngrokBotUrl: "${link}"\n`
 
 /** One Connector run at a file time: each org's snapshot, then connector.json. */
 function run(orgs: string, at: Date, perOrg: Record<string, { name: string; grokBotUrl?: string }[]>, unassigned: { name: string; grokBotUrl?: string }[] = []) {
@@ -140,7 +83,7 @@ const deletedAt = (root: string, slug: string) => {
   return parsed.ok ? parsed.seat.grokDeletedAt ?? '' : 'bad'
 }
 
-test('a delete clears only on a newer run that no longer reports the bot anywhere', () => {
+test('a retired bot is marked deleted only on a newer run that reports it nowhere, with no request', () => {
   const { orgs, make, done } = project()
   try {
     const desk = make('Desk')
@@ -149,56 +92,49 @@ test('a delete clears only on a newer run that no longer reports the bot anywher
     seat(root, 'inbox-bot', 'Inbox Bot', retired(INBOX))
     seat(root, 'inbox-bot-2', 'Inbox Bot', retired(INBOX))
     const inbox = { name: 'Inbox Bot', grokBotUrl: INBOX }
-    const minute = (n: number) => new Date(Date.now() + n * 60_000)
 
-    run(orgs, minute(-10), { [desk]: [inbox], [ledger]: [] })
+    run(orgs, minute(-30), { [desk]: [], [ledger]: [] })
     recordConnectorRun(orgs, 'Connector')
-    assert.equal(requestGrokDelete(root, desk, 'inbox-bot').ok, true)
-
-    run(orgs, minute(-5), { [desk]: [], [ledger]: [] })
-    recordConnectorRun(orgs, 'Connector')
-    assert.equal(readRequests(root).deletes.length, 1, 'a run from before the request does not count')
+    assert.equal(deletedAt(root, 'inbox-bot'), '', 'a run from before the retirement does not count')
 
     run(orgs, minute(1), { [desk]: [], [ledger]: [inbox] })
     recordConnectorRun(orgs, 'Connector')
-    assert.equal(readRequests(root).deletes.length, 1, 'still in another organization')
+    assert.equal(deletedAt(root, 'inbox-bot'), '', 'still in another organization')
 
     run(orgs, minute(2), { [desk]: [], [ledger]: [] }, [{ name: 'Inbox Bot' }])
     recordConnectorRun(orgs, 'Connector')
-    assert.equal(readRequests(root).deletes.length, 1, 'the same name with no link counts as still there')
+    assert.equal(deletedAt(root, 'inbox-bot'), '', 'the same name with no link counts as still there')
 
     run(orgs, minute(3), { [desk]: [], [ledger]: [] })
     writeFileSync(join(orgs, ledger, 'grok', 'snapshot.json'), '{broken', 'utf8')
     recordConnectorRun(orgs, 'Connector')
-    assert.equal(readRequests(root).deletes.length, 1, 'an unreadable snapshot counts as still there')
+    assert.equal(deletedAt(root, 'inbox-bot'), '', 'an unreadable snapshot counts as still there')
 
     const last = minute(4)
     run(orgs, last, { [desk]: [], [ledger]: [] })
     recordConnectorRun(orgs, 'Connector')
-    assert.deepEqual(readRequests(root).deletes, [], 'gone everywhere: cleared')
     assert.ok(Math.abs(Date.parse(deletedAt(root, 'inbox-bot')) - last.getTime()) < 2000, 'the seat records the run')
     assert.equal(deletedAt(root, 'inbox-bot'), deletedAt(root, 'inbox-bot-2'), 'both seats with the link are marked')
-    const log = events(root)
-    assert.equal(log.filter((item) => item.kind === 'deleted').length, 1)
-    assert.match(log.find((item) => item.kind === 'deleted')!.summary, /Deleted in Grok Bot: Inbox Bot/)
+    const log = events(root).filter((item) => item.kind === 'deleted')
+    assert.equal(log.length, 1, 'one line for one bot')
+    assert.match(log[0]!.summary, /Deleted in Grok Bot: Inbox Bot/)
     const after = parseSeatMarkdown('inbox-bot', readFileSync(join(root, 'seats', 'inbox-bot.md'), 'utf8'))
     assert.equal(after.ok && after.seat.status, 'retired', 'the seat stays retired')
-    assert.equal(after.ok && canDelete(after.seat), false, 'no second delete')
+    assert.equal(after.ok && canDelete(after.seat), false, 'no second Delete')
   } finally {
     done()
   }
 })
 
-test('the run that confirms a delete logs Deleted, not also Bot left', () => {
+test('the run that shows a retired bot gone logs Deleted, not also Bot left', () => {
   const { orgs, make, done } = project()
   try {
     const desk = make('Desk')
     const root = join(orgs, desk)
     seat(root, 'inbox-bot', 'Inbox Bot', retired(INBOX))
-    run(orgs, new Date(Date.now() - 60_000), { [desk]: [{ name: 'Inbox Bot', grokBotUrl: INBOX }] })
+    run(orgs, minute(-1), { [desk]: [{ name: 'Inbox Bot', grokBotUrl: INBOX }] })
     recordConnectorRun(orgs, 'Connector')
-    assert.equal(requestGrokDelete(root, desk, 'inbox-bot').ok, true)
-    run(orgs, new Date(Date.now() + 60_000), { [desk]: [] })
+    run(orgs, minute(1), { [desk]: [] })
     recordConnectorRun(orgs, 'Connector')
     const log = events(root)
     assert.equal(log.filter((item) => item.kind === 'deleted').length, 1)
@@ -208,34 +144,34 @@ test('the run that confirms a delete logs Deleted, not also Bot left', () => {
   }
 })
 
-test('a bad requests file is skipped by the run and refused by a delete, never a crash', () => {
+test('the sync status names organizations where a retired bot is still active, and a bad requests file never crashes', async () => {
   const { orgs, make, done } = project()
+  const desk = make('Desk')
+  const ledger = make('Ledger')
+  const root = join(orgs, desk)
+  seat(root, 'inbox-bot', 'Inbox Bot', retired(INBOX))
+  seat(join(orgs, ledger), 'inbox-bot', 'Inbox Bot', `status: active\ngrokBotUrl: "${INBOX}"\n`)
+  mkdirSync(join(root, 'grok'), { recursive: true })
+  writeFileSync(join(root, REQUESTS_PATH), '{broken', 'utf8')
+  assert.deepEqual(readRequests(root), { requests: [], error: 'grok/requests.json is not JSON.' })
+  const started = await startTemplateServer({ port: 0, orgsDir: orgs, host: '127.0.0.1' })
   try {
-    const desk = make('Desk')
-    const root = join(orgs, desk)
-    seat(root, 'inbox-bot', 'Inbox Bot', retired(INBOX))
-    mkdirSync(join(root, 'grok'), { recursive: true })
-    writeFileSync(join(root, REQUESTS_PATH), '{broken', 'utf8')
-    assert.deepEqual(readRequests(root), { requests: [], deletes: [], error: 'grok/requests.json is not JSON.' })
-    const made = requestGrokDelete(root, desk, 'inbox-bot')
-    assert.equal(made.ok, false, 'a bad file is not overwritten by a delete')
-    run(orgs, new Date(Date.now() + 60_000), { [desk]: [] })
-    assert.doesNotThrow(() => recordConnectorRun(orgs, 'Connector'))
-    assert.equal(readFileSync(join(root, REQUESTS_PATH), 'utf8'), '{broken')
+    const status = (await (await fetch(`http://127.0.0.1:${started.port}/api/orgs/${desk}/sync`)).json()) as { retiredElsewhere: Record<string, string[]> }
+    assert.deepEqual(status.retiredElsewhere, { 'inbox-bot': ['Ledger'] })
+    assert.equal((await fetch(`http://127.0.0.1:${started.port}/api/orgs/${desk}/grok/deletes`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"seat":"inbox-bot"}' })).status, 404, 'no delete requests any more')
   } finally {
+    await started.close()
     done()
   }
 })
 
-test('Retired sits in the org chart legend and opens the list, with Delete in Grok Bot and Cancel', async () => {
+test('Retired in the legend opens the list; a retired bot links to Grok Bot with the steps, and nothing waits', async () => {
   const { retiredGrokLine, retiredKindLabel, logLabel } = await import('../../src/components/sync-copy.ts')
   const { formatShortDate } = await import('../src/bot-metrics.ts')
   assert.equal(retiredKindLabel('human'), 'Human')
-  assert.equal(retiredKindLabel('bot'), 'Bot')
   assert.equal(retiredGrokLine({ grokBotUrl: INBOX }), 'Still in Grok Bot')
   assert.equal(retiredGrokLine({ grokBotUrl: '' }), 'No Grok Bot link, so the app cannot tell when it is gone')
-  assert.equal(retiredGrokLine({ grokBotUrl: INBOX }, { requestedAt: AT }), "Waiting for you to delete it in Grok Bot. This updates on the Connector's next run.")
-  assert.equal(retiredGrokLine({ grokBotUrl: INBOX, grokDeletedAt: AT }, { requestedAt: AT }), `Deleted from Grok Bot on ${formatShortDate(AT)}`)
+  assert.equal(retiredGrokLine({ grokBotUrl: INBOX, grokDeletedAt: '2026-10-20T13:03:00.000Z' }), `Deleted from Grok Bot on ${formatShortDate('2026-10-20T13:03:00.000Z')}`)
   assert.equal(logLabel({ id: 'x', type: 'edit', kind: 'deleted' }), 'Deleted')
   const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
   const chart = read('../../src/components/OrgChart.tsx')
@@ -243,11 +179,11 @@ test('Retired sits in the org chart legend and opens the list, with Delete in Gr
   const drawer = read('../../src/components/RetiredDrawer.tsx')
   const sync = read('../../src/components/SyncDrawer.tsx')
   assert.match(chart, /Retired <span className="legend-count">\{retired\.count\}<\/span>/)
-  assert.match(workspace, /retired=\{editable \? \{ count: retired\.length/, 'only an org of your own')
   assert.doesNotMatch(workspace, /be-retired/, 'the list under the chart is gone')
-  assert.match(drawer, /Delete in Grok Bot…/)
-  assert.match(drawer, /right-click <strong>\{confirm\.seat\.title\}<\/strong> in the sidebar/, 'the dialog says how to delete it in Grok Bot')
-  assert.match(drawer, /is still active in \{confirm\.activeIn\.join\(', '\)\}\. Deleting it in Grok Bot stops it there too\./)
-  assert.match(sync, /Waiting for you to delete in Grok Bot \(\{deletes\.length\}\)/)
-  assert.match(sync, /onCancelDelete\(item\.seats\[0\]!\)/)
+  assert.match(drawer, /href=\{\(seat\.grokBotUrl \?\? ''\)\.trim\(\)\} target="_blank" rel="noreferrer">Delete in Grok Bot<\/Button>/)
+  assert.match(drawer, /right-click it in the Grok Bot sidebar, choose Delete, and confirm/)
+  assert.match(drawer, /Still active in \{elsewhere\.join\(', '\)\}\. Deleting it in Grok Bot stops it there too\./)
+  assert.doesNotMatch(drawer, /Wait for it|Cancel/)
+  assert.doesNotMatch(sync, /deleted|delete in Grok Bot|deletes/i, 'the Sync drawer has no delete section')
+  assert.doesNotMatch(workspace, /grok\/deletes/)
 })
