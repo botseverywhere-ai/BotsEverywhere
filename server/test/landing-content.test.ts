@@ -9,7 +9,10 @@ const css = read('../../src/styles/landing.css')
 
 test('the homepage quotes the work chart article word for word, credits it, and links to it', () => {
   assert.match(landing, /const ARTICLE = 'https:\/\/www\.deloitte\.com\/us\/en\/what-we-do\/capabilities\/applied-artificial-intelligence\/articles\/role-fusion-organizational-delayering\.html'/)
-  assert.ok(landing.includes('Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point—and AI is systematically eliminating that justification.'), 'the full sentence, as written')
+  const sentence = 'Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point—and AI is systematically eliminating that justification.'
+  const quoted = 'Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point'
+  assert.ok(sentence.startsWith(quoted), 'the quote is the article\'s own words, cut where its sentence turns')
+  assert.ok(landing.includes(`<p>${quoted}.</p>`))
   assert.ok(landing.includes('<q>If you automate a broken process, you scale the breakdown</q>.'), 'the period is ours, outside the quote: the article continues with a colon')
   assert.match(landing, /Kulkarni, Bodan, and Kilgour, Deloitte, <a href=\{ARTICLE\} target="_blank" rel="noreferrer"><cite>The work chart vs\. org chart<\/cite><\/a>, June 2026/)
   assert.match(landing, /<a href=\{ARTICLE\} target="_blank" rel="noreferrer">Read the article<\/a>/)
@@ -43,4 +46,11 @@ test('homepage wording and layout rules: organization, open source, square corne
   assert.match('a { border-radius: 12px; }', /border-radius:(?!\s*var\(--control-radius\))/, 'and the check does catch a rounded corner')
   assert.match(css, /\.ld-oss > \*, \.ld-idea > \* \{ min-width: 0; \}/, 'grid columns can shrink, so the folder diagram scrolls in its box on a phone')
   assert.match(css, /\.ld-steps, \.ld-trust \{ grid-template-columns: 1fr; \}/)
+})
+
+test('the homepage has no dashes in its text, and ends on the ink closing band', () => {
+  assert.doesNotMatch(landing, /[\u2013\u2014]/, 'no en or em dash anywhere on the page')
+  assert.match(landing, /<section className="ld-closing">\s+<div className="ld-wrap ld-final">\s+<h2>Map your team\. Staff the seats\.<\/h2>/)
+  assert.match(css, /\.ld-closing \{ background: var\(--color-ink\); color: var\(--color-inverse\); \}/)
+  assert.match(css, /\.ld-closing \.btn-primary[^{]*\{ background: var\(--color-white\); color: var\(--color-ink\);/, 'the main button stays visible on ink')
 })

@@ -103,7 +103,7 @@ export function Landing() {
               </div>
               <figure className="ld-quote">
                 <blockquote>
-                  <p>Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point—and AI is systematically eliminating that justification.</p>
+                  <p>Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point.</p>
                 </blockquote>
                 <figcaption>
                   Kulkarni, Bodan, and Kilgour, Deloitte, <a href={ARTICLE} target="_blank" rel="noreferrer"><cite>The work chart vs. org chart</cite></a>, June 2026
@@ -223,15 +223,17 @@ export function Landing() {
             </figure>
           </div>
         </section>
-        <section className="ld-final">
+      </div>
+      <section className="ld-closing">
+        <div className="ld-wrap ld-final">
           <h2>Map your team. Staff the seats.</h2>
           <p>Open source. Runs on your computer.</p>
           <div className="ld-actions">
             <Button variant="primary"  href={primaryHref}>{primary}</Button>
             <Button variant="secondary"  href={secondaryHref}>{secondary}</Button>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
       <AppFooter />
     </div>
   )

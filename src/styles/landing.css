@@ -384,3 +384,11 @@
   .ld-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ld-trust { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Closing band: ink, full width, so the page does not end on three white sections in a row. */
+.ld-closing { background: var(--color-ink); color: var(--color-inverse); }
+.ld-closing .ld-final h2 { color: var(--color-white); }
+.ld-closing .ld-final p { color: var(--color-inverse-muted); }
+.ld-closing .btn-primary, .ld-closing .btn-primary:hover, .ld-closing .btn-primary:visited, .ld-closing .btn-primary:focus { background: var(--color-white); color: var(--color-ink); border-color: var(--color-white); }
+.ld-closing .btn-secondary, .ld-closing .btn-secondary:hover, .ld-closing .btn-secondary:visited, .ld-closing .btn-secondary:focus { background: transparent; color: var(--color-white); border-color: var(--color-inverse-line); }
+.ld-closing .btn-secondary:hover { border-color: var(--color-inverse-muted); }
