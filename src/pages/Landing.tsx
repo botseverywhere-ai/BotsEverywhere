@@ -21,12 +21,12 @@ const TEAMS = [
 ] as const
 /** The perspective behind the work chart. Quoted word for word; the app is not affiliated with its authors. */
 const ARTICLE = 'https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/articles/role-fusion-organizational-delayering.html'
-/** Steps from the article's blueprint, and where each one lives in the app. */
+/** The article's blueprint, its step names in its order, and where each one lives in the app. The fifth step is not the app's. */
 const BLUEPRINT = [
-  { step: 'Map the work', app: 'Work chart', text: 'Every process starts from a trigger and moves step by step to an outcome. Handoffs, waits, and steps with no one assigned are in plain view.' },
-  { step: 'Make decision rights explicit', app: 'Seat cards', text: 'Every seat, person or bot, has a written card: what it owns, what it may do, what needs approval, and when its work is done.' },
-  { step: 'Add guardrails', app: 'Checkpoints', text: 'A step that sends, pays, posts, books, merges, publishes, or deletes waits for a named human. Bots draft. People approve.' },
+  { step: 'Map the work', app: 'Work chart', text: 'Every process starts from a trigger and moves step by step to an outcome. Handoffs, waits, and steps with no one assigned are in plain view, and so is who decides at each step.' },
   { step: 'Instrument governance', app: 'Run log', text: 'Every step leaves one line in a plain text log, so status comes from the work itself instead of a weekly meeting.' },
+  { step: 'Fuse roles selectively', app: 'Seat cards', text: 'Every seat, person or bot, has a written card: what it owns, what it may do, what needs approval, and when its work is done. Give one seat a workflow end to end by editing its card.' },
+  { step: 'Add guardrails', app: 'Checkpoints', text: 'A step that sends, pays, posts, books, merges, publishes, or deletes waits for a named human. Bots draft. People approve.' },
 ] as const
 /** Each one is true of the app as it ships, and stated the same way in Docs. */
 const LOCAL = [
@@ -89,7 +89,7 @@ export function Landing() {
             </div>
           </section>
           <p className="ld-statement">
-            Org chart for bots. Work chart for humans. <span>Every bot holds a seat with a written card: what it owns, what it may do, what needs approval, and when its work is done. Bots staff the seats. You keep the approve.</span>
+            The org chart shows who owns what. The work chart shows how work moves. <span>Every bot holds a seat with a written card: what it owns, what it may do, what needs approval, and when its work is done. Bots staff the seats. You keep the final say.</span>
           </p>
           <section id="why-work-chart" className="ld-sec" aria-labelledby="why-work-chart-title">
             <p className="ld-label">Why a work chart</p>
@@ -105,11 +105,15 @@ export function Landing() {
                 <blockquote>
                   <p>Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point.</p>
                 </blockquote>
+                <p className="ld-quote-turn">AI, they write, <q>is systematically eliminating that justification.</q></p>
                 <figcaption>
                   Kulkarni, Bodan, and Kilgour, Deloitte, <a href={ARTICLE} target="_blank" rel="noreferrer"><cite>The work chart vs. org chart</cite></a>, June 2026
                 </figcaption>
               </figure>
             </div>
+            <p className="ld-steps-intro">
+              The article lays out a blueprint for doing this safely. Four of its five steps are things BotsEverywhere does for you. The fifth, rebuilding the career ladder, is work for people.
+            </p>
             <ol className="ld-steps">
               {BLUEPRINT.map((item) => (
                 <li key={item.step}>
