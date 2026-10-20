@@ -396,11 +396,12 @@ const STAMP_KEYS = new Set<keyof SeatPatch>(['grokSync', 'grokSyncedAt'])
  * An updated row that changes nothing but Grok Bot's numbers: last active, run and task counts, routines, created date.
  * Those apply on their own on every Connector run; everything else (a link, a name, a card fill, a run status, a bot
  * that came back after Not in Grok Bot) waits for Sync. A stamp alone is nothing to apply.
+ * With `allowLink`, for a bot the owner asked the Connector to create, the link it reports lands too.
  */
-export function performanceOnly(row: SyncRow): row is Extract<SyncRow, { kind: 'updated' }> {
+export function performanceOnly(row: SyncRow, allowLink = false): row is Extract<SyncRow, { kind: 'updated' }> {
   if (row.kind !== 'updated') return false
   const keys = (Object.keys(row.patch) as (keyof SeatPatch)[]).filter((key) => !STAMP_KEYS.has(key))
-  return keys.length > 0 && keys.every((key) => PERFORMANCE_KEYS.has(key))
+  return keys.length > 0 && keys.every((key) => PERFORMANCE_KEYS.has(key) || (allowLink && key === 'grokBotUrl'))
 }
 
 /** A file name from a name: lowercase, hyphens for anything else. Empty when nothing usable is left. */

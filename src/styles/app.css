@@ -1431,6 +1431,10 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .be-solo p { margin: 0; color: var(--color-ink); }
 .be-solo-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
 .be-directory, .be-performance { overflow-x: auto; }
+.be-pulse { display: inline-block; width: 8px; height: 8px; margin-right: var(--space-2); vertical-align: middle; background: var(--color-amber-700); border-radius: var(--control-radius); animation: be-pulse 1.2s ease-in-out infinite; }
+@keyframes be-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) { .be-pulse { animation: none; } }
+.be-connecting { color: var(--color-amber-800); }
 .be-directory table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .be-performance { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 14px; }
 .be-performance-note { margin: var(--space-4) 0 0; color: var(--color-muted); font-size: var(--text-sm); }

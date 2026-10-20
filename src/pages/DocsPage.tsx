@@ -468,6 +468,7 @@ Anything sent outside the organization.
 The brief is filed and linked on the request.`}</CodeBlock>
         <p>
           A bot that is not in Grok Bot yet shows <strong>Create in Grok Bot</strong> in its drawer: the app asks the Connector to create it on its next run.
+          Until then its Performance row and the Sync drawer say it is connecting; when the Connector reports it, its link lands on its own and the request is done.
           To link a bot by hand instead, create it in Grok Bot from the card, copy its share link (<code>https://x.ai/bot/…</code>), and paste it into the seat.
           Leave the link empty until you have a real one.
         </p>

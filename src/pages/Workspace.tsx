@@ -892,6 +892,7 @@ export function Workspace({
             <PerformanceTable
               bots={bots.map((seat) => ({ ...seat, shown: metricsById.get(seat.id) }))}
               leastId={least?.id}
+              requests={sync?.requests ?? []}
               canRetire={editable && writer === 'up'}
               onRetire={(id) => {
                 setRetireSlug(id)
@@ -1023,11 +1024,14 @@ export function Workspace({
 function PerformanceTable({
   bots,
   leastId,
+  requests = [],
   canRetire,
   onRetire,
 }: {
   bots: { id: string; name: string; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
+  /** Bots the app asked the Connector to create. Their row says Connecting until the Connector reports them. */
+  requests?: { seat: string; requestedAt: string }[]
   canRetire: boolean
   onRetire: (id: string) => void
 }) {
@@ -1040,16 +1044,25 @@ function PerformanceTable({
           <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Action</th></tr>
         </thead>
         <tbody>
-          {rows.map((seat) => (
-            <tr key={seat.id}>
-              <td>{seat.name}{seat.id === leastId ? <em className="be-least">Least used</em> : null}</td>
-              <td>{formatShortDate(seat.shown?.createdAt || '')}</td>
-              <td>{seat.shown?.usage === undefined || seat.shown?.usage === null ? '—' : seat.shown.usage}</td>
-              <td>{seat.shown?.tasks === undefined || seat.shown?.tasks === null ? '—' : seat.shown.tasks}</td>
-              <td>{formatShortDate(seat.shown?.lastActive || '')}</td>
-              <td>{canRetire ? <Button variant="secondary" type="button" onClick={() => onRetire(seat.id)}>Retire…</Button> : null}</td>
-            </tr>
-          ))}
+          {rows.map((seat) => {
+            const waiting = requests.find((item) => item.seat === seat.id)
+            return (
+              <tr key={seat.id}>
+                <td>{seat.name}{seat.id === leastId ? <em className="be-least">Least used</em> : null}</td>
+                {waiting ? (
+                  <td colSpan={4} className="be-connecting"><i className="be-pulse" aria-hidden="true" />Connecting to Grok Bot… asked {formatShortDate(waiting.requestedAt)}. Its numbers appear after the Connector&apos;s next run.</td>
+                ) : (
+                  <>
+                    <td>{formatShortDate(seat.shown?.createdAt || '')}</td>
+                    <td>{seat.shown?.usage === undefined || seat.shown?.usage === null ? '—' : seat.shown.usage}</td>
+                    <td>{seat.shown?.tasks === undefined || seat.shown?.tasks === null ? '—' : seat.shown.tasks}</td>
+                    <td>{formatShortDate(seat.shown?.lastActive || '')}</td>
+                  </>
+                )}
+                <td>{canRetire ? <Button variant="secondary" type="button" onClick={() => onRetire(seat.id)}>Retire…</Button> : null}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
       <p className="be-performance-note">

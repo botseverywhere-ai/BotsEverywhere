@@ -1208,12 +1208,13 @@ export function previewSnapshotJson(root: string, orgId: string, json: string): 
 /**
  * Writes Grok Bot's numbers for matched seats as soon as the Connector reports them, so Performance never waits for
  * Sync. Only rows that change nothing but numbers; a new bot, a bot that left or came back, a link, a name, a card
- * fill, or a process still waits for Sync in the drawer. Returns the slugs written; a seat that cannot be written waits too.
+ * fill, or a process still waits for Sync in the drawer. For a seat in `requested` (the owner asked the Connector to
+ * create it), the link lands too, so the bot connects on its own. Returns the slugs written; a seat that cannot be written waits.
  */
-export function applyPerformance(root: string, plan: SyncPlan): string[] {
+export function applyPerformance(root: string, plan: SyncPlan, requested: ReadonlySet<string> = new Set()): string[] {
   const written: string[] = []
   for (const row of plan.rows) {
-    if (!performanceOnly(row)) continue
+    if (!performanceOnly(row, 'slug' in row && requested.has(row.slug))) continue
     const path = seatFile(root, row.slug)
     if (!path || !existsSync(path)) continue
     try {
