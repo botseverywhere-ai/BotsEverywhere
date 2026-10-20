@@ -981,13 +981,30 @@ export function markDeletedBots(orgsDir: string): Map<string, Set<string>> {
   return marked
 }
 
-/** For each retired bot that can still be deleted in Grok Bot, the organizations where the same bot is still active. */
+/**
+ * For each retired bot that can still be deleted in Grok Bot, the organizations where the same bot is still active.
+ * One pass over the folder, not one per retired bot: the status request runs on every live event, and each org read costs real time.
+ */
 export function retiredActiveElsewhere(orgsDir: string, seats: SeatDocument[]): Record<string, string[]> {
+  const wanted = seats.filter((seat) => canDelete(seat))
+  if (!wanted.length) return {}
+  const activeIn = new Map<string, string[]>()
+  for (const orgId of listOrgSlugs(orgsDir)) {
+    const read = readOrgDir(resolve(orgsDir, orgId), orgId)
+    if (!read.ok) continue
+    const orgName = read.bundle.org.company.name
+    for (const seat of read.bundle.seats) {
+      const link = (seat.grokBotUrl ?? '').trim()
+      if (seat.kind !== 'bot' || seat.status === 'retired' || !link) continue
+      const orgs = activeIn.get(link) ?? []
+      if (!orgs.includes(orgName)) orgs.push(orgName)
+      activeIn.set(link, orgs)
+    }
+  }
   const found: Record<string, string[]> = {}
-  for (const seat of seats) {
-    if (!canDelete(seat)) continue
-    const orgs = activeWithLink(orgsDir, seat.grokBotUrl ?? '')
-    if (orgs.length) found[seat.slug] = orgs
+  for (const seat of wanted) {
+    const orgs = activeIn.get((seat.grokBotUrl ?? '').trim())
+    if (orgs?.length) found[seat.slug] = orgs
   }
   return found
 }

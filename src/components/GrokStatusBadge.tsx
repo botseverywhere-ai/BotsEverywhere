@@ -5,16 +5,42 @@ import { Button } from './Button'
 import { connectorDetails, connectorRanAt, connectorState, headerBadgeLabel, lastRunShort } from './sync-copy'
 
 const SAVING_OFF = 'The file writer is not running.'
+/** The last state this browser saw, so the badge shows it at once on the next page instead of nothing until the writer answers. */
+const REMEMBER_KEY = 'be:grok-status'
+
+type Remembered = { slug: string; status: SyncStatus }
+
+function remembered(): Remembered | null {
+  try {
+    const raw = sessionStorage.getItem(REMEMBER_KEY)
+    const saved = raw ? (JSON.parse(raw) as Partial<Remembered>) : null
+    return saved && typeof saved.slug === 'string' && saved.status && typeof saved.status === 'object' ? { slug: saved.slug, status: saved.status } : null
+  } catch {
+    return null
+  }
+}
+
+/** Only what the badge reads; the plan and the account list stay out of storage. */
+function remember(slug: string, status: SyncStatus) {
+  try {
+    const slim: SyncStatus = { snapshot: status.snapshot, error: status.error, plan: null, lastConfirmed: '', folder: '', project: status.project ? { ...status.project, account: null } : undefined }
+    sessionStorage.setItem(REMEMBER_KEY, JSON.stringify({ slug, status: slim }))
+  } catch {
+    // Storage can be off; the badge still works from the writer's answer.
+  }
+}
 
 /**
  * Before Open your org, on every page of your own copy: is Grok Bot connected?
  * One Connector serves every org in the folder, so any org's status tells it.
  */
 export function GrokStatusBadge() {
-  const [slug, setSlug] = useState('')
-  const [status, setStatus] = useState<SyncStatus | null>(null)
+  const [slug, setSlug] = useState(() => remembered()?.slug ?? '')
+  const [status, setStatus] = useState<SyncStatus | null>(() => remembered()?.status ?? null)
   const [now, setNow] = useState(() => Date.now())
   const menuRef = useRef<HTMLDetailsElement>(null)
+  // One request at a time: the minute timer and a slow writer must not stack them.
+  const busy = useRef(false)
 
   useEffect(() => {
     // A click anywhere else closes the dropdown.
@@ -30,6 +56,8 @@ export function GrokStatusBadge() {
     if (!canEditFiles) return
     let cancel = false
     const load = async () => {
+      if (busy.current) return
+      busy.current = true
       try {
         const list = await fetch('/api/orgs')
         const orgs = list.ok ? ((await list.json()) as { orgs?: { slug: string; ok: boolean }[] }).orgs ?? [] : []
@@ -42,8 +70,11 @@ export function GrokStatusBadge() {
         setSlug(first)
         setStatus(next)
         setNow(Date.now())
+        remember(first, next)
       } catch {
         if (!cancel) setStatus({ snapshot: null, error: SAVING_OFF, plan: null, lastConfirmed: '', folder: '' })
+      } finally {
+        busy.current = false
       }
     }
     void load()
@@ -55,7 +86,19 @@ export function GrokStatusBadge() {
     }
   }, [])
 
-  if (!canEditFiles || !status) return null
+  if (!canEditFiles) return null
+  if (!status) {
+    // Nothing known yet: hold the place, so the bar never looks as if there were no Grok Bot.
+    return (
+      <span className="grok-status is-checking" aria-label="Grok Bot: checking">
+        <i aria-hidden="true" />
+        <span className="grok-status-text">
+          <strong>Checking…</strong>
+          <small>Grok Bot</small>
+        </span>
+      </span>
+    )
+  }
   const { state, line } = connectorState(status, now)
   const label = headerBadgeLabel(state)
   const ranAt = state === 'connected' || state === 'stale' ? connectorRanAt(status) : undefined
