@@ -108,12 +108,9 @@ export function Landing() {
                 <figcaption>
                   Kulkarni, Bodan, and Kilgour, Deloitte, <a href={ARTICLE} target="_blank" rel="noreferrer"><cite>The work chart vs. org chart</cite></a>, June 2026
                 </figcaption>
-                <p className="ld-quote-turn">Now bots do that part. Map how the work moves.</p>
+                <p className="ld-quote-turn">Bots move the work. You manage it.</p>
               </figure>
             </div>
-            <p className="ld-steps-intro">
-              The article lays out a blueprint for doing this safely. Four of its five steps are things BotsEverywhere does for you. The fifth, rebuilding the career ladder, is work for people.
-            </p>
             <ol className="ld-steps">
               {BLUEPRINT.map((item) => (
                 <li key={item.step}>

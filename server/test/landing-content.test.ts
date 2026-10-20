@@ -13,7 +13,7 @@ test('the homepage quotes the work chart article word for word, credits it, and 
   const quoted = 'Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point'
   assert.ok(sentence.startsWith(quoted), 'the quote is the article\'s own words, cut where its sentence turns')
   assert.ok(landing.includes(`<p>${quoted}.</p>`))
-  assert.ok(landing.includes('<p className="ld-quote-turn">Now bots do that part. Map how the work moves.</p>'), 'our conclusion, in our voice, after the credit line')
+  assert.ok(landing.includes('<p className="ld-quote-turn">Bots move the work. You manage it.</p>'), 'our conclusion, in our voice, after the credit line')
   assert.doesNotMatch(landing, /they write|systematically eliminating/)
   assert.ok(landing.includes('<q>If you automate a broken process, you scale the breakdown</q>.'), 'the period is ours, outside the quote: the article continues with a colon')
   assert.match(landing, /Kulkarni, Bodan, and Kilgour, Deloitte, <a href=\{ARTICLE\} target="_blank" rel="noreferrer"><cite>The work chart vs\. org chart<\/cite><\/a>, June 2026/)
@@ -60,7 +60,7 @@ test('the homepage has no dashes in its text, and ends on the ink closing band',
 test("the homepage follows the article's blueprint in its own order and words, and says the charts as the app has them", () => {
   const steps = [...landing.matchAll(/\{ step: '([^']+)', app: '([^']+)'/g)].map((match) => [match[1], match[2]])
   assert.deepEqual(steps, [['Map the work', 'Work chart'], ['Instrument governance', 'Run log'], ['Fuse roles selectively', 'Seat cards'], ['Add guardrails', 'Checkpoints']], "the article's steps 1 to 4, in its order")
-  assert.ok(landing.includes('Four of its five steps are things BotsEverywhere does for you. The fifth, rebuilding the career ladder, is work for people.'))
+  assert.doesNotMatch(landing, /ld-steps-intro|rebuilding the career ladder/)
   assert.ok(landing.includes('The org chart shows who owns what. The work chart shows how work moves.'), 'both charts hold people and bots, as in the app')
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.ok(workspace.includes('Org chart = who owns capability. Work chart = how work moves.'), "the same idea as the app's own caption")
