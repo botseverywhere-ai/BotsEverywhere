@@ -23,6 +23,7 @@ export function CompanyOverview({
   onImported,
   onAddExisting,
   sync = null,
+  onSyncChanged,
 }: {
   /** Organization Overview, Connect bots, or Backup. */
   section: 'overview' | 'connect' | 'backup'
@@ -36,6 +37,8 @@ export function CompanyOverview({
   onOrg: (org: OrgDocument) => void
   onImported: () => Promise<void>
   onAddExisting: () => void
+  /** Re-reads the sync status after the Connector interval is saved. */
+  onSyncChanged?: () => Promise<void>
 }) {
   const derived = profileFromOrg(org, seats)
   const stored = storedProfile(sample ? 'sample' : 'user', slug)
@@ -111,7 +114,7 @@ export function CompanyOverview({
 
   return (
     <>
-    {section === 'connect' ? <ConnectGrok status={sync} editable={editable} /> : null}
+    {section === 'connect' ? <ConnectGrok status={sync} editable={editable} onIntervalSaved={onSyncChanged} /> : null}
     {section === 'connect' && editable ? (
       <LinkCompany
         slug={slug}

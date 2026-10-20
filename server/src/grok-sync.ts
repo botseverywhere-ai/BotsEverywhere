@@ -88,6 +88,8 @@ export interface ProjectInfo {
   bots: number
   /** Seat slug → the name Grok Bot gets, when another org already uses the title. */
   renamed: Record<string, string>
+  /** How often the Connector runs, from project.json. */
+  syncMinutes?: number
 }
 
 export function parseSnapshot(text: string, fallbackSyncedAt: string): { ok: true; snapshot: Snapshot } | { ok: false; error: string } {

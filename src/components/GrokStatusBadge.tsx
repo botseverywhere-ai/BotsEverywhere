@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SyncStatus } from '../../server/src/grok-sync.ts'
 import { canEditFiles } from '../mode'
-import { connectorRanAt, connectorState, headerBadgeLabel, lastRunShort } from './sync-copy'
+import { connectorDetails, connectorRanAt, connectorState, headerBadgeLabel, lastRunShort } from './sync-copy'
 
 const SAVING_OFF = 'The file writer is not running.'
 
@@ -13,6 +13,17 @@ export function GrokStatusBadge() {
   const [slug, setSlug] = useState('')
   const [status, setStatus] = useState<SyncStatus | null>(null)
   const [now, setNow] = useState(() => Date.now())
+  const menuRef = useRef<HTMLDetailsElement>(null)
+
+  useEffect(() => {
+    // A click anywhere else closes the dropdown.
+    const close = (event: MouseEvent) => {
+      const menu = menuRef.current
+      if (menu?.open && !menu.contains(event.target as Node)) menu.open = false
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [])
 
   useEffect(() => {
     if (!canEditFiles) return
@@ -50,12 +61,20 @@ export function GrokStatusBadge() {
   const ran = ranAt === undefined ? '' : lastRunShort(ranAt, now)
   if (!label) return null
   return (
-    <a className={`grok-status is-${state}`} href={slug ? `#/org/${slug}/connect-bots` : '#/orgs'} title={line} aria-label={`Grok Bot: ${line}`}>
-      <i aria-hidden="true" />
-      <span className="grok-status-text">
-        <strong>{label}</strong>
-        <small>{ran ? `Grok Bot · ${ran}` : 'Grok Bot'}</small>
-      </span>
-    </a>
+    <details ref={menuRef} className="grok-status-menu">
+      <summary className={`grok-status is-${state}`} title={line} aria-label={`Grok Bot: ${line}`}>
+        <i aria-hidden="true" />
+        <span className="grok-status-text">
+          <strong>{label}</strong>
+          <small>{ran ? `Grok Bot · ${ran}` : 'Grok Bot'}</small>
+        </span>
+      </summary>
+      <div className="grok-status-panel">
+        {connectorDetails(status, now).map((item) => <p key={item}>{item}</p>)}
+        <a href={slug ? `#/org/${slug}/connect-bots` : '#/orgs'} onClick={() => { if (menuRef.current) menuRef.current.open = false }}>
+          Change how often on Connect bots
+        </a>
+      </div>
+    </details>
   )
 }

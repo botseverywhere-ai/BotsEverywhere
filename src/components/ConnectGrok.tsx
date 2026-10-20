@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { SyncStatus } from '../../server/src/grok-sync.ts'
 import { CONNECTOR_BOT_NAME, connectorPrompt } from '../../server/src/connector-prompt.ts'
+import { DEFAULT_SYNC_MINUTES, everyLabel, joinSyncMinutes, splitSyncMinutes, validSyncMinutes, type SyncUnit } from '../../server/src/connector-timing.ts'
 import { CopyPromptButton } from '../directory/prompt-actions'
+import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import { connectorState, type ConnectorState } from './sync-copy'
@@ -22,14 +24,55 @@ function statusDetail(line: string): string {
 }
 
 /** Step 1 on Connect bots. One Connector per copy of BotsEverywhere serves every organization in it. */
-export function ConnectGrok({ status, editable }: { status: SyncStatus | null; editable: boolean }) {
+export function ConnectGrok({ status, editable, onIntervalSaved }: { status: SyncStatus | null; editable: boolean; onIntervalSaved?: () => Promise<void> }) {
   const [notice, setNotice] = useState<SaveNotice | null>(null)
   const project = status?.project
   // The writer knows the real folder of this copy; until it answers there is nothing safe to hand Grok Bot.
   const ready = Boolean(project?.orgsFolder)
   const name = project?.connectorName || CONNECTOR_BOT_NAME
-  const prompt = connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '' })
+  // How often the Connector runs. Locked until Change; while editing, the prompt follows the typed value.
+  const saved = project?.syncMinutes ?? DEFAULT_SYNC_MINUTES
+  const [editing, setEditing] = useState(false)
+  const [amount, setAmount] = useState('')
+  const [unit, setUnit] = useState<SyncUnit>('minutes')
+  const [busy, setBusy] = useState(false)
+  const typed = editing ? validSyncMinutes(joinSyncMinutes(amount, unit)) : saved
+  const minutes = typed ?? saved
+  const shown = editing ? { amount, unit } : { ...splitSyncMinutes(saved), amount: String(splitSyncMinutes(saved).amount) }
+  const prompt = connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes })
   const { state, line } = connectorState(status)
+
+  function change() {
+    const split = splitSyncMinutes(saved)
+    setAmount(String(split.amount))
+    setUnit(split.unit)
+    setNotice(null)
+    setEditing(true)
+  }
+
+  async function save() {
+    if (typed === null || busy) return
+    setBusy(true)
+    try {
+      const response = await fetch('/api/project/sync-minutes', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ minutes: typed }),
+      })
+      const body = (await response.json().catch(() => ({}))) as { error?: string }
+      if (!response.ok) {
+        setNotice(saveNotice(false, body.error || 'Could not save the interval.'))
+        return
+      }
+      setEditing(false)
+      if (onIntervalSaved) await onIntervalSaved()
+      setNotice(saveNotice(true, `Saved. Copy the prompt and paste it into ${name} in Grok Bot, so it runs every ${everyLabel(typed)}.`))
+    } catch {
+      setNotice(saveNotice(false, 'Saving is off. Restart npm run dev, then try again.'))
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <section className="connect-grok" aria-labelledby="connect-grok-title">
@@ -51,14 +94,51 @@ export function ConnectGrok({ status, editable }: { status: SyncStatus | null; e
       </dl>
       <ol className="connect-steps">
         <li>Copy the Connector prompt below.</li>
-        <li>Paste it into Grok Bot. Grok Bot creates <strong>{name}</strong> and runs it every 15 minutes.</li>
+        <li>Paste it into Grok Bot. Grok Bot creates <strong>{name}</strong> and runs it every {everyLabel(saved)}.</li>
         <li>Come back here. The status turns green after its first run, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
       </ol>
       <p className="overview-note">
         The prompt now also deletes the retired bots you choose to delete from Grok Bot. If your Connector already runs, paste this prompt into it once more so it learns that.
       </p>
       {editable && ready ? (
-        <CopyPromptButton text={prompt} label="Copy Connector prompt" onCopied={(message) => setNotice(saveNotice(true, message))} />
+        <div className="connect-interval">
+          <label htmlFor="connect-interval-amount">Runs every</label>
+          <div className="connect-interval-row">
+            <input
+              id="connect-interval-amount"
+              className="text-input"
+              type="number"
+              min={1}
+              inputMode="numeric"
+              value={shown.amount}
+              disabled={!editing || busy}
+              onChange={(event) => setAmount(event.target.value)}
+            />
+            <select className="text-input" aria-label="Unit" value={shown.unit} disabled={!editing || busy} onChange={(event) => setUnit(event.target.value as SyncUnit)}>
+              <option value="minutes">minutes</option>
+              <option value="hours">hours</option>
+              <option value="days">days</option>
+            </select>
+            {editing ? (
+              <>
+                <Button variant="primary" type="button" disabled={typed === null || busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save'}</Button>
+                <Button variant="secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancel</Button>
+              </>
+            ) : (
+              <Button variant="secondary" type="button" onClick={change}>Change</Button>
+            )}
+          </div>
+          <p className={typed === null ? 'save-off' : 'overview-note'} role={typed === null ? 'alert' : undefined}>
+            {typed === null
+              ? 'Pick between 15 minutes and 7 days.'
+              : editing
+                ? `The Connector will sync with Grok Bot every ${everyLabel(minutes)}. Save, then copy the prompt.`
+                : `The Connector syncs with Grok Bot every ${everyLabel(saved)}. Once your organizations are set up, it can run less often.`}
+          </p>
+        </div>
+      ) : null}
+      {editable && ready ? (
+        editing ? null : <CopyPromptButton text={prompt} label="Copy Connector prompt" onCopied={(message) => setNotice(saveNotice(true, message))} />
       ) : (
         <p className="overview-note">{editable ? 'The prompt appears once the file writer answers. If it does not, restart npm run dev.' : 'Copy this organization into your own folder to connect it.'}</p>
       )}

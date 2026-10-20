@@ -868,6 +868,7 @@ export function Workspace({
               onImported={rereadOrg}
               onAddExisting={() => setExistingBot(true)}
               sync={sync}
+              onSyncChanged={loadSync}
             />
           ) : null}
           {view === 'work' ? (
@@ -996,6 +997,7 @@ export function Workspace({
       {retiredOpen && editable ? (
         <RetiredDrawer
           orgSlug={bundle.id}
+          syncMinutes={sync?.project?.syncMinutes}
           seats={retired}
           deletes={sync?.deletes ?? []}
           onClose={() => setRetiredOpen(false)}

@@ -332,6 +332,10 @@ npm run dev`}</CodeBlock>
           <li>Open any organization and choose the <strong>Connect bots</strong> tab. Step 1 shows the Connector name, the folder it uses, and its status.</li>
           <li>Choose <strong>Copy Connector prompt</strong>.</li>
           <li>Paste it into Grok Bot. Grok Bot creates the Connector and runs it every 15 minutes.</li>
+          <li>
+            Once your organizations are set up it can run less often. On <strong>Connect bots</strong>, choose <strong>Change</strong> next to <strong>Runs every</strong>,
+            type a number and pick minutes, hours, or days (15 minutes to 7 days), and <strong>Save</strong>. The prompt updates; paste it into the Connector again.
+          </li>
           <li>Come back to the app. After the first run the bar turns green: <strong>Connected · last run 2 min ago</strong>.</li>
         </ol>
         <h3>The Connector&apos;s name and folder</h3>
@@ -365,9 +369,10 @@ npm run dev`}</CodeBlock>
         </p>
         <h3>Connection status</h3>
         <ul>
-          <li><strong>Connected · last run 4 min ago</strong>: the Connector wrote within the last 30 minutes. The header shows the time of that run under <strong>Connected</strong>.</li>
+          <li><strong>Connected · last run 4 min ago</strong>: the Connector wrote within two of its runs, 30 minutes at the default interval. The header shows the time of that run under <strong>Connected</strong>.</li>
           <li><strong>Not connected</strong>: no Connector has written to this folder yet.</li>
           <li><strong>Connector stopped</strong>: it wrote before but missed two runs.</li>
+          <li>Click the status in the header for how often the Connector runs, its last sync, and when the next one is due.</li>
           <li><strong>Connector ran, but its snapshot could not be read</strong>: it wrote a file the app cannot read. The organization keeps working.</li>
         </ul>
         <p>
@@ -667,7 +672,7 @@ git commit -m "Update the org chart"`}</CodeBlock>
           Grok Bot has not written to this folder yet. Check that you pasted the prompt from <strong>Connect bots</strong> of this copy, then wait up to 15 minutes for the first run.
         </p>
         <h3>The bar says Connector stopped</h3>
-        <p>The Connector missed two runs. Check in Grok Bot that it still exists and is scheduled every 15 minutes.</p>
+        <p>The Connector missed two runs. Check in Grok Bot that it still exists and runs as often as <strong>Runs every</strong> on Connect bots says.</p>
         <h3>A bot shows Not in Grok Bot</h3>
         <p>The last snapshot did not include it. Open the bot and choose <strong>Create in Grok Bot</strong>, or tick it under Going to Grok Bot in the Sync drawer.</p>
 

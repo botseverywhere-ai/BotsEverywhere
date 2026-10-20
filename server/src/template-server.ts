@@ -40,7 +40,7 @@ import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, planSync, patchSeatSource, summaryLine, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
-import { ensureProjectId, readConnector } from './project.js'
+import { ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { REQUESTS_PATH, addDelete, addRequest, canDelete, canRequest, deleteFor, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokDelete, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
@@ -1116,6 +1116,7 @@ export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
     unassigned: connector?.unassigned.map((bot) => bot.name) ?? [],
     bots: bots.length,
     renamed: renamedSeats(orgsDir, orgId, bots),
+    syncMinutes: readSyncMinutes(orgsDir),
   }
 }
 
@@ -1594,6 +1595,24 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
         return { slug, name: read.ok ? read.bundle.org.company.name : slug, ok: read.ok, errors: read.ok ? [] : read.errors }
       })
       send(res, 200, { orgs })
+      return
+    }
+    if (url.pathname === '/api/project/sync-minutes' && req.method === 'PUT') {
+      // Changes the Connector prompt, so only this computer may reach it.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may change the interval.' })
+      if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { error: 'Send JSON.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      let minutes: unknown
+      try {
+        minutes = (JSON.parse(body) as { minutes?: unknown }).minutes
+      } catch {
+        return send(res, 422, { error: 'That body is not JSON.' })
+      }
+      const saved = writeSyncMinutes(orgsDir, typeof minutes === 'number' ? minutes : NaN)
+      if (!saved.ok) return send(res, 422, { error: saved.error })
+      send(res, 200, { minutes: saved.minutes })
       return
     }
     if (url.pathname === '/api/orgs' && req.method === 'POST') {

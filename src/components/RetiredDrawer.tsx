@@ -3,6 +3,7 @@ import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import { canDelete, deleteFor, type GrokDelete } from '../../server/src/grok-requests.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import { Button } from './Button'
+import { DEFAULT_SYNC_MINUTES, everyLabel } from '../../server/src/connector-timing.ts'
 import { retiredKindLabel, retiredGrokLine } from './sync-copy'
 
 /**
@@ -11,6 +12,7 @@ import { retiredKindLabel, retiredGrokLine } from './sync-copy'
  */
 export function RetiredDrawer({
   orgSlug,
+  syncMinutes = DEFAULT_SYNC_MINUTES,
   seats,
   deletes,
   onClose,
@@ -19,6 +21,8 @@ export function RetiredDrawer({
   checkDelete,
 }: {
   orgSlug: string
+  /** How often the Connector runs, so the confirm says when the delete happens. */
+  syncMinutes?: number
   /** Retired seats only. */
   seats: SeatDocument[]
   deletes: GrokDelete[]
@@ -100,7 +104,7 @@ export function RetiredDrawer({
         <div className="be-modal" role="dialog" aria-labelledby="delete-grok-title" onClick={(event) => event.stopPropagation()}>
           <h2 id="delete-grok-title">Delete {confirm.seat.title} from Grok Bot</h2>
           <p>
-            The Connector deletes this bot from your Grok Bot account on its next run, within 15 minutes. The seat stays retired here, and you can cancel until the Connector runs.
+            The Connector deletes this bot from your Grok Bot account on its next run. It runs every {everyLabel(syncMinutes)}. The seat stays retired here, and you can cancel until the Connector runs.
           </p>
           {confirm.activeIn.length ? (
             <p className="save-off" role="alert">

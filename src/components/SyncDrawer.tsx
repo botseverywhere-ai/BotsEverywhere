@@ -8,6 +8,7 @@ import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, rowLine, statusLine } from './sync-copy'
+import { DEFAULT_SYNC_MINUTES, everyLabel } from '../../server/src/connector-timing.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then sync again.'
@@ -194,7 +195,7 @@ export function SyncDrawer({
             </button>
           </header>
           <p className="overview-note">
-            {connector} moves files between Grok Bot and every organization in this folder. Paste its prompt from Connect bots into Grok Bot once, and this drawer fills in by itself every 15 minutes.
+            {connector} moves files between Grok Bot and every organization in this folder. Paste its prompt from Connect bots into Grok Bot once, and this drawer fills in by itself every {everyLabel(project?.syncMinutes ?? DEFAULT_SYNC_MINUTES)}.
           </p>
           <p className="overview-note">{shown ? statusLine(shown, orgSlug) : 'Checking for a snapshot…'}</p>
           <div className="sync-run-now">

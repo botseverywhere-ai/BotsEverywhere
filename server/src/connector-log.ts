@@ -3,8 +3,8 @@ import { resolve } from 'node:path'
 import type { BotsFileRow } from './bots-file.ts'
 import type { FileActivity, SeatDocument } from './org-files.ts'
 import { normalizeText } from './normalize-text.ts'
-import { CONNECTOR_STALE_MS } from './connector-timing.ts'
-import { readConnector } from './project.ts'
+import { staleMinutes } from './connector-timing.ts'
+import { readConnector, readSyncMinutes } from './project.ts'
 import { appendActivity, clearDeletedBots, listOrgSlugs, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
 
 /** The app's memory of what it already logged about the Connector, so a run is never logged twice. */
@@ -188,12 +188,12 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
   writeMemory(orgsDir, memory)
 }
 
-/** Called every minute. Logs Connector stopped once in every organization when two runs are missed. */
+/** Called every minute. Logs Connector stopped once in every organization when two runs at the set interval are missed. */
 export function checkConnectorStopped(orgsDir: string, now = new Date()): void {
   const memory = readMemory(orgsDir)
   if (memory.state !== 'connected' || !memory.lastRunAt) return
   const last = new Date(memory.lastRunAt)
-  if (now.getTime() - last.getTime() <= CONNECTOR_STALE_MS) return
+  if (now.getTime() - last.getTime() <= staleMinutes(readSyncMinutes(orgsDir)) * 60_000) return
   for (const orgId of listOrgSlugs(orgsDir)) {
     const root = resolve(orgsDir, orgId)
     appendActivity(root, event(orgId, `connector-stopped-${memory.lastRunAt}`, now, 'stopped', 'Connector stopped', {

@@ -131,7 +131,7 @@ export function outgoing(plan: Pick<SyncPlan, 'rows'> | null, requests: GrokRequ
 }
 
 export { CONNECTOR_STALE_MINUTES } from '../../server/src/connector-timing.ts'
-import { CONNECTOR_STALE_MINUTES } from '../../server/src/connector-timing.ts'
+import { DEFAULT_SYNC_MINUTES, everyLabel, staleMinutes } from '../../server/src/connector-timing.ts'
 
 const KIND_LABELS: Record<string, string> = {
   connected: 'Connected',
@@ -196,11 +196,15 @@ function ago(ms: number, now: number): string {
 }
 
 /** Whether the Connector is writing to this org folder. The app only knows from grok/snapshot.json. */
-export function connectorState(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): { state: ConnectorState; line: string } {
+export function connectorState(
+  status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null,
+  now = Date.now(),
+  syncMinutes = status?.project?.syncMinutes ?? DEFAULT_SYNC_MINUTES,
+): { state: ConnectorState; line: string } {
   if (!status) return { state: 'checking', line: 'Checking the Connector…' }
   // The project Connector writes orgs/connector.json every run. An older per-org Connector only writes the org snapshot.
   const project = status.project?.connector
-  if (project) return connectorState({ snapshot: { stamp: project.stamp, syncedAt: project.syncedAt }, error: project.error }, now)
+  if (project) return connectorState({ snapshot: { stamp: project.stamp, syncedAt: project.syncedAt }, error: project.error }, now, syncMinutes)
   if (!status.snapshot) {
     if (status.error) return { state: 'unknown', line: `Connector status unknown · ${status.error}` }
     if (status.project) return { state: 'never', line: 'Not connected · no Connector has written to this project yet' }
@@ -209,8 +213,22 @@ export function connectorState(status: Pick<SyncStatus, 'snapshot' | 'error' | '
   const ran = lastRunAt(status.snapshot)
   if (Number.isNaN(ran)) return { state: 'broken', line: `The Connector's snapshot could not be read: ${status.error || 'it has no date.'}` }
   if (status.error) return { state: 'broken', line: `Connector ran ${ago(ran, now)}, but its snapshot could not be read: ${status.error}` }
-  if (now - ran > CONNECTOR_STALE_MINUTES * 60_000) return { state: 'stale', line: `Connector stopped · last run ${ago(ran, now)}` }
+  if (now - ran > staleMinutes(syncMinutes) * 60_000) return { state: 'stale', line: `Connector stopped · last run ${ago(ran, now)}` }
   return { state: 'connected', line: `Connected · last run ${ago(ran, now)}` }
+}
+
+/** The lines in the header dropdown: whether it is connected, how often it runs, the last sync, and when the next one is due. */
+export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): string[] {
+  const { state, line } = connectorState(status, now)
+  const minutes = status?.project?.syncMinutes ?? DEFAULT_SYNC_MINUTES
+  const ran = connectorRanAt(status)
+  const lines = [state === 'connected' ? 'Grok Bot is connected.' : `${line}.`]
+  lines.push(`The Connector syncs with Grok Bot every ${everyLabel(minutes)}.`)
+  if (ran !== undefined) {
+    lines.push(`Last sync: ${lastRunShort(ran, now)} (${ago(ran, now)}).`)
+    if (state === 'connected') lines.push(`Next sync due around ${lastRunShort(ran + minutes * 60_000, now)}.`)
+  }
+  return lines
 }
 
 /** When the Connector last ran, from the same file connectorState reads. Undefined when nothing says. */

@@ -1,3 +1,5 @@
+import { DEFAULT_SYNC_MINUTES, everyLabel } from './connector-timing.ts'
+
 export const CONNECTOR_BOT_NAME = 'Connector - BotsEverywhere'
 export const CONNECTOR_LOG_BOT = 'Connector'
 /** The one file Grok Bot overwrites inside the org folder. The app only reads it. */
@@ -49,7 +51,7 @@ export function connectorName(id: string): string {
 }
 
 /** Built when the person copies it, from the orgs folder of the copy that is running. */
-export function connectorPrompt({ id, orgsFolder }: { id: string; orgsFolder: string }): string {
+export function connectorPrompt({ id, orgsFolder, syncMinutes = DEFAULT_SYNC_MINUTES }: { id: string; orgsFolder: string; syncMinutes?: number }): string {
   const name = connectorName(id)
   const path = orgsFolder.trim() || '<project folder>/orgs'
   return `Create a bot named ${name}.
@@ -59,7 +61,7 @@ ${path}
 
 Every folder in ${path} that contains an org.md file is one organization. Its name is the "name" line at the top of that org.md. Below, <org> means one of those folders. Never read or write any file outside ${path}.
 
-Run this routine every 15 minutes.
+Run this routine every ${everyLabel(syncMinutes)}.
 
 On each run, for every organization:
 1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. When "promptFile" is set, use the text of that file below its frontmatter as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". That bot belongs to this organization. For each entry in "deletes", delete the bot in Grok Bot whose link is exactly "grokBotUrl". If no bot has that link, do nothing. Never delete a bot by its name alone, and never delete yourself.
