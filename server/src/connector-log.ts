@@ -188,7 +188,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
   writeMemory(orgsDir, memory)
 }
 
-/** Called every minute. Logs Connector stopped once in every organization when two runs are missed, at the interval the Connector reports, else the saved one. */
+/** Called every minute. Logs Connector stopped once in every organization after three intervals without a run, at the interval the Connector reports, else the saved one. */
 export function checkConnectorStopped(orgsDir: string, now = new Date()): void {
   const memory = readMemory(orgsDir)
   if (memory.state !== 'connected' || !memory.lastRunAt) return

@@ -370,7 +370,7 @@ npm run dev`}</CodeBlock>
         </p>
         <h3>Connection status</h3>
         <ul>
-          <li><strong>Connected · last run 4 min ago</strong>: the Connector wrote within two of its runs, 30 minutes at the default interval. The header shows the time of that run under <strong>Connected</strong>.</li>
+          <li><strong>Connected · last run 4 min ago</strong>: the Connector wrote within three of its intervals, 45 minutes at the default. Grok Bot does not run it on an exact clock, so a run a few minutes late is normal. The header shows the time of that run under <strong>Connected</strong>.</li>
           <li><strong>Not connected</strong>: no Connector has written to this folder yet.</li>
           <li><strong>Connector stopped</strong>: it wrote before but missed two runs.</li>
           <li>Click the status in the header for how often the Connector runs, its last sync, and when the next one is due.</li>

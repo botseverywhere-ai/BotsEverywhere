@@ -9,11 +9,12 @@ const at = (minutesAgo: number) => `${NOW - minutesAgo * 60_000}:812`
 const status = (snapshot: { stamp: string; syncedAt: string } | null, error = '') => ({ snapshot, error, plan: null, lastConfirmed: '', folder: 'C:\\orgs\\desk' })
 
 test('connector status: the snapshot file time says when the Connector last ran', () => {
-  assert.equal(CONNECTOR_STALE_MINUTES, 30)
+  assert.equal(CONNECTOR_STALE_MINUTES, 45)
   assert.deepEqual(connectorState(status({ stamp: at(4), syncedAt: '2026-10-01T00:00:00.000Z' }), NOW), { state: 'connected', line: 'Connected · last run 4 min ago' })
   assert.deepEqual(connectorState(status({ stamp: at(0.2), syncedAt: '' }), NOW), { state: 'connected', line: 'Connected · last run just now' })
-  assert.deepEqual(connectorState(status({ stamp: at(30), syncedAt: '' }), NOW), { state: 'connected', line: 'Connected · last run 30 min ago' })
-  assert.deepEqual(connectorState(status({ stamp: at(31), syncedAt: '' }), NOW), { state: 'stale', line: 'Connector stopped · last run 31 min ago' })
+  assert.deepEqual(connectorState(status({ stamp: at(35), syncedAt: '' }), NOW), { state: 'connected', line: 'Connected · last run 35 min ago' }, 'a late run is not a stop')
+  assert.deepEqual(connectorState(status({ stamp: at(45), syncedAt: '' }), NOW), { state: 'connected', line: 'Connected · last run 45 min ago' })
+  assert.deepEqual(connectorState(status({ stamp: at(46), syncedAt: '' }), NOW), { state: 'stale', line: 'Connector stopped · last run 46 min ago' })
   assert.deepEqual(connectorState(status({ stamp: at(180), syncedAt: '' }), NOW), { state: 'stale', line: 'Connector stopped · last run 3 h ago' })
 })
 

@@ -26,7 +26,8 @@ test('the interval reads as words, splits into a number and a unit, and stays be
   assert.equal(validSyncMinutes(10), null, 'under 15 minutes')
   assert.equal(validSyncMinutes(8 * 1440), null, 'over 7 days')
   assert.equal(validSyncMinutes(22.5), null, 'whole minutes only')
-  assert.equal(staleMinutes(60), 120, 'two missed runs')
+  assert.equal(staleMinutes(60), 180, 'three intervals')
+  assert.equal(staleMinutes(17), 51, 'a 35-minute gap at 17 minutes is not a stop')
 })
 
 test('the Connector prompt runs at the saved interval', () => {
@@ -82,11 +83,12 @@ test('the writer saves the interval from this computer only, and the sync status
   }
 })
 
-test('Disconnected and Connector stopped wait for two missed runs at the set interval', () => {
+test('Disconnected and Connector stopped wait for three intervals at the set interval', () => {
   const now = Date.parse('2026-10-20T15:00:00.000Z')
   const ranAgo = (minutes: number) => ({ snapshot: null, error: '', project: { id: 'k3f9', connectorName: 'C', orgsFolder: '/o', connector: { stamp: `${now - minutes * 60_000}:10`, syncedAt: '', error: '' }, unassigned: [], bots: 0, renamed: {}, syncMinutes: 60 } })
   assert.equal(connectorState(ranAgo(45), now).state, 'connected', '45 minutes is not late for an hourly Connector')
-  assert.equal(connectorState(ranAgo(125), now).state, 'stale')
+  assert.equal(connectorState(ranAgo(125), now).state, 'connected', 'two hours late is not yet three')
+  assert.equal(connectorState(ranAgo(185), now).state, 'stale')
   const details = connectorDetails(ranAgo(10), now)
   assert.equal(details.title, 'Connected to Grok Bot')
   assert.equal(details.note, 'The Connector syncs your organizations with Grok Bot every hour.')
@@ -94,7 +96,7 @@ test('Disconnected and Connector stopped wait for two missed runs at the set int
   assert.equal(details.facts[0]![1], 'hour')
   assert.match(details.facts[1]![1], /^\d{2}:\d{2}, 10 min ago$/)
   assert.match(details.facts[2]![1], /^around \d{2}:\d{2}$/)
-  assert.equal(connectorDetails(ranAgo(125), now).title, 'Connector stopped')
+  assert.equal(connectorDetails(ranAgo(185), now).title, 'Connector stopped')
 
   const { orgs, done } = project()
   try {
@@ -107,7 +109,7 @@ test('Disconnected and Connector stopped wait for two missed runs at the set int
     recordConnectorRun(orgs, 'Connector')
     checkConnectorStopped(orgs)
     assert.equal(JSON.parse(readFileSync(join(orgs, 'connector-log.json'), 'utf8')).state, 'connected', 'an hourly Connector 45 minutes in is not stopped')
-    checkConnectorStopped(orgs, new Date(Date.now() + 90 * 60_000))
+    checkConnectorStopped(orgs, new Date(Date.now() + 150 * 60_000))
     assert.equal(JSON.parse(readFileSync(join(orgs, 'connector-log.json'), 'utf8')).state, 'stopped')
   } finally {
     done()
@@ -209,4 +211,10 @@ test("saving the interval moves the Connector's own process to it, and keeps the
     await started.close()
     done()
   }
+})
+
+test('Connect bots no longer says the prompt deletes bots', () => {
+  const connect = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(connect, /also deletes the retired bots/)
+  assert.match(connect, /it leaves deleting bots to you/)
 })

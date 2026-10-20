@@ -108,7 +108,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
         <li>Come back here. The status turns green after its first run, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
       </ol>
       <p className="overview-note">
-        The prompt now also deletes the retired bots you choose to delete from Grok Bot. If your Connector already runs, paste this prompt into it once more so it learns that.
+        The prompt changed: bots from the directory get their directory prompt, the Connector reports how often it runs, and it leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
       </p>
       {editable && ready ? (
         <div className="connect-interval">

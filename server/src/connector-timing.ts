@@ -3,9 +3,13 @@ export const DEFAULT_SYNC_MINUTES = 15
 export const MIN_SYNC_MINUTES = 15
 export const MAX_SYNC_MINUTES = 7 * 24 * 60
 
-/** Two missed runs mean it stopped. Shared by the status bar and the logs. */
+/**
+ * Three intervals without a run mean it stopped: it has missed at least two runs. Grok Bot does not run the
+ * Connector on an exact clock (a 17-minute Connector ran 6 to 35 minutes apart), so two intervals raised false alarms.
+ * Shared by the status bar and the logs.
+ */
 export function staleMinutes(syncMinutes = DEFAULT_SYNC_MINUTES): number {
-  return 2 * syncMinutes
+  return 3 * syncMinutes
 }
 
 export const CONNECTOR_STALE_MINUTES = staleMinutes()
