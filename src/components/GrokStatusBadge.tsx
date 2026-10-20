@@ -37,8 +37,6 @@ export function GrokStatusBadge() {
   const [status, setStatus] = useState<ConnectorView | null>(() => remembered()?.status ?? null)
   const [now, setNow] = useState(() => Date.now())
   const menuRef = useRef<HTMLDetailsElement>(null)
-  // One request at a time: the minute timer and a slow writer must not stack them.
-  const busy = useRef(false)
 
   useEffect(() => {
     // A click anywhere else closes the dropdown.
@@ -53,9 +51,13 @@ export function GrokStatusBadge() {
   useEffect(() => {
     if (!canEditFiles) return
     let cancel = false
+    // One request at a time: the minute timer and a slow writer must not stack them. The flag belongs to this
+    // run of the effect: React starts it twice in development, and the first run is cancelled, so a shared flag
+    // would make the second run skip its request and leave the badge on Checking.
+    let inFlight = false
     const load = async () => {
-      if (busy.current) return
-      busy.current = true
+      if (inFlight) return
+      inFlight = true
       try {
         const response = await fetch('/api/connector')
         if (!response.ok || cancel) return
@@ -70,7 +72,7 @@ export function GrokStatusBadge() {
       } catch {
         if (!cancel) setStatus({ snapshot: null, error: SAVING_OFF })
       } finally {
-        busy.current = false
+        inFlight = false
       }
     }
     void load()
