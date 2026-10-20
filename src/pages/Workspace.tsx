@@ -17,6 +17,7 @@ import { shownSeatTab } from '../components/seat-drawer-tab'
 import { HireDrawer, type HireDraft, type HireResult, type OrgChoice } from '../components/HireDrawer'
 import { ExistingBotDrawer, type ExistingBotDraft, type ExistingBotResult } from '../components/ExistingBotDrawer'
 import { SyncDrawer } from '../components/SyncDrawer'
+import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel } from '../components/sync-copy'
@@ -99,6 +100,7 @@ export function Workspace({
   const [existingBot, setExistingBot] = useState(false)
   const [sync, setSync] = useState<SyncStatus | null>(null)
   const [syncOpen, setSyncOpen] = useState(false)
+  const [retiredOpen, setRetiredOpen] = useState(false)
   const [present, setPresent] = useState(false)
   const [savedFp, setSavedFp] = useState(() => fingerprint(opened))
   // Seats as last saved. A save checks only the cards that changed since.
@@ -573,6 +575,47 @@ export function Workspace({
     }
   }
 
+  /** POST asks the Connector to delete a retired bot in Grok Bot; DELETE takes the request back. */
+  async function deleteRequest(method: 'POST' | 'DELETE', slug: string, name: string): Promise<boolean> {
+    setBotNotice(null)
+    try {
+      const response = await fetch(`/api/orgs/${bundle.id}/grok/deletes`, {
+        method,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ seat: slug }),
+      })
+      const text = await response.text()
+      if (response.status === 404 && !text.includes('Org not found')) {
+        tell(saveNotice(false, 'The file writer needs a restart. Stop npm run dev and start it again.'))
+        return false
+      }
+      const body = (text.trimStart().startsWith('{') ? JSON.parse(text) : {}) as { errors?: string[]; error?: string }
+      if (!response.ok) {
+        tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not ask the Connector.'))
+        return false
+      }
+      await loadSync()
+      tell(saveNotice(true, method === 'POST' ? `Asked the Connector to delete ${name} in Grok Bot` : `Cancelled the request to delete ${name} in Grok Bot`))
+      return true
+    } catch {
+      setWriter('down')
+      tell(saveNotice(false, SAVING_OFF))
+      return false
+    }
+  }
+
+  /** Organizations that still have this bot active, for the warning before a delete. */
+  async function activeElsewhere(slug: string): Promise<string[]> {
+    try {
+      const response = await fetch(`/api/orgs/${bundle.id}/grok/deletes?seat=${encodeURIComponent(slug)}`)
+      if (!response.ok) return []
+      const body = (await response.json()) as { activeIn?: string[] }
+      return Array.isArray(body.activeIn) ? body.activeIn : []
+    } catch {
+      return []
+    }
+  }
+
   async function moveSeat(slug: string, reportsTo: string) {
     setBotNotice(null)
     try {
@@ -861,21 +904,12 @@ export function Workspace({
                 workHref={(id) => `${hrefFor(bundle.id, sample, 'work')}?seat=${encodeURIComponent(id)}`}
                 live={liveMap}
                 grokStates={editable}
+                retired={editable ? { count: retired.length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
                 actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
               />
               {editable && soloYou ? <p className="be-caption">No bots yet. Import them from <a href={hrefFor(bundle.id, sample, 'connect')}>Connect bots</a>.</p> : null}
               {editable && soloYou ? <div className="be-solo"><p>Your org has one seat: you.</p></div> : null}
               <p className="be-caption">Org chart = who owns capability. Work chart = how work moves.</p>
-              {retired.length ? (
-                <details className="be-retired">
-                  <summary>Retired ({retired.length})</summary>
-                  <ul>
-                    {retired.map((seat) => (
-                      <li key={seat.slug}>{seat.title}</li>
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
             </>
           ) : null}
           {view === 'directory' ? (
@@ -959,6 +993,17 @@ export function Workspace({
       {existingBot ? (
         <ExistingBotDrawer orgSlug={bundle.id} seats={seats} onClose={() => setExistingBot(false)} onSave={commitExisting} />
       ) : null}
+      {retiredOpen && editable ? (
+        <RetiredDrawer
+          orgSlug={bundle.id}
+          seats={retired}
+          deletes={sync?.deletes ?? []}
+          onClose={() => setRetiredOpen(false)}
+          onDelete={(seat) => deleteRequest('POST', seat.slug, seat.title)}
+          onCancel={async (seat) => { await deleteRequest('DELETE', seat.slug, seat.title) }}
+          checkDelete={(seat) => activeElsewhere(seat.slug)}
+        />
+      ) : null}
       {syncOpen && editable ? (
         <SyncDrawer
           orgSlug={bundle.id}
@@ -966,6 +1011,7 @@ export function Workspace({
           seats={seats}
           onClose={() => setSyncOpen(false)}
           onRefresh={loadSync}
+          onCancelDelete={async (slug) => { await deleteRequest('DELETE', slug, seats.find((seat) => seat.slug === slug)?.title || slug) }}
           onApplied={async (message) => {
             setSyncOpen(false)
             try {

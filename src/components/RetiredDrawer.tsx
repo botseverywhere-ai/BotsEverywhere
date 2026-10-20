@@ -1,0 +1,119 @@
+import { useState } from 'react'
+import { formatShortDate } from '../../server/src/bot-metrics.ts'
+import { canDelete, deleteFor, type GrokDelete } from '../../server/src/grok-requests.ts'
+import type { SeatDocument } from '../../server/src/org-files.ts'
+import { Button } from './Button'
+import { retiredKindLabel, retiredGrokLine } from './sync-copy'
+
+/**
+ * Everyone retired from this organization, opened from Retired in the org chart legend.
+ * A retired bot with a Grok Bot link can be deleted there: the Connector does it on its next run, and until then it can be cancelled.
+ */
+export function RetiredDrawer({
+  orgSlug,
+  seats,
+  deletes,
+  onClose,
+  onDelete,
+  onCancel,
+  checkDelete,
+}: {
+  orgSlug: string
+  /** Retired seats only. */
+  seats: SeatDocument[]
+  deletes: GrokDelete[]
+  onClose: () => void
+  onDelete: (seat: SeatDocument) => Promise<boolean>
+  onCancel: (seat: SeatDocument) => Promise<void>
+  /** Organizations that still have this bot active. */
+  checkDelete: (seat: SeatDocument) => Promise<string[]>
+}) {
+  const [confirm, setConfirm] = useState<{ seat: SeatDocument; activeIn: string[] } | null>(null)
+  const [busy, setBusy] = useState(false)
+  const sorted = [...seats].sort((a, b) => (b.retiredAt || '').localeCompare(a.retiredAt || ''))
+
+  async function ask(seat: SeatDocument) {
+    setBusy(true)
+    const activeIn = await checkDelete(seat)
+    setBusy(false)
+    setConfirm({ seat, activeIn })
+  }
+
+  async function confirmDelete() {
+    if (!confirm || busy) return
+    setBusy(true)
+    const ok = await onDelete(confirm.seat)
+    setBusy(false)
+    if (ok) setConfirm(null)
+  }
+
+  async function cancel(seat: SeatDocument) {
+    setBusy(true)
+    await onCancel(seat)
+    setBusy(false)
+  }
+
+  return (
+    <div className="be-scrim" onClick={busy ? undefined : onClose}>
+      <aside className="be-drawer be-hire retired-drawer" role="dialog" aria-labelledby="retired-title" onClick={(event) => event.stopPropagation()}>
+        <div className="be-hire-scroll">
+          <header className="be-hire-head">
+            <h2 id="retired-title">Retired ({seats.length})</h2>
+            <button type="button" className="be-icon" onClick={onClose} aria-label="Close" disabled={busy}>
+              ×
+            </button>
+          </header>
+          <p className="overview-note">
+            Retire takes a seat out of this organization only. A retired bot keeps running in Grok Bot until you delete it there.
+          </p>
+          {sorted.length ? (
+            <ul className="retired-list">
+              {sorted.map((seat) => {
+                const waiting = seat.kind === 'bot' ? deleteFor(deletes, seat) : undefined
+                return (
+                  <li key={seat.slug}>
+                    <div className="retired-row">
+                      <strong>{seat.title}</strong>
+                      <span className="retired-meta">{retiredKindLabel(seat.kind)} · retired {seat.retiredAt ? formatShortDate(seat.retiredAt.slice(0, 10)) : 'date unknown'}</span>
+                      {seat.kind === 'bot' ? <span className="retired-meta">{retiredGrokLine(seat, waiting)}</span> : null}
+                    </div>
+                    {waiting && !seat.grokDeletedAt ? (
+                      <Button variant="secondary" type="button" disabled={busy} onClick={() => void cancel(seat)}>Cancel</Button>
+                    ) : canDelete(seat) ? (
+                      <Button variant="secondary" type="button" disabled={busy} onClick={() => void ask(seat)}>Delete from Grok Bot…</Button>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="overview-note">Nobody has been retired from this organization.</p>
+          )}
+        </div>
+        <footer className="be-hire-foot">
+          <div className="dir-actions">
+            <Button variant="secondary" type="button" disabled={busy} onClick={onClose}>Close</Button>
+          </div>
+        </footer>
+      </aside>
+      {confirm ? (
+        <div className="be-modal" role="dialog" aria-labelledby="delete-grok-title" onClick={(event) => event.stopPropagation()}>
+          <h2 id="delete-grok-title">Delete {confirm.seat.title} from Grok Bot</h2>
+          <p>
+            The Connector deletes this bot from your Grok Bot account on its next run, within 15 minutes. The seat stays retired here, and you can cancel until the Connector runs.
+          </p>
+          {confirm.activeIn.length ? (
+            <p className="save-off" role="alert">
+              {confirm.seat.title} is still active in {confirm.activeIn.join(', ')}. Deleting it in Grok Bot stops it there too.
+            </p>
+          ) : null}
+          <p className="overview-note">
+            The Connector learns this from its prompt. If you have not yet, paste the prompt from <a href={`#/org/${orgSlug}/connect-bots`}>Connect bots</a> into it once.
+          </p>
+          <Button variant="secondary" type="button" disabled={busy} onClick={() => setConfirm(null)}>Cancel</Button>
+          <Button variant="primary" type="button" disabled={busy} onClick={() => void confirmDelete()}>{busy ? 'Asking…' : 'Delete from Grok Bot'}</Button>
+        </div>
+      ) : null}
+    </div>
+  )
+}

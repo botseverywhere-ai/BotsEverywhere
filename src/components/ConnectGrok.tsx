@@ -54,6 +54,9 @@ export function ConnectGrok({ status, editable }: { status: SyncStatus | null; e
         <li>Paste it into Grok Bot. Grok Bot creates <strong>{name}</strong> and runs it every 15 minutes.</li>
         <li>Come back here. The status turns green after its first run, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
       </ol>
+      <p className="overview-note">
+        The prompt now also deletes the retired bots you choose to delete from Grok Bot. If your Connector already runs, paste this prompt into it once more so it learns that.
+      </p>
       {editable && ready ? (
         <CopyPromptButton text={prompt} label="Copy Connector prompt" onCopied={(message) => setNotice(saveNotice(true, message))} />
       ) : (
@@ -65,7 +68,7 @@ export function ConnectGrok({ status, editable }: { status: SyncStatus | null; e
           <span className="connect-prompt-summary">
             Show the prompt
             {state === 'connected' ? (
-              <span className="connect-badge is-connected"><i aria-hidden="true" />You are connected. No need to paste it again.</span>
+              <span className="connect-badge is-connected"><i aria-hidden="true" />You are connected.</span>
             ) : null}
           </span>
           <span className="grok-chevron" aria-hidden="true" />

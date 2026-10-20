@@ -1,6 +1,6 @@
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import type { SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
-import { canRequest, fulfilledSeats, type GrokRequest } from '../../server/src/grok-requests.ts'
+import { canRequest, fulfilledSeats, type GrokDelete, type GrokRequest } from '../../server/src/grok-requests.ts'
 import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
 import type { NoticeInput } from '../live/notices.ts'
 
@@ -79,6 +79,19 @@ export function legendCounts(
   return counts
 }
 
+export function retiredKindLabel(kind: SeatDocument['kind']): string {
+  if (kind === 'human') return 'Human'
+  return kind === 'system' ? 'System' : 'Bot'
+}
+
+/** A retired bot's line in the Retired list: deleted, waiting for the Connector, or still in Grok Bot. */
+export function retiredGrokLine(seat: Pick<SeatDocument, 'grokBotUrl' | 'grokDeletedAt'>, waiting?: Pick<GrokDelete, 'requestedAt'>): string {
+  if (seat.grokDeletedAt) return `Deleted from Grok Bot on ${formatShortDate(seat.grokDeletedAt)}`
+  if (waiting) return `Delete asked ${formatShortDate(waiting.requestedAt)}. The Connector deletes it on its next run.`
+  if (!seat.grokBotUrl?.trim()) return 'No Grok Bot link, so it cannot be deleted from here'
+  return 'Still in Grok Bot'
+}
+
 /** Which way a logged change went. Sync events written before the field existed came from Grok Bot. */
 export function grokDirection(event: Pick<FileActivity, 'id' | 'grok'>): 'in' | 'out' | undefined {
   if (event.grok) return event.grok
@@ -130,6 +143,7 @@ const KIND_LABELS: Record<string, string> = {
   sync: 'Sync',
   request: 'Request',
   created: 'Created',
+  deleted: 'Deleted',
   added: 'Added',
 }
 

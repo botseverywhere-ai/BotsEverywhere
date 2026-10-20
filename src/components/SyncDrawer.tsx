@@ -22,6 +22,7 @@ export function SyncDrawer({
   onClose,
   onRefresh,
   onApplied,
+  onCancelDelete,
 }: {
   orgSlug: string
   status: SyncStatus | null
@@ -29,6 +30,8 @@ export function SyncDrawer({
   onClose: () => void
   onRefresh: () => Promise<void>
   onApplied: (message: string) => Promise<void>
+  /** Takes back a delete the Connector has not done yet. */
+  onCancelDelete?: (seat: string) => Promise<void>
 }) {
   const [source, setSource] = useState<Source>({ kind: 'file' })
   const [busy, setBusy] = useState(false)
@@ -42,6 +45,7 @@ export function SyncDrawer({
   const project = status?.project
   // Requests live beside the snapshot, so they come from the folder status even while a pasted file is previewed.
   const going = outgoing(plan, status?.requests ?? [], seats)
+  const deletes = status?.deletes ?? []
   const renamed = project?.renamed ?? {}
   const unassigned = project?.unassigned ?? []
   // One Grok Bot account serves every org in this folder, so the limit counts them all.
@@ -230,12 +234,27 @@ export function SyncDrawer({
           <section className="sync-side" aria-labelledby="sync-out">
             <h3 id="sync-out" className="sync-side-title">Going to Grok Bot</h3>
             <p className={limitOver ? 'save-off' : 'overview-note'} role={limitOver ? 'alert' : undefined}>{limitLine}</p>
-            {going.waiting.length === 0 && going.ready.length === 0 ? <p className="overview-note">{activeBotCount(seats) ? 'Every bot in the org chart is in Grok Bot.' : 'This organization has no bots yet.'}</p> : null}
+            {going.waiting.length === 0 && going.ready.length === 0 && deletes.length === 0 ? <p className="overview-note">{activeBotCount(seats) ? 'Every bot in the org chart is in Grok Bot.' : 'This organization has no bots yet.'}</p> : null}
             {going.waiting.length ? (
               <section className="sync-group">
                 <h3>Waiting for the Connector ({going.waiting.length})</h3>
                 <ul>
                   {going.waiting.map((item) => <li key={item.slug}>{item.name} → asked {formatShortDate(item.requestedAt)}, created on the Connector&apos;s next run</li>)}
+                </ul>
+              </section>
+            ) : null}
+            {deletes.length ? (
+              <section className="sync-group">
+                <h3>Waiting to be deleted ({deletes.length})</h3>
+                <ul className="sync-picks">
+                  {deletes.map((item) => (
+                    <li key={item.grokBotUrl} className="sync-waiting-row">
+                      <span>{item.name} → asked {formatShortDate(item.requestedAt)}, deleted on the Connector&apos;s next run</span>
+                      {onCancelDelete && item.seats[0] ? (
+                        <Button variant="secondary" type="button" disabled={busy} onClick={() => void onCancelDelete(item.seats[0]!)}>Cancel</Button>
+                      ) : null}
+                    </li>
+                  ))}
                 </ul>
               </section>
             ) : null}

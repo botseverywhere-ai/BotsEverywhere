@@ -31,6 +31,7 @@ export function OrgChart({
   live,
   grokStates = false,
   actions,
+  retired,
 }: {
   seats: Seat[]
   selectedId: string
@@ -49,6 +50,8 @@ export function OrgChart({
   grokStates?: boolean
   /** Buttons at the start of the toolbar, so they sit in view above the chart. */
   actions?: ReactNode
+  /** Retired seats of an org of your own. The legend entry opens the list. */
+  retired?: { count: number; onOpen: () => void }
 }) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLUListElement>(null)
@@ -354,6 +357,13 @@ export function OrgChart({
               <i className="swatch swatch-off-grok" /> Not in Grok Bot <span className="legend-count">{counts.offGrok}</span>
             </li>
           </>
+        ) : null}
+        {retired ? (
+          <li>
+            <Button variant="ghost" type="button" className="legend-retired" disabled={retired.count === 0} onClick={retired.onOpen}>
+              <i className="swatch swatch-retired" /> Retired <span className="legend-count">{retired.count}</span>
+            </Button>
+          </li>
         ) : null}
       </ul>
     </div>
