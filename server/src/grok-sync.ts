@@ -363,6 +363,7 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
   return { kind: 'updated', name: seat.title, slug: seat.slug, renamed: patch.title !== undefined, changes, patch }
 }
 
-function slugify(name: string): string {
+/** A file name from a name: lowercase, hyphens for anything else. Empty when nothing usable is left. */
+export function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48)
 }

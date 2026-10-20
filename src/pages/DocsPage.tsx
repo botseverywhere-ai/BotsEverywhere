@@ -398,7 +398,7 @@ npm run dev`}</CodeBlock>
             Choose <strong>Add a seat</strong>. It sits above the chart, next to <strong>Hire from the directory</strong> and <strong>Add existing bot</strong>,
             on every organization of your own.
           </li>
-          <li>Fill in <strong>Short name</strong> (lowercase, like <code>research</code>), <strong>Title</strong>, <strong>Kind</strong> (Human, Bot, or System), and <strong>Reports to</strong>.</li>
+          <li>Fill in <strong>Short name</strong> (like <strong>Co Founder</strong>; the seat file becomes <code>co-founder.md</code>), <strong>Title</strong>, <strong>Kind</strong> (Human, Bot, or System), and <strong>Reports to</strong>.</li>
           <li>Choose <strong>Add seat</strong>. The seat file is written, and the chart re-reads it from disk.</li>
         </ol>
         <p>

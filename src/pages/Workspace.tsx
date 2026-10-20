@@ -22,7 +22,7 @@ import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel } from '../components/sync-copy'
 import { managerChoices } from '../org/manager-choices'
-import type { SyncStatus } from '../../server/src/grok-sync.ts'
+import { slugify, type SyncStatus } from '../../server/src/grok-sync.ts'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -1122,7 +1122,9 @@ function AddSeatDialog({
   onClose: () => void
   onAdd: (seat: SeatDocument) => void
 }) {
-  const [slug, setSlug] = useState('')
+  const [shortName, setShortName] = useState('')
+  // The seat file is named from the short name, so capitals and spaces can be typed as they are.
+  const slug = slugify(shortName)
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<SeatDocument['kind']>('human')
   const [reportsTo, setReportsTo] = useState(seats.find((seat) => seat.slug === 'you')?.slug ?? seats[0]?.slug ?? '')
@@ -1133,7 +1135,7 @@ function AddSeatDialog({
       {error ? <p className="save-off" role="alert">{error}</p> : null}
       <label>
         Short name
-        <input value={slug} onChange={(event) => setSlug(event.target.value.trim().toLowerCase())} />
+        <input value={shortName} onChange={(event) => setShortName(event.target.value)} />
       </label>
       <label>
         Title
@@ -1166,11 +1168,11 @@ function AddSeatDialog({
           
           onClick={() => {
             if (!SEAT_SLUG.test(slug)) {
-              setError('Use a lowercase slug, like research or site-bot.')
+              setError('Type a short name with letters or numbers, like Research or Site Bot.')
               return
             }
             if (seats.some((seat) => seat.slug === slug)) {
-              setError('That slug is already a seat.')
+              setError(`A seat named ${shortName.trim()} is already here. Pick another short name.`)
               return
             }
             if (!title.trim()) {
