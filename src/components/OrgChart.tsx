@@ -4,7 +4,7 @@ import { SeatCardCue } from './SeatCardCue'
 import { anchoredScroll, fitScale, formatZoom, pickedSeatName } from './org-zoom'
 import { Button } from './Button'
 import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
-import { grokSyncClass, grokSyncTag, legendCounts } from './sync-copy'
+import { grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, type LegendGroup } from './sync-copy'
 
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 1.8
@@ -32,6 +32,7 @@ export function OrgChart({
   grokStates = false,
   actions,
   retired,
+  legendLists = false,
 }: {
   seats: Seat[]
   selectedId: string
@@ -52,6 +53,8 @@ export function OrgChart({
   actions?: ReactNode
   /** Retired seats of an org of your own. The legend entry opens the list. */
   retired?: { count: number; onOpen: () => void }
+  /** Each legend number opens the seats it counts. Off on templates and samples. */
+  legendLists?: boolean
 }) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLUListElement>(null)
@@ -66,6 +69,7 @@ export function OrgChart({
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const [query, setQuery] = useState('')
   const [foundId, setFoundId] = useState('')
+  const [listed, setListed] = useState<LegendGroup | null>(null)
 
   const forest = useMemo(() => buildForest(seats), [seats])
   const seatNames = useMemo(() => seats.map((seat) => seat.name), [seats])
@@ -230,7 +234,11 @@ export function OrgChart({
     const match =
       seats.find((seat) => seat.name.toLowerCase() === q) ??
       seats.find((seat) => seat.name.toLowerCase().includes(q))
-    if (!match) return
+    if (match) focusOn(match)
+  }
+
+  /** Opens every manager above the seat, selects it, and keeps it in view through the re-fit its panel causes. */
+  function focusOn(match: Seat) {
     const open = new Set<string>()
     let parent = parents.get(match.id)
     while (parent) {
@@ -272,6 +280,18 @@ export function OrgChart({
     return () => window.clearTimeout(timer)
   }, [highlightId])
 
+  /** A legend number, as a button that lists its seats when the lists are on. */
+  function legendItem(group: LegendGroup, swatch: string, label: string, count: number) {
+    const body = <><i className={`swatch ${swatch}`} /> {label} <span className="legend-count">{count}</span></>
+    if (!legendLists) return <li>{body}</li>
+    return (
+      <li>
+        <Button variant="ghost" type="button" className="legend-button" disabled={count === 0} onClick={() => setListed(group)}>{body}</Button>
+      </li>
+    )
+  }
+
+  const listedSeats = listed ? legendGroup(seats, listed, emptyIds) : []
   const solo = seats.length <= 1
   return (
     <div className={solo ? 'org-chart is-solo' : 'org-chart'} data-testid="org-chart" data-highlight={highlightId || undefined}>
@@ -352,33 +372,55 @@ export function OrgChart({
       </div>
       {actions ? <div className="org-actions">{actions}</div> : null}
       <ul className="org-legend">
-        <li>
-          <i className="swatch swatch-human" /> Human <span className="legend-count">{counts.human}</span>
-        </li>
-        <li>
-          <i className="swatch swatch-bot" /> Bot <span className="legend-count">{counts.bot}</span>
-        </li>
-        <li>
-          <i className="swatch swatch-system" /> System <span className="legend-count">{counts.system}</span>
-        </li>
+        {legendItem('human', 'swatch-human', 'Human', counts.human)}
+        {legendItem('bot', 'swatch-bot', 'Bot', counts.bot)}
+        {legendItem('system', 'swatch-system', 'System', counts.system)}
         {grokStates ? (
           <>
-            <li>
-              <i className="swatch swatch-grok" /> In Grok Bot <span className="legend-count">{counts.inGrok}</span>
-            </li>
-            <li>
-              <i className="swatch swatch-off-grok" /> Not in Grok Bot <span className="legend-count">{counts.offGrok}</span>
-            </li>
+            {legendItem('in-grok', 'swatch-grok', 'In Grok Bot', counts.inGrok)}
+            {legendItem('off-grok', 'swatch-off-grok', 'Not in Grok Bot', counts.offGrok)}
           </>
         ) : null}
         {retired ? (
           <li>
-            <Button variant="ghost" type="button" className="legend-retired" disabled={retired.count === 0} onClick={retired.onOpen}>
+            <Button variant="ghost" type="button" className="legend-button legend-retired" disabled={retired.count === 0} onClick={retired.onOpen}>
               <i className="swatch swatch-retired" /> Retired <span className="legend-count">{retired.count}</span>
             </Button>
           </li>
         ) : null}
       </ul>
+      {listed ? (
+        <div className="be-scrim" onClick={() => setListed(null)}>
+          <aside className="be-drawer be-hire legend-drawer" role="dialog" aria-labelledby="legend-list-title" onClick={(event) => event.stopPropagation()}>
+            <div className="be-hire-scroll">
+              <header className="be-hire-head">
+                <h2 id="legend-list-title">{LEGEND_TITLES[listed]} ({listedSeats.length})</h2>
+                <button type="button" className="be-icon" onClick={() => setListed(null)} aria-label="Close">×</button>
+              </header>
+              <p className="overview-note">Choose a seat to find it on the chart.</p>
+              <ul className="retired-list">
+                {listedSeats.map((seat) => (
+                  <li key={seat.id}>
+                    <button type="button" className="legend-row" onClick={() => { setListed(null); focusOn(seat) }}>
+                      <strong>{seat.name}</strong>
+                      <span className="retired-meta">
+                        {seat.role && seat.role !== seat.name ? `${seat.role} · ` : ''}
+                        {seat.reportsTo ? `reports to ${seats.find((item) => item.id === seat.reportsTo)?.name ?? seat.reportsTo}` : 'top of the chart'}
+                      </span>
+                      {grokStates && seat.type === 'bot' ? <span className="retired-meta">{grokSyncTag(seat)}</span> : null}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <footer className="be-hire-foot">
+              <div className="dir-actions">
+                <Button variant="secondary" type="button" onClick={() => setListed(null)}>Close</Button>
+              </div>
+            </footer>
+          </aside>
+        </div>
+      ) : null}
     </div>
   )
 }

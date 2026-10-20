@@ -864,6 +864,7 @@ export function Workspace({
                 workHref={(id) => `${hrefFor(bundle.id, sample, 'work')}?seat=${encodeURIComponent(id)}`}
                 live={liveMap}
                 grokStates={editable}
+                legendLists={editable}
                 retired={editable ? { count: retired.length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
                 actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
               />

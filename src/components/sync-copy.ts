@@ -91,6 +91,30 @@ export function retiredGrokLine(seat: Pick<SeatDocument, 'grokBotUrl' | 'grokDel
   return 'Still in Grok Bot'
 }
 
+export type LegendGroup = 'human' | 'bot' | 'system' | 'in-grok' | 'off-grok'
+
+export const LEGEND_TITLES: Record<LegendGroup, string> = {
+  human: 'Humans',
+  bot: 'Bots',
+  system: 'Systems',
+  'in-grok': 'In Grok Bot',
+  'off-grok': 'Not in Grok Bot',
+}
+
+/** The seats one legend number counts, by the same rules as legendCounts, so the list always matches the number. */
+export function legendGroup<T extends { id: string; type: 'human' | 'bot' | 'system' } & Pick<SyncSeat, 'grokSync' | 'grokBotUrl'>>(
+  seats: T[],
+  group: LegendGroup,
+  emptyIds: readonly string[] = [],
+): T[] {
+  return seats.filter((seat) => {
+    if (emptyIds.includes(seat.id)) return false
+    if (group === 'human' || group === 'bot' || group === 'system') return seat.type === group
+    if (seat.type !== 'bot') return false
+    return grokSyncClass(seat) === (group === 'in-grok' ? 'is-in-grok' : 'is-off-grok')
+  })
+}
+
 /** Which way a logged change went. Sync events written before the field existed came from Grok Bot. */
 export function grokDirection(event: Pick<FileActivity, 'id' | 'grok'>): 'in' | 'out' | undefined {
   if (event.grok) return event.grok
