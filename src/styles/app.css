@@ -2058,9 +2058,9 @@ a.site-nav-cta:focus {
   background: var(--color-white);
 }
 .be-hiring-rules { max-height: var(--rule-block-max); overflow: auto; }
-/* Sync drawer: the button row sits in the middle of its footer, and the one-off panel has room under the list above it. */
+/* Sync drawer: the button row keeps even space above and below in its footer, and the one-off panel has room under the list above it. */
 .sync-drawer .be-hire-foot { padding-top: var(--space-4); padding-bottom: var(--space-4); }
-.sync-drawer .be-hire-foot .dir-actions { margin-top: 0; justify-content: center; }
+.sync-drawer .be-hire-foot .dir-actions { margin-top: 0; }
 .sync-drawer .link-panel { margin-top: var(--space-5); }
 .be-hiring-rules ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-1); margin: var(--space-2) 0 0; padding: 0; }
 .be-hiring-rules li { display: flex; align-items: flex-start; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-ink); line-height: var(--leading-snug); }

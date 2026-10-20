@@ -164,9 +164,10 @@ test('Organization Overview shows counts from the org chart, not typed numbers',
   assert.match(overview, /JSON\.stringify\(\{ \.\.\.profile, people: counts\.human, bots: counts\.bot \}\)/, 'a save writes the chart counts')
 })
 
-test('Sync drawer layout: the buttons are centered in their footer, and the one-off panel is spaced from the list above', () => {
+test('Sync drawer layout: the buttons sit on the left with even space above and below, and the one-off panel is spaced from the list above', () => {
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.sync-drawer \.be-hire-foot \{ padding-top: var\(--space-4\); padding-bottom: var\(--space-4\); \}/, 'same space above and below the buttons')
-  assert.match(css, /\.sync-drawer \.be-hire-foot \.dir-actions \{ margin-top: 0; justify-content: center; \}/)
+  assert.match(css, /\.sync-drawer \.be-hire-foot \.dir-actions \{ margin-top: 0; \}/, 'on the left, like every other drawer')
+  assert.doesNotMatch(css, /\.sync-drawer[^{]*\{[^}]*justify-content: center/)
   assert.match(css, /\.sync-drawer \.link-panel \{ margin-top: var\(--space-5\); \}/)
 })
