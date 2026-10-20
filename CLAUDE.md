@@ -2,7 +2,7 @@ See AGENTS.md
 
 ## Hard rules
 
-- Change only what was asked. No unrequested refactors, copy edits, or style edits.
+- Change only what was asked. No unrequested terefactors, copy edits, or style edits.
 - Small commits on a branch. Never push to `main` without Miguel's OK.
 - User-facing text says organization, never company. Paths, routes (`#/org/...`), and `orgs/` stay as they are.
 - User-facing text says open source, never free template.
