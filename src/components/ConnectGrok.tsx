@@ -6,7 +6,7 @@ import { CopyPromptButton } from '../directory/prompt-actions'
 import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
-import { connectorState, type ConnectorState } from './sync-copy'
+import { connectorState, intervalWarning, type ConnectorState } from './sync-copy'
 
 const BADGE: Record<ConnectorState, string> = {
   checking: 'Checking',
@@ -139,13 +139,14 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
               <Button variant="secondary" type="button" onClick={change}><LockIcon open />Change</Button>
             )}
           </div>
-          <p className={typed === null ? 'save-off' : 'overview-note'} role={typed === null ? 'alert' : undefined}>
+          <p className={typed === null ? 'grok-status-warning' : 'overview-note'} role={typed === null ? 'alert' : undefined}>
             {typed === null
               ? 'Pick between 15 minutes and 7 days.'
               : editing
                 ? `The Connector will sync with Grok Bot every ${everyLabel(minutes)}. Save, then copy the prompt.`
                 : `The Connector syncs with Grok Bot every ${everyLabel(saved)}. Once your organizations are set up, it can run less often.`}
           </p>
+          {!editing && intervalWarning(project) ? <p className="grok-status-warning" role="status">{intervalWarning(project)}</p> : null}
         </div>
       ) : null}
       {editable && ready ? (

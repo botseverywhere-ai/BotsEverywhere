@@ -127,3 +127,55 @@ test('the header status opens a dropdown, and Connect bots has the interval row'
   assert.match(connect, /<LockIcon open \/>Change<\/Button>/, 'Change shows an open lock')
   assert.match(badge, /Open Connect bots/)
 })
+
+test('the Connector reports its interval, and the app warns until it matches what was saved', async () => {
+  const { intervalWarning, runMinutes } = await import('../../src/components/sync-copy.ts')
+  const { readConnector } = await import('../src/project.ts')
+  assert.match(connectorPrompt({ id: 'k3f9', orgsFolder: '/o', syncMinutes: 17 }), /"syncMinutes": 17 \(how often you run, in minutes\)/)
+
+  const { orgs, done } = project()
+  try {
+    const write = (body: object) => writeFileSync(join(orgs, CONNECTOR_FILE), JSON.stringify({ syncedAt: '2026-10-20T15:00:00Z', unassigned: [], ...body }))
+    write({ syncMinutes: 17 })
+    assert.equal(readConnector(orgs)?.syncMinutes, 17)
+    write({})
+    assert.equal(readConnector(orgs)?.syncMinutes, undefined, 'an older prompt reports nothing')
+    write({ syncMinutes: 'often' })
+    assert.equal(readConnector(orgs)?.syncMinutes, undefined, 'a bad value is ignored')
+  } finally {
+    done()
+  }
+
+  const info = (saved: number | undefined, reported: number | undefined) => ({ syncMinutes: saved, connector: { stamp: '1:1', syncedAt: '', error: '', ...(reported ? { syncMinutes: reported } : {}) } })
+  assert.equal(intervalWarning(info(17, 17)), '', 'pasted: no warning')
+  assert.equal(intervalWarning(info(17, 15)), 'Grok Bot still runs the Connector every 15 minutes, not every 17 minutes. Copy the prompt on Connect bots and paste it into the Connector.')
+  assert.match(intervalWarning(info(15, undefined)), /has not said how often it runs/)
+  assert.equal(intervalWarning({ syncMinutes: 17, connector: null }), '', 'no Connector yet: nothing to compare')
+  assert.equal(runMinutes(info(15, 120)), 120, 'Disconnected waits for the interval Grok Bot really uses')
+  assert.equal(runMinutes(info(60, undefined)), 60)
+
+  const now = Date.parse('2026-10-20T15:00:00.000Z')
+  const status = { snapshot: null, error: '', project: { id: 'k3f9', connectorName: 'C', orgsFolder: '/o', connector: { stamp: `${now - 45 * 60_000}:10`, syncedAt: '', error: '', syncMinutes: 120 }, unassigned: [], bots: 0, renamed: {}, syncMinutes: 15 } }
+  assert.equal(connectorState(status, now).state, 'connected', 'saved 15 but never pasted: a 2-hour Connector 45 minutes in is not Disconnected')
+  assert.match(connectorDetails(status, now).warning, /still runs the Connector every 2 hours, not every 15 minutes/)
+  const connect = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
+  const badge = readFileSync(new URL('../../src/components/GrokStatusBadge.tsx', import.meta.url), 'utf8')
+  assert.match(connect, /intervalWarning\(project\)/)
+  assert.match(badge, /details\.warning \? <p className="grok-status-warning"/)
+})
+
+test('Connector stopped waits for the interval the Connector reports', () => {
+  const { orgs, done } = project()
+  try {
+    createOrgFiles(orgs, 'Desk', 'Ada')
+    const ran = new Date(Date.now() - 60 * 60_000)
+    const path = join(orgs, CONNECTOR_FILE)
+    writeFileSync(path, JSON.stringify({ syncedAt: ran.toISOString(), syncMinutes: 120, unassigned: [] }))
+    utimesSync(path, ran, ran)
+    recordConnectorRun(orgs, 'Connector')
+    checkConnectorStopped(orgs)
+    assert.equal(JSON.parse(readFileSync(join(orgs, 'connector-log.json'), 'utf8')).state, 'connected', 'saved 15, Connector says 120: an hour is not two missed runs')
+  } finally {
+    done()
+  }
+})

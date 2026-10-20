@@ -335,6 +335,7 @@ npm run dev`}</CodeBlock>
           <li>
             Once your organizations are set up it can run less often. On <strong>Connect bots</strong>, choose <strong>Change</strong> next to <strong>Runs every</strong>,
             type a number and pick minutes, hours, or days (15 minutes to 7 days), and <strong>Save</strong>. The prompt updates; paste it into the Connector again.
+            The Connector reports how often it runs on every run. Until that matches what you saved, Connect bots and the status in the header say to paste the prompt, and the app waits for the interval Grok Bot really uses before it says Disconnected.
           </li>
           <li>Come back to the app. After the first run the bar turns green: <strong>Connected · last run 2 min ago</strong>.</li>
         </ol>
@@ -593,7 +594,7 @@ Plain notes for the people reading the file.`}</CodeBlock>
           <li><code>orgs/&lt;slug&gt;/log/</code>: the daily run logs and one file per event.</li>
           <li><code>orgs/&lt;slug&gt;/grok/</code>: <code>snapshot.json</code>, written by the Connector, and <code>requests.json</code>, written by the app.</li>
           <li>
-            <code>orgs/project.json</code>: this copy&apos;s id. <code>orgs/connector.json</code>: the Connector&apos;s last run.{' '}
+            <code>orgs/project.json</code>: this copy&apos;s id. <code>orgs/connector.json</code>: the Connector&apos;s last run and how often it runs.{' '}
             <code>orgs/connector-log.json</code>: what the app already logged about the Connector, so no run is logged twice.
           </li>
           <li><code>directory/</code>: the shared bot catalog, one file per bot. It is not inside an organization.</li>

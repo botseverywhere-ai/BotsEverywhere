@@ -1112,7 +1112,7 @@ export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
     id,
     connectorName: connectorName(id),
     orgsFolder: resolve(orgsDir),
-    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error } : null,
+    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error, ...(connector.syncMinutes ? { syncMinutes: connector.syncMinutes } : {}) } : null,
     unassigned: connector?.unassigned.map((bot) => bot.name) ?? [],
     bots: bots.length,
     renamed: renamedSeats(orgsDir, orgId, bots),

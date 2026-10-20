@@ -107,7 +107,7 @@ export function RetiredDrawer({
             The Connector deletes this bot from your Grok Bot account on its next run. It runs every {everyLabel(syncMinutes)}. The seat stays retired here, and you can cancel until the Connector runs.
           </p>
           {confirm.activeIn.length ? (
-            <p className="save-off" role="alert">
+            <p className="grok-status-warning" role="alert">
               {confirm.seat.title} is still active in {confirm.activeIn.join(', ')}. Deleting it in Grok Bot stops it there too.
             </p>
           ) : null}

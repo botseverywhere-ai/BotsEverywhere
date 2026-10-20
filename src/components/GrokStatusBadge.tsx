@@ -76,6 +76,7 @@ export function GrokStatusBadge() {
           <strong><i aria-hidden="true" />{details.title}</strong>
           <p>{details.note}</p>
         </div>
+        {details.warning ? <p className="grok-status-warning" role="status">{details.warning}</p> : null}
         <dl className="grok-status-facts">
           {details.facts.map(([label, value]) => (
             <Fragment key={label}>

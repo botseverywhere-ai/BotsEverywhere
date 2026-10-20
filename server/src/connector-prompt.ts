@@ -77,7 +77,7 @@ On each run, for every organization:
 10. When a process file changes, update that bot's routine.
 
 Then, once per run:
-11. Write ${path}/connector.json with "syncedAt" (ISO datetime of now) and "unassigned": every bot you run that belongs to no organization, in the same bot format as the snapshot.
+11. Write ${path}/connector.json with "syncedAt" (ISO datetime of now), "syncMinutes": ${syncMinutes} (how often you run, in minutes), and "unassigned": every bot you run that belongs to no organization, in the same bot format as the snapshot.
 
 Write every file as UTF-8 without a byte-order mark and with LF line endings.
 

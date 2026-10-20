@@ -88,6 +88,8 @@ export interface ConnectorFile {
   syncedAt: string
   unassigned: BotsFileRow[]
   error: string
+  /** How often the Connector says it runs. Absent from a Connector on an older prompt. */
+  syncMinutes?: number
 }
 
 /** Reads orgs/connector.json. Null when the project Connector never wrote it. Never throws. */
@@ -103,7 +105,7 @@ export function readConnector(orgsDir: string): ConnectorFile | null {
   } catch {
     return { stamp: '', syncedAt: '', unassigned: [], error: 'Could not read connector.json.' }
   }
-  let data: { syncedAt?: unknown; unassigned?: unknown }
+  let data: { syncedAt?: unknown; unassigned?: unknown; syncMinutes?: unknown }
   try {
     data = JSON.parse(normalizeText(readFileSync(path, 'utf8'))) as typeof data
   } catch {
@@ -113,5 +115,6 @@ export function readConnector(orgsDir: string): ConnectorFile | null {
   // Same bot rules as a snapshot, so a bad row is skipped the same way.
   const parsed = parseSnapshot(JSON.stringify({ syncedAt: data?.syncedAt, bots }), fallback)
   if (!parsed.ok) return { stamp, syncedAt: '', unassigned: [], error: parsed.error }
-  return { stamp, syncedAt: parsed.snapshot.syncedAt, unassigned: parsed.snapshot.bots.filter((bot) => !bot.error), error: '' }
+  const syncMinutes = validSyncMinutes(data?.syncMinutes)
+  return { stamp, syncedAt: parsed.snapshot.syncedAt, unassigned: parsed.snapshot.bots.filter((bot) => !bot.error), error: '', ...(syncMinutes === null ? {} : { syncMinutes }) }
 }

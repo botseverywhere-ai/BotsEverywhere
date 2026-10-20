@@ -1,5 +1,5 @@
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import type { SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
+import type { ProjectInfo, SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
 import { canRequest, fulfilledSeats, type GrokDelete, type GrokRequest } from '../../server/src/grok-requests.ts'
 import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
 import type { NoticeInput } from '../live/notices.ts'
@@ -199,7 +199,7 @@ function ago(ms: number, now: number): string {
 export function connectorState(
   status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null,
   now = Date.now(),
-  syncMinutes = status?.project?.syncMinutes ?? DEFAULT_SYNC_MINUTES,
+  syncMinutes = runMinutes(status?.project),
 ): { state: ConnectorState; line: string } {
   if (!status) return { state: 'checking', line: 'Checking the Connector…' }
   // The project Connector writes orgs/connector.json every run. An older per-org Connector only writes the org snapshot.
@@ -217,6 +217,24 @@ export function connectorState(
   return { state: 'connected', line: `Connected · last run ${ago(ran, now)}` }
 }
 
+/** How often the Connector really runs: what it reports, else what was saved. Disconnected is judged by this. */
+export function runMinutes(project: Pick<ProjectInfo, 'syncMinutes' | 'connector'> | undefined): number {
+  return project?.connector?.syncMinutes ?? project?.syncMinutes ?? DEFAULT_SYNC_MINUTES
+}
+
+/**
+ * Whether Grok Bot runs the Connector at the saved interval. The app can only change the prompt, so a saved
+ * interval that was never pasted shows here. Empty when they match or no Connector has run.
+ */
+export function intervalWarning(project: Pick<ProjectInfo, 'syncMinutes' | 'connector'> | undefined): string {
+  if (!project?.connector || project.connector.error) return ''
+  const saved = project.syncMinutes ?? DEFAULT_SYNC_MINUTES
+  const reported = project.connector.syncMinutes
+  if (reported === undefined) return 'Grok Bot has not said how often it runs the Connector yet. Paste the prompt from Connect bots into the Connector once.'
+  if (reported !== saved) return `Grok Bot still runs the Connector every ${everyLabel(reported)}, not every ${everyLabel(saved)}. Copy the prompt on Connect bots and paste it into the Connector.`
+  return ''
+}
+
 const DETAIL_TITLES: Record<ConnectorState, string> = {
   checking: 'Checking the Connector',
   connected: 'Connected to Grok Bot',
@@ -227,9 +245,9 @@ const DETAIL_TITLES: Record<ConnectorState, string> = {
 }
 
 /** The header dropdown: a title, one sentence, and the facts beside their labels. */
-export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): { state: ConnectorState; title: string; note: string; facts: [string, string][] } {
+export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): { state: ConnectorState; title: string; note: string; facts: [string, string][]; warning: string } {
   const { state, line } = connectorState(status, now)
-  const minutes = status?.project?.syncMinutes ?? DEFAULT_SYNC_MINUTES
+  const minutes = runMinutes(status?.project)
   const ran = connectorRanAt(status)
   const note = state === 'connected'
     ? `The Connector syncs your organizations with Grok Bot every ${everyLabel(minutes)}.`
@@ -241,7 +259,7 @@ export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' |
     facts.push(['Last sync', `${lastRunShort(ran, now)}, ${ago(ran, now)}`])
     if (state === 'connected') facts.push(['Next sync', `around ${lastRunShort(ran + minutes * 60_000, now)}`])
   }
-  return { state, title: DETAIL_TITLES[state], note, facts }
+  return { state, title: DETAIL_TITLES[state], note, facts, warning: intervalWarning(status?.project) }
 }
 
 /** When the Connector last ran, from the same file connectorState reads. Undefined when nothing says. */

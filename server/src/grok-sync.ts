@@ -81,7 +81,7 @@ export interface ProjectInfo {
   /** Absolute path of orgs/, the only folder the Connector uses. */
   orgsFolder: string
   /** orgs/connector.json, or null when the project Connector never wrote it. */
-  connector: { stamp: string; syncedAt: string; error: string } | null
+  connector: { stamp: string; syncedAt: string; error: string; syncMinutes?: number } | null
   /** Names of bots in Grok Bot that belong to no organization. */
   unassigned: string[]
   /** Active bot seats across every org: they share one Grok Bot account. */
