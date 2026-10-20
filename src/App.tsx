@@ -224,6 +224,10 @@ function OrgArea({ slug, tab, template }: { slug: string; tab: OrgTab; template:
   const sample = template ? loaded : undefined
   const [remote, setRemote] = useState<typeof templateBundle | null>(null)
   const [missing, setMissing] = useState(false)
+  // The newest copy a tab saved or re-read. The next tab opens on it, not on the copy loaded with the page.
+  const [latest, setLatest] = useState<OrgBundle | null>(null)
+  const [opening, setOpening] = useState<{ tab: OrgTab; bundle: OrgBundle | null }>({ tab, bundle: null })
+  if (opening.tab !== tab) setOpening({ tab, bundle: latest })
   useEffect(() => {
     if (local || template || fromFiles) return
     let cancel = false
@@ -253,7 +257,8 @@ function OrgArea({ slug, tab, template }: { slug: string; tab: OrgTab; template:
     }
     if (disk.error === 'down') return <WriterDown slug={slug} />
     if (!disk.bundle) return <OrgMissing slug={slug} />
-    return <Workspace key={`${slug}-${tab}`} bundle={disk.bundle} view={viewForTab(tab)} />
+    const opened = opening.bundle?.id === slug ? opening.bundle : disk.bundle
+    return <Workspace key={`${slug}-${tab}`} bundle={opened} view={viewForTab(tab)} onLatest={setLatest} />
   }
   if (local) return <Workspace key={`${slug}-${tab}`} bundle={local.bundle} view={viewForTab(tab)} sample={template} />
   if (template) {

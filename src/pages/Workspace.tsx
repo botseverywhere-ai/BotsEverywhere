@@ -67,12 +67,15 @@ export function Workspace({
   sample = false,
   seatId = '',
   directorySlug = '',
+  onLatest,
 }: {
   bundle: OrgBundle
   view: OrgView
   sample?: boolean
   seatId?: string
   directorySlug?: string
+  /** Gets the org each time it is saved or re-read, so the next tab can open on it. */
+  onLatest?: (bundle: OrgBundle) => void
 }) {
   const editable = APP_MODE === 'template' && !sample
   const opened = bundleFromState(bundle.id, bundle.org, bundle.seats, bundle.work, bundle.activity)
@@ -113,6 +116,8 @@ export function Workspace({
   const live = useMemo(() => bundleFromState(bundle.id, org, seats, work, activity), [activity, bundle.id, org, seats, work])
   const liveRef = useRef(live)
   liveRef.current = live
+  const onLatestRef = useRef(onLatest)
+  onLatestRef.current = onLatest
   const changes = fingerprint(live) === savedFp ? 0 : 1
   const company = useMemo(() => companyFromBundle(live), [live])
   const byId = useMemo(() => new Map(company.seats.map((seat) => [seat.id, seat])), [company])
@@ -255,6 +260,7 @@ export function Workspace({
     if (loaded.fallbackProcess) setFallbackProcess(loaded.fallbackProcess)
     setSavedFp(fingerprint(canonical))
     savedSeats.current = new Map(canonical.seats.map((seat) => [seat.slug, seat]))
+    onLatestRef.current?.({ ...loaded, ...canonical })
     return canonical
   }, [bundle.id])
 
@@ -473,6 +479,7 @@ export function Workspace({
     setActivity(withLog.activity)
     setSavedFp(fingerprint(withLog))
     savedSeats.current = new Map(withLog.seats.map((seat) => [seat.slug, seat]))
+    onLatestRef.current?.({ ...bundle, ...withLog, processes, fallbackProcess })
     setWriter('up')
     return { ok: true }
   }

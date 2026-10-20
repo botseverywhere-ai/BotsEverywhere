@@ -24,6 +24,16 @@ test('the org page loads from the writer and autosaves the seat card', () => {
   assert.match(app, /useDiskOrg\(slug, fromFiles\)/)
 })
 
+test('a tab opens on the org as last saved or re-read, so a retire is in Logs without a reload', () => {
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8')
+  assert.match(app, /if \(opening\.tab !== tab\) setOpening\(\{ tab, bundle: latest \}\)/, 'the copy a tab opens on is set once, when the tab changes')
+  assert.match(app, /const opened = opening\.bundle\?\.id === slug \? opening\.bundle : disk\.bundle/, "never another org's copy")
+  assert.match(app, /<Workspace key=\{`\$\{slug\}-\$\{tab\}`\} bundle=\{opened\} view=\{viewForTab\(tab\)\} onLatest=\{setLatest\} \/>/)
+  assert.match(workspace, /onLatestRef\.current\?\.\(\{ \.\.\.loaded, \.\.\.canonical \}\)/, 'every re-read of the files')
+  assert.match(workspace, /onLatestRef\.current\?\.\(\{ \.\.\.bundle, \.\.\.withLog, processes, fallbackProcess \}\)/, 'every save, with the events it logged')
+})
+
 test('an org with no seat files shows the founder from org.md', () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-empty-org-'))
   const root = join(dir, 'empty-co')
