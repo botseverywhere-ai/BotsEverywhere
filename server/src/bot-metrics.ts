@@ -9,11 +9,15 @@ export interface MetricLogLine {
   bot: string
   /** `chat` when someone used the bot in a chat; otherwise the routine it ran. */
   process?: string
+  /** What was asked or done. One chat logged twice (waiting, then done) keeps the same step. */
+  step?: string
   status: string
 }
 
 /** The process name a bot writes for a chat, so chats and routine work are counted apart. */
 export const CHAT_PROCESS = 'chat'
+/** The process the app writes when a Connector report shows a bot became active and the bot logged nothing itself. */
+export const GROK_ACTIVITY_PROCESS = 'grok-activity'
 
 export interface ShownBotMetrics {
   createdAt: string
@@ -27,8 +31,10 @@ export interface ShownBotMetrics {
 
 /**
  * Times used and automated tasks done in the last 30 days, from the run log, plus any count Grok Bot reported.
- * A chat line (process `chat`) is one use, unless it only says running. A done line of any other process is one
- * automated task. When Grok Bot reported counts, only lines after its report add to them; otherwise every line counts.
+ * A chat (process `chat`) is one use, counted once per day and step however many times it was logged, unless it only
+ * says running. A `grok-activity` line, written when the Connector saw the bot become active, is one use. A done line
+ * of any other process is one automated task. When Grok Bot reported counts, only lines after its report add to them;
+ * otherwise every line counts.
  * A hire event is not a last-active time; this function never reads one.
  */
 export function shownBotMetrics(input: {
@@ -58,12 +64,19 @@ export function shownBotMetrics(input: {
     if (reported && !Number.isNaN(watermark)) return item.at > watermark
     return true
   })
-  const chat = (item: { line: MetricLogLine }) => (item.line.process ?? '').trim().toLowerCase() === CHAT_PROCESS
+  const process = (item: { line: MetricLogLine }) => (item.line.process ?? '').trim().toLowerCase()
+  const chats = new Set(
+    fresh
+      .filter((item) => process(item) === CHAT_PROCESS && item.line.status !== 'running')
+      .map((item) => `${item.line.date}|${(item.line.step ?? '').trim().toLowerCase() || item.line.time}`),
+  )
+  const seen = fresh.filter((item) => process(item) === GROK_ACTIVITY_PROCESS).length
+  const done = fresh.filter((item) => process(item) !== CHAT_PROCESS && process(item) !== GROK_ACTIVITY_PROCESS && item.line.status === 'done').length
   return {
     createdAt: input.createdAt || '',
     lastActive: last ? new Date(last).toISOString() : '',
-    usage: combine(input.runs30d, fresh.filter((item) => chat(item) && item.line.status !== 'running').length),
-    tasks: combine(input.tasksDone30d, fresh.filter((item) => !chat(item) && item.line.status === 'done').length),
+    usage: combine(input.runs30d, chats.size + seen),
+    tasks: combine(input.tasksDone30d, done),
   }
 }
 

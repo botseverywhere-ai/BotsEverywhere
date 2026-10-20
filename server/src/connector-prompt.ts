@@ -43,6 +43,7 @@ Rules:
 - owns, may, and needsApproval are lists of short strings. doneWhen is one string.
 - Include only what you can actually see. If you do not know a value, leave the field out. Never estimate or invent numbers.
 - Report runs30d and tasksDone30d only when Grok Bot itself shows you those counts. Never count them from the run log: BotsEverywhere counts the log itself.
+- Report lastActive and each routine's lastRun on every run, as Grok Bot shows them. BotsEverywhere counts uses and automated tasks from how they change.
 - trigger.type is schedule, event, or manual. For event, set source to email, slack, github, webhook, or form.
 - Do not add fields that are not in this object.`
 

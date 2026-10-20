@@ -1,18 +1,30 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { BotsFileRow } from './bots-file.ts'
 import type { FileActivity, SeatDocument } from './org-files.ts'
 import { normalizeText } from './normalize-text.ts'
 import { staleMinutes } from './connector-timing.ts'
 import { readConnector, readSyncMinutes } from './project.ts'
+import { GROK_ACTIVITY_PROCESS } from './bot-metrics.ts'
+import { formatRunLine, runLogHeader, type RunLine } from './run-log.ts'
+import { readRunLogDir } from './run-log-files.ts'
 import { appendActivity, listOrgSlugs, markDeletedBots, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
 
 /** The app's memory of what it already logged about the Connector, so a run is never logged twice. */
 export const CONNECTOR_LOG_FILE = 'connector-log.json'
 
+/** What the last report said about one bot, so the next can tell what moved. */
+interface BotSeen {
+  lastActive: string
+  /** Routine name → its last run. */
+  runs: Record<string, string>
+}
+
 interface OrgMemory {
   /** Bot names in the last snapshot read, or null before the first one. */
   bots: string[] | null
+  /** Bot link (or name) → what the last report said. Absent before the first report this started counting from. */
+  seen?: Record<string, BotSeen>
   /** Local date of the day line, and how many runs it counts. */
   day: string
   runs: number
@@ -85,6 +97,81 @@ function seatFor(name: string, seats: SeatDocument[], orgName: string): SeatDocu
   return seats.find((seat) => seat.kind === 'bot' && (seat.title.trim().toLowerCase() === wanted || `${seat.title.trim().toLowerCase()}${suffix}` === wanted))
 }
 
+/** The seat for a reported bot: by its link, else by name. */
+function seatForBot(bot: BotsFileRow, seats: SeatDocument[], orgName: string): SeatDocument | undefined {
+  const link = bot.grokBotUrl.trim()
+  return (link ? seats.find((seat) => seat.kind === 'bot' && (seat.grokBotUrl ?? '').trim() === link) : undefined) ?? seatFor(bot.name, seats, orgName)
+}
+
+function laterThan(next: string, before: string | undefined): boolean {
+  const at = Date.parse(next)
+  if (Number.isNaN(at)) return false
+  const was = before ? Date.parse(before) : Number.NaN
+  return Number.isNaN(was) || at > was
+}
+
+/** A run-log line's instant: the log keeps this computer's wall-clock time. */
+function lineInstant(line: Pick<RunLine, 'date' | 'time'>): number {
+  const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(line.date)
+  const clock = /^(\d{1,2}):(\d{2})$/.exec(line.time)
+  if (!day || !clock) return Number.NaN
+  return new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3]), Number(clock[1]), Number(clock[2])).getTime()
+}
+
+/** Appends one line the Connector's report showed, on the day it happened. Starts the file, or a new line, as needed. */
+function appendSeenLine(root: string, at: Date, bot: string, process: string, step: string) {
+  const date = localDay(at)
+  const dir = resolve(root, 'log')
+  mkdirSync(dir, { recursive: true })
+  const path = resolve(dir, `${date}.md`)
+  const row = `${formatRunLine({ time: localTime(at), bot, process, step, status: 'done', note: 'seen by the Connector' })}\n`
+  if (!existsSync(path)) {
+    writeFileSync(path, `${runLogHeader(date)}\n${row}`)
+    return
+  }
+  // A bot may have left the file without a final line break; never glue a line onto its last one.
+  const text = readFileSync(path, 'utf8')
+  appendFileSync(path, text.length && !text.endsWith('\n') ? `\n${row}` : row)
+}
+
+/**
+ * The Connector briefs Performance. Between two reports, a routine whose last run moved is one automated task, and a
+ * bot whose last-active time moved is one use, unless a routine run explains it. A bot that logged that work itself
+ * keeps its own lines, so nothing is counted twice. The first report only sets the starting point.
+ */
+function briefPerformance(root: string, bots: BotsFileRow[], seats: SeatDocument[], orgName: string, before: Record<string, BotSeen> | undefined, now: number): Record<string, BotSeen> {
+  const seen: Record<string, BotSeen> = {}
+  const own = readRunLogDir(root).lines.filter((line) => line.note !== 'seen by the Connector')
+  const window = now - 30 * 24 * 60 * 60 * 1000
+  for (const bot of bots) {
+    const key = bot.grokBotUrl.trim() || `name:${bot.name.trim().toLowerCase()}`
+    const runs = Object.fromEntries((bot.routines ?? []).filter((routine) => routine.lastRun).map((routine) => [routine.name, routine.lastRun!]))
+    seen[key] = { lastActive: bot.lastActive || '', runs }
+    const prev = before?.[key]
+    if (!prev) continue
+    const name = seatForBot(bot, seats, orgName)?.title || bot.name
+    const mine = own.filter((line) => line.bot.trim().toLowerCase() === name.trim().toLowerCase() || line.bot.trim().toLowerCase() === bot.name.trim().toLowerCase())
+    const inRange = (at: number) => at >= window && at <= now + 60_000
+    const routineTimes: number[] = []
+    for (const [routine, lastRun] of Object.entries(runs)) {
+      if (!laterThan(lastRun, prev.runs[routine])) continue
+      const at = Date.parse(lastRun)
+      routineTimes.push(at)
+      if (!inRange(at)) continue
+      const logged = mine.some((line) => line.process.trim().toLowerCase() === routine.trim().toLowerCase() && Math.abs(lineInstant(line) - at) <= 15 * 60_000)
+      if (!logged) appendSeenLine(root, new Date(at), name, routine, 'routine run')
+    }
+    if (laterThan(bot.lastActive, prev.lastActive)) {
+      const at = Date.parse(bot.lastActive)
+      const since = Date.parse(prev.lastActive)
+      const fromRoutine = routineTimes.some((time) => Math.abs(time - at) <= 5 * 60_000)
+      const loggedItself = mine.some((line) => lineInstant(line) >= (Number.isNaN(since) ? at : since) - 60_000)
+      if (!fromRoutine && !loggedItself && inRange(at)) appendSeenLine(root, new Date(at), name, GROK_ACTIVITY_PROCESS, 'active in Grok Bot')
+    }
+  }
+  return seen
+}
+
 function botStats(bot: BotsFileRow): string {
   return stats([
     ['Routines', bot.routines?.length || undefined],
@@ -123,7 +210,8 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     if (!read.ok) continue
     const orgName = read.bundle.org.company.name
     const seats = read.bundle.seats
-    const before = memory.orgs[orgId] ?? { bots: null, day: '', runs: 0, firstRunAt: '' }
+    const before: OrgMemory = memory.orgs[orgId] ?? { bots: null, day: '', runs: 0, firstRunAt: '' }
+    let seenNow = before.seen
     if (firstEver) {
       appendActivity(root, event(orgId, `connector-connected-${stamp}`, at, 'connected', 'Connected to Grok Bot', {
         stats: stats([['Connector', connectorName], ['Folder', orgsDir], ['First run', localWhen(at)]]),
@@ -163,6 +251,11 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
         }))
       }
       bots = names
+      try {
+        seenNow = briefPerformance(root, snap.snapshot.bots, seats, orgName, before.seen, at.getTime())
+      } catch {
+        // Performance lines are a bonus; a failure here must never stop the run log.
+      }
     }
     const day = localDay(at)
     const sameDay = before.day === day
@@ -179,7 +272,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
         ['No organization', connector.unassigned.length],
       ]),
     }), true)
-    memory.orgs[orgId] = { bots, day, runs, firstRunAt }
+    memory.orgs[orgId] = { bots, day, runs, firstRunAt, ...(seenNow ? { seen: seenNow } : {}) }
   }
   memory.lastStamp = connector.stamp
   memory.lastRunAt = stamp

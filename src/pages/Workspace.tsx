@@ -1052,8 +1052,8 @@ function PerformanceTable({
         </tbody>
       </table>
       <p className="be-performance-note">
-        Times used counts the chats a bot logged. Automated tasks done counts the routine steps it logged as done. Both come from the run log, with any count Grok Bot reported.
-        — means nothing is logged yet: the Connector prompt on Connect bots tells each bot to log its chats.
+        Times used counts each time the Connector saw a bot become active, or the chats the bot logged itself. Automated tasks done counts each routine run the Connector saw,
+        or the routine steps the bot logged as done. All of it is in the run log. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
       </p>
     </>
   )

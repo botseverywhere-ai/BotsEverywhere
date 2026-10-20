@@ -563,7 +563,9 @@ Plain notes for the people reading the file.`}</CodeBlock>
         <h2 id="performance-logs">Performance and Logs</h2>
         <p>
           <strong>Performance</strong> lists each bot with when it was created, the times it was used and the automated tasks it finished in the last 30 days, and when it was last active.
-          Times used counts the chats it logged (process <code>chat</code>); automated tasks done counts the routine steps it logged as done. The Connector tells each bot to log every chat.
+          The Connector briefs these numbers: on every report, a bot whose last-active time moved since the previous report counts one use, and a routine whose last run moved counts one
+          automated task. The app writes each one to the run log, noted <em>seen by the Connector</em>. A bot that logs its own chats (process <code>chat</code>) or routine steps keeps its own,
+          more detailed lines, and the same moment is never counted twice. Several uses between two Connector runs count as one.
           The numbers come from the run log and from Grok Bot; the app never estimates them.
         </p>
         <p>

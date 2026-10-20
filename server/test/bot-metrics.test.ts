@@ -47,7 +47,7 @@ test('last active uses the import or a newer log line, and counts add after that
 
   const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
   assert.match(page, /<th>Created<\/th>/)
-  assert.match(page, /Times used counts the chats a bot logged\. Automated tasks done counts the routine steps it logged as done\./)
+  assert.match(page, /Times used counts each time the Connector saw a bot become active, or the chats the bot logged itself\./)
   assert.equal(page.includes('toLocaleString'), false)
   const drawer = readFileSync(fileURLToPath(new URL('../../src/components/SeatDrawer.tsx', import.meta.url)), 'utf8')
   assert.match(drawer, /1 routine/)
