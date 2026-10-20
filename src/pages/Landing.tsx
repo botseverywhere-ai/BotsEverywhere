@@ -98,7 +98,7 @@ export function Landing() {
                 <h2 id="why-work-chart-title">Map the work, not just the people.</h2>
                 <p>
                   An org chart shows who reports to whom. It does not show how an invoice becomes a payment, who checks it, or where it waits.
-                  Once bots take over the routing, the summaries, and the first drafts, that second map is the one you manage.
+                  Once bots take over the routing, the summaries, and the first drafts, that second map is the one humans manage.
                 </p>
               </div>
               <figure className="ld-quote">
@@ -108,7 +108,7 @@ export function Landing() {
                 <figcaption>
                   Kulkarni, Bodan, and Kilgour, Deloitte, <a href={ARTICLE} target="_blank" rel="noreferrer"><cite>The work chart vs. org chart</cite></a>, June 2026
                 </figcaption>
-                <p className="ld-quote-turn">Bots move the work. You manage it.</p>
+                <p className="ld-quote-turn">Bots move the work. Humans manage it.</p>
               </figure>
             </div>
             <ol className="ld-steps">
