@@ -67,11 +67,19 @@ test("the Connector's own lines, signed Connector, count for its seat", () => {
 
 test('the Connector tells every bot to log each chat, and Performance names the two numbers', () => {
   const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
-  assert.match(prompt, /Every time someone uses you in a chat, append one line to that organization's log\/YYYY-MM-DD\.md/)
-  assert.match(prompt, /- HH:MM \| your name \| chat \| what you were asked, in a few words \| done\|failed\|waiting \| note or -/)
+  assert.match(prompt, /7\. Tell each bot its two logging rules\./)
+  assert.match(prompt, /b\. Every time someone uses the bot in a chat, append one line to that organization's log\/YYYY-MM-DD\.md/)
+  assert.match(prompt, /- HH:MM \| its name \| chat \| what it was asked, in a few words \| done\|failed\|waiting \| note or -/)
   const page = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   const drawer = readFileSync(new URL('../../src/components/SeatDrawer.tsx', import.meta.url), 'utf8')
   assert.match(page, /<th>Times used \(30d\)<\/th><th>Automated tasks done \(30d\)<\/th>/)
   assert.match(drawer, /<dt>Times used \(30d\)<\/dt>/)
   assert.match(drawer, /<dt>Automated tasks done \(30d\)<\/dt>/)
+})
+
+test('the Connector acts on its own: no confirmations, each rule sent once, and no counts made from the log', () => {
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
+  assert.match(prompt, /Do every step below on your own, on every run\. Never ask the owner to confirm a step, a message to a bot, or how many bots to message\./)
+  assert.match(prompt, /Send each bot the rules in steps 5 to 7 once: when the bot is new to you, when its seat file or process file changed, or when these rules changed\. Do not repeat them on every run\./)
+  assert.match(prompt, /Report runs30d and tasksDone30d only when Grok Bot itself shows you those counts\. Never count them from the run log/)
 })

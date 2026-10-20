@@ -42,6 +42,7 @@ Rules:
 - One entry per bot, using each bot's real name. One entry per routine.
 - owns, may, and needsApproval are lists of short strings. doneWhen is one string.
 - Include only what you can actually see. If you do not know a value, leave the field out. Never estimate or invent numbers.
+- Report runs30d and tasksDone30d only when Grok Bot itself shows you those counts. Never count them from the run log: BotsEverywhere counts the log itself.
 - trigger.type is schedule, event, or manual. For event, set source to email, slack, github, webhook, or form.
 - Do not add fields that are not in this object.`
 
@@ -63,6 +64,9 @@ Every folder in ${path} that contains an org.md file is one organization. Its na
 
 Run this routine every ${everyLabel(syncMinutes)}.
 
+Do every step below on your own, on every run. Never ask the owner to confirm a step, a message to a bot, or how many bots to message. The only time anyone asks the owner is a checkpoint (step 8).
+Send each bot the rules in steps 5 to 7 once: when the bot is new to you, when its seat file or process file changed, or when these rules changed. Do not repeat them on every run.
+
 On each run, for every organization:
 1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. When "prompt" is set, use it as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". That bot belongs to this organization.
 2. Write <org>/${SNAPSHOT_PATH} with the bots that belong to this organization and every routine they run, in the snapshot format below. A bot belongs to an organization when you created it from that organization's requests, when its link matches a seat file there, or when its name matches a seat title there, or "Title · Organization name". One Grok Bot account runs every bot, and the same bot can belong to several organizations: list it in every organization it belongs to. Do not list yourself.
@@ -70,11 +74,12 @@ On each run, for every organization:
 4. For each process, create or update a Grok Bot routine for the owning bot (the seat on the first step) using that process trigger.
 5. Read reportsTo in each seat file and tell that bot who its manager is in this organization. A bot in several organizations has a manager in each one.
 6. Tell each bot that at the start of every run it must read its process file and its seat file.
-7. After each step, that bot appends one line to <org>/log/YYYY-MM-DD.md. If the file is missing, start it with the header "# Run log YYYY-MM-DD". Use this line and nothing else:
-- HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -
-   Every time someone uses you in a chat, append one line to that organization's log/YYYY-MM-DD.md (the organization the work was for, or the first one you belong to), with chat as the process:
-   - HH:MM | your name | chat | what you were asked, in a few words | done|failed|waiting | note or -
-   BotsEverywhere counts these lines as the times each bot was used, and routine lines with done as its automated tasks.
+7. Tell each bot its two logging rules. If <org>/log/YYYY-MM-DD.md is missing, the bot starts it with the header "# Run log YYYY-MM-DD", and it writes each line exactly as shown and nothing else.
+   a. After each step of a routine, append one line:
+   - HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -
+   b. Every time someone uses the bot in a chat, append one line to that organization's log/YYYY-MM-DD.md (the organization the work was for, or the first one it belongs to), with chat as the process:
+   - HH:MM | its name | chat | what it was asked, in a few words | done|failed|waiting | note or -
+   BotsEverywhere counts the chat lines as the times each bot was used, and routine lines with done as its automated tasks.
 8. Before any checkpoint, write status waiting and ask the owner before continuing.
 9. Append your own sync lines to that organization's log. The bot field on those lines is ${CONNECTOR_LOG_BOT}.
 10. When a process file changes, update that bot's routine.
