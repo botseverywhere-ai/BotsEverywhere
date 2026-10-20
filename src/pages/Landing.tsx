@@ -105,10 +105,10 @@ export function Landing() {
                 <blockquote>
                   <p>Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point.</p>
                 </blockquote>
-                <p className="ld-quote-turn">AI, they write, <q>is systematically eliminating that justification.</q></p>
                 <figcaption>
                   Kulkarni, Bodan, and Kilgour, Deloitte, <a href={ARTICLE} target="_blank" rel="noreferrer"><cite>The work chart vs. org chart</cite></a>, June 2026
                 </figcaption>
+                <p className="ld-quote-turn">Now bots do that part. Map how the work moves.</p>
               </figure>
             </div>
             <p className="ld-steps-intro">

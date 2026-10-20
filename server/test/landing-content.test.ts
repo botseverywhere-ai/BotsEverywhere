@@ -13,8 +13,8 @@ test('the homepage quotes the work chart article word for word, credits it, and 
   const quoted = 'Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point'
   assert.ok(sentence.startsWith(quoted), 'the quote is the article\'s own words, cut where its sentence turns')
   assert.ok(landing.includes(`<p>${quoted}.</p>`))
-  assert.ok(sentence.includes('AI is systematically eliminating that justification.'))
-  assert.ok(landing.includes('AI, they write, <q>is systematically eliminating that justification.</q>'), 'how it is changing, in their words, with no dash')
+  assert.ok(landing.includes('<p className="ld-quote-turn">Now bots do that part. Map how the work moves.</p>'), 'our conclusion, in our voice, after the credit line')
+  assert.doesNotMatch(landing, /they write|systematically eliminating/)
   assert.ok(landing.includes('<q>If you automate a broken process, you scale the breakdown</q>.'), 'the period is ours, outside the quote: the article continues with a colon')
   assert.match(landing, /Kulkarni, Bodan, and Kilgour, Deloitte, <a href=\{ARTICLE\} target="_blank" rel="noreferrer"><cite>The work chart vs\. org chart<\/cite><\/a>, June 2026/)
   assert.match(landing, /<a href=\{ARTICLE\} target="_blank" rel="noreferrer">Read the article<\/a>/)
