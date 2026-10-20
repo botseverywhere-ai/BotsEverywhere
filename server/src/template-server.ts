@@ -32,14 +32,15 @@ import {
 } from './org-files.js'
 import { logFileName, parseLogMarkdown, parseOrgMarkdown, parseWorkMarkdown, serializeLogMarkdown, serializeOrgMarkdown, serializeWorkMarkdown } from './org-markdown.js'
 import { deleteProcessFile, importProcessRows, readProcessDir, writeProcessFile } from './process-files.js'
-import { parseProcessesFile, parseProcessMarkdown, type ProcessFile } from './processes.js'
+import { parseProcessesFile, parseProcessMarkdown, serializeProcess, type ProcessFile } from './processes.js'
 import { createLiveHub, type LiveKind } from './live-hub.js'
 import { isRunLogName, planRun } from './run-log.js'
 import { playRun, readRunLogDir } from './run-log-files.js'
 import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, planSync, patchSeatSource, summaryLine, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
-import { SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
+import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
+import { everyLabel, scheduleFor } from './connector-timing.js'
 import { ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { REQUESTS_PATH, addDelete, addRequest, canDelete, canRequest, deleteFor, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokDelete, type GrokRequest, type ReportedBot } from './grok-requests.js'
@@ -825,6 +826,16 @@ function writeRequests(root: string, file: { requests: GrokRequest[]; deletes: G
   writeFileSync(resolve(root, REQUESTS_PATH), serializeRequests(file.requests, file.deletes))
 }
 
+/** A directory bot's prompt: the file below its frontmatter, or '' when it is missing or unreadable. */
+function directoryPrompt(path: string): string {
+  try {
+    if (!existsSync(path)) return ''
+    return readText(path).replace(/^---\n[\s\S]*?\n---\n?/, '').trim()
+  } catch {
+    return ''
+  }
+}
+
 /** Asks the Connector to create one bot in Grok Bot. Writes grok/requests.json only; the seat file is untouched. */
 export function requestGrokBot(root: string, orgId: string, seatSlug: string, orgsDir = ''): { ok: true; request: GrokRequest } | { ok: false; errors: string[] } {
   const read = readOrgDir(root, orgId)
@@ -841,7 +852,7 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
     // Grok Bot keeps one bot per name across the whole project, so a title another org uses gets this org's name.
     name: (orgsDir ? renamedSeats(orgsDir, orgId)[seat.slug] : '') || seat.title,
     seatFile: path,
-    promptFile: directory && existsSync(directory) ? directory : '',
+    prompt: directory ? directoryPrompt(directory) : '',
     requestedAt: new Date().toISOString(),
   }
   const current = readRequests(root)
@@ -858,7 +869,7 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
     subjectSeatId: seat.slug,
     grok: 'out',
     kind: 'request',
-    stats: [`Name in Grok Bot=${request.name.replace(/[|=]/g, '/')}`, `Prompt=${request.promptFile ? 'from the directory' : 'from the seat card'}`, `Waiting=${readRequests(root).requests.length}`].join('|'),
+    stats: [`Name in Grok Bot=${request.name.replace(/[|=]/g, '/')}`, `Prompt=${request.prompt ? 'from the directory' : 'from the seat card'}`, `Waiting=${readRequests(root).requests.length}`].join('|'),
   })
   return { ok: true, request }
 }
@@ -914,7 +925,7 @@ export function activeWithLink(orgsDir: string, link: string): string[] {
   })
 }
 
-/** Asks the Connector to delete one retired bot in Grok Bot, by its link. Every retired seat here with that link shares the request. */
+/** Starts waiting for the owner to delete one retired bot in Grok Bot, by its link. Every retired seat here with that link shares it. */
 export function requestGrokDelete(root: string, orgId: string, seatSlug: string): { ok: true; request: GrokDelete } | { ok: false; errors: string[] } {
   const read = readOrgDir(root, orgId)
   if (!read.ok) return read
@@ -939,7 +950,7 @@ export function requestGrokDelete(root: string, orgId: string, seatSlug: string)
     actorSeatId: owner?.slug || seat.slug,
     actorType: owner ? 'human' : 'bot',
     timestamp: request.requestedAt,
-    summary: `Asked the Connector to delete ${seat.title} in Grok Bot`,
+    summary: `Waiting for ${seat.title} to be deleted in Grok Bot`,
     subjectSeatId: seat.slug,
     grok: 'out',
     kind: 'request',
@@ -947,7 +958,7 @@ export function requestGrokDelete(root: string, orgId: string, seatSlug: string)
   return { ok: true, request }
 }
 
-/** Takes back a delete the Connector has not done yet. */
+/** Stops waiting for a delete that has not happened yet. */
 export function cancelGrokDelete(root: string, orgId: string, seatSlug: string): { ok: true } | { ok: false; errors: string[] } {
   const read = readOrgDir(root, orgId)
   if (!read.ok) return read
@@ -967,7 +978,7 @@ export function cancelGrokDelete(root: string, orgId: string, seatSlug: string):
     actorSeatId: owner?.slug || seat.slug,
     actorType: owner ? 'human' : 'bot',
     timestamp: at,
-    summary: `Cancelled the request to delete ${seat.title} in Grok Bot`,
+    summary: `Stopped waiting for ${seat.title} to be deleted in Grok Bot`,
     subjectSeatId: seat.slug,
     grok: 'out',
     kind: 'request',
@@ -1044,6 +1055,35 @@ function markSeatDeleted(root: string, slug: string, link: string, at: string): 
   } catch {
     return false
   }
+}
+
+/**
+ * Moves the Connector's own scheduled processes to the saved interval, in every org, so the Work Chart and the
+ * Connector, which keeps routines in line with process files, agree with the prompt. A leading "Every …" in the
+ * description is rewritten too; the rest of it is kept. Returns the files it changed.
+ */
+export function syncConnectorProcesses(orgsDir: string, minutes: number): string[] {
+  const changed: string[] = []
+  for (const orgId of listOrgSlugs(orgsDir)) {
+    const root = resolve(orgsDir, orgId)
+    const read = readOrgDir(root, orgId)
+    if (!read.ok) continue
+    const connectors = new Set(read.bundle.seats.filter((seat) => seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase())).map((seat) => seat.slug))
+    for (const process of read.bundle.processes ?? []) {
+      if (process.trigger.type !== 'schedule' || !connectors.has(process.steps[0]?.seat ?? '')) continue
+      const schedule = scheduleFor(minutes)
+      const description = process.trigger.description.replace(/^Every [^,.;]*/i, `Every ${everyLabel(minutes)}`)
+      if (schedule === process.trigger.schedule.trim() && description === process.trigger.description) continue
+      const path = resolve(root, 'processes', `${process.slug}.md`)
+      try {
+        writeFileSync(path, serializeProcess({ ...process, trigger: { ...process.trigger, schedule, description } }))
+        changed.push(`orgs/${orgId}/processes/${process.slug}.md`)
+      } catch {
+        // A process file that cannot be written keeps its old schedule; the prompt still carries the interval.
+      }
+    }
+  }
+  return changed
 }
 
 function lastSyncConfirmed(bundle: OrgBundle): string {
@@ -1612,7 +1652,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       }
       const saved = writeSyncMinutes(orgsDir, typeof minutes === 'number' ? minutes : NaN)
       if (!saved.ok) return send(res, 422, { error: saved.error })
-      send(res, 200, { minutes: saved.minutes })
+      send(res, 200, { minutes: saved.minutes, processes: syncConnectorProcesses(orgsDir, saved.minutes) })
       return
     }
     if (url.pathname === '/api/orgs' && req.method === 'POST') {

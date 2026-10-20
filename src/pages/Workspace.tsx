@@ -575,7 +575,7 @@ export function Workspace({
     }
   }
 
-  /** POST asks the Connector to delete a retired bot in Grok Bot; DELETE takes the request back. */
+  /** POST starts waiting for a retired bot to be deleted in Grok Bot; DELETE stops waiting. */
   async function deleteRequest(method: 'POST' | 'DELETE', slug: string, name: string): Promise<boolean> {
     setBotNotice(null)
     try {
@@ -595,7 +595,7 @@ export function Workspace({
         return false
       }
       await loadSync()
-      tell(saveNotice(true, method === 'POST' ? `Asked the Connector to delete ${name} in Grok Bot` : `Cancelled the request to delete ${name} in Grok Bot`))
+      tell(saveNotice(true, method === 'POST' ? `Delete ${name} in Grok Bot. The app marks it Deleted after the Connector's next run.` : `Stopped waiting for ${name} to be deleted in Grok Bot`))
       return true
     } catch {
       setWriter('down')
@@ -996,7 +996,6 @@ export function Workspace({
       ) : null}
       {retiredOpen && editable ? (
         <RetiredDrawer
-          orgSlug={bundle.id}
           syncMinutes={sync?.project?.syncMinutes}
           seats={retired}
           deletes={sync?.deletes ?? []}

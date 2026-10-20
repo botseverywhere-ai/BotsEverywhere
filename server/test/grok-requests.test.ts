@@ -11,7 +11,7 @@ const AT = '2026-10-18T10:40:00.000Z'
 const json = { 'content-type': 'application/json' }
 
 function request(seat: string, extra: Partial<GrokRequest> = {}): GrokRequest {
-  return { seat, name: seat, seatFile: `/o/seats/${seat}.md`, promptFile: '', requestedAt: AT, ...extra }
+  return { seat, name: seat, seatFile: `/o/seats/${seat}.md`, prompt: '', requestedAt: AT, ...extra }
 }
 
 test('the requests file reads a BOM, CRLF, and a bad file without throwing', () => {
@@ -56,7 +56,7 @@ test('the Connector reads the requests file, creates each bot, and never edits i
   const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/home/me/orgs' })
   assert.match(prompt, /If <org>\/grok\/requests\.json exists, read it/)
   assert.match(prompt, /create that bot in Grok Bot named exactly as "name"/)
-  assert.match(prompt, /promptFile/)
+  assert.match(prompt, /When "prompt" is set, use it as the bot's prompt\./)
   assert.match(prompt, /Owns, May, Needs approval, and Done when/)
   assert.match(prompt, /That bot belongs to this organization\./)
   assert.match(prompt, /Never edit org\.md, seats\/, processes\/, work-chart\.md, grok\/requests\.json, or project\.json/)
@@ -87,7 +87,7 @@ test('the writer records a request, names the prompt file, and a sync clears it'
     assert.equal(file.requests.length, 1)
     assert.equal(file.requests[0]!.name, 'Metric Change Bot')
     assert.equal(file.requests[0]!.seatFile, join(root, 'seats', 'metric-change-bot.md'))
-    assert.equal(file.requests[0]!.promptFile, join(dir, 'directory', 'metric-change-bot.md'))
+    assert.equal(file.requests[0]!.prompt, 'You flag rows.', 'the directory prompt is copied in, since the Connector never reads outside the orgs folder')
     assert.match(readFileSync(join(root, 'seats', 'metric-change-bot.md'), 'utf8'), /grokSync: missing/, 'the seat file is untouched')
 
     const status = (await (await fetch(`${base}/sync`)).json()) as { requests: GrokRequest[] }

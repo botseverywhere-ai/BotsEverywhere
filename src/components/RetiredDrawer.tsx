@@ -8,10 +8,9 @@ import { retiredKindLabel, retiredGrokLine } from './sync-copy'
 
 /**
  * Everyone retired from this organization, opened from Retired in the org chart legend.
- * A retired bot with a Grok Bot link can be deleted there: the Connector does it on its next run, and until then it can be cancelled.
+ * Grok Bot cannot delete bots itself, so the person deletes a retired bot there; the app waits until the Connector stops reporting it.
  */
 export function RetiredDrawer({
-  orgSlug,
   syncMinutes = DEFAULT_SYNC_MINUTES,
   seats,
   deletes,
@@ -20,8 +19,7 @@ export function RetiredDrawer({
   onCancel,
   checkDelete,
 }: {
-  orgSlug: string
-  /** How often the Connector runs, so the confirm says when the delete happens. */
+  /** How often the Connector runs, so the confirm says when the row updates. */
   syncMinutes?: number
   /** Retired seats only. */
   seats: SeatDocument[]
@@ -84,7 +82,7 @@ export function RetiredDrawer({
                     {waiting && !seat.grokDeletedAt ? (
                       <Button variant="secondary" type="button" disabled={busy} onClick={() => void cancel(seat)}>Cancel</Button>
                     ) : canDelete(seat) ? (
-                      <Button variant="secondary" type="button" disabled={busy} onClick={() => void ask(seat)}>Delete from Grok Bot…</Button>
+                      <Button variant="secondary" type="button" disabled={busy} onClick={() => void ask(seat)}>Delete in Grok Bot…</Button>
                     ) : null}
                   </li>
                 )
@@ -102,20 +100,21 @@ export function RetiredDrawer({
       </aside>
       {confirm ? (
         <div className="be-modal" role="dialog" aria-labelledby="delete-grok-title" onClick={(event) => event.stopPropagation()}>
-          <h2 id="delete-grok-title">Delete {confirm.seat.title} from Grok Bot</h2>
+          <h2 id="delete-grok-title">Delete {confirm.seat.title} in Grok Bot</h2>
           <p>
-            The Connector deletes this bot from your Grok Bot account on its next run. It runs every {everyLabel(syncMinutes)}. The seat stays retired here, and you can cancel until the Connector runs.
+            Grok Bot does not let the Connector delete bots, so you delete it there: in Grok Bot, right-click <strong>{confirm.seat.title}</strong> in the sidebar,
+            choose Delete, and confirm. That removes the bot and its chat history.
+          </p>
+          <p className="overview-note">
+            Choose Wait for it, and this row says the delete is waiting until the Connector&apos;s next run no longer lists the bot. It runs every {everyLabel(syncMinutes)}. The seat stays retired here.
           </p>
           {confirm.activeIn.length ? (
             <p className="grok-status-warning" role="alert">
               {confirm.seat.title} is still active in {confirm.activeIn.join(', ')}. Deleting it in Grok Bot stops it there too.
             </p>
           ) : null}
-          <p className="overview-note">
-            The Connector learns this from its prompt. If you have not yet, paste the prompt from <a href={`#/org/${orgSlug}/connect-bots`}>Connect bots</a> into it once.
-          </p>
           <Button variant="secondary" type="button" disabled={busy} onClick={() => setConfirm(null)}>Cancel</Button>
-          <Button variant="primary" type="button" disabled={busy} onClick={() => void confirmDelete()}>{busy ? 'Asking…' : 'Delete from Grok Bot'}</Button>
+          <Button variant="primary" type="button" disabled={busy} onClick={() => void confirmDelete()}>{busy ? 'Saving…' : 'Wait for it'}</Button>
         </div>
       ) : null}
     </div>

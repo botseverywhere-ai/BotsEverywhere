@@ -25,6 +25,14 @@ export function everyLabel(minutes: number): string {
   return `${minutes} minutes`
 }
 
+/** A process schedule for the interval: a cron line when one fits exactly, else words. */
+export function scheduleFor(minutes: number): string {
+  if (minutes < 60 && 60 % minutes === 0) return `*/${minutes} * * * *`
+  if (minutes % 60 === 0 && minutes < 1440 && 24 % (minutes / 60) === 0) return `0 */${minutes / 60} * * *`
+  if (minutes === 1440) return '0 0 * * *'
+  return `every ${everyLabel(minutes)}`
+}
+
 export type SyncUnit = 'minutes' | 'hours' | 'days'
 
 const UNIT_MINUTES: Record<SyncUnit, number> = { minutes: 1, hours: 60, days: 1440 }

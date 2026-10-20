@@ -31,7 +31,7 @@ export function SyncDrawer({
   onClose: () => void
   onRefresh: () => Promise<void>
   onApplied: (message: string) => Promise<void>
-  /** Takes back a delete the Connector has not done yet. */
+  /** Stops waiting for a delete that has not happened yet. */
   onCancelDelete?: (seat: string) => Promise<void>
 }) {
   const [source, setSource] = useState<Source>({ kind: 'file' })
@@ -246,11 +246,11 @@ export function SyncDrawer({
             ) : null}
             {deletes.length ? (
               <section className="sync-group">
-                <h3>Waiting to be deleted ({deletes.length})</h3>
+                <h3>Waiting for you to delete in Grok Bot ({deletes.length})</h3>
                 <ul className="sync-picks">
                   {deletes.map((item) => (
                     <li key={item.grokBotUrl} className="sync-waiting-row">
-                      <span>{item.name} → asked {formatShortDate(item.requestedAt)}, deleted on the Connector&apos;s next run</span>
+                      <span>{item.name} → right-click it in the Grok Bot sidebar and choose Delete. This clears on the Connector&apos;s next run.</span>
                       {onCancelDelete && item.seats[0] ? (
                         <Button variant="secondary" type="button" disabled={busy} onClick={() => void onCancelDelete(item.seats[0]!)}>Cancel</Button>
                       ) : null}

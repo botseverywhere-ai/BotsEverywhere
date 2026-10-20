@@ -37,7 +37,7 @@ test('going out: bots Grok Bot lacks, split into waiting for the Connector and r
       { kind: 'unchanged', name: 'Invoice Bot', slug: 'invoice-bot' },
     ],
   } as Pick<SyncPlan, 'rows'>
-  const requests = [{ seat: 'metric-change-bot', name: 'Metric Change Bot', seatFile: '', promptFile: '', requestedAt: '2026-10-18T10:40:00.000Z' }]
+  const requests = [{ seat: 'metric-change-bot', name: 'Metric Change Bot', seatFile: '', prompt: '', requestedAt: '2026-10-18T10:40:00.000Z' }]
   assert.deepEqual(outgoing(plan, requests), {
     waiting: [{ slug: 'metric-change-bot', name: 'Metric Change Bot', requestedAt: '2026-10-18T10:40:00.000Z' }],
     ready: [{ slug: 'search-brief-bot', name: 'Search Brief Bot' }],
@@ -62,7 +62,7 @@ test('going out: a template copy with no snapshot lists every bot Grok Bot does 
     { slug: 'invoice-bot', name: 'Invoice Bot' },
     { slug: 'payment-bot', name: 'Payment Bot' },
   ])
-  const requests = [{ seat: 'invoice-bot', name: 'Invoice Bot', seatFile: '', promptFile: '', requestedAt: '2026-10-18T10:40:00.000Z' }]
+  const requests = [{ seat: 'invoice-bot', name: 'Invoice Bot', seatFile: '', prompt: '', requestedAt: '2026-10-18T10:40:00.000Z' }]
   assert.deepEqual(outgoing(null, requests, seats).ready, [{ slug: 'payment-bot', name: 'Payment Bot' }], 'a bot already asked for waits instead')
 })
 

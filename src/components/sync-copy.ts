@@ -84,11 +84,11 @@ export function retiredKindLabel(kind: SeatDocument['kind']): string {
   return kind === 'system' ? 'System' : 'Bot'
 }
 
-/** A retired bot's line in the Retired list: deleted, waiting for the Connector, or still in Grok Bot. */
+/** A retired bot's line in the Retired list: deleted, waiting for the owner to delete it, or still in Grok Bot. */
 export function retiredGrokLine(seat: Pick<SeatDocument, 'grokBotUrl' | 'grokDeletedAt'>, waiting?: Pick<GrokDelete, 'requestedAt'>): string {
   if (seat.grokDeletedAt) return `Deleted from Grok Bot on ${formatShortDate(seat.grokDeletedAt)}`
-  if (waiting) return `Delete asked ${formatShortDate(waiting.requestedAt)}. The Connector deletes it on its next run.`
-  if (!seat.grokBotUrl?.trim()) return 'No Grok Bot link, so it cannot be deleted from here'
+  if (waiting) return 'Waiting for you to delete it in Grok Bot. This updates on the Connector\'s next run.'
+  if (!seat.grokBotUrl?.trim()) return 'No Grok Bot link, so the app cannot tell when it is gone'
   return 'Still in Grok Bot'
 }
 

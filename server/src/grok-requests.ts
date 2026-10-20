@@ -12,12 +12,12 @@ export interface GrokRequest {
   name: string
   /** Absolute path of the seat file: Owns, May, Needs approval, Done when. */
   seatFile: string
-  /** Absolute path of the directory prompt, or '' when the seat has none. */
-  promptFile: string
+  /** The directory prompt text, or '' when the seat has none. Inline, because the Connector never reads outside the orgs folder. */
+  prompt: string
   requestedAt: string
 }
 
-/** A bot the app asked the Connector to delete in Grok Bot. Found by its link, never by name alone. */
+/** A retired bot the owner is deleting in Grok Bot. Grok Bot cannot delete bots itself, so the app only waits until the Connector stops reporting the link. */
 export interface GrokDelete {
   /** The bot's Grok Bot link. One request per link. */
   grokBotUrl: string
@@ -50,7 +50,7 @@ export function parseRequests(source: string): ({ ok: true } & RequestsFile) | {
     const row = item as Record<string, unknown>
     const seat = text(row.seat)
     if (!SEAT_SLUG.test(seat)) return []
-    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), promptFile: text(row.promptFile), requestedAt: text(row.requestedAt) }]
+    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', requestedAt: text(row.requestedAt) }]
   })
   // Deletes sit under their own key, so a Connector on an older prompt never reads one as a create.
   const removals = data && typeof data === 'object' ? (data as { deletes?: unknown }).deletes : undefined

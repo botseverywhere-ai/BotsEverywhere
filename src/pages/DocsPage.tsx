@@ -355,7 +355,7 @@ npm run dev`}</CodeBlock>
         <h3>What the Connector does on each run</h3>
         <p>For every folder in <code>orgs</code> that has an <code>org.md</code> file, the Connector:</p>
         <ol>
-          <li>Creates the bots the app asked for in <code>grok/requests.json</code>, and deletes the retired bots it asked to delete, found by their Grok Bot link.</li>
+          <li>Creates the bots the app asked for in <code>grok/requests.json</code>, with the directory prompt when the bot came from the directory.</li>
           <li>Writes <code>grok/snapshot.json</code> with the bots that belong to that organization and the routines they run.</li>
           <li>Reads <code>org.md</code>, <code>seats/</code>, and <code>processes/</code>, keeps one routine per process for the bot on its first step, and tells each bot who its manager is.</li>
           <li>Tells each bot to read its process file and seat file at the start of every run, and to append one line to <code>log/YYYY-MM-DD.md</code> after every step.</li>
@@ -413,9 +413,9 @@ npm run dev`}</CodeBlock>
         </p>
         <p>
           <strong>Retired</strong> in the legend lists every seat you retired, human or bot, with the date. Retire takes a seat out of this organization only; the bot keeps
-          running in Grok Bot, where another organization may still use it. To remove a retired bot from your Grok Bot account, choose <strong>Delete from Grok Bot…</strong> on its row.
-          The app warns you when another organization still has the bot active. The Connector deletes it on its next run, and until then you can <strong>Cancel</strong>.
-          The Connector learns this from its prompt, so paste the prompt from <strong>Connect bots</strong> into it once.
+          running in Grok Bot, where another organization may still use it. Grok Bot does not let the Connector delete bots, so you delete one there: right-click it in the Grok Bot sidebar and choose Delete.
+          Choose <strong>Delete in Grok Bot…</strong> on its row first, and the app warns you when another organization still has the bot active, then waits: the row says <strong>Deleted from Grok Bot</strong>
+          after the Connector&apos;s next run no longer lists it. <strong>Cancel</strong> stops waiting. Retire a bot before you delete it in Grok Bot, or its card shows Not in Grok Bot.
         </p>
         <p>On your own organizations, each bot card shows what the app knows about it in Grok Bot:</p>
         <ul>
@@ -534,7 +534,7 @@ Plain notes for the people reading the file.`}</CodeBlock>
         <h3>Going to Grok Bot</h3>
         <ul>
           <li>Every active bot Grok Bot does not have yet is listed, including bots on a template copy or a hand-built chart. Tick the ones to create; the Connector creates them on its next run.</li>
-          <li>Retired bots waiting to be deleted in Grok Bot are listed too, each with <strong>Cancel</strong>.</li>
+          <li>Retired bots waiting for you to delete them in Grok Bot are listed too, each with <strong>Cancel</strong>.</li>
           <li>
             Grok Bot keeps one bot per name. If another organization in the folder already has a bot with the same name, the drawer says it will be created as, for example,
             {' '}<strong>Invoice Bot · Meridian Ledger Partners</strong>. The next sync matches that name back to the right seat.
@@ -579,7 +579,7 @@ Plain notes for the people reading the file.`}</CodeBlock>
           <li><strong>Connector</strong>: one line per day, updated on every run: runs today, first and last run, bots in Grok Bot, requests waiting, and bots with no organization.</li>
           <li><strong>Stopped</strong>: the Connector missed two runs, with the time of its last run.</li>
           <li><strong>Error</strong>: the Connector wrote a snapshot the app cannot read, and why.</li>
-          <li><strong>Request</strong>, <strong>Created</strong>, <strong>Deleted</strong>, <strong>Sync</strong>, and <strong>Added</strong>: bots you asked Grok Bot to create or delete (and cancelled deletes), bots it created, bots it deleted, confirmed syncs with the bots they changed, and bots added from the no-organization list.</li>
+          <li><strong>Request</strong>, <strong>Created</strong>, <strong>Deleted</strong>, <strong>Sync</strong>, and <strong>Added</strong>: bots you sent to Grok Bot and retired bots you said you would delete there, bots it created, bots gone from Grok Bot after a delete, confirmed syncs with the bots they changed, and bots added from the no-organization list.</li>
         </ul>
         <p>The run log is one file per day, <code>log/YYYY-MM-DD.md</code>, starting with <code># Run log YYYY-MM-DD</code>, then one line per step:</p>
         <p><code>- HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -</code></p>

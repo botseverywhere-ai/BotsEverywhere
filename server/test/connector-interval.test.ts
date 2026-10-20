@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { connectorPrompt } from '../src/connector-prompt.ts'
 import { checkConnectorStopped, recordConnectorRun } from '../src/connector-log.ts'
-import { everyLabel, joinSyncMinutes, splitSyncMinutes, staleMinutes, validSyncMinutes } from '../src/connector-timing.ts'
+import { everyLabel, joinSyncMinutes, scheduleFor, splitSyncMinutes, staleMinutes, validSyncMinutes } from '../src/connector-timing.ts'
 import { CONNECTOR_FILE, PROJECT_FILE, ensureProjectId, readSyncMinutes, writeSyncMinutes } from '../src/project.ts'
 import { createOrgFiles, startTemplateServer } from '../src/template-server.ts'
 import { connectorDetails, connectorState } from '../../src/components/sync-copy.ts'
@@ -176,6 +176,37 @@ test('Connector stopped waits for the interval the Connector reports', () => {
     checkConnectorStopped(orgs)
     assert.equal(JSON.parse(readFileSync(join(orgs, 'connector-log.json'), 'utf8')).state, 'connected', 'saved 15, Connector says 120: an hour is not two missed runs')
   } finally {
+    done()
+  }
+})
+
+test("saving the interval moves the Connector's own process to it, and keeps the rest of its description", async () => {
+  assert.equal(scheduleFor(15), '*/15 * * * *')
+  assert.equal(scheduleFor(17), 'every 17 minutes', 'no cron line runs every 17 minutes')
+  assert.equal(scheduleFor(120), '0 */2 * * *')
+  assert.equal(scheduleFor(1440), '0 0 * * *')
+  assert.equal(scheduleFor(300), 'every 5 hours')
+
+  const { orgs, done } = project()
+  const made = createOrgFiles(orgs, 'Desk', 'Ada')
+  assert.equal(made.ok, true)
+  if (!made.ok) return done()
+  const root = join(orgs, made.slug)
+  writeFileSync(join(root, 'seats', 'connector-botseverywhere-k3f9.md'), '---\ntitle: Connector - BotsEverywhere (k3f9)\ndepartment: general\nreportsTo: you\naddToGrokBotUrl: ""\nstatus: active\nkind: bot\nrole: Sync\npersonId: ""\nhiredAt: ""\nretiredAt: ""\ndirectoryId: ""\n---\n\n## Owns\nSync\n\n## May\nRead\n\n## Needs approval\nNothing\n\n## Done when\nSynced\n', 'utf8')
+  mkdirSync(join(root, 'processes'), { recursive: true })
+  writeFileSync(join(root, 'processes', 'botseverywhere-sync.md'), '---\nname: BotsEverywhere sync\ntrigger: schedule\nschedule: "*/15 * * * *"\ndescription: "Every 15 minutes, Madrid time"\ndoneWhen: Synced.\n---\n\n## Steps\n\n- connector-botseverywhere-k3f9 | Sync\n\n## Notes\n\n', 'utf8')
+  writeFileSync(join(root, 'processes', 'weekly.md'), '---\nname: Weekly\ntrigger: schedule\nschedule: "Mon 09:00"\ndescription: "Every Monday"\ndoneWhen: Done.\n---\n\n## Steps\n\n- you | Review\n\n## Notes\n\n', 'utf8')
+  const started = await startTemplateServer({ port: 0, orgsDir: orgs, host: '127.0.0.1' })
+  try {
+    const response = await fetch(`http://127.0.0.1:${started.port}/api/project/sync-minutes`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ minutes: 17 }) })
+    const body = (await response.json()) as { processes: string[] }
+    assert.deepEqual(body.processes, [`orgs/${made.slug}/processes/botseverywhere-sync.md`])
+    const sync = readFileSync(join(root, 'processes', 'botseverywhere-sync.md'), 'utf8')
+    assert.match(sync, /schedule: "?every 17 minutes"?\n/)
+    assert.match(sync, /description: "?Every 17 minutes, Madrid time"?\n/)
+    assert.match(readFileSync(join(root, 'processes', 'weekly.md'), 'utf8'), /schedule: "?Mon 09:00"?\n/, "another bot's process is untouched")
+  } finally {
+    await started.close()
     done()
   }
 })

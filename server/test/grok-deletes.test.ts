@@ -52,10 +52,10 @@ test('a bot counts as still in Grok Bot by its link, or by its name when the ent
   assert.equal(stillInGrok(removal(), []), false)
 })
 
-test('the Connector deletes by link only and never deletes itself', () => {
+test('Grok Bot cannot delete bots, so the Connector ignores deletes and the owner deletes them', () => {
   const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/home/me/orgs' })
-  assert.match(prompt, /For each entry in "deletes", delete the bot in Grok Bot whose link is exactly "grokBotUrl"/)
-  assert.match(prompt, /Never delete a bot by its name alone, and never delete yourself\./)
+  assert.match(prompt, /Ignore "deletes": the owner deletes those bots in Grok Bot/)
+  assert.doesNotMatch(prompt, /delete the bot in Grok Bot whose link/)
 })
 
 function seat(root: string, slug: string, title: string, extra: string) {
@@ -106,8 +106,8 @@ test('the writer asks for a delete, warns about another organization, and can ca
     assert.deepEqual(readRequests(root).deletes, [])
     assert.equal((await fetch(`${base}/grok/deletes`, { method: 'DELETE', headers: json, body: JSON.stringify({ seat: 'inbox-bot' }) })).status, 422, 'nothing left to cancel')
     const summaries = readdirSync(join(root, 'log')).map((name) => readFileSync(join(root, 'log', name), 'utf8')).join('\n')
-    assert.match(summaries, /Asked the Connector to delete Inbox Bot in Grok Bot/)
-    assert.match(summaries, /Cancelled the request to delete Inbox Bot in Grok Bot/)
+    assert.match(summaries, /Waiting for Inbox Bot to be deleted in Grok Bot/)
+    assert.match(summaries, /Stopped waiting for Inbox Bot to be deleted in Grok Bot/)
   } finally {
     await started.close()
     done()
@@ -227,14 +227,14 @@ test('a bad requests file is skipped by the run and refused by a delete, never a
   }
 })
 
-test('Retired sits in the org chart legend and opens the list, with Delete from Grok Bot and Cancel', async () => {
+test('Retired sits in the org chart legend and opens the list, with Delete in Grok Bot and Cancel', async () => {
   const { retiredGrokLine, retiredKindLabel, logLabel } = await import('../../src/components/sync-copy.ts')
   const { formatShortDate } = await import('../src/bot-metrics.ts')
   assert.equal(retiredKindLabel('human'), 'Human')
   assert.equal(retiredKindLabel('bot'), 'Bot')
   assert.equal(retiredGrokLine({ grokBotUrl: INBOX }), 'Still in Grok Bot')
-  assert.equal(retiredGrokLine({ grokBotUrl: '' }), 'No Grok Bot link, so it cannot be deleted from here')
-  assert.equal(retiredGrokLine({ grokBotUrl: INBOX }, { requestedAt: AT }), `Delete asked ${formatShortDate(AT)}. The Connector deletes it on its next run.`)
+  assert.equal(retiredGrokLine({ grokBotUrl: '' }), 'No Grok Bot link, so the app cannot tell when it is gone')
+  assert.equal(retiredGrokLine({ grokBotUrl: INBOX }, { requestedAt: AT }), "Waiting for you to delete it in Grok Bot. This updates on the Connector's next run.")
   assert.equal(retiredGrokLine({ grokBotUrl: INBOX, grokDeletedAt: AT }, { requestedAt: AT }), `Deleted from Grok Bot on ${formatShortDate(AT)}`)
   assert.equal(logLabel({ id: 'x', type: 'edit', kind: 'deleted' }), 'Deleted')
   const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
@@ -245,8 +245,9 @@ test('Retired sits in the org chart legend and opens the list, with Delete from 
   assert.match(chart, /Retired <span className="legend-count">\{retired\.count\}<\/span>/)
   assert.match(workspace, /retired=\{editable \? \{ count: retired\.length/, 'only an org of your own')
   assert.doesNotMatch(workspace, /be-retired/, 'the list under the chart is gone')
-  assert.match(drawer, /Delete from Grok Bot…/)
+  assert.match(drawer, /Delete in Grok Bot…/)
+  assert.match(drawer, /right-click <strong>\{confirm\.seat\.title\}<\/strong> in the sidebar/, 'the dialog says how to delete it in Grok Bot')
   assert.match(drawer, /is still active in \{confirm\.activeIn\.join\(', '\)\}\. Deleting it in Grok Bot stops it there too\./)
-  assert.match(sync, /Waiting to be deleted \(\{deletes\.length\}\)/)
+  assert.match(sync, /Waiting for you to delete in Grok Bot \(\{deletes\.length\}\)/)
   assert.match(sync, /onCancelDelete\(item\.seats\[0\]!\)/)
 })
