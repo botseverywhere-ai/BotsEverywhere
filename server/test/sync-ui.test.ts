@@ -112,7 +112,7 @@ test('the Sync button, drawer, tags, and Reports to select are wired in template
   assert.match(chart, /grokSyncClass\(seat\)/, 'bot cards carry the in or off Grok Bot class')
   assert.match(chart, /org-sync-tag/)
   assert.match(chart, /grokStates\b/, 'the green and dashed states are opt-in, so templates and samples stay plain')
-  assert.match(chart, /legendItem\('in-grok', 'swatch-grok', 'In Grok Bot', counts\.inGrok\)/)
+  assert.match(chart, /legendItem\('in-grok', 'swatch-grok', 'In Grok Bot', account \? account\.total : counts\.inGrok\)/)
   assert.match(chart, /legendItem\('off-grok', 'swatch-off-grok', 'Not in Grok Bot', counts\.offGrok\)/)
   assert.match(workspace, /grokStates=\{editable\}/)
   const seatDrawer = read('../../src/components/SeatDrawer.tsx')
@@ -147,9 +147,10 @@ test('the org chart legend counts each category', async () => {
   assert.deepEqual(legendCounts(seats, ['open']), { human: 1, bot: 4, system: 1, inGrok: 2, offGrok: 1 }, 'an open seat is not counted; a bot nothing is known about is in neither Grok Bot count')
   const chart = readFileSync(new URL('../../src/components/OrgChart.tsx', import.meta.url), 'utf8')
   assert.match(chart, /<i className=\{`swatch \$\{swatch\}`\} \/> \{label\} <span className="legend-count">\{count\}<\/span>/, 'swatch, label, and count')
-  for (const [group, swatch, label, key] of [['human', 'human', 'Human', 'human'], ['bot', 'bot', 'Bot', 'bot'], ['system', 'system', 'System', 'system'], ['in-grok', 'grok', 'In Grok Bot', 'inGrok'], ['off-grok', 'off-grok', 'Not in Grok Bot', 'offGrok']]) {
+  for (const [group, swatch, label, key] of [['human', 'human', 'Human', 'human'], ['bot', 'bot', 'Bot', 'bot'], ['system', 'system', 'System', 'system'], ['off-grok', 'off-grok', 'Not in Grok Bot', 'offGrok']]) {
     assert.match(chart, new RegExp(`legendItem\\('${group}', 'swatch-${swatch}', '${label}', counts\\.${key}\\)`), label)
   }
+  assert.ok(chart.includes("legendItem('in-grok', 'swatch-grok', 'In Grok Bot', account ? account.total : counts.inGrok)"), 'In Grok Bot counts the account when the Connector reported it')
 })
 
 test('Organization Overview shows counts from the org chart, not typed numbers', () => {

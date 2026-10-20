@@ -53,7 +53,7 @@ test('Overview has a Retired box, every box opens its list, and a name opens the
   const overview = readFileSync(new URL('../../src/pages/CompanyOverview.tsx', import.meta.url), 'utf8')
   const chart = readFileSync(new URL('../../src/components/OrgChart.tsx', import.meta.url), 'utf8')
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
-  for (const box of ["countBox('People', counts.human, 'human')", "countBox('Bots', counts.bot, 'bot')", "countBox('In Grok Bot', counts.inGrok, 'in-grok')", "countBox('Not in Grok Bot', counts.offGrok, 'off-grok')", "countBox('System', counts.system, 'system')", "countBox('Retired', retiredGroups(retired).length, 'retired')"]) {
+  for (const box of ["countBox('People', counts.human, 'human')", "countBox('Bots', counts.bot, 'bot')", "countBox('In Grok Bot', account ? account.total : counts.inGrok, 'in-grok')", "countBox('Not in Grok Bot', counts.offGrok, 'off-grok')", "countBox('System', counts.system, 'system')", "countBox('Retired', retiredGroups(retired).length, 'retired')"]) {
     assert.ok(overview.includes(box), box)
   }
   assert.match(overview, /onPick=\{\(id\) => \{ window\.location\.hash = `\$\{chartHref\}\?seat=\$\{encodeURIComponent\(id\)\}` \}\}/)

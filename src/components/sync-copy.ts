@@ -1,5 +1,5 @@
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import type { ProjectInfo, SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
+import type { GrokAccount, ProjectInfo, SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
 import { canRequest, fulfilledSeats, type GrokRequest } from '../../server/src/grok-requests.ts'
 import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
 import type { NoticeInput } from '../live/notices.ts'
@@ -386,4 +386,22 @@ export function grokSyncLine(seat: SyncSeat): string {
 export function seatListMeta(role: string, name: string, manager: string): string {
   const shownRole = role && role !== name ? `${role} · ` : ''
   return `${shownRole}${manager ? `reports to ${manager}` : 'top of the chart'}`
+}
+
+/** Where an account bot sits, in one line for the In Grok Bot list. */
+export function accountWhere(bot: GrokAccount['bots'][number]): string {
+  if (bot.where === 'connector') return 'The Connector, which links Grok Bot to your organizations'
+  if (bot.where === 'none') return 'In no organization'
+  const orgs = bot.orgs.join(', ')
+  return bot.where === 'retired' ? `Retired in ${orgs}, still running in Grok Bot` : `On the chart in ${orgs}`
+}
+
+/** The In Grok Bot list: every bot in the account. Only a bot with a seat on this chart can be found on it. */
+export function accountRows(account: GrokAccount): { id: string; name: string; meta: string; pickable: boolean }[] {
+  return account.bots.map((bot, index) => ({
+    id: bot.seat || `account-${index}`,
+    name: bot.name,
+    meta: accountWhere(bot),
+    pickable: bot.where === 'active' && Boolean(bot.seat),
+  }))
 }

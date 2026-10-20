@@ -38,7 +38,7 @@ import { isRunLogName, planRun } from './run-log.js'
 import { playRun, readRunLogDir } from './run-log-files.js'
 import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
-import { parseSnapshot, planSync, patchSeatSource, summaryLine, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
+import { parseSnapshot, planSync, patchSeatSource, summaryLine, type AccountBot, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
@@ -1109,7 +1109,48 @@ export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
     bots: bots.length,
     renamed: renamedSeats(orgsDir, orgId, bots),
     syncMinutes: readSyncMinutes(orgsDir),
+    account: grokAccount(orgsDir, orgId),
   }
+}
+
+/**
+ * Every bot in the Grok Bot account, counted once whatever its organization: the bots in each org's snapshot,
+ * the bots in no organization, and the Connector, which never lists itself. Matched by link, else by name.
+ */
+export function grokAccount(orgsDir: string, orgId: string): GrokAccount | null {
+  const connector = readConnector(orgsDir)
+  if (!connector) return null
+  const found = new Map<string, AccountBot>()
+  let complete = !connector.error
+  const keyOf = (bot: { name: string; grokBotUrl: string }) => bot.grokBotUrl.trim() || `name:${bot.name.trim().toLowerCase()}`
+  for (const other of listOrgSlugs(orgsDir)) {
+    const root = resolve(orgsDir, other)
+    const snap = readSnapshot(root)
+    if (!snap.ok) {
+      if (!snap.missing) complete = false
+      continue
+    }
+    const read = readOrgDir(root, other)
+    const orgName = read.ok ? read.bundle.org.company.name : other
+    const seats = read.ok ? read.bundle.seats.filter((seat) => seat.kind === 'bot') : []
+    for (const bot of snap.snapshot.bots) {
+      const link = bot.grokBotUrl.trim()
+      const name = bot.name.trim().toLowerCase()
+      const mine = seats.filter((seat) => (link && (seat.grokBotUrl ?? '').trim() === link) || seat.title.trim().toLowerCase() === name)
+      const active = mine.find((seat) => seat.status !== 'retired')
+      const entry = found.get(keyOf(bot)) ?? { name: bot.name, where: 'retired' as const, orgs: [] as string[] }
+      if (!entry.orgs.includes(orgName)) entry.orgs.push(orgName)
+      if (active || !mine.length) entry.where = 'active'
+      if (other === orgId && (active ?? mine[0])) entry.seat = (active ?? mine[0])!.slug
+      found.set(keyOf(bot), entry)
+    }
+  }
+  for (const bot of connector.unassigned) {
+    if (!found.has(keyOf(bot))) found.set(keyOf(bot), { name: bot.name, where: 'none', orgs: [] })
+  }
+  const bots = [...found.values()]
+  bots.push({ name: connectorName(ensureProjectId(orgsDir)), where: 'connector', orgs: [] })
+  return { total: bots.length, bots, complete }
 }
 
 /** Adds bots that are in Grok Bot but belong to no organization to this org, as seats marked New. Never adds a name twice. */

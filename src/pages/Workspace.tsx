@@ -867,6 +867,7 @@ export function Workspace({
                 grokStates={editable}
                 legendLists={editable}
                 focusId={view === 'org' ? focusSeat : ''}
+                account={editable ? sync?.project?.account ?? null : null}
                 retired={editable ? { count: retiredGroups(retired).length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
                 actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
               />

@@ -90,6 +90,26 @@ export interface ProjectInfo {
   renamed: Record<string, string>
   /** How often the Connector runs, from project.json. */
   syncMinutes?: number
+  /** Every bot in the Grok Bot account, whatever its organization, from the Connector's report. Null before its first report. */
+  account?: GrokAccount | null
+}
+
+/** One bot in the Grok Bot account and where it sits here. */
+export interface AccountBot {
+  name: string
+  /** active: on an org chart. retired: retired in every org that has it, still running in Grok Bot. none: in no organization. connector: the Connector itself. */
+  where: 'active' | 'retired' | 'none' | 'connector'
+  /** Organizations that have it, by name. */
+  orgs: string[]
+  /** Its seat in the org asking, when it has one there. */
+  seat?: string
+}
+
+export interface GrokAccount {
+  total: number
+  bots: AccountBot[]
+  /** False when an org's snapshot could not be read, so a bot may be missing from the list. */
+  complete: boolean
 }
 
 export function parseSnapshot(text: string, fallbackSyncedAt: string): { ok: true; snapshot: Snapshot } | { ok: false; error: string } {

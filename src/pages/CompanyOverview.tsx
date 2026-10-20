@@ -8,7 +8,7 @@ import { LinkCompany } from '../components/LinkCompany'
 import { OrgFiles } from '../components/OrgFiles'
 import { SaveAlert } from '../components/SaveAlert'
 import { saveNotice, type SaveNotice } from '../components/save-notice'
-import { grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, retiredGroups, seatListMeta, type LegendGroup } from '../components/sync-copy'
+import { accountRows, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, retiredGroups, seatListMeta, type LegendGroup } from '../components/sync-copy'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { SeatListDrawer } from '../components/SeatListDrawer'
 
@@ -58,7 +58,10 @@ export function CompanyOverview({
   const [listed, setListed] = useState<LegendGroup | 'retired' | null>(null)
   const listable = editable && Boolean(chartHref)
   const titleOf = new Map(seats.map((seat) => [seat.slug, seat.title]))
-  const listedRows = listed && listed !== 'retired'
+  const account = sync?.project?.account ?? null
+  const listedRows = listed === 'in-grok' && account
+    ? accountRows(account)
+    : listed && listed !== 'retired'
     ? legendGroup(active, listed).flatMap((item) => {
       const seat = seats.find((entry) => entry.slug === item.id)
       if (!seat) return []
@@ -175,17 +178,21 @@ export function CompanyOverview({
       <dl className="overview-counts">
         {countBox('People', counts.human, 'human')}
         {countBox('Bots', counts.bot, 'bot')}
-        {countBox('In Grok Bot', counts.inGrok, 'in-grok')}
+        {countBox('In Grok Bot', account ? account.total : counts.inGrok, 'in-grok')}
         {countBox('Not in Grok Bot', counts.offGrok, 'off-grok')}
         {countBox('System', counts.system, 'system')}
         {countBox('Retired', retiredGroups(retired).length, 'retired')}
       </dl>
-      <p className="overview-note">Counted from the org chart.{listable ? ' Choose a number to see who it counts.' : ''}</p>
+      <p className="overview-note">
+        Counted from the org chart.{account ? ' In Grok Bot counts every bot in your Grok Bot account, whatever its organization, from the Connector\'s last report.' : ''}
+        {listable ? ' Choose a number to see who it counts.' : ''}
+      </p>
       {listed === 'retired' ? (
         <RetiredDrawer seats={retired} activeElsewhere={sync?.retiredElsewhere ?? {}} onClose={() => setListed(null)} />
       ) : listed ? (
         <SeatListDrawer
           title={listed === 'human' ? 'People' : LEGEND_TITLES[listed]}
+          note={listed === 'in-grok' && account ? "Every bot in your Grok Bot account, whatever its organization, from the Connector's last report. Choose one on this chart to find it." : undefined}
           rows={listedRows}
           onPick={(id) => { window.location.hash = `${chartHref}?seat=${encodeURIComponent(id)}` }}
           onClose={() => setListed(null)}

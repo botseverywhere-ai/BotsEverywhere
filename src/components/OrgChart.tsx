@@ -5,7 +5,8 @@ import { anchoredScroll, fitScale, formatZoom, pickedSeatName } from './org-zoom
 import { Button } from './Button'
 import { SeatListDrawer } from './SeatListDrawer'
 import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
-import { grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
+import { accountRows, grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
+import type { GrokAccount } from '../../server/src/grok-sync.ts'
 
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 1.8
@@ -35,6 +36,7 @@ export function OrgChart({
   retired,
   legendLists = false,
   focusId = '',
+  account = null,
 }: {
   seats: Seat[]
   selectedId: string
@@ -59,6 +61,8 @@ export function OrgChart({
   legendLists?: boolean
   /** A seat to find once, from the address (`?seat=`), as Find seat does. */
   focusId?: string
+  /** Every bot in the Grok Bot account. When set, In Grok Bot counts and lists the account, not only this chart. */
+  account?: GrokAccount | null
 }) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLUListElement>(null)
@@ -393,7 +397,7 @@ export function OrgChart({
         {legendItem('system', 'swatch-system', 'System', counts.system)}
         {grokStates ? (
           <>
-            {legendItem('in-grok', 'swatch-grok', 'In Grok Bot', counts.inGrok)}
+            {legendItem('in-grok', 'swatch-grok', 'In Grok Bot', account ? account.total : counts.inGrok)}
             {legendItem('off-grok', 'swatch-off-grok', 'Not in Grok Bot', counts.offGrok)}
           </>
         ) : null}
@@ -408,7 +412,8 @@ export function OrgChart({
       {listed ? (
         <SeatListDrawer
           title={LEGEND_TITLES[listed]}
-          rows={listedSeats.map((seat) => ({
+          note={listed === 'in-grok' && account ? "Every bot in your Grok Bot account, whatever its organization, from the Connector's last report. Choose one on this chart to find it." : undefined}
+          rows={listed === 'in-grok' && account ? accountRows(account) : listedSeats.map((seat) => ({
             id: seat.id,
             name: seat.name,
             meta: seatListMeta(seat.role, seat.name, seat.reportsTo ? seats.find((item) => item.id === seat.reportsTo)?.name ?? seat.reportsTo : ''),
