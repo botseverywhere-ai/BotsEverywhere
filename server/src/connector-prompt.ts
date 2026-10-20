@@ -88,6 +88,7 @@ Run this routine every ${everyLabel(syncMinutes)}.
 
 Do every step below on your own, on every run. Never ask the owner to confirm a step, a message to a bot, or how many bots to message. The only time anyone asks the owner is a checkpoint (step 8).
 Send each bot the rules in steps 5 to 7 once: when the bot is new to you, when its seat file or process file changed, or when these rules changed. Do not repeat them on every run.
+A seat file counts as changed only when its title, reportsTo, or its Owns, May, Needs approval, or Done when changed. Ignore the lines BotsEverywhere fills from your own report (createdAt, lastActive, runs30d, tasksDone30d, routines, botStatus, grokSync, grokSyncedAt, grokMissingSince, grokDeletedAt): they change on every run.
 
 On each run, for every organization:
 1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. Never create yourself. When "prompt" is set, use it as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". That bot belongs to this organization.

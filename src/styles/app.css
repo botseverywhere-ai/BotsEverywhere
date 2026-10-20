@@ -1565,6 +1565,8 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .grok-status-text { display: flex; flex-direction: column; }
 .grok-status strong { font-size: 12px; font-weight: var(--weight-semibold); }
 .grok-status small { font-size: 10px; color: var(--color-muted); }
+.grok-status.is-checking { color: var(--color-muted); }
+.grok-status.is-checking i { background: var(--color-line); }
 .grok-status.is-connected { color: var(--color-green-700); }
 .grok-status.is-connected i { background: var(--color-green-400); }
 .grok-status.is-broken, .grok-status.is-unknown { color: var(--color-red-700); }

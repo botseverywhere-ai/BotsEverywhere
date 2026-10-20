@@ -98,6 +98,12 @@ export interface ProjectInfo {
   windows?: boolean
 }
 
+/** The Connector's state alone, from project.json and connector.json: cheap enough for every page to ask for at once. */
+export interface ConnectorInfo extends Pick<ProjectInfo, 'id' | 'connectorName' | 'orgsFolder' | 'connector' | 'syncMinutes' | 'timeZone' | 'windows'> {
+  /** Organizations in the folder, by slug. */
+  orgs: string[]
+}
+
 /** One bot in the Grok Bot account and where it sits here. */
 export interface AccountBot {
   name: string

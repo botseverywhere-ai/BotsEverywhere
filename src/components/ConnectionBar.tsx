@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import type { SyncStatus } from '../../server/src/grok-sync.ts'
 import { pushNotice } from '../live/notices'
 import { orgFolder } from '../org/folder-path'
 import { Button } from './Button'
-import { connectorChangeNotice, connectorState, type ConnectorState } from './sync-copy'
+import { connectorChangeNotice, connectorState, type ConnectionView, type ConnectorState } from './sync-copy'
 
 const HIDDEN_KEY = 'be-connection-bar-hidden:'
 
@@ -27,7 +26,7 @@ function writeHidden(key: string) {
  * The project folder, this org's folder, and whether the project Connector writes to them. A warning only; it never blocks the org.
  * Once connected it can be closed; it comes back on its own when the Connector stops or breaks.
  */
-export function ConnectionBar({ slug, status }: { slug: string; status: SyncStatus | null }) {
+export function ConnectionBar({ slug, status }: { slug: string; status: ConnectionView | null }) {
   const [now, setNow] = useState(() => Date.now())
   const key = HIDDEN_KEY + (status?.project?.id || slug)
   const [hidden, setHidden] = useState(() => readHidden(key))

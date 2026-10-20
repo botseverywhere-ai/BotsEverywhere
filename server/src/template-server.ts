@@ -38,7 +38,7 @@ import { isRunLogName, planRun } from './run-log.js'
 import { playRun, readRunLogDir } from './run-log-files.js'
 import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
-import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
+import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
@@ -1132,6 +1132,22 @@ export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
   }
 }
 
+/** Only the Connector's state: project.json, connector.json, and the org folder names. Never a sync plan, so the header and the connection bar answer at once. */
+export function connectorInfo(orgsDir: string): ConnectorInfo {
+  const id = ensureProjectId(orgsDir)
+  const connector = readConnector(orgsDir)
+  return {
+    id,
+    connectorName: connectorName(id),
+    orgsFolder: resolve(orgsDir),
+    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error, ...(connector.syncMinutes ? { syncMinutes: connector.syncMinutes } : {}) } : null,
+    syncMinutes: readSyncMinutes(orgsDir),
+    timeZone: localTimeZone(),
+    windows: process.platform === 'win32',
+    orgs: listOrgSlugs(orgsDir),
+  }
+}
+
 /** The IANA time zone of this computer, for the Connector prompt. Empty when the runtime cannot say. */
 function localTimeZone(): string {
   try {
@@ -1672,6 +1688,10 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
     const url = new URL(req.url || '/', 'http://127.0.0.1')
     if (url.pathname === '/api/session' && req.method === 'GET') {
       send(res, 200, { user: null, teams: [], csrfToken: '', authEnabled: false })
+      return
+    }
+    if (url.pathname === '/api/connector' && req.method === 'GET') {
+      send(res, 200, connectorInfo(orgsDir))
       return
     }
     if (url.pathname === '/api/orgs' && req.method === 'GET') {

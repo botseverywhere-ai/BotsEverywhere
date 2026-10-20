@@ -20,9 +20,9 @@ import { SyncDrawer } from '../components/SyncDrawer'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
-import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups } from '../components/sync-copy'
+import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, type ConnectionView } from '../components/sync-copy'
 import { managerChoices } from '../org/manager-choices'
-import { slugify, type SyncStatus } from '../../server/src/grok-sync.ts'
+import { slugify, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -127,25 +127,58 @@ export function Workspace({
   )
   const focusSeat = seatFromHash()
   const bundledLog = useMemo(() => bundle.runLog ?? [], [bundle.runLog])
-  const loadSync = useCallback(async () => {
+  // The connection bar reads the Connector's light view (two small files), so it answers at once and never waits for a sync plan.
+  const [connection, setConnection] = useState<ConnectionView | null>(null)
+  const loadConnection = useCallback(async () => {
     if (!editable) return
     try {
-      const response = await fetch(`/api/orgs/${bundle.id}/sync`)
-      const text = await response.text()
-      if (response.status === 404) {
-        // The org is on screen, so a 404 here means the writer predates the sync routes.
-        setSync({ snapshot: null, error: 'The file writer needs a restart. Stop npm run dev and start it again.', plan: null, lastConfirmed: '', folder: '' })
-        return
-      }
-      if (!response.ok || !text.trimStart().startsWith('{')) return
-      const next = JSON.parse(text) as SyncStatus
-      // Every copy of the app on this port shares browser storage, so the running writer's folder always wins.
-      if (next.folder) rememberOrgFolder(bundle.id, next.folder)
-      setSync(next)
+      const response = await fetch('/api/connector')
+      if (!response.ok) return
+      const info = (await response.json()) as ConnectorInfo
+      setConnection({ snapshot: null, error: '', folder: '', project: info })
     } catch {
-      setSync({ snapshot: null, error: SAVING_OFF, plan: null, lastConfirmed: '', folder: '' })
+      setConnection({ snapshot: null, error: SAVING_OFF })
     }
-  }, [bundle.id, editable])
+  }, [editable])
+  // Live events arrive in bursts while the Connector writes, and each status request costs the writer real time:
+  // one request at a time per tab, and one more afterwards when events kept coming.
+  const syncBusy = useRef(false)
+  const syncAgain = useRef(false)
+  const loadSync = useCallback(async () => {
+    if (!editable) return
+    void loadConnection()
+    if (syncBusy.current) {
+      syncAgain.current = true
+      return
+    }
+    const fetchOnce = async () => {
+      try {
+        const response = await fetch(`/api/orgs/${bundle.id}/sync`)
+        const text = await response.text()
+        if (response.status === 404) {
+          // The org is on screen, so a 404 here means the writer predates the sync routes.
+          setSync({ snapshot: null, error: 'The file writer needs a restart. Stop npm run dev and start it again.', plan: null, lastConfirmed: '', folder: '' })
+          return
+        }
+        if (!response.ok || !text.trimStart().startsWith('{')) return
+        const next = JSON.parse(text) as SyncStatus
+        // Every copy of the app on this port shares browser storage, so the running writer's folder always wins.
+        if (next.folder) rememberOrgFolder(bundle.id, next.folder)
+        setSync(next)
+      } catch {
+        setSync({ snapshot: null, error: SAVING_OFF, plan: null, lastConfirmed: '', folder: '' })
+      }
+    }
+    syncBusy.current = true
+    try {
+      do {
+        syncAgain.current = false
+        await fetchOnce()
+      } while (syncAgain.current)
+    } finally {
+      syncBusy.current = false
+    }
+  }, [bundle.id, editable, loadConnection])
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- the sync status is fetched from the writer
     void loadSync()
@@ -741,7 +774,7 @@ export function Workspace({
                 ) : null}
               </div>
             ) : null}
-            {editable ? <ConnectionBar slug={bundle.id} status={sync} /> : null}
+            {editable ? <ConnectionBar slug={bundle.id} status={connection} /> : null}
             {APP_MODE === 'template' && !sample ? <OrgSwitcher slug={bundle.id} name={company.org.name} tab={tabForView(view)} /> : null}
             {editable ? <Button variant="secondary" type="button" className="org-sync" onClick={() => { setSyncOpen(true); void loadSync() }}><SyncIcon />{syncButtonLabel(sync?.plan?.writes ?? 0, outgoing(sync?.plan ?? null, sync?.requests ?? [], seats).ready.length)}</Button> : null}
             <OrgTabs slug={bundle.id} current={tabForView(view)} template={sample} />

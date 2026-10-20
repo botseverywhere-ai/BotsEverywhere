@@ -219,6 +219,11 @@ export function parseStats(text: string | undefined): [string, string][] {
 
 export type ConnectorState = 'checking' | 'connected' | 'stale' | 'never' | 'broken' | 'unknown'
 
+/** What the connection helpers read: a full sync status, or the Connector's light view from /api/connector. */
+export type ConnectorView = { snapshot: SyncStatus['snapshot']; error: string; project?: Pick<ProjectInfo, 'connector' | 'syncMinutes'> }
+/** What the connection bar reads: the light view with the names it shows. */
+export type ConnectionView = ConnectorView & { folder?: string; project?: Pick<ProjectInfo, 'id' | 'connectorName' | 'orgsFolder' | 'connector' | 'syncMinutes'> }
+
 /** When the snapshot file was last written: its modified time from the stamp, else the date inside it. */
 function lastRunAt(snapshot: { stamp: string; syncedAt: string }): number {
   const written = Number(snapshot.stamp.split(':')[0])
@@ -238,7 +243,7 @@ function ago(ms: number, now: number): string {
 
 /** Whether the Connector is writing to this org folder. The app only knows from grok/snapshot.json. */
 export function connectorState(
-  status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null,
+  status: ConnectorView | null,
   now = Date.now(),
   syncMinutes = runMinutes(status?.project),
 ): { state: ConnectorState; line: string } {
@@ -286,7 +291,7 @@ const DETAIL_TITLES: Record<ConnectorState, string> = {
 }
 
 /** The header dropdown: a title, one sentence, and the facts beside their labels. */
-export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): { state: ConnectorState; title: string; note: string; facts: [string, string][]; warning: string } {
+export function connectorDetails(status: ConnectorView | null, now = Date.now()): { state: ConnectorState; title: string; note: string; facts: [string, string][]; warning: string } {
   const { state, line } = connectorState(status, now)
   const minutes = runMinutes(status?.project)
   const ran = connectorRanAt(status)
@@ -304,7 +309,7 @@ export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' |
 }
 
 /** When the Connector last ran, from the same file connectorState reads. Undefined when nothing says. */
-export function connectorRanAt(status: Pick<SyncStatus, 'snapshot' | 'project'> | null): number | undefined {
+export function connectorRanAt(status: Pick<ConnectorView, 'snapshot' | 'project'> | null): number | undefined {
   const project = status?.project?.connector
   const source = project ? { stamp: project.stamp, syncedAt: project.syncedAt } : status?.snapshot
   if (!source) return undefined

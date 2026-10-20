@@ -70,7 +70,7 @@ test('the header badge says in one word whether Grok Bot is connected', () => {
 
 test('the connection bar sits above the organization row on every tab and never blocks the org', () => {
   const workspace = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
-  assert.match(workspace, /\{editable \? <ConnectionBar slug=\{bundle\.id\} status=\{sync\} \/> : null\}\s*\{APP_MODE === 'template' && !sample \? <OrgSwitcher/)
+  assert.match(workspace, /\{editable \? <ConnectionBar slug=\{bundle\.id\} status=\{connection\} \/> : null\}\s*\{APP_MODE === 'template' && !sample \? <OrgSwitcher/)
   const bar = readFileSync(fileURLToPath(new URL('../../src/components/ConnectionBar.tsx', import.meta.url)), 'utf8')
   assert.match(bar, /href=\{`#\/org\/\$\{slug\}\/connect-bots`\}>Set up the Connector</)
   assert.match(bar, /connectorState\(status, now\)/)
@@ -87,4 +87,22 @@ test('the header shows the time of the last run under Connected, with the day wh
   assert.equal(connectorRanAt(null), undefined)
   const badge = readFileSync(fileURLToPath(new URL('../../src/components/GrokStatusBadge.tsx', import.meta.url)), 'utf8')
   assert.match(badge, /Grok Bot · \$\{ran\}/)
+})
+
+test('the header badge and the connection bar read the light Connector view: never blank, at once, one request at a time', () => {
+  const badge = readFileSync(fileURLToPath(new URL('../../src/components/GrokStatusBadge.tsx', import.meta.url)), 'utf8')
+  const bar = readFileSync(fileURLToPath(new URL('../../src/components/ConnectionBar.tsx', import.meta.url)), 'utf8')
+  const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
+  const css = readFileSync(fileURLToPath(new URL('../../src/styles/app.css', import.meta.url)), 'utf8')
+  assert.match(badge, /fetch\('\/api\/connector'\)/)
+  assert.doesNotMatch(badge, /\/sync`|\/api\/orgs'\)/, 'the badge never asks for a sync plan')
+  assert.match(badge, /useState<ConnectorView \| null>\(\(\) => remembered\(\)\?\.status \?\? null\)/, 'the last state this browser saw shows at once')
+  assert.match(badge, /<span className="grok-status is-checking" aria-label="Grok Bot: checking">/)
+  assert.match(badge, /if \(busy\.current\) return/)
+  assert.match(css, /\.grok-status\.is-checking \{ color: var\(--color-muted\); \}/)
+  assert.match(bar, /status: ConnectionView \| null/)
+  assert.match(page, /fetch\('\/api\/connector'\)/)
+  assert.match(page, /<ConnectionBar slug=\{bundle\.id\} status=\{connection\} \/>/)
+  assert.match(page, /if \(syncBusy\.current\) \{\s+syncAgain\.current = true\s+return\s+\}/, 'the org page never stacks status requests')
+  assert.match(page, /\} while \(syncAgain\.current\)/, 'and asks once more when events kept coming')
 })

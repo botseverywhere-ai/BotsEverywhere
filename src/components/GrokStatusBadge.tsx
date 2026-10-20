@@ -1,14 +1,14 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
-import type { SyncStatus } from '../../server/src/grok-sync.ts'
+import type { ConnectorInfo } from '../../server/src/grok-sync.ts'
 import { canEditFiles } from '../mode'
 import { Button } from './Button'
-import { connectorDetails, connectorRanAt, connectorState, headerBadgeLabel, lastRunShort } from './sync-copy'
+import { connectorDetails, connectorRanAt, connectorState, headerBadgeLabel, lastRunShort, type ConnectorView } from './sync-copy'
 
 const SAVING_OFF = 'The file writer is not running.'
 /** The last state this browser saw, so the badge shows it at once on the next page instead of nothing until the writer answers. */
 const REMEMBER_KEY = 'be:grok-status'
 
-type Remembered = { slug: string; status: SyncStatus }
+type Remembered = { slug: string; status: ConnectorView }
 
 function remembered(): Remembered | null {
   try {
@@ -20,11 +20,9 @@ function remembered(): Remembered | null {
   }
 }
 
-/** Only what the badge reads; the plan and the account list stay out of storage. */
-function remember(slug: string, status: SyncStatus) {
+function remember(slug: string, status: ConnectorView) {
   try {
-    const slim: SyncStatus = { snapshot: status.snapshot, error: status.error, plan: null, lastConfirmed: '', folder: '', project: status.project ? { ...status.project, account: null } : undefined }
-    sessionStorage.setItem(REMEMBER_KEY, JSON.stringify({ slug, status: slim }))
+    sessionStorage.setItem(REMEMBER_KEY, JSON.stringify({ slug, status }))
   } catch {
     // Storage can be off; the badge still works from the writer's answer.
   }
@@ -32,11 +30,11 @@ function remember(slug: string, status: SyncStatus) {
 
 /**
  * Before Open your org, on every page of your own copy: is Grok Bot connected?
- * One Connector serves every org in the folder, so any org's status tells it.
+ * It asks the writer for the Connector's state alone (two small files), never for a sync plan, so it answers at once.
  */
 export function GrokStatusBadge() {
   const [slug, setSlug] = useState(() => remembered()?.slug ?? '')
-  const [status, setStatus] = useState<SyncStatus | null>(() => remembered()?.status ?? null)
+  const [status, setStatus] = useState<ConnectorView | null>(() => remembered()?.status ?? null)
   const [now, setNow] = useState(() => Date.now())
   const menuRef = useRef<HTMLDetailsElement>(null)
   // One request at a time: the minute timer and a slow writer must not stack them.
@@ -59,20 +57,18 @@ export function GrokStatusBadge() {
       if (busy.current) return
       busy.current = true
       try {
-        const list = await fetch('/api/orgs')
-        const orgs = list.ok ? ((await list.json()) as { orgs?: { slug: string; ok: boolean }[] }).orgs ?? [] : []
-        const first = orgs.find((item) => item.ok)?.slug ?? ''
-        if (!first) return
-        const response = await fetch(`/api/orgs/${first}/sync`)
+        const response = await fetch('/api/connector')
         if (!response.ok || cancel) return
-        const next = (await response.json()) as SyncStatus
+        const info = (await response.json()) as ConnectorInfo
         if (cancel) return
+        const first = info.orgs[0] ?? ''
+        const next: ConnectorView = { snapshot: null, error: '', project: info }
         setSlug(first)
         setStatus(next)
         setNow(Date.now())
         remember(first, next)
       } catch {
-        if (!cancel) setStatus({ snapshot: null, error: SAVING_OFF, plan: null, lastConfirmed: '', folder: '' })
+        if (!cancel) setStatus({ snapshot: null, error: SAVING_OFF })
       } finally {
         busy.current = false
       }

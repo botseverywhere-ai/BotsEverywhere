@@ -134,3 +134,9 @@ test('counts Grok Bot reported are as of its report: only later lines add, per n
   assert.equal(usesOnly.usage, 15)
   assert.equal(usesOnly.tasks, 2, 'no task count reported, so every logged routine step counts')
 })
+
+test("the Connector does not read BotsEverywhere's number updates as a changed seat file", () => {
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
+  assert.match(prompt, /A seat file counts as changed only when its title, reportsTo, or its Owns, May, Needs approval, or Done when changed\./)
+  assert.match(prompt, /Ignore the lines BotsEverywhere fills from your own report \(createdAt, lastActive, runs30d, tasksDone30d, routines, botStatus, grokSync, grokSyncedAt, grokMissingSince, grokDeletedAt\): they change on every run\./)
+})

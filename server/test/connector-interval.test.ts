@@ -218,3 +218,29 @@ test('Connect bots no longer says the prompt deletes bots', () => {
   assert.doesNotMatch(connect, /also deletes the retired bots/)
   assert.match(connect, /leaves deleting bots to you/)
 })
+
+test('/api/connector answers with the Connector state alone, from two small files', async () => {
+  const { orgs, done } = project()
+  const made = createOrgFiles(orgs, 'Desk', 'Ada')
+  assert.equal(made.ok, true)
+  if (!made.ok) return done()
+  const started = await startTemplateServer({ port: 0, orgsDir: orgs, host: '127.0.0.1' })
+  try {
+    const before = (await (await fetch(`http://127.0.0.1:${started.port}/api/connector`)).json()) as { id: string; connector: null | object; syncMinutes: number; orgs: string[]; timeZone: string; windows: boolean }
+    assert.equal(before.connector, null, 'no Connector report yet')
+    assert.deepEqual(before.orgs, [made.slug])
+    assert.equal(before.syncMinutes, 15)
+    assert.equal(typeof before.timeZone, 'string')
+    const ran = new Date()
+    const path = join(orgs, CONNECTOR_FILE)
+    writeFileSync(path, JSON.stringify({ syncedAt: ran.toISOString(), syncMinutes: 17, unassigned: [] }))
+    utimesSync(path, ran, ran)
+    const after = (await (await fetch(`http://127.0.0.1:${started.port}/api/connector`)).json()) as { connector: { syncMinutes?: number; stamp: string } }
+    assert.equal(after.connector.syncMinutes, 17)
+    assert.ok(after.connector.stamp)
+    assert.equal(connectorState({ snapshot: null, error: '', project: after.connector ? { connector: after.connector as never, syncMinutes: 15 } : undefined }).state, 'connected')
+  } finally {
+    await started.close()
+    done()
+  }
+})
