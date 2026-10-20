@@ -371,7 +371,7 @@ export function activeBotCount(seats: Pick<SeatDocument, 'kind' | 'status'>[]): 
 
 /** Under Create in Grok Bot once the request is written. */
 export function grokRequestLine(requestedAt: string): string {
-  return `asked ${formatShortDate(requestedAt)}. The Connector creates it on its next run and links it here by itself.`
+  return `Asked ${formatShortDate(requestedAt)}. The Connector creates it on its next run and links it here by itself.`
 }
 
 /** The Grok Bot line on the seat drawer's Performance tab. */

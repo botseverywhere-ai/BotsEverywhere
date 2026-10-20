@@ -1732,9 +1732,11 @@ a.site-nav-cta:focus {
 .org-connection.is-broken .org-connection-state { color: var(--color-red-700); }
 .org-connection.is-broken .org-connection-dot { background: var(--color-red-700); }
 .org-sync { margin-left: var(--space-2); }
-.grok-create { margin: var(--space-3) 0; padding: var(--space-3); border: var(--border-dashed); }
-.grok-create-state { margin: 0 0 var(--space-2); }
+.panel label.reports { margin-top: var(--space-3); }
+.grok-create { display: grid; gap: var(--space-2); margin: var(--space-4) 0; padding: var(--space-3); border: var(--border-dashed); }
+.grok-create-state { margin: 0; }
 .grok-create .auth-note { margin: 0; }
+.grok-create .btn { justify-self: start; margin-top: var(--space-1); }
 .org-sync-tag {
   display: inline-block;
   align-self: flex-start;
