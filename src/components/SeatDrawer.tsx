@@ -98,9 +98,13 @@ export function SeatDrawer({
       )}
       {onCreateInGrok && seat.type === 'bot' && grokSyncClass(seat) !== 'is-in-grok' ? (
         <section className="grok-create" aria-label="Grok Bot">
-          <p className="grok-create-state"><strong>{grokSyncTag(seat)}</strong> · {grokSyncLine(seat)}</p>
-          {grokRequestedAt ? <p className="auth-note">{grokRequestLine(grokRequestedAt)}</p> : (
-            <Button variant="primary" type="button" onClick={onCreateInGrok}>Create in Grok Bot</Button>
+          {grokRequestedAt ? (
+            <p className="grok-create-state be-connecting"><i className="be-pulse" aria-hidden="true" /><strong>Connecting to Grok Bot</strong> · {grokRequestLine(grokRequestedAt)}</p>
+          ) : (
+            <>
+              <p className="grok-create-state"><strong>{grokSyncTag(seat)}</strong> · {grokSyncLine(seat)}</p>
+              <Button variant="primary" type="button" onClick={onCreateInGrok}>Create in Grok Bot</Button>
+            </>
           )}
         </section>
       ) : null}
@@ -142,7 +146,7 @@ export function SeatDrawer({
             <div><dt>Automated tasks done (30d)</dt><dd>{formatCount(seat.shown ? seat.shown.tasks : seat.importedTasks30d ?? seat.stats?.tasksDone30d)}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
             <div><dt>Last active</dt><dd>{formatShortDate(seat.shown?.lastActive || seat.importedLastActive || (seat.shown || seat.importedLastActive ? '' : seat.stats?.lastActiveAt || ''))}{sample ? <span className="usage-sample">sample</span> : null}</dd></div>
             <div><dt>Status</dt><dd>{seat.status === 'retired' ? 'Retired' : 'Active'}</dd></div>
-            <div><dt>Grok Bot</dt><dd>{grokSyncLine(seat)}</dd></div>
+            <div><dt>Grok Bot</dt><dd>{grokRequestedAt ? 'connecting' : grokSyncLine(seat)}</dd></div>
           </dl>
         ) : (
           <p className="auth-note">Performance is tracked for bots.</p>

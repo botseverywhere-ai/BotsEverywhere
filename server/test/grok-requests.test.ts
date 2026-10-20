@@ -126,12 +126,13 @@ test('a bad requests file does not break the sync status', async () => {
 
 test('a bot not in Grok Bot gets Create in Grok Bot in the seat panel, then says it is waiting', async () => {
   const { grokRequestLine } = await import('../../src/components/sync-copy.ts')
-  assert.equal(grokRequestLine('2026-10-18T10:40:00.000Z'), `Asked the Connector on ${(await import('../src/bot-metrics.ts')).formatShortDate('2026-10-18T10:40:00.000Z')}. It creates this bot on its next run, then Sync with Grok Bot links it.`)
+  assert.equal(grokRequestLine('2026-10-18T10:40:00.000Z'), `asked ${(await import('../src/bot-metrics.ts')).formatShortDate('2026-10-18T10:40:00.000Z')}. The Connector creates it on its next run and links it here by itself.`)
   const drawer = readFileSync(new URL('../../src/components/SeatDrawer.tsx', import.meta.url), 'utf8')
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(drawer, /Create in Grok Bot/)
   assert.match(drawer, /grokSyncClass\(seat\) !== 'is-in-grok'/, 'only a bot Grok Bot does not have')
-  assert.match(drawer, /grokRequestedAt \? <p className="auth-note">\{grokRequestLine\(grokRequestedAt\)\}<\/p>/)
+  assert.match(drawer, /<p className="grok-create-state be-connecting"><i className="be-pulse" aria-hidden="true" \/><strong>Connecting to Grok Bot<\/strong> · \{grokRequestLine\(grokRequestedAt\)\}<\/p>/, 'a requested bot pulses as connecting in its panel')
+  assert.match(drawer, /<dd>\{grokRequestedAt \? 'connecting' : grokSyncLine\(seat\)\}<\/dd>/)
   assert.match(workspace, /\/api\/orgs\/\$\{bundle\.id\}\/grok\/requests/)
   assert.match(workspace, /onCreateInGrok=\{editable && chartSeat\.type === 'bot'/)
   assert.match(workspace, /grokRequestedAt=\{sync\?\.requests\?\.find/)
