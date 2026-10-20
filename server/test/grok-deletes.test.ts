@@ -165,7 +165,7 @@ test('the sync status names organizations where a retired bot is still active, a
   }
 })
 
-test('Retired in the legend opens the list; a retired bot links to Grok Bot with the steps, and nothing waits', async () => {
+test('Retired in the legend opens the list; Delete in Grok Bot explains why and links to the bot, and nothing waits', async () => {
   const { retiredGrokLine, retiredKindLabel, logLabel } = await import('../../src/components/sync-copy.ts')
   const { formatShortDate } = await import('../src/bot-metrics.ts')
   assert.equal(retiredKindLabel('human'), 'Human')
@@ -180,10 +180,12 @@ test('Retired in the legend opens the list; a retired bot links to Grok Bot with
   const sync = read('../../src/components/SyncDrawer.tsx')
   assert.match(chart, /Retired <span className="legend-count">\{retired\.count\}<\/span>/)
   assert.doesNotMatch(workspace, /be-retired/, 'the list under the chart is gone')
-  assert.match(drawer, /href=\{\(seat\.grokBotUrl \?\? ''\)\.trim\(\)\} target="_blank" rel="noreferrer">Delete in Grok Bot<\/Button>/)
-  assert.match(drawer, /right-click it in the Grok Bot sidebar, choose Delete, and confirm/)
+  assert.match(drawer, /onClick=\{\(\) => setDeleting\(seat\)\}>Delete in Grok Bot…<\/Button>/, 'the row opens the steps first')
+  assert.match(drawer, /Grok Bot does not let the Connector, or any app outside Grok Bot, delete a bot\./)
+  assert.match(drawer, /right-click <strong>\{deleting\.title\}<\/strong> in the sidebar, choose Delete, and confirm/)
+  assert.match(drawer, /href=\{\(deleting\.grokBotUrl \?\? ''\)\.trim\(\)\} target="_blank" rel="noreferrer"/, 'then a link to that bot')
   assert.match(drawer, /Still active in \{elsewhere\.join\(', '\)\}\. Deleting it in Grok Bot stops it there too\./)
-  assert.doesNotMatch(drawer, /Wait for it|Cancel/)
+  assert.doesNotMatch(drawer, /Wait for it/)
   assert.doesNotMatch(sync, /deleted|delete in Grok Bot|deletes/i, 'the Sync drawer has no delete section')
   assert.doesNotMatch(workspace, /grok\/deletes/)
 })
