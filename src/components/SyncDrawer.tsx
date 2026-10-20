@@ -238,7 +238,7 @@ export function SyncDrawer({
             {going.waiting.length ? (
               <section className="sync-group">
                 <h3>Waiting for the Connector ({going.waiting.length})</h3>
-                <ul>
+                <ul className="sync-picks">
                   {going.waiting.map((item) => <li key={item.slug}><i className="be-pulse" aria-hidden="true" />{item.name} → asked {formatShortDate(item.requestedAt)}, created on the Connector&apos;s next run</li>)}
                 </ul>
               </section>
