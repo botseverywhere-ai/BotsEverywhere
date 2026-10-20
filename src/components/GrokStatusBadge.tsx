@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { SyncStatus } from '../../server/src/grok-sync.ts'
 import { canEditFiles } from '../mode'
+import { Button } from './Button'
 import { connectorDetails, connectorRanAt, connectorState, headerBadgeLabel, lastRunShort } from './sync-copy'
 
 const SAVING_OFF = 'The file writer is not running.'
@@ -60,6 +61,7 @@ export function GrokStatusBadge() {
   const ranAt = state === 'connected' || state === 'stale' ? connectorRanAt(status) : undefined
   const ran = ranAt === undefined ? '' : lastRunShort(ranAt, now)
   if (!label) return null
+  const details = connectorDetails(status, now)
   return (
     <details ref={menuRef} className="grok-status-menu">
       <summary className={`grok-status is-${state}`} title={line} aria-label={`Grok Bot: ${line}`}>
@@ -69,11 +71,22 @@ export function GrokStatusBadge() {
           <small>{ran ? `Grok Bot · ${ran}` : 'Grok Bot'}</small>
         </span>
       </summary>
-      <div className="grok-status-panel">
-        {connectorDetails(status, now).map((item) => <p key={item}>{item}</p>)}
-        <a href={slug ? `#/org/${slug}/connect-bots` : '#/orgs'} onClick={() => { if (menuRef.current) menuRef.current.open = false }}>
-          Change how often on Connect bots
-        </a>
+      <div className={`grok-status-panel is-${details.state}`}>
+        <div className="grok-status-head">
+          <strong><i aria-hidden="true" />{details.title}</strong>
+          <p>{details.note}</p>
+        </div>
+        <dl className="grok-status-facts">
+          {details.facts.map(([label, value]) => (
+            <Fragment key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </Fragment>
+          ))}
+        </dl>
+        <Button variant="secondary" className="btn-block" href={slug ? `#/org/${slug}/connect-bots` : '#/orgs'} onClick={() => { if (menuRef.current) menuRef.current.open = false }}>
+          Open Connect bots
+        </Button>
       </div>
     </details>
   )

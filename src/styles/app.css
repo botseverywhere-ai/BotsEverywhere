@@ -1570,9 +1570,16 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .grok-status-menu summary { list-style: none; cursor: pointer; }
 .grok-status-menu summary::-webkit-details-marker { display: none; }
 .grok-status-menu summary:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
-.grok-status-panel { position: absolute; right: 0; top: calc(100% + var(--space-1)); z-index: var(--z-modal); width: 280px; display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3); background: var(--color-white); border: var(--border-strong); border-radius: var(--control-radius); box-shadow: var(--shadow-dialog); font-size: var(--text-sm); color: var(--color-ink); }
-.grok-status-panel p { margin: 0; }
-.grok-status-panel a { margin-top: var(--space-1); }
+.grok-status-panel { position: absolute; right: 0; top: calc(100% + var(--space-2)); z-index: var(--z-modal); width: 300px; display: grid; gap: var(--space-3); padding: var(--space-4); background: var(--color-white); border: var(--border-strong); border-radius: var(--control-radius); box-shadow: var(--shadow-dialog); font-size: var(--text-sm); color: var(--color-ink); }
+.grok-status-head { display: grid; gap: var(--space-1); }
+.grok-status-head strong { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+.grok-status-head strong i { width: 8px; height: 8px; border-radius: var(--control-radius); background: var(--color-amber-700); }
+.grok-status-panel.is-connected .grok-status-head strong i { background: var(--color-green-400); }
+.grok-status-panel.is-broken .grok-status-head strong i, .grok-status-panel.is-unknown .grok-status-head strong i { background: var(--color-red-700); }
+.grok-status-head p { margin: 0; color: var(--color-muted); }
+.grok-status-facts { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: 0; padding-top: var(--space-3); border-top: var(--hairline); }
+.grok-status-facts dt { color: var(--color-muted); }
+.grok-status-facts dd { margin: 0; font-variant-numeric: tabular-nums; }
 .grok-status:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
 @media (max-width: 600px) {
   /* Phones: the dot alone, so the logo keeps its size. The words stay in the title and the label. */
@@ -2109,8 +2116,11 @@ a.site-nav-cta:focus {
 .connect-interval { display: grid; gap: var(--space-1); max-width: 520px; font-size: var(--text-sm); }
 .connect-interval label { font-weight: var(--weight-semibold); }
 .connect-interval-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.connect-interval-row .text-input { margin: 0; }
 .connect-interval-row input { width: 96px; height: var(--btn-height); padding: 0 var(--space-2); }
 .connect-interval-row select { width: auto; height: var(--btn-height); padding: 0 var(--select-pad-right) 0 var(--space-2); }
+.connect-interval-row .text-input:disabled { background-color: var(--color-paper); color: var(--color-muted); border-style: dashed; cursor: not-allowed; opacity: 1; }
+.connect-interval-lock { display: inline-flex; color: var(--color-muted); }
 .connect-interval p { margin: 0; }
 .connect-steps { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-5); }
 .connect-grok .text-input { text-transform: none; letter-spacing: 0; }

@@ -217,18 +217,31 @@ export function connectorState(
   return { state: 'connected', line: `Connected · last run ${ago(ran, now)}` }
 }
 
-/** The lines in the header dropdown: whether it is connected, how often it runs, the last sync, and when the next one is due. */
-export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): string[] {
+const DETAIL_TITLES: Record<ConnectorState, string> = {
+  checking: 'Checking the Connector',
+  connected: 'Connected to Grok Bot',
+  stale: 'Connector stopped',
+  never: 'Not connected',
+  broken: 'Connector error',
+  unknown: 'File writer off',
+}
+
+/** The header dropdown: a title, one sentence, and the facts beside their labels. */
+export function connectorDetails(status: Pick<SyncStatus, 'snapshot' | 'error' | 'project'> | null, now = Date.now()): { state: ConnectorState; title: string; note: string; facts: [string, string][] } {
   const { state, line } = connectorState(status, now)
   const minutes = status?.project?.syncMinutes ?? DEFAULT_SYNC_MINUTES
   const ran = connectorRanAt(status)
-  const lines = [state === 'connected' ? 'Grok Bot is connected.' : `${line}.`]
-  lines.push(`The Connector syncs with Grok Bot every ${everyLabel(minutes)}.`)
+  const note = state === 'connected'
+    ? `The Connector syncs your organizations with Grok Bot every ${everyLabel(minutes)}.`
+    : state === 'stale'
+      ? `It missed two runs. Check in Grok Bot that the Connector still exists and runs every ${everyLabel(minutes)}.`
+      : `${line}.`
+  const facts: [string, string][] = [['Runs every', everyLabel(minutes)]]
   if (ran !== undefined) {
-    lines.push(`Last sync: ${lastRunShort(ran, now)} (${ago(ran, now)}).`)
-    if (state === 'connected') lines.push(`Next sync due around ${lastRunShort(ran + minutes * 60_000, now)}.`)
+    facts.push(['Last sync', `${lastRunShort(ran, now)}, ${ago(ran, now)}`])
+    if (state === 'connected') facts.push(['Next sync', `around ${lastRunShort(ran + minutes * 60_000, now)}`])
   }
-  return lines
+  return { state, title: DETAIL_TITLES[state], note, facts }
 }
 
 /** When the Connector last ran, from the same file connectorState reads. Undefined when nothing says. */

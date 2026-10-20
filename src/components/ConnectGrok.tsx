@@ -23,6 +23,16 @@ function statusDetail(line: string): string {
   return at === -1 ? line : line.slice(at + 3)
 }
 
+/** Closed while the interval is locked; open on Change. */
+function LockIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="3" y="7" width="10" height="7" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d={open ? 'M5.5 7V4.5a2.5 2.5 0 0 1 4.9-.7' : 'M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7'} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 /** Step 1 on Connect bots. One Connector per copy of BotsEverywhere serves every organization in it. */
 export function ConnectGrok({ status, editable, onIntervalSaved }: { status: SyncStatus | null; editable: boolean; onIntervalSaved?: () => Promise<void> }) {
   const [notice, setNotice] = useState<SaveNotice | null>(null)
@@ -103,7 +113,8 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
       {editable && ready ? (
         <div className="connect-interval">
           <label htmlFor="connect-interval-amount">Runs every</label>
-          <div className="connect-interval-row">
+          <div className={editing ? 'connect-interval-row' : 'connect-interval-row is-locked'}>
+            {editing ? null : <span className="connect-interval-lock" title="Locked. Choose Change to edit."><LockIcon open={false} /></span>}
             <input
               id="connect-interval-amount"
               className="text-input"
@@ -125,7 +136,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
                 <Button variant="secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancel</Button>
               </>
             ) : (
-              <Button variant="secondary" type="button" onClick={change}>Change</Button>
+              <Button variant="secondary" type="button" onClick={change}><LockIcon open />Change</Button>
             )}
           </div>
           <p className={typed === null ? 'save-off' : 'overview-note'} role={typed === null ? 'alert' : undefined}>
