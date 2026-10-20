@@ -5,7 +5,7 @@ import type { FileActivity, SeatDocument } from './org-files.ts'
 import { normalizeText } from './normalize-text.ts'
 import { CONNECTOR_STALE_MS } from './connector-timing.ts'
 import { readConnector } from './project.ts'
-import { appendActivity, listOrgSlugs, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
+import { appendActivity, clearDeletedBots, listOrgSlugs, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
 
 /** The app's memory of what it already logged about the Connector, so a run is never logged twice. */
 export const CONNECTOR_LOG_FILE = 'connector-log.json'
@@ -115,6 +115,8 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
   const wasStopped = memory.state === 'stopped'
   const previousRun = memory.lastRunAt ? new Date(memory.lastRunAt) : null
   const stamp = at.toISOString()
+  // Deletes the run confirmed get their own line, so the bot is not also logged as gone.
+  const deleted = clearDeletedBots(orgsDir)
   for (const orgId of listOrgSlugs(orgsDir)) {
     const root = resolve(orgsDir, orgId)
     const read = readOrgDir(root, orgId)
@@ -154,6 +156,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
       for (const name of before.bots ?? []) {
         if (now.has(name)) continue
         const seat = seatFor(name, seats, orgName)
+        if (seat && deleted.get(orgId)?.has(seat.slug)) continue
         appendActivity(root, event(orgId, `connector-gone-${seat?.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${stamp}`, at, 'bot-disconnected', `${name} is no longer in Grok Bot`, {
           subjectSeatId: seat?.slug,
           stats: stats([['Last seen', previousRun ? localWhen(previousRun) : undefined]]),
@@ -165,7 +168,8 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     const sameDay = before.day === day
     const runs = sameDay ? before.runs + 1 : 1
     const firstRunAt = sameDay && before.firstRunAt ? before.firstRunAt : stamp
-    const waiting = readRequests(root).requests.length
+    const pending = readRequests(root)
+    const waiting = pending.requests.length + pending.deletes.length
     appendActivity(root, event(orgId, `connector-day-${day}`, at, 'connector-run', 'Connector runs today', {
       stats: stats([
         ['Runs today', runs],

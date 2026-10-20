@@ -125,6 +125,8 @@ export interface SeatDocument {
   grokSyncedAt?: string
   /** ISO datetime of the snapshot that first missed this seat. */
   grokMissingSince?: string
+  /** ISO datetime of the Connector run that showed this retired bot gone from Grok Bot after a delete request. */
+  grokDeletedAt?: string
   source: string
 }
 
@@ -297,6 +299,7 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
       grokSync: seat.grokSync,
       grokSyncedAt: seat.grokSyncedAt,
       grokMissingSince: seat.grokMissingSince,
+      grokDeletedAt: seat.grokDeletedAt,
       status: seat.status,
       retiredAt: seat.retiredAt,
     })
@@ -355,6 +358,7 @@ export function serializeExistingSeat(seat: {
   grokSync?: GrokSyncState
   grokSyncedAt?: string
   grokMissingSince?: string
+  grokDeletedAt?: string
   /** Written only when retired. An imported bot with no status line is active. */
   status?: 'active' | 'retired'
   retiredAt?: string
@@ -741,6 +745,7 @@ function metricLines(seat: {
   grokSync?: GrokSyncState
   grokSyncedAt?: string
   grokMissingSince?: string
+  grokDeletedAt?: string
 }): string[] {
   const lines: string[] = []
   if (seat.createdAt) lines.push(`createdAt: ${quote(seat.createdAt)}`)
@@ -752,17 +757,20 @@ function metricLines(seat: {
   if (seat.grokSync) lines.push(`grokSync: ${seat.grokSync}`)
   if (seat.grokSyncedAt) lines.push(`grokSyncedAt: ${quote(seat.grokSyncedAt)}`)
   if (seat.grokMissingSince) lines.push(`grokMissingSince: ${quote(seat.grokMissingSince)}`)
+  if (seat.grokDeletedAt) lines.push(`grokDeletedAt: ${quote(seat.grokDeletedAt)}`)
   return lines
 }
 
-function readSyncFields(data: Record<string, string>): Pick<SeatDocument, 'grokSync' | 'grokSyncedAt' | 'grokMissingSince'> {
-  const fields: Pick<SeatDocument, 'grokSync' | 'grokSyncedAt' | 'grokMissingSince'> = {}
+function readSyncFields(data: Record<string, string>): Pick<SeatDocument, 'grokSync' | 'grokSyncedAt' | 'grokMissingSince' | 'grokDeletedAt'> {
+  const fields: Pick<SeatDocument, 'grokSync' | 'grokSyncedAt' | 'grokMissingSince' | 'grokDeletedAt'> = {}
   const state = data.grokSync?.trim() || ''
   if (GROK_SYNC_STATES.has(state as GrokSyncState)) fields.grokSync = state as GrokSyncState
   const syncedAt = data.grokSyncedAt?.trim() || ''
   if (syncedAt && !Number.isNaN(Date.parse(syncedAt))) fields.grokSyncedAt = syncedAt
   const missingSince = data.grokMissingSince?.trim() || ''
   if (missingSince && !Number.isNaN(Date.parse(missingSince))) fields.grokMissingSince = missingSince
+  const deletedAt = data.grokDeletedAt?.trim() || ''
+  if (deletedAt && !Number.isNaN(Date.parse(deletedAt))) fields.grokDeletedAt = deletedAt
   return fields
 }
 

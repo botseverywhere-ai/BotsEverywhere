@@ -42,7 +42,7 @@ import { parseSnapshot, planSync, patchSeatSource, summaryLine, type ProjectInfo
 import { SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { ensureProjectId, readConnector } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
-import { REQUESTS_PATH, addRequest, canRequest, dropRequests, fulfilledSeats, parseRequests, serializeRequests, type GrokRequest } from './grok-requests.js'
+import { REQUESTS_PATH, addDelete, addRequest, canDelete, canRequest, deleteFor, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokDelete, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
 export const DEFAULT_ORG_SLUG = 'your-company'
@@ -809,20 +809,20 @@ export function readSnapshot(root: string): { ok: true; snapshot: Snapshot; stam
 }
 
 /** A missing file is no requests; a bad file is no requests and an error, never a crash. */
-export function readRequests(root: string): { requests: GrokRequest[]; error: string } {
+export function readRequests(root: string): { requests: GrokRequest[]; deletes: GrokDelete[]; error: string } {
   const path = resolve(root, REQUESTS_PATH)
-  if (!existsSync(path)) return { requests: [], error: '' }
+  if (!existsSync(path)) return { requests: [], deletes: [], error: '' }
   try {
     const parsed = parseRequests(readText(path))
-    return parsed.ok ? { requests: parsed.requests, error: '' } : { requests: [], error: parsed.error }
+    return parsed.ok ? { requests: parsed.requests, deletes: parsed.deletes, error: '' } : { requests: [], deletes: [], error: parsed.error }
   } catch {
-    return { requests: [], error: 'grok/requests.json could not be read.' }
+    return { requests: [], deletes: [], error: 'grok/requests.json could not be read.' }
   }
 }
 
-function writeRequests(root: string, requests: GrokRequest[]) {
+function writeRequests(root: string, file: { requests: GrokRequest[]; deletes: GrokDelete[] }) {
   mkdirSync(resolve(root, 'grok'), { recursive: true })
-  writeFileSync(resolve(root, REQUESTS_PATH), serializeRequests(requests))
+  writeFileSync(resolve(root, REQUESTS_PATH), serializeRequests(file.requests, file.deletes))
 }
 
 /** Asks the Connector to create one bot in Grok Bot. Writes grok/requests.json only; the seat file is untouched. */
@@ -844,7 +844,8 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
     promptFile: directory && existsSync(directory) ? directory : '',
     requestedAt: new Date().toISOString(),
   }
-  writeRequests(root, addRequest(readRequests(root).requests, request))
+  const current = readRequests(root)
+  writeRequests(root, { requests: addRequest(current.requests, request), deletes: current.deletes })
   const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
   appendActivity(root, {
     id: `grok-request-${seat.slug}-${request.requestedAt}`,
@@ -880,7 +881,7 @@ export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPl
   }
   const next = dropRequests(current.requests, done)
   if (next.length === current.requests.length) return
-  writeRequests(root, next)
+  writeRequests(root, { requests: next, deletes: current.deletes })
   const owner = read.ok ? read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired') : undefined
   const at = new Date().toISOString()
   for (const item of current.requests) {
@@ -902,6 +903,149 @@ export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPl
   }
 }
 
+/** Organizations of the project with an active seat on this Grok Bot link. A bad org is skipped. */
+export function activeWithLink(orgsDir: string, link: string): string[] {
+  const wanted = link.trim()
+  if (!wanted) return []
+  return listOrgSlugs(orgsDir).flatMap((orgId) => {
+    const read = readOrgDir(resolve(orgsDir, orgId), orgId)
+    if (!read.ok) return []
+    return read.bundle.seats.some((seat) => seat.kind === 'bot' && seat.status !== 'retired' && (seat.grokBotUrl ?? '').trim() === wanted) ? [read.bundle.org.company.name] : []
+  })
+}
+
+/** Asks the Connector to delete one retired bot in Grok Bot, by its link. Every retired seat here with that link shares the request. */
+export function requestGrokDelete(root: string, orgId: string, seatSlug: string): { ok: true; request: GrokDelete } | { ok: false; errors: string[] } {
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  const seat = read.bundle.seats.find((item) => item.slug === seatSlug)
+  if (!seat) return { ok: false, errors: [`seats/${seatSlug}.md is not in this org.`] }
+  if (!canDelete(seat)) return { ok: false, errors: [`${seat.title} is not a retired bot with a Grok Bot link.`] }
+  const current = readRequests(root)
+  if (current.error) return { ok: false, errors: [current.error] }
+  const link = (seat.grokBotUrl ?? '').trim()
+  const request: GrokDelete = {
+    grokBotUrl: link,
+    name: seat.title,
+    seats: read.bundle.seats.filter((item) => canDelete(item) && (item.grokBotUrl ?? '').trim() === link).map((item) => item.slug),
+    requestedAt: new Date().toISOString(),
+  }
+  writeRequests(root, { requests: current.requests, deletes: addDelete(current.deletes, request) })
+  const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
+  appendActivity(root, {
+    id: `grok-delete-${seat.slug}-${request.requestedAt}`,
+    orgId,
+    type: 'edit',
+    actorSeatId: owner?.slug || seat.slug,
+    actorType: owner ? 'human' : 'bot',
+    timestamp: request.requestedAt,
+    summary: `Asked the Connector to delete ${seat.title} in Grok Bot`,
+    subjectSeatId: seat.slug,
+    grok: 'out',
+    kind: 'request',
+  })
+  return { ok: true, request }
+}
+
+/** Takes back a delete the Connector has not done yet. */
+export function cancelGrokDelete(root: string, orgId: string, seatSlug: string): { ok: true } | { ok: false; errors: string[] } {
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  const seat = read.bundle.seats.find((item) => item.slug === seatSlug)
+  if (!seat) return { ok: false, errors: [`seats/${seatSlug}.md is not in this org.`] }
+  const current = readRequests(root)
+  if (current.error) return { ok: false, errors: [current.error] }
+  const waiting = deleteFor(current.deletes, seat)
+  if (!waiting) return { ok: false, errors: [`No delete is waiting for ${seat.title}.`] }
+  writeRequests(root, { requests: current.requests, deletes: current.deletes.filter((item) => item !== waiting) })
+  const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
+  const at = new Date().toISOString()
+  appendActivity(root, {
+    id: `grok-delete-cancel-${seat.slug}-${at}`,
+    orgId,
+    type: 'edit',
+    actorSeatId: owner?.slug || seat.slug,
+    actorType: owner ? 'human' : 'bot',
+    timestamp: at,
+    summary: `Cancelled the request to delete ${seat.title} in Grok Bot`,
+    subjectSeatId: seat.slug,
+    grok: 'out',
+    kind: 'request',
+  })
+  return { ok: true }
+}
+
+/**
+ * Called on each Connector run. Clears a delete request once a run newer than the request no longer reports
+ * the bot anywhere: not in any org's snapshot and not in connector.json. An unreadable file counts as the bot still there.
+ * Marks each seat of the request and logs one line. Returns the seats it marked per org, so the run log skips its own "no longer in Grok Bot" line for them.
+ */
+export function clearDeletedBots(orgsDir: string): Map<string, Set<string>> {
+  const marked = new Map<string, Set<string>>()
+  const connector = readConnector(orgsDir)
+  if (!connector || connector.error || !connector.stamp) return marked
+  const ranAt = Number(connector.stamp.split(':')[0])
+  if (!Number.isFinite(ranAt) || ranAt <= 0) return marked
+  const orgIds = listOrgSlugs(orgsDir)
+  const reported: ReportedBot[] = connector.unassigned.map((bot) => ({ name: bot.name, grokBotUrl: bot.grokBotUrl }))
+  for (const orgId of orgIds) {
+    const snap = readSnapshot(resolve(orgsDir, orgId))
+    if (!snap.ok && !snap.missing) return marked
+    if (snap.ok) reported.push(...snap.snapshot.bots.map((bot) => ({ name: bot.name, grokBotUrl: bot.grokBotUrl })))
+  }
+  const at = new Date(ranAt).toISOString()
+  for (const orgId of orgIds) {
+    const root = resolve(orgsDir, orgId)
+    const current = readRequests(root)
+    if (current.error || current.deletes.length === 0) continue
+    const done = current.deletes.filter((item) => {
+      const asked = Date.parse(item.requestedAt)
+      return !Number.isNaN(asked) && ranAt > asked && !stillInGrok(item, reported)
+    })
+    if (!done.length) continue
+    writeRequests(root, { requests: current.requests, deletes: current.deletes.filter((item) => !done.includes(item)) })
+    const read = readOrgDir(root, orgId)
+    const owner = read.ok ? read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired') : undefined
+    const seats = marked.get(orgId) ?? new Set<string>()
+    for (const item of done) {
+      for (const slug of item.seats) {
+        if (markSeatDeleted(root, slug, item.grokBotUrl, at)) seats.add(slug)
+      }
+      appendActivity(root, {
+        id: `grok-deleted-${item.seats[0] || 'bot'}-${at}`,
+        orgId,
+        type: 'edit',
+        actorSeatId: owner?.slug || 'connector',
+        actorType: owner ? 'human' : 'bot',
+        timestamp: at,
+        summary: `Deleted in Grok Bot: ${item.name}`,
+        subjectSeatId: item.seats[0],
+        grok: 'in',
+        kind: 'deleted',
+        stats: [`Asked=${item.requestedAt ? localStamp(item.requestedAt) : '-'}`, `Took=${item.requestedAt ? waitedFor(item.requestedAt, at) : '-'}`].join('|'),
+      })
+    }
+    marked.set(orgId, seats)
+  }
+  return marked
+}
+
+/** Writes grokDeletedAt on a seat that still holds the link. A missing or bad seat file is skipped. */
+function markSeatDeleted(root: string, slug: string, link: string, at: string): boolean {
+  const path = seatFile(root, slug)
+  if (!path || !existsSync(path)) return false
+  try {
+    const parsed = parseSeatMarkdown(slug, readText(path))
+    if (!parsed.ok || (parsed.seat.grokBotUrl ?? '').trim() !== link) return false
+    const written = serializeSeat({ ...parsed.seat, grokDeletedAt: at })
+    if (!parseSeatMarkdown(slug, written).ok) return false
+    writeFileSync(path, written)
+    return true
+  } catch {
+    return false
+  }
+}
+
 function lastSyncConfirmed(bundle: OrgBundle): string {
   let latest = ''
   for (const event of bundle.activity) {
@@ -915,15 +1059,15 @@ export function syncStatus(root: string, orgId: string, orgsDir = ''): { ok: tru
   if (!read.ok) return read
   const lastConfirmed = lastSyncConfirmed(read.bundle)
   const folder = resolve(root)
-  const requests = readRequests(root).requests
+  const { requests, deletes } = readRequests(root)
   const project = orgsDir ? projectInfo(orgsDir, orgId) : undefined
   const snap = readSnapshot(root)
   if (!snap.ok) {
-    if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, project } }
-    return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, project } }
+    if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, deletes, project } }
+    return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, deletes, project } }
   }
   const plan = planSync(snap.snapshot, read.bundle.seats, read.bundle.processes ?? [], read.bundle.org.company.name, orgsDir ? accountBots(orgsDir, orgId) : [])
-  return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, project } }
+  return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, deletes, project } }
 }
 
 /** Bots the Grok Bot account runs outside this org's snapshot: unassigned ones, other orgs' snapshots, and the Connector. A bad snapshot is skipped. */
@@ -1708,6 +1852,46 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
         return send(res, 422, { errors: ['That body is not JSON.'] })
       }
       const made = requestGrokBot(root, slug, seat, orgsDir)
+      if (!made.ok) return send(res, 422, { errors: made.errors })
+      send(res, 200, { ok: true, request: made.request })
+      return
+    }
+    const deletesMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/grok\/deletes$/.exec(url.pathname)
+    if (deletesMatch && req.method === 'GET') {
+      // Before the confirm: which organizations still have this bot active.
+      const slug = deletesMatch[1]!
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const read = readOrgDir(root, slug)
+      if (!read.ok) return send(res, 422, { errors: read.errors })
+      const seat = read.bundle.seats.find((item) => item.slug === (url.searchParams.get('seat') ?? ''))
+      if (!seat) return send(res, 404, { error: 'Seat not found.' })
+      send(res, 200, { activeIn: activeWithLink(orgsDir, seat.grokBotUrl ?? '') })
+      return
+    }
+    if (deletesMatch && (req.method === 'POST' || req.method === 'DELETE')) {
+      const slug = deletesMatch[1]!
+      // This route leads to a bot being deleted in Grok Bot, so only this computer may reach it, as for a create.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may ask to delete a bot.' })
+      if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { errors: ['Send JSON.'] })
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      let seat = ''
+      try {
+        seat = String((JSON.parse(body) as { seat?: unknown }).seat ?? '')
+      } catch {
+        return send(res, 422, { errors: ['That body is not JSON.'] })
+      }
+      if (req.method === 'DELETE') {
+        const cancelled = cancelGrokDelete(root, slug, seat)
+        if (!cancelled.ok) return send(res, 422, { errors: cancelled.errors })
+        send(res, 200, { ok: true })
+        return
+      }
+      const made = requestGrokDelete(root, slug, seat)
       if (!made.ok) return send(res, 422, { errors: made.errors })
       send(res, 200, { ok: true, request: made.request })
       return

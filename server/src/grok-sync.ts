@@ -3,7 +3,7 @@ import { formatShortDate } from './bot-metrics.ts'
 import { normalizeText } from './normalize-text.ts'
 import { parseSeatMarkdown, serializeSeat, type BotRoutine, type BotRunStatus, type GrokSyncState, type SeatDocument } from './org-files.ts'
 import { parseProcessesFile, processSlug, type ProcessFile, type ProcessImportRow } from './processes.ts'
-import type { GrokRequest } from './grok-requests.ts'
+import type { GrokDelete, GrokRequest } from './grok-requests.ts'
 
 /** What the Connector writes to grok/snapshot.json, after parsing. */
 export interface Snapshot {
@@ -69,6 +69,8 @@ export interface SyncStatus {
   folder: string
   /** Bots the app asked the Connector to create in Grok Bot. */
   requests?: GrokRequest[]
+  /** Retired bots the app asked the Connector to delete in Grok Bot. */
+  deletes?: GrokDelete[]
   /** The copy of BotsEverywhere this org lives in. One Connector serves every org in it. */
   project?: ProjectInfo
 }
