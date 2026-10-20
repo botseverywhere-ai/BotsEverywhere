@@ -98,13 +98,11 @@ export function SeatDrawer({
       )}
       {onCreateInGrok && seat.type === 'bot' && grokSyncClass(seat) !== 'is-in-grok' ? (
         <section className="grok-create" aria-label="Grok Bot">
+          <p className="grok-create-state"><strong>{grokSyncTag(seat)}</strong> · {grokSyncLine(seat)}</p>
           {grokRequestedAt ? (
-            <p className="grok-create-state be-connecting"><i className="be-pulse" aria-hidden="true" /><strong>Connecting to Grok Bot</strong> · {grokRequestLine(grokRequestedAt)}</p>
+            <p className="auth-note be-connecting"><i className="be-pulse" aria-hidden="true" /><strong>Connecting to Grok Bot</strong> · {grokRequestLine(grokRequestedAt)}</p>
           ) : (
-            <>
-              <p className="grok-create-state"><strong>{grokSyncTag(seat)}</strong> · {grokSyncLine(seat)}</p>
-              <Button variant="primary" type="button" onClick={onCreateInGrok}>Create in Grok Bot</Button>
-            </>
+            <Button variant="primary" type="button" onClick={onCreateInGrok}>Create in Grok Bot</Button>
           )}
         </section>
       ) : null}

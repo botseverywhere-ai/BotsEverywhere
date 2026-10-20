@@ -131,7 +131,7 @@ test('a bot not in Grok Bot gets Create in Grok Bot in the seat panel, then says
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(drawer, /Create in Grok Bot/)
   assert.match(drawer, /grokSyncClass\(seat\) !== 'is-in-grok'/, 'only a bot Grok Bot does not have')
-  assert.match(drawer, /<p className="grok-create-state be-connecting"><i className="be-pulse" aria-hidden="true" \/><strong>Connecting to Grok Bot<\/strong> · \{grokRequestLine\(grokRequestedAt\)\}<\/p>/, 'a requested bot pulses as connecting in its panel')
+  assert.match(drawer, /<p className="grok-create-state"><strong>\{grokSyncTag\(seat\)\}<\/strong> · \{grokSyncLine\(seat\)\}<\/p>\s+\{grokRequestedAt \? \(\s+<p className="auth-note be-connecting"><i className="be-pulse" aria-hidden="true" \/><strong>Connecting to Grok Bot<\/strong> · \{grokRequestLine\(grokRequestedAt\)\}<\/p>/, 'a requested bot pulses as connecting under its Not in Grok Bot line')
   assert.match(drawer, /<dd>\{grokRequestedAt \? 'connecting' : grokSyncLine\(seat\)\}<\/dd>/)
   assert.match(workspace, /\/api\/orgs\/\$\{bundle\.id\}\/grok\/requests/)
   assert.match(workspace, /onCreateInGrok=\{editable && chartSeat\.type === 'bot'/)
