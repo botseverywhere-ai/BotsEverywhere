@@ -84,7 +84,7 @@ Built: **Create in Grok Bot**. A bot card that says **Not in Grok Bot** or **Not
 
 The Sync drawer has two sides. **Coming from Grok Bot** is the snapshot plan. **Going to Grok Bot** lists requests waiting for the Connector and bots not in Grok Bot as checkboxes; **Sync** applies the incoming plan, then posts a request for each ticked bot. Activity events carry an optional `grok: in|out` frontmatter field (a sync writes `in`, a request writes `out`); the Logs tab shows it as a From Grok Bot or To Grok Bot badge, and older `sync-` events count as `in`.
 
-Ideas raised and not built: apply a sync automatically instead of on Confirm; one Connector handling several org folders.
+Built: on every Connector run, `applyPerformance` (template-server) writes rows that change nothing but Grok Bot's numbers (`performanceOnly` in grok-sync: last active, runs, tasks, routines, created date) straight to the seat files, so Performance never waits for Sync; everything else still waits in the drawer. Ideas raised and not built: apply the whole sync automatically; one Connector handling several org folders.
 
 ## Hard rules
 

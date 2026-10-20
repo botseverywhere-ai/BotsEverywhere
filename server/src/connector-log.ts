@@ -8,7 +8,8 @@ import { readConnector, readSyncMinutes } from './project.ts'
 import { GROK_ACTIVITY_PROCESS } from './bot-metrics.ts'
 import { formatRunLine, runLogHeader, type RunLine } from './run-log.ts'
 import { readRunLogDir } from './run-log-files.ts'
-import { appendActivity, listOrgSlugs, markDeletedBots, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
+import { appendActivity, applyPerformance, listOrgSlugs, markDeletedBots, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
+import { planSync } from './grok-sync.ts'
 
 /** The app's memory of what it already logged about the Connector, so a run is never logged twice. */
 export const CONNECTOR_LOG_FILE = 'connector-log.json'
@@ -223,6 +224,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     }
     const snap = readSnapshot(root)
     let bots = before.bots
+    let performance = 0
     if (!snap.ok && !snap.missing) {
       appendActivity(root, event(orgId, `connector-error-${stamp}`, at, 'connector-error', "Connector ran, but this organization's snapshot could not be read", {
         stats: stats([['Error', snap.error], ['Run', localWhen(at)]]),
@@ -252,9 +254,11 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
       }
       bots = names
       try {
+        // Grok Bot's numbers land now; the rest of the plan waits for Sync.
+        performance = applyPerformance(root, planSync(snap.snapshot, seats, read.bundle.processes ?? [], orgName)).length
         seenNow = briefPerformance(root, snap.snapshot.bots, seats, orgName, before.seen, at.getTime())
       } catch {
-        // Performance lines are a bonus; a failure here must never stop the run log.
+        // Performance is a bonus; a failure here must never stop the run log.
       }
     }
     const day = localDay(at)
@@ -268,6 +272,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
         ['First', localTime(new Date(firstRunAt))],
         ['Last', localTime(at)],
         ['In Grok Bot', bots ? bots.length : undefined],
+        ['Performance updated', performance || undefined],
         ['Waiting', waiting],
         ['No organization', connector.unassigned.length],
       ]),

@@ -389,6 +389,20 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
   return { kind: 'updated', name: seat.title, slug: seat.slug, renamed: patch.title !== undefined, changes, patch }
 }
 
+const PERFORMANCE_KEYS = new Set<keyof SeatPatch>(['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'routines'])
+const STAMP_KEYS = new Set<keyof SeatPatch>(['grokSync', 'grokSyncedAt'])
+
+/**
+ * An updated row that changes nothing but Grok Bot's numbers: last active, run and task counts, routines, created date.
+ * Those apply on their own on every Connector run; everything else (a link, a name, a card fill, a run status, a bot
+ * that came back after Not in Grok Bot) waits for Sync. A stamp alone is nothing to apply.
+ */
+export function performanceOnly(row: SyncRow): row is Extract<SyncRow, { kind: 'updated' }> {
+  if (row.kind !== 'updated') return false
+  const keys = (Object.keys(row.patch) as (keyof SeatPatch)[]).filter((key) => !STAMP_KEYS.has(key))
+  return keys.length > 0 && keys.every((key) => PERFORMANCE_KEYS.has(key))
+}
+
 /** A file name from a name: lowercase, hyphens for anything else. Empty when nothing usable is left. */
 export function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48)

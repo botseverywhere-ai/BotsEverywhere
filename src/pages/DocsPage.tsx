@@ -527,7 +527,10 @@ Plain notes for the people reading the file.`}</CodeBlock>
         <h3>Coming from Grok Bot</h3>
         <ul>
           <li>New bots become seats marked New.</li>
-          <li>Matched bots take their link, routines, and run numbers from Grok Bot. Your managers, step assignments, and filled card sections are kept.</li>
+          <li>
+            Matched bots take their link from Grok Bot; their numbers (last active, runs, tasks, routines) apply on their own on every Connector run, so Performance never waits for Sync.
+            Your managers, step assignments, and filled card sections are kept.
+          </li>
           <li>New routines become processes.</li>
           <li>A bot that left Grok Bot is tagged Not in Grok Bot. <strong>A sync never deletes a seat.</strong></li>
           <li>

@@ -211,6 +211,9 @@ export function SyncDrawer({
           ) : null}
           <section className="sync-side" aria-labelledby="sync-in">
             <h3 id="sync-in" className="sync-side-title">Coming from Grok Bot</h3>
+            <p className="overview-note">
+              Grok Bot&apos;s numbers (last active, runs, tasks, routines) apply on their own on every Connector run. Sync is for new bots, bots that left or came back, links, names, card fills, and processes.
+            </p>
             {plan ? <Preview plan={plan} /> : <p className="overview-note">Nothing until the Connector writes a snapshot.</p>}
             {unassigned.length ? (
               <section className="sync-group">

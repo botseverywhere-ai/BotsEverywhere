@@ -38,7 +38,7 @@ import { isRunLogName, planRun } from './run-log.js'
 import { playRun, readRunLogDir } from './run-log-files.js'
 import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
-import { parseSnapshot, planSync, patchSeatSource, summaryLine, type AccountBot, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
+import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
@@ -1203,6 +1203,29 @@ export function previewSnapshotJson(root: string, orgId: string, json: string): 
   if (!parsed.ok) return { ok: false, errors: [parsed.error] }
   const plan = planSync(parsed.snapshot, read.bundle.seats, read.bundle.processes ?? [], read.bundle.org.company.name)
   return { ok: true, status: { snapshot: { stamp: '', syncedAt: parsed.snapshot.syncedAt }, error: '', plan, lastConfirmed: lastSyncConfirmed(read.bundle), folder: resolve(root) } }
+}
+
+/**
+ * Writes Grok Bot's numbers for matched seats as soon as the Connector reports them, so Performance never waits for
+ * Sync. Only rows that change nothing but numbers; a new bot, a bot that left or came back, a link, a name, a card
+ * fill, or a process still waits for Sync in the drawer. Returns the slugs written; a seat that cannot be written waits too.
+ */
+export function applyPerformance(root: string, plan: SyncPlan): string[] {
+  const written: string[] = []
+  for (const row of plan.rows) {
+    if (!performanceOnly(row)) continue
+    const path = seatFile(root, row.slug)
+    if (!path || !existsSync(path)) continue
+    try {
+      const patched = patchSeatSource(row.slug, readText(path), row.patch)
+      if (!patched.ok) continue
+      writeFileSync(path, patched.source)
+      written.push(row.slug)
+    } catch {
+      // Left for Sync.
+    }
+  }
+  return written
 }
 
 /** Writes a confirmed plan. New bots go through importBotsFile, matched seats are patched in place, routines become processes. Never deletes. */
