@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { GROK_ACTIVITY_PROCESS, shownBotMetrics } from '../src/bot-metrics.ts'
 import { recordConnectorRun } from '../src/connector-log.ts'
-import { SNAPSHOT_FORMAT } from '../src/connector-prompt.ts'
+import { connectorPrompt } from '../src/connector-prompt.ts'
 import { CONNECTOR_FILE } from '../src/project.ts'
 import { readRunLogDir } from '../src/run-log-files.ts'
 import { createOrgFiles } from '../src/template-server.ts'
@@ -97,5 +97,8 @@ test('one chat logged as waiting and then done is one use', () => {
 })
 
 test('the Connector reports last active and each last run on every run, so Performance can follow them', () => {
-  assert.match(SNAPSHOT_FORMAT, /Report lastActive and each routine's lastRun on every run, as Grok Bot shows them\. BotsEverywhere counts uses and automated tasks from how they change\./)
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
+  assert.match(prompt, /Send performance for every bot on every run, from Grok Bot's own data, never from the run log:/)
+  assert.match(prompt, /- lastActive: when the bot last sent a message\./)
+  assert.match(prompt, /- each routine's lastRun: when that routine last ran\./)
 })

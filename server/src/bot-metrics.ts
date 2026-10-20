@@ -44,6 +44,8 @@ export function shownBotMetrics(input: {
   lastActive?: string
   runs30d?: number
   tasksDone30d?: number
+  /** When the counts above were reported (the snapshot's syncedAt). Lines after it are not in them yet. */
+  reportedAt?: string
   log: MetricLogLine[]
   now?: number
 }): ShownBotMetrics {
@@ -57,21 +59,22 @@ export function shownBotMetrics(input: {
   const newest = stamped.reduce((max, item) => Math.max(max, item.at), 0)
   const importedAt = Number.isNaN(watermark) ? 0 : watermark
   const last = Math.max(importedAt, newest)
-  const reported = input.runs30d !== undefined || input.tasksDone30d !== undefined
-  const fresh = stamped.filter((item) => {
-    if (item.at < windowStart || item.at > now) return false
-    // A reported count already holds the lines up to its report. Without one, Grok Bot's last-active time says nothing about the log.
-    if (reported && !Number.isNaN(watermark)) return item.at > watermark
-    return true
-  })
+  const inWindow = stamped.filter((item) => item.at >= windowStart && item.at <= now)
+  // A reported count already holds everything up to its report, so only later lines add to it. The report time is the
+  // cut; before the snapshot carried one, Grok Bot's last-active time stood in for it.
+  const reportedAt = input.reportedAt ? Date.parse(input.reportedAt) : Number.NaN
+  const cut = Number.isNaN(reportedAt) ? watermark : reportedAt
+  const afterReport = Number.isNaN(cut) ? inWindow : inWindow.filter((item) => item.at > cut)
+  const usageLines = input.runs30d === undefined ? inWindow : afterReport
+  const taskLines = input.tasksDone30d === undefined ? inWindow : afterReport
   const process = (item: { line: MetricLogLine }) => (item.line.process ?? '').trim().toLowerCase()
   const chats = new Set(
-    fresh
+    usageLines
       .filter((item) => process(item) === CHAT_PROCESS && item.line.status !== 'running')
       .map((item) => `${item.line.date}|${(item.line.step ?? '').trim().toLowerCase() || item.line.time}`),
   )
-  const seen = fresh.filter((item) => process(item) === GROK_ACTIVITY_PROCESS).length
-  const done = fresh.filter((item) => process(item) !== CHAT_PROCESS && process(item) !== GROK_ACTIVITY_PROCESS && item.line.status === 'done').length
+  const seen = usageLines.filter((item) => process(item) === GROK_ACTIVITY_PROCESS).length
+  const done = taskLines.filter((item) => process(item) !== CHAT_PROCESS && process(item) !== GROK_ACTIVITY_PROCESS && item.line.status === 'done').length
   return {
     createdAt: input.createdAt || '',
     lastActive: last ? new Date(last).toISOString() : '',

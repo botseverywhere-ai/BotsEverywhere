@@ -49,7 +49,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
   const typed = editing ? validSyncMinutes(joinSyncMinutes(amount, unit)) : saved
   const minutes = typed ?? saved
   const shown = editing ? { amount, unit } : { ...splitSyncMinutes(saved), amount: String(splitSyncMinutes(saved).amount) }
-  const prompt = connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes })
+  const prompt = connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes, timeZone: project?.timeZone ?? '', windows: project?.windows ?? false })
   const { state, line } = connectorState(status)
 
   function change() {
@@ -108,7 +108,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
         <li>Come back here. The status turns green after its first run, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
       </ol>
       <p className="overview-note">
-        The prompt changed: bots from the directory get their directory prompt, the Connector reports how often it runs, and it leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
+        The prompt changed: the Connector reports each bot's performance from Grok Bot's own data, acts without asking, fills in this computer's folder and time zone, and leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
       </p>
       {editable && ready ? (
         <div className="connect-interval">

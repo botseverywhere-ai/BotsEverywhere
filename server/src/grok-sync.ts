@@ -92,6 +92,10 @@ export interface ProjectInfo {
   syncMinutes?: number
   /** Every bot in the Grok Bot account, whatever its organization, from the Connector's report. Null before its first report. */
   account?: GrokAccount | null
+  /** This computer's IANA time zone, for the Connector prompt. Empty when the runtime cannot say. */
+  timeZone?: string
+  /** True when the writer runs on Windows, so the prompt adds the file-writing hint. */
+  windows?: boolean
 }
 
 /** One bot in the Grok Bot account and where it sits here. */

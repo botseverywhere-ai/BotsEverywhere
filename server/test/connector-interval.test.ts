@@ -216,5 +216,5 @@ test("saving the interval moves the Connector's own process to it, and keeps the
 test('Connect bots no longer says the prompt deletes bots', () => {
   const connect = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
   assert.doesNotMatch(connect, /also deletes the retired bots/)
-  assert.match(connect, /it leaves deleting bots to you/)
+  assert.match(connect, /leaves deleting bots to you/)
 })

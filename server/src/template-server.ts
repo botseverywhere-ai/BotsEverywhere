@@ -1110,6 +1110,17 @@ export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
     renamed: renamedSeats(orgsDir, orgId, bots),
     syncMinutes: readSyncMinutes(orgsDir),
     account: grokAccount(orgsDir, orgId),
+    timeZone: localTimeZone(),
+    windows: process.platform === 'win32',
+  }
+}
+
+/** The IANA time zone of this computer, for the Connector prompt. Empty when the runtime cannot say. */
+function localTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+  } catch {
+    return ''
   }
 }
 

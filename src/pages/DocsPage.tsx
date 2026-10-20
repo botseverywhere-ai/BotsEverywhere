@@ -356,7 +356,10 @@ npm run dev`}</CodeBlock>
         <p>For every folder in <code>orgs</code> that has an <code>org.md</code> file, the Connector:</p>
         <ol>
           <li>Creates the bots the app asked for in <code>grok/requests.json</code>, with the directory prompt when the bot came from the directory.</li>
-          <li>Writes <code>grok/snapshot.json</code> with the bots that belong to that organization and the routines they run.</li>
+          <li>
+            Writes <code>grok/snapshot.json</code> with the bots that belong to that organization, the routines they run, and each bot&apos;s performance from Grok Bot&apos;s own data:
+            chat messages received and routine runs finished in the last 30 days, when it was last active, and each routine&apos;s last run.
+          </li>
           <li>Reads <code>org.md</code>, <code>seats/</code>, and <code>processes/</code>, keeps one routine per process for the bot on its first step, and tells each bot who its manager is.</li>
           <li>Tells each bot to read its process file and seat file at the start of every run, and to append one line to <code>log/YYYY-MM-DD.md</code> after every step.</li>
         </ol>

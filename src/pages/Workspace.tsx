@@ -197,6 +197,7 @@ export function Workspace({
         lastActive: seat.lastActive,
         runs30d: seat.runs30d,
         tasksDone30d: seat.tasksDone30d,
+        reportedAt: seat.grokSyncedAt,
         log: runLines,
       }))
     }
