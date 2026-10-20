@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { Seat } from '../data/mock-companies'
 import { SeatCardCue } from './SeatCardCue'
-import { anchoredScroll, fitScale, formatZoom } from './org-zoom'
+import { anchoredScroll, fitScale, formatZoom, pickedSeatName } from './org-zoom'
 import { Button } from './Button'
 import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
 import { grokSyncClass, grokSyncTag, legendCounts } from './sync-copy'
@@ -59,6 +59,8 @@ export function OrgChart({
   const anchorRef = useRef<{ left: number; top: number } | null>(null)
   const pinchRef = useRef(0)
   const panRef = useRef<{ id: number; x: number; y: number; left: number; top: number } | null>(null)
+  // The seat Find seat jumped to. A re-fit (the seat panel opening narrows the chart) scrolls back to it, until the person pans or zooms.
+  const focusRef = useRef('')
   const [scale, setScale] = useState(1)
   const [panning, setPanning] = useState(false)
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
@@ -66,6 +68,7 @@ export function OrgChart({
   const [foundId, setFoundId] = useState('')
 
   const forest = useMemo(() => buildForest(seats), [seats])
+  const seatNames = useMemo(() => seats.map((seat) => seat.name), [seats])
   const counts = useMemo(() => legendCounts(seats, emptyIds), [seats, emptyIds])
   const reports = useMemo(() => childrenOf(seats), [seats])
   const parents = useMemo(() => parentOf(seats), [seats])
@@ -75,6 +78,7 @@ export function OrgChart({
   function applyScale(next: number, anchor?: { x: number; y: number }) {
     const viewport = viewportRef.current
     const clamped = clamp(next, ZOOM_MIN, ZOOM_MAX)
+    focusRef.current = ''
     if (viewport && scaleRef.current > 0) {
       const point = anchor ?? { x: viewport.clientWidth / 2, y: viewport.clientHeight / 2 }
       anchorRef.current = anchoredScroll(viewport, point, clamped / scaleRef.current)
@@ -89,6 +93,7 @@ export function OrgChart({
     if (target?.closest('button, a, input, select, textarea, [role="tab"]')) return
     const viewport = viewportRef.current
     if (!viewport) return
+    focusRef.current = ''
     panRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop }
     viewport.setPointerCapture(event.pointerId)
     setPanning(true)
@@ -136,6 +141,7 @@ export function OrgChart({
     if (Math.abs(next - scaleRef.current) < 0.01) {
       viewport.scrollLeft = left
       viewport.scrollTop = top
+      scrollToFocus()
       return
     }
     scaleRef.current = next
@@ -150,6 +156,7 @@ export function OrgChart({
     viewport.scrollLeft = anchor.left
     viewport.scrollTop = anchor.top
     anchorRef.current = null
+    scrollToFocus()
   }, [scale])
 
   useLayoutEffect(() => {
@@ -202,6 +209,12 @@ export function OrgChart({
     }
   }, [layoutKey])
 
+  function scrollToFocus() {
+    const id = focusRef.current
+    if (!id) return
+    document.querySelector(`[data-seat-id="${cssEscape(id)}"]`)?.scrollIntoView({ block: 'center', inline: 'center' })
+  }
+
   function toggle(id: string) {
     setCollapsed((current) => {
       const next = new Set(current)
@@ -231,13 +244,9 @@ export function OrgChart({
     })
     setFoundId(match.id)
     setQuery(match.name)
+    focusRef.current = match.id
     onSelect(match.id)
-    window.setTimeout(() => {
-      document.querySelector(`[data-seat-id="${cssEscape(match.id)}"]`)?.scrollIntoView({
-        block: 'center',
-        inline: 'center',
-      })
-    }, 40)
+    window.setTimeout(scrollToFocus, 40)
   }
 
   const shownCollapsed = useMemo(() => {
@@ -314,7 +323,10 @@ export function OrgChart({
             list="org-seat-names"
             value={query}
             placeholder="Find seat"
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              if (pickedSeatName((event.nativeEvent as InputEvent).inputType, event.target.value, seatNames)) jump(event.target.value)
+            }}
           />
           <datalist id="org-seat-names">
             {seats.map((seat) => (

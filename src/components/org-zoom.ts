@@ -36,3 +36,8 @@ export function anchoredScroll(viewport: { scrollLeft: number; scrollTop: number
 export function formatZoom(scale: number): string {
   return `${Math.round(scale * 100)}%`
 }
+
+/** A name picked from the Find seat list arrives as one replacement, not as typing, so it can jump without Enter. */
+export function pickedSeatName(inputType: string | undefined, value: string, names: readonly string[]): boolean {
+  return (inputType === undefined || inputType === 'insertReplacementText') && names.includes(value)
+}
