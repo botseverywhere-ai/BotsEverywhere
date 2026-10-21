@@ -302,7 +302,7 @@ npm run dev`}</CodeBlock>
           normally <a href="http://127.0.0.1:5199">http://127.0.0.1:5199</a>. To stop it, press <code>Ctrl+C</code> in that window.
         </p>
         <p>
-          Your organizations are saved in <code>orgs/</code> inside the project folder. The starter organization is <code>orgs/your-company/</code>, with one seat, <strong>You</strong>.
+          Your organizations are saved in <code>orgs/</code> inside the project folder. A fresh clone has none: choose <strong>Open your org</strong> and create your first one, with one seat, <strong>You</strong>.
           Each new organization gets a folder named by its ID, such as <code>orgs/org-k3f9x2ma/</code>. The ID never changes, so renaming an organization never moves its files
           and your bots always find them. The name lives in <code>org.md</code>, and <strong>Your files</strong> on Organization Overview shows which folder is which.
         </p>

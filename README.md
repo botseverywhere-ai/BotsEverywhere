@@ -17,7 +17,7 @@ npm install
 npm run dev       # site on http://127.0.0.1:5199 and the file writer on http://127.0.0.1:8787
 ```
 
-Open [http://127.0.0.1:5199/#/org/your-company/overview](http://127.0.0.1:5199/#/org/your-company/overview). `npm run dev` starts the site and the local file writer together.
+Open [http://127.0.0.1:5199](http://127.0.0.1:5199) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together.
 
 ## Where your data lives
 
@@ -37,7 +37,7 @@ orgs/connector.json              written by the Connector: when it last ran, and
 
 To keep your orgs in step with Grok Bot, copy the Connector prompt from the Connect bots tab and paste it into Grok Bot once. One Connector serves every org in this copy. It runs every 15 minutes unless you change **Runs every** on Connect bots, and writes each org's `grok/snapshot.json` and `orgs/connector.json`. Grok Bot's numbers reach Performance on every run. For new bots, missing bots, and routines, **Sync with Grok Bot** on the org tab row previews what changed and applies it when you confirm. Nothing is ever deleted by a sync. The current state of this work is in [docs/STATUS.md](docs/STATUS.md).
 
-The writer root is `ORGS_DIR` (default `./orgs`). Nothing is uploaded. Commit `orgs/` with git if you want history. `samples/` stays read-only. The starter org is `orgs/your-company/`.
+The writer root is `ORGS_DIR` (default `./orgs`). Nothing is uploaded. `orgs/` is ignored by git because it is your own data: to keep history, add it with `git add -f orgs` and push it only to a private repository, or use **Export** on the Backup tab. `samples/` stays read-only. A fresh clone has no organization until you create one.
 
 Open `#docs` for the steps and `#directory` for the bot directory.
 

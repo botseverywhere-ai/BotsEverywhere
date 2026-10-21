@@ -21,7 +21,7 @@ npm install
 npm run dev
 ```
 
-Leave that window open. `npm run dev` starts the site and the file writer together. Open http://127.0.0.1:5199/#/org/your-company/overview
+Leave that window open. `npm run dev` starts the site and the file writer together. Open http://127.0.0.1:5199 and choose **Open your org** to create your first organization.
 
 ### macOS and Linux
 
@@ -32,22 +32,22 @@ npm install
 npm run dev
 ```
 
-Leave that window open. `npm run dev` starts the site and the file writer together. Open http://127.0.0.1:5199/#/org/your-company/overview
+Leave that window open. `npm run dev` starts the site and the file writer together. Open http://127.0.0.1:5199 and choose **Open your org** to create your first organization.
 
 The web server listens on port 5199. The dev API listens on 127.0.0.1 port 8787 and Vite proxies `/api` to it. The file writer refuses any other host and refuses to start when `NODE_ENV=production`.
 
 ## Edit the org and commit
 
-`org/` is the blank starter: one person (You) and one seat. `samples/` holds the read-only organizations, including botseverywhere. They are not your organization.
+A fresh clone has no organization yet. Open http://127.0.0.1:5199, choose **Open your org**, and create your first one: it gets a folder under `orgs/` named by its ID, with one person, You. `samples/` holds the read-only organizations, including botseverywhere. They are not your organization.
 
 In the app, while `npm run dev` is running:
 
 1. Open a seat, or choose **+ Add seat**, or hire a bot from the directory.
 2. Set the four card sections. The drawer shows **Saved** when the seat file is written. Hiring writes `orgs/<slug>/seats/<bot>.md` immediately.
-3. Commit the changes.
+3. To keep history, commit the changes. `orgs/` is ignored by git because it is your own data, so add it with `-f`, and only push it to a private repository. **Export** on the Backup tab is the other way to keep a copy.
 
 ```bash
-git add orgs
+git add -f orgs
 git commit -m "Update the org chart"
 ```
 
@@ -110,7 +110,7 @@ Serve the `dist/` folder with any static file host. There is no database and no 
 
 ## Optional self-host
 
-An organization can serve its own built copy. Edits still happen in git: change `org/`, then rebuild. The dev file writer is not a production API.
+An organization can serve its own built copy. Edits still happen in git: change `orgs/`, then rebuild. The dev file writer is not a production API.
 
 ```bash
 npm run build
@@ -119,7 +119,7 @@ npm run preview
 
 `npm run preview` serves `dist/` on port 5199. On a server, copy `dist/` to the web root. Hash routes need the host to fall back to `index.html`.
 
-To publish a change, commit `org/` and run the build again.
+To publish a change, commit `orgs/` (with `git add -f orgs`) and run the build again.
 
 ## Optional share-link mode (SQLite)
 

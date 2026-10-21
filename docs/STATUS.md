@@ -72,9 +72,9 @@ Found in the sync review (17 to 18 October), graded minor, not done, and not rec
 - CSRF on the writer's state-changing routes is the same on every route: loopback bind, loopback-only CORS, no token. A whole-writer follow-up.
 - The older `/bots-file` and `/seats/existing` routes still accept card lines that read as headings.
 
-## Open questions
+## Fresh clone (checked 21 October 2026)
 
-- README, SETUP, and Docs say the starter org is `orgs/your-company/`, but nothing under `orgs/` is in git, and `npm run dev` does not create it. A fresh clone may open to "That org is not on this computer". Ship a starter org, create one on first run, or change the docs.
+A fresh clone has no `orgs/` folder. `npm run dev` starts; **Open your org** opens Your orgs, which offers **Create new org**; the new org gets an ID folder and `orgs/project.json` gets this copy's id. Add a seat, Hire from the directory, Profile, and Connect bots all work on it. README, SETUP, and Docs now say this instead of naming a starter org. Tests never read `orgs/`, and `.gitattributes` keeps LF line endings, so `npm test` passes on a fresh Windows clone and on CI apart from the Chrome layout test, which skips without Chrome at `/usr/bin/google-chrome`.
 
 ## Next
 
