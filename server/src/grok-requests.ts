@@ -1,5 +1,5 @@
 import { normalizeText } from './normalize-text.ts'
-import { SEAT_SLUG, type SeatDocument } from './org-files.ts'
+import { SEAT_SLUG, cleanRoutines, cleanSkills, type BotRoutine, type BotSkill, type SeatDocument } from './org-files.ts'
 import type { SyncPlan } from './grok-sync.ts'
 
 /** The app writes this file; the Connector reads it and creates each bot in Grok Bot. */
@@ -14,6 +14,10 @@ export interface GrokRequest {
   seatFile: string
   /** The directory prompt text, or '' when the seat has none. Inline, because the Connector never reads outside the orgs folder. */
   prompt: string
+  /** Skills from Profile, for the Connector to add to the new bot. */
+  skills?: BotSkill[]
+  /** Routines from Profile, for the Connector to create for the new bot. */
+  routines?: BotRoutine[]
   requestedAt: string
 }
 
@@ -36,7 +40,9 @@ export function parseRequests(source: string): { ok: true; requests: GrokRequest
     const row = item as Record<string, unknown>
     const seat = text(row.seat)
     if (!SEAT_SLUG.test(seat)) return []
-    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', requestedAt: text(row.requestedAt) }]
+    const skills = cleanSkills(row.skills)
+    const routines = cleanRoutines(row.routines)
+    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), requestedAt: text(row.requestedAt) }]
   })
   return { ok: true, requests }
 }

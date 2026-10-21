@@ -863,12 +863,16 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
   if (!path) return { ok: false, errors: ['That seat slug is not valid.'] }
   // The directory sits beside orgs/ at the repo root.
   const directory = seat.directoryId && SEAT_SLUG.test(seat.directoryId) ? resolve(root, '..', '..', 'directory', `${seat.directoryId}.md`) : ''
+  // The prompt written in Profile wins. A directory bot sends its directory prompt until it is edited there.
+  const fromDirectory = !seat.instructions && directory ? directoryPrompt(directory) : ''
   const request: GrokRequest = {
     seat: seat.slug,
     // Grok Bot keeps one bot per name across the whole project, so a title another org uses gets this org's name.
     name: (orgsDir ? renamedSeats(orgsDir, orgId)[seat.slug] : '') || seat.title,
     seatFile: path,
-    prompt: directory ? directoryPrompt(directory) : '',
+    prompt: seat.instructions || fromDirectory,
+    ...(seat.skills?.length ? { skills: seat.skills } : {}),
+    ...(seat.routines?.length ? { routines: seat.routines } : {}),
     requestedAt: new Date().toISOString(),
   }
   writeRequests(root, addRequest(readRequests(root).requests, request))
@@ -884,7 +888,7 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
     subjectSeatId: seat.slug,
     grok: 'out',
     kind: 'request',
-    stats: [`Name in Grok Bot=${request.name.replace(/[|=]/g, '/')}`, `Prompt=${request.prompt ? 'from the directory' : 'from the seat card'}`, `Waiting=${readRequests(root).requests.length}`].join('|'),
+    stats: [`Name in Grok Bot=${request.name.replace(/[|=]/g, '/')}`, `Prompt=${seat.instructions ? 'from Profile' : request.prompt ? 'from the directory' : 'from the seat card'}`, `Waiting=${readRequests(root).requests.length}`].join('|'),
   })
   return { ok: true, request }
 }

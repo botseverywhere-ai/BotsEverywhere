@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { parseSeatMarkdown, serializeExistingSeat, serializeSeat } from '../src/org-files.ts'
-import { createExistingBot, createOrgFiles, importBotsFile, startTemplateServer } from '../src/template-server.ts'
+import { createExistingBot, createHiredSeat, createOrgFiles, importBotsFile, readRequests, requestGrokBot, startTemplateServer, updateSeatProfile } from '../src/template-server.ts'
+import { SNAPSHOT_FORMAT, connectorPrompt } from '../src/connector-prompt.ts'
+import { GROK_BOTS_PROMPT } from '../../src/content/grok-bots-prompt.ts'
 import { parseBotsFile } from '../src/bots-file.ts'
 import { parseSnapshot, patchSeatSource, performanceOnly, planSync } from '../src/grok-sync.ts'
 
@@ -187,4 +189,54 @@ test('a Connector run fills skills and the public link without a Sync, and an em
   const empty = parseSnapshot(JSON.stringify({ syncedAt: '2026-10-21T12:30:00.000Z', bots: [{ name: 'Grok Bot', grokBotUrl: LINK, skills: [] }], processes: [] }), '2026-10-21T12:30:00.000Z')
   assert.ok(empty.ok)
   assert.equal(planSync(empty.snapshot, [after.seat], []).rows[0]?.kind, 'unchanged', 'an empty list or a missing link changes nothing')
+})
+
+test('Create in Grok Bot sends the Profile: the instructions, or the directory prompt until it is edited, plus skills and routines', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'be-profile-request-'))
+  try {
+    const orgs = join(dir, 'orgs')
+    mkdirSync(orgs)
+    mkdirSync(join(dir, 'directory'))
+    writeFileSync(join(dir, 'directory', 'lead-bot.md'), '---\nname: Lead Bot\n---\n\nYou sort new leads.\n')
+    const made = createOrgFiles(orgs, 'Desk', 'You')
+    assert.ok(made.ok)
+    const root = join(orgs, made.slug)
+    const card = { owns: ['Sorting new leads'], may: ['Read the lead list'], mustAskBefore: ['Contacting a lead'], doneWhen: ['Every lead is marked'] }
+    assert.ok(createHiredSeat(root, made.slug, { name: 'Lead Sorter', kind: 'bot', slug: 'lead-sorter', directorySlug: '', reportsTo: 'you', addToGrokBotUrl: '', ...card }).ok)
+    assert.ok(updateSeatProfile(root, made.slug, 'lead-sorter', { instructions: INSTRUCTIONS, skills: SKILLS, routines: ROUTINES }).ok)
+    const manual = requestGrokBot(root, made.slug, 'lead-sorter')
+    assert.ok(manual.ok, manual.ok ? '' : manual.errors.join(' '))
+    assert.equal(manual.request.prompt, INSTRUCTIONS)
+    assert.deepEqual(manual.request.skills, SKILLS)
+    assert.deepEqual(manual.request.routines, ROUTINES)
+    const stored = readRequests(root).requests.find((item) => item.seat === 'lead-sorter')
+    assert.deepEqual(stored?.skills, SKILLS, 'the requests file keeps them for the Connector')
+    assert.deepEqual(stored?.routines, ROUTINES)
+
+    assert.ok(createHiredSeat(root, made.slug, { name: 'Lead Bot', kind: 'bot', slug: 'lead-bot', directorySlug: 'lead-bot', reportsTo: 'you', addToGrokBotUrl: '', ...card }).ok)
+    const fromDirectory = requestGrokBot(root, made.slug, 'lead-bot')
+    assert.ok(fromDirectory.ok)
+    assert.equal(fromDirectory.request.prompt, 'You sort new leads.', 'a hired directory bot sends its directory prompt')
+    assert.ok(updateSeatProfile(root, made.slug, 'lead-bot', { instructions: 'You sort new leads. Only from the EU list.' }).ok)
+    const edited = requestGrokBot(root, made.slug, 'lead-bot')
+    assert.ok(edited.ok)
+    assert.equal(edited.request.prompt, 'You sort new leads. Only from the EU list.', 'once edited in Profile, the edited prompt is what Grok Bot gets')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the Connector adds the skills and routines, asks the new bot for its public template, and reports skills and the public link', () => {
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
+  assert.match(prompt, /When "skills" is set, add each one to the bot/)
+  assert.match(prompt, /When "routines" is set, create each one for the bot/)
+  assert.match(prompt, /make a Public bot template of itself/)
+  assert.match(prompt, /export-bot-template/)
+  assert.match(prompt, /do not wait for that approval/i, 'the approval never blocks a run')
+  assert.match(prompt, /"publicUrl"/)
+  assert.match(SNAPSHOT_FORMAT, /"skills": \[/)
+  assert.match(SNAPSHOT_FORMAT, /"publicUrl":/)
+  assert.match(SNAPSHOT_FORMAT, /Never invent skills/)
+  assert.match(GROK_BOTS_PROMPT, /"publicUrl":/, 'importing asks for the public link')
+  assert.match(GROK_BOTS_PROMPT, /"skills": \[/)
 })
