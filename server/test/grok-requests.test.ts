@@ -136,5 +136,5 @@ test('a bot not in Grok Bot gets Create in Grok Bot in the seat panel, then says
   assert.match(drawer, /<dd>\{grokRequestedAt \? 'connecting' : grokSyncLine\(seat\)\}<\/dd>/)
   assert.match(workspace, /\/api\/orgs\/\$\{bundle\.id\}\/grok\/requests/)
   assert.match(workspace, /onCreateInGrok=\{editable && chartSeat\.type === 'bot'/)
-  assert.match(workspace, /grokRequestedAt=\{sync\?\.requests\?\.find/)
+  assert.match(workspace, /grokRequestedAt=\{createRequests\.find/)
 })
