@@ -303,6 +303,8 @@ npm run dev`}</CodeBlock>
         </p>
         <p>
           Your organizations are saved in <code>orgs/</code> inside the project folder. The starter organization is <code>orgs/your-company/</code>, with one seat, <strong>You</strong>.
+          Each new organization gets a folder named by its ID, such as <code>orgs/org-k3f9x2ma/</code>. The ID never changes, so renaming an organization never moves its files
+          and your bots always find them. The name lives in <code>org.md</code>, and <strong>Your files</strong> on Organization Overview shows which folder is which.
         </p>
 
         <h2 id="ports">Ports and addresses</h2>

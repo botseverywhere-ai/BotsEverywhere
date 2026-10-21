@@ -48,6 +48,8 @@ Two things to know before reading a red run as a regression. `server/test/org-no
 
 `orgs/<slug>/` (writer root `ORGS_DIR`, default `orgs`):
 
+The folder name is the organization's ID and never changes. A new org or a template copy gets `org-` and 8 characters from `ID_CHARS` in `server/src/project.ts`, no look-alikes (`uniqueOrgId` in `server/src/template-server.ts`). The name lives in `org.md` alone, so renaming an organization only rewrites `org.md`. Never derive a folder from the name and never move an org folder: the Connector briefs each bot with absolute paths to its seat, process, and log files, and the bot keeps them in its memory. Older folders named after a name (`your-company`) are IDs too and stay as they are.
+
 - `org.md` — YAML frontmatter (`name`, `description`, `industry`, `size`, `people`, `bots`, optional `fallbackProcess`, `mark`, `markColor`) then purpose text, `## Departments`, `## People`, `## Chart` (`- <seat>` or `- <seat>: <reportsTo>`). A file with `## Chart` is a markdown org.
 - `seats/<slug>.md` — frontmatter: `title`, `department`, `reportsTo`, `addToGrokBotUrl`, `status` (`active` or `retired`), `kind` (`human`, `bot`, or `system`), `role`, optional `description`, `personId`, `hiredAt`, `retiredAt`, `directoryId`. Body sections: `## Owns`, `## May`, `## Needs approval`, `## Done when`.
 - `work-chart.md` — triggers, workstreams, steps, handoffs, checkpoints.
