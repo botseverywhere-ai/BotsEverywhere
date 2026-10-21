@@ -1449,10 +1449,21 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .profile-list ul { margin: 0; padding-left: var(--space-4); justify-self: stretch; }
 .profile-list li { margin: 0 0 var(--space-2); }
 .profile-line { display: block; color: var(--color-muted); font-size: var(--text-sm); }
-.profile-row { display: grid; gap: var(--space-1); justify-self: stretch; padding: var(--space-2); border: var(--hairline); border-radius: var(--control-radius); }
-.profile-row .text-input { margin-bottom: 0; }
-.panel .profile-row .btn { justify-self: start; width: auto; margin-top: 0; }
 .panel .profile-list > .btn { margin-top: 0; }
+.profile-list .field-hint { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
+.skill-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: start; justify-self: stretch; }
+.skill-fields { display: grid; gap: var(--space-1); }
+.skill-fields .text-input, .routine-card .text-input { margin-bottom: 0; }
+.panel .icon-btn { width: auto; margin-top: 0; padding: var(--space-2); }
+.routine-card { display: grid; gap: var(--space-2); justify-self: stretch; padding: var(--space-3); border: var(--hairline); border-radius: var(--control-radius); }
+.routine-card.is-closed { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.panel .routine-card .btn { width: auto; margin-top: 0; }
+.routine-field { display: grid; gap: var(--space-1); }
+.routine-field .field-label { margin-bottom: 0; }
+.cron-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 9rem); gap: var(--space-2); }
+.routine-active { display: flex; gap: var(--space-2); align-items: center; font-weight: var(--weight-medium); }
+.routine-actions { display: flex; justify-content: space-between; gap: var(--space-2); padding-top: var(--space-2); border-top: var(--hairline); }
+.routine-paused { margin-left: var(--space-2); padding: 0 var(--space-1); border: var(--hairline); color: var(--color-muted); font-size: var(--text-xs); }
 .be-directory th:last-child, .be-directory td:last-child { position: sticky; right: 0; z-index: 1; background: var(--color-white); white-space: nowrap; width: 1%; overflow: visible; }
 .be-directory th, .be-directory td, .be-performance th, .be-performance td, .be-log li { border-bottom: 1px solid var(--color-line); padding: 7px 12px; text-align: left; }
 .be-directory tr { cursor: pointer; }

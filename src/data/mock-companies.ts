@@ -1,4 +1,5 @@
 /** Types for the work-chart brief (14 Oct 2026). The seed is src/data/mock-companies.json. */
+import type { BotRoutine } from '../../server/src/org-files.ts'
 
 export type SeatType = 'human' | 'bot' | 'system'
 export type TriggerSource = 'email' | 'chat' | 'meeting' | 'dashboard' | 'customer' | 'alert' | 'management' | 'schedule'
@@ -116,7 +117,7 @@ export interface Seat {
   importedLastActive?: string
   runs30d?: number
   importedTasks30d?: number
-  routines?: { name: string; schedule: string; lastRun?: string; description?: string }[]
+  routines?: BotRoutine[]
   /** Bot only. Where the seat came from: the directory, an import from Grok Bot, or Add a seat. */
   origin?: 'directory' | 'imported' | 'manual'
   /** Bot only. The directory entry a hired bot came from. */

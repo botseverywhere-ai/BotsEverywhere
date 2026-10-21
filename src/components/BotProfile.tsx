@@ -1,17 +1,17 @@
 import { useEffect, useId, useState } from 'react'
 import type { Seat } from '../data/mock-companies'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
+import { ROUTINE_STARTS, type BotRoutine, type RoutineStart } from '../../server/src/org-files.ts'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
-import { IMPORTED_NOTE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, draftRows, profileParts, promptToSave } from './bot-profile-copy'
+import { CRON_PRESETS, IMPORTED_NOTE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
 
 type Skill = { name: string; description?: string }
-type Routine = { name: string; schedule: string; lastRun?: string; description?: string }
 
 export interface ProfileChanges {
   instructions?: string
   skills?: Skill[]
-  routines?: Routine[]
+  routines?: BotRoutine[]
 }
 
 /**
@@ -28,16 +28,12 @@ export function BotProfile({ seat, grokRequestedAt, onProfile, onCreateInGrok }:
   const directory = useDirectoryPrompt(parts.prompt === 'directory' ? seat.directoryId ?? '' : '')
   const promptId = useId()
   const [prompt, setPrompt] = useState<string | null>(null)
-  const [skills, setSkills] = useState<Skill[]>(() => seat.skills ?? [])
-  const [routines, setRoutines] = useState<Routine[]>(() => seat.routines ?? [])
   const directoryText = directory?.prompt ?? ''
   const shownPrompt = prompt ?? seat.instructions ?? (parts.prompt === 'directory' ? directoryText : '')
   const savePrompt = () => {
     if (prompt === null) return
     onProfile({ instructions: parts.prompt === 'directory' ? promptToSave(prompt, directoryText) : prompt.trim() })
   }
-  const saveSkills = (next: Skill[]) => onProfile({ skills: draftRows(next) })
-  const saveRoutines = (next: Routine[]) => onProfile({ routines: draftRows(next) })
 
   return (
     <div className="bot-profile">
@@ -65,24 +61,8 @@ export function BotProfile({ seat, grokRequestedAt, onProfile, onCreateInGrok }:
       ) : null}
       {parts.listsEditable ? (
         <>
-          <RowEditor
-            title="Skills"
-            rows={skills}
-            fields={[{ key: 'name', placeholder: 'Skill name' }, { key: 'description', placeholder: 'What it does' }]}
-            addLabel="+ Add skill"
-            blank={{ name: '', description: '' }}
-            onChange={setSkills}
-            onSave={saveSkills}
-          />
-          <RowEditor
-            title="Routines"
-            rows={routines}
-            fields={[{ key: 'name', placeholder: 'Routine name' }, { key: 'schedule', placeholder: 'When it runs, like Weekdays 09:00' }, { key: 'description', placeholder: 'What it does' }]}
-            addLabel="+ Add routine"
-            blank={{ name: '', schedule: '', description: '' }}
-            onChange={setRoutines}
-            onSave={saveRoutines}
-          />
+          <SkillEditor initial={seat.skills ?? []} onSave={(skills) => onProfile({ skills: draftRows(skills) })} />
+          <RoutineEditor initial={seat.routines ?? []} onSave={(routines) => onProfile({ routines: draftRoutines(routines) })} />
         </>
       ) : (
         <ProfileLists seat={seat} />
@@ -125,7 +105,8 @@ export function ProfileLists({ seat }: { seat: Pick<Seat, 'skills' | 'routines'>
             {seat.routines.map((routine) => (
               <li key={`${routine.name}-${routine.schedule}`}>
                 <strong>{routine.name}</strong>
-                {routine.schedule ? ` · ${routine.schedule}` : ''}
+                {routine.enabled === false ? <span className="routine-paused">Paused</span> : null}
+                {startLine(routine) ? <span className="profile-line">{startLine(routine)}</span> : null}
                 {routine.description ? <span className="profile-line">{routine.description}</span> : null}
                 {routine.lastRun ? <span className="profile-line">Last run {formatShortDate(routine.lastRun)}</span> : null}
               </li>
@@ -137,38 +118,165 @@ export function ProfileLists({ seat }: { seat: Pick<Seat, 'skills' | 'routines'>
   )
 }
 
-function RowEditor<T extends { name: string }>({ title, rows, fields, addLabel, blank, onChange, onSave }: {
-  title: string
-  rows: T[]
-  fields: { key: keyof T & string; placeholder: string }[]
-  addLabel: string
-  blank: T
-  onChange: (rows: T[]) => void
-  onSave: (rows: T[]) => void
-}) {
-  const update = (index: number, key: keyof T & string, value: string) => onChange(rows.map((row, at) => (at === index ? { ...row, [key]: value } : row)))
+/** Skills as the Grok Bot Graph panel edits them: a name, what it does, and a remove button. */
+function SkillEditor({ initial, onSave }: { initial: Skill[]; onSave: (skills: Skill[]) => void }) {
+  const [skills, setSkills] = useState<Skill[]>(initial)
+  const update = (index: number, change: Partial<Skill>) => setSkills(skills.map((skill, at) => (at === index ? { ...skill, ...change } : skill)))
   return (
     <section className="profile-list">
-      <h3 className="card-label">{title}</h3>
-      {rows.length === 0 ? <p className="auth-note">No {title.toLowerCase()} yet.</p> : null}
-      {rows.map((row, index) => (
-        <div className="profile-row" key={index}>
-          {fields.map((field) => (
-            <input
-              key={field.key}
-              className="text-input"
-              aria-label={`${title}: ${field.placeholder}`}
-              placeholder={field.placeholder}
-              value={typeof row[field.key] === 'string' ? (row[field.key] as string) : ''}
-              onChange={(event) => update(index, field.key, event.target.value)}
-              onBlur={() => onSave(rows)}
-            />
-          ))}
-          <Button variant="ghost" type="button" onClick={() => { const next = rows.filter((_, at) => at !== index); onChange(next); onSave(next) }}>Remove</Button>
+      <h3 className="card-label">Skills</h3>
+      {skills.length === 0 ? <p className="auth-note">No skills yet.</p> : null}
+      {skills.map((skill, index) => (
+        <div className="skill-row" key={index}>
+          <div className="skill-fields">
+            <input className="text-input" aria-label="Skill name" placeholder="New skill" value={skill.name} onChange={(event) => update(index, { name: event.target.value })} onBlur={() => onSave(skills)} />
+            <input className="text-input" aria-label="What the skill does" placeholder="What it does (optional)" value={skill.description ?? ''} onChange={(event) => update(index, { description: event.target.value })} onBlur={() => onSave(skills)} />
+          </div>
+          <Button variant="ghost" type="button" className="icon-btn" aria-label="Remove skill" onClick={() => { const next = skills.filter((_, at) => at !== index); setSkills(next); onSave(next) }}>
+            <TrashIcon />
+          </Button>
         </div>
       ))}
-      <Button variant="secondary" type="button" onClick={() => onChange([...rows, { ...blank }])}>{addLabel}</Button>
+      <Button variant="secondary" type="button" onClick={() => setSkills([...skills, { name: '', description: '' }])}>+ Add skill</Button>
     </section>
+  )
+}
+
+const NEW_ROUTINE: BotRoutine = { name: '', schedule: '0 9 * * 1-5', trigger: 'schedule', description: '', timeZone: '', event: '' }
+
+/** Routines as the Grok Bot Graph panel edits them: a card per routine, open while it is edited, closed with Done. */
+function RoutineEditor({ initial, onSave }: { initial: BotRoutine[]; onSave: (routines: BotRoutine[]) => void }) {
+  const [routines, setRoutines] = useState<BotRoutine[]>(initial)
+  const [open, setOpen] = useState<number | null>(null)
+  const change = (index: number, patch: Partial<BotRoutine>, save = false) => {
+    const next = routines.map((routine, at) => (at === index ? { ...routine, ...patch } : routine))
+    setRoutines(next)
+    if (save) onSave(next)
+  }
+  const remove = (index: number) => {
+    const next = routines.filter((_, at) => at !== index)
+    setRoutines(next)
+    setOpen(null)
+    onSave(next)
+  }
+  return (
+    <section className="profile-list">
+      <h3 className="card-label">Routines</h3>
+      <p className="field-hint">Work this bot starts on its own, on a schedule or after an event.</p>
+      {routines.map((routine, index) => (
+        open === index ? (
+          <RoutineForm
+            key={index}
+            routine={routine}
+            onChange={(patch, save) => change(index, patch, save)}
+            onBlur={() => onSave(routines)}
+            onRemove={() => remove(index)}
+            onDone={() => { setOpen(null); onSave(routines) }}
+          />
+        ) : (
+          <div className="routine-card is-closed" key={index}>
+            <div>
+              <strong>{routine.name || 'New routine'}</strong>
+              {routine.enabled === false ? <span className="routine-paused">Paused</span> : null}
+              {startLine(routine) ? <span className="profile-line">{startLine(routine)}</span> : null}
+              {routine.description ? <span className="profile-line">{routine.description}</span> : null}
+            </div>
+            <Button variant="ghost" type="button" onClick={() => setOpen(index)}>Edit</Button>
+          </div>
+        )
+      ))}
+      <Button variant="secondary" type="button" onClick={() => { setRoutines([...routines, { ...NEW_ROUTINE }]); setOpen(routines.length) }}>+ Add routine</Button>
+    </section>
+  )
+}
+
+function RoutineForm({ routine, onChange, onBlur, onRemove, onDone }: {
+  routine: BotRoutine
+  onChange: (patch: Partial<BotRoutine>, save?: boolean) => void
+  onBlur: () => void
+  onRemove: () => void
+  onDone: () => void
+}) {
+  const start: RoutineStart = routine.trigger ?? 'schedule'
+  const words = start === 'schedule' ? cronText(routine.schedule) : ''
+  const zones = routine.timeZone && !TIME_ZONES.includes(routine.timeZone) ? [routine.timeZone, ...TIME_ZONES] : TIME_ZONES
+  return (
+    <div className="routine-card">
+      <label className="routine-field">
+        <span className="field-label">Name</span>
+        <input className="text-input" placeholder="New routine" value={routine.name} onChange={(event) => onChange({ name: event.target.value })} onBlur={onBlur} />
+      </label>
+      <label className="routine-field">
+        <span className="field-label">Description</span>
+        <textarea className="text-input" rows={3} placeholder="What it does and what it delivers (optional)" value={routine.description ?? ''} onChange={(event) => onChange({ description: event.target.value })} onBlur={onBlur} />
+      </label>
+      <p className="field-hint">Keep the instructions in Grok Bot. Only the outline is saved here.</p>
+      <label className="routine-field">
+        <span className="field-label">Starts</span>
+        <select className="text-input" value={start} onChange={(event) => onChange({ trigger: event.target.value as RoutineStart }, true)}>
+          {ROUTINE_STARTS.map((item) => <option key={item} value={item}>{START_LABELS[item]}</option>)}
+        </select>
+      </label>
+      {start === 'schedule' ? (
+        <>
+          <div className="routine-field">
+            <span className="field-label">Schedule</span>
+            <div className="cron-row">
+              <input className="text-input" aria-label="Schedule" placeholder="0 9 * * 1-5" value={routine.schedule} onChange={(event) => onChange({ schedule: event.target.value })} onBlur={onBlur} />
+              <select className="text-input" aria-label="Presets" value="" onChange={(event) => { if (event.target.value) onChange({ schedule: event.target.value }, true) }}>
+                <option value="">Presets</option>
+                {CRON_PRESETS.map((preset) => <option key={preset.cron} value={preset.cron}>{preset.label}</option>)}
+              </select>
+            </div>
+            {words ? <p className="field-hint">{words}</p> : null}
+          </div>
+          <label className="routine-field">
+            <span className="field-label">Time zone</span>
+            <select className="text-input" value={routine.timeZone ?? ''} onChange={(event) => onChange({ timeZone: event.target.value }, true)}>
+              <option value="">Bot timezone</option>
+              {zones.map((zone) => <option key={zone} value={zone}>{zone}</option>)}
+            </select>
+          </label>
+          <p className="field-hint">Empty uses the bot timezone from Grok Bot settings.</p>
+        </>
+      ) : (
+        <>
+          <label className="routine-field">
+            <span className="field-label">Event</span>
+            <input className="text-input" placeholder="A short rule, like Mentions in #support" value={routine.event ?? ''} onChange={(event) => onChange({ event: event.target.value })} onBlur={onBlur} />
+          </label>
+          <p className="field-hint">Leave out tokens and private links.</p>
+        </>
+      )}
+      <label className="routine-active">
+        <input type="checkbox" checked={routine.enabled !== false} onChange={(event) => onChange({ enabled: event.target.checked }, true)} />
+        <span>Active</span>
+      </label>
+      <p className="field-hint">Turn off for routines paused in Grok Bot.</p>
+      <div className="routine-actions">
+        <Button variant="ghost" type="button" onClick={onRemove}>Remove</Button>
+        <Button variant="secondary" type="button" onClick={onDone}>Done</Button>
+      </div>
+    </div>
+  )
+}
+
+/** Every IANA time zone this browser knows, or a short list where it cannot say. */
+const TIME_ZONES: string[] = (() => {
+  try {
+    const list = (Intl as unknown as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.('timeZone')
+    if (list?.length) return list
+  } catch {
+    // Fall through to the short list.
+  }
+  return ['UTC', 'Europe/London', 'Europe/Madrid', 'America/New_York', 'America/Chicago', 'America/Los_Angeles', 'Asia/Tokyo']
+})()
+
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3 4.5h10M6.5 4.5V3h3v1.5M5 4.5l.5 8.5h5l.5-8.5M7 7v4M9 7v4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
 
