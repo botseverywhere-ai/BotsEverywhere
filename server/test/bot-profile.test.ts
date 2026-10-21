@@ -226,16 +226,14 @@ test('Create in Grok Bot sends the Profile: the instructions, or the directory p
   }
 })
 
-test('the Connector adds the skills and routines, asks the new bot for its public template, and reports skills and the public link', () => {
+test('the Connector adds the skills and routines, and reports skills and the public link only for bots that have one', () => {
   const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
   assert.match(prompt, /When "skills" is set, add each one to the bot/)
   assert.match(prompt, /When "routines" is set, create each one for the bot/)
-  assert.match(prompt, /make a Public bot template of itself/)
-  assert.match(prompt, /export-bot-template/)
-  assert.match(prompt, /do not wait for that approval/i, 'the approval never blocks a run')
-  assert.match(prompt, /"publicUrl"/)
+  assert.doesNotMatch(prompt, /template/i, 'the owner makes public links in Grok Bot; the Connector never makes templates')
   assert.match(SNAPSHOT_FORMAT, /"skills": \[/)
   assert.match(SNAPSHOT_FORMAT, /"publicUrl":/)
+  assert.match(SNAPSHOT_FORMAT, /Include publicUrl only for a bot that has a public link in Grok Bot/)
   assert.match(SNAPSHOT_FORMAT, /Never invent skills/)
   assert.match(GROK_BOTS_PROMPT, /"publicUrl":/, 'importing asks for the public link')
   assert.match(GROK_BOTS_PROMPT, /"skills": \[/)
