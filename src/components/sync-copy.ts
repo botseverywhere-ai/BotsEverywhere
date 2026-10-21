@@ -173,6 +173,7 @@ export function outgoing(plan: Pick<SyncPlan, 'rows'> | null, requests: GrokRequ
 
 export { CONNECTOR_STALE_MINUTES } from '../../server/src/connector-timing.ts'
 import { DEFAULT_SYNC_MINUTES, everyLabel, staleMinutes } from '../../server/src/connector-timing.ts'
+import { CONNECTOR_LOG_BOT, REQUESTS_FILE, SNAPSHOT_PATH } from '../../server/src/connector-prompt.ts'
 
 const KIND_LABELS: Record<string, string> = {
   connected: 'Connected',
@@ -279,6 +280,35 @@ export function intervalWarning(project: Pick<ProjectInfo, 'syncMinutes' | 'conn
   if (reported === undefined) return 'Grok Bot has not said how often it runs the Connector yet. Paste the prompt from Connect bots into the Connector once.'
   if (reported !== saved) return `Grok Bot still runs the Connector every ${everyLabel(reported)}, not every ${everyLabel(saved)}. Copy the prompt on Connect bots and paste it into the Connector.`
   return ''
+}
+
+/** One file the Connector works with, for Files the Connector uses on Connect bots. */
+export interface ConnectorFileRow {
+  path: string
+  writer: string
+  holds: string
+}
+
+export const CONNECTOR_FILES_NOTE = 'The Connector is the bot in Grok Bot, and the prompt above is its instructions. No file on this computer holds it.'
+
+/**
+ * The files the Connector reads and writes, by their real path on this computer: the orgs folder and this
+ * organization's folder, with the separator those paths already use. Relative paths until the writer answers.
+ * The project file names match CONNECTOR_FILE, PROJECT_FILE, and CONNECTOR_LOG_FILE, which live beside Node code.
+ */
+export function connectorFiles(orgsFolder: string, orgFolder: string, id: string): ConnectorFileRow[] {
+  const sep = orgsFolder.includes('\\') ? '\\' : '/'
+  const orgs = orgsFolder.trim() || 'orgs'
+  const org = orgFolder.trim() || `${orgs}${sep}<org>`
+  const at = (base: string, path: string) => `${base}${sep}${path.split('/').join(sep)}`
+  return [
+    { path: at(orgs, 'connector.json'), writer: 'The Connector, last on every run', holds: 'When it last ran, how often it runs, and bots in Grok Bot that belong to no organization. The status above comes from this file.' },
+    { path: at(org, SNAPSHOT_PATH), writer: 'The Connector, every run', holds: 'The bots and routines it found in Grok Bot for this organization.' },
+    { path: `${at(org, 'log')}${sep}`, writer: 'The Connector and your bots', holds: `The run log, one file per day. The Connector's lines say ${CONNECTOR_LOG_BOT}.` },
+    { path: at(orgs, 'project.json'), writer: 'This app', holds: id ? `This copy's id, ${id}, which is in the Connector's name, and how often the Connector runs.` : "This copy's id, which is in the Connector's name, and how often the Connector runs." },
+    { path: at(org, REQUESTS_FILE), writer: 'This app', holds: 'Bots you asked it to create. The Connector reads it.' },
+    { path: at(orgs, 'connector-log.json'), writer: 'This app', holds: 'What the app already logged about each Connector run.' },
+  ]
 }
 
 const DETAIL_TITLES: Record<ConnectorState, string> = {

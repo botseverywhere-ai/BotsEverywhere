@@ -6,7 +6,7 @@ import { CopyPromptButton } from '../directory/prompt-actions'
 import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
-import { connectorState, intervalWarning, type ConnectorState } from './sync-copy'
+import { CONNECTOR_FILES_NOTE, connectorFiles, connectorState, intervalWarning, type ConnectorState } from './sync-copy'
 
 const BADGE: Record<ConnectorState, string> = {
   checking: 'Checking',
@@ -167,6 +167,31 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
         </summary>
         <div className="link-panel-body">
           <pre className="dir-prompt">{prompt}</pre>
+        </div>
+      </details>
+      <details className="link-panel">
+        <summary>
+          <span className="connect-prompt-summary">Files the Connector uses</span>
+          <span className="grok-chevron" aria-hidden="true" />
+        </summary>
+        <div className="link-panel-body">
+          <p className="overview-note">{CONNECTOR_FILES_NOTE}</p>
+          <div className="backup-table-wrap">
+            <table className="backup-table connector-files">
+              <thead>
+                <tr><th scope="col">File</th><th scope="col">Who writes it</th><th scope="col">What it holds</th></tr>
+              </thead>
+              <tbody>
+                {connectorFiles(project?.orgsFolder ?? '', status?.folder ?? '', project?.id ?? '').map((row) => (
+                  <tr key={row.path}>
+                    <th scope="row"><code>{row.path}</code></th>
+                    <td>{row.writer}</td>
+                    <td>{row.holds}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </details>
       <p className="overview-note">
