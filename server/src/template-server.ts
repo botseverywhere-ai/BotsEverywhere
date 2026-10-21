@@ -19,6 +19,8 @@ import {
   isSeatGrokLink,
   quote,
   replaceSeatCardBody,
+  cleanRoutines,
+  cleanSkills,
   validateActivity,
   activeBotCardErrors,
   cardUnchanged,
@@ -1409,6 +1411,50 @@ function retargetSeat(root: string, slug: string, reportsTo: string): { ok: true
   return { ok: true }
 }
 
+/** What Profile saves. A field left out stays as it was; an empty value clears it. */
+export interface SeatProfileInput {
+  instructions?: unknown
+  skills?: unknown
+  routines?: unknown
+}
+
+/**
+ * Saves a bot's Profile: the instructions Grok Bot gets, its skills, and its routines. The seat card and the manager
+ * are never touched. An imported bot's skills and routines come from Grok Bot, so they are refused here.
+ */
+export function updateSeatProfile(root: string, orgId: string, slug: string, input: SeatProfileInput): { ok: true; file: string } | { ok: false; errors: string[] } {
+  if (unsafePath(slug) || !SEAT_SLUG.test(slug)) return { ok: false, errors: ['Seat slug must be a lowercase slug.'] }
+  const path = seatFile(root, slug)
+  if (!path || !existsSync(path)) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
+  const parsed = parseSeatMarkdown(slug, readText(path))
+  if (!parsed.ok) return parsed
+  if (parsed.seat.kind !== 'bot') return { ok: false, errors: ['Only a bot has a Profile to save.'] }
+  if (parsed.seat.seatOrigin === 'existing' && (input.skills !== undefined || input.routines !== undefined)) {
+    return { ok: false, errors: [`${parsed.seat.title} was imported from Grok Bot, so its skills and routines come from Grok Bot.`] }
+  }
+  const next: SeatDocument = { ...parsed.seat, source: '' }
+  if (input.instructions !== undefined) {
+    const text = typeof input.instructions === 'string' ? input.instructions.trim() : ''
+    if (text) next.instructions = text
+    else delete next.instructions
+  }
+  if (input.skills !== undefined) {
+    const skills = cleanSkills(input.skills)
+    if (skills.length) next.skills = skills
+    else delete next.skills
+  }
+  if (input.routines !== undefined) {
+    const routines = cleanRoutines(input.routines)
+    if (routines.length) next.routines = routines
+    else delete next.routines
+  }
+  const written = serializeSeat(next)
+  const check = parseSeatMarkdown(slug, written)
+  if (!check.ok) return check
+  writeFileSync(path, written)
+  return { ok: true, file: `orgs/${orgId}/seats/${slug}.md` }
+}
+
 export function updateSeatCard(
   root: string,
   orgId: string,
@@ -2059,6 +2105,17 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const moved = setSeatManager(root, slug, seatSlug, parsed.reportsTo || '')
       if (!moved.ok) return send(res, 422, { errors: moved.errors })
       send(res, 200, { ok: true, file: moved.file })
+      return
+    }
+    const profileSeatMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/seats\/([a-z0-9]+(?:-[a-z0-9]+)*)\/profile$/.exec(url.pathname)
+    if (profileSeatMatch && req.method === 'PUT') {
+      const root = orgRoot(orgsDir, profileSeatMatch[1]!)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      const updated = updateSeatProfile(root, profileSeatMatch[1]!, profileSeatMatch[2]!, JSON.parse(body) as SeatProfileInput)
+      if (!updated.ok) return send(res, 422, { errors: updated.errors })
+      send(res, 200, { ok: true, file: updated.file })
       return
     }
     const seatMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/seats\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(url.pathname)

@@ -839,9 +839,14 @@ function readRoutineField(value: string | undefined): BotRoutine[] {
   } catch {
     return []
   }
-  if (!Array.isArray(parsed)) return []
+  return cleanRoutines(parsed)
+}
+
+/** Routines from the seat file or from Profile. A routine without a name, or a value that is not a list, is left out. */
+export function cleanRoutines(value: unknown): BotRoutine[] {
+  if (!Array.isArray(value)) return []
   const routines: BotRoutine[] = []
-  for (const item of parsed) {
+  for (const item of value) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const record = item as Record<string, unknown>
     const name = typeof record.name === 'string' ? record.name.trim() : ''
