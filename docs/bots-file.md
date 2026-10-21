@@ -34,8 +34,12 @@ Use exactly this JSON format and nothing else:
       "runs30d": 0,
       "tasksDone30d": 0,
       "routines": [
-        { "name": "routine name", "schedule": "schedule or trigger", "lastRun": "ISO datetime" }
+        { "name": "routine name", "schedule": "schedule or trigger", "description": "one line on what it does", "lastRun": "ISO datetime" }
       ],
+      "skills": [
+        { "name": "skill name", "description": "one line on what it does" }
+      ],
+      "publicUrl": "the bot's public share link (https://...), only when the bot is public, or leave it out",
       "status": "active"
     }
   ]
@@ -48,6 +52,8 @@ Rules:
 - owns, may, and needsApproval are lists of short strings.
 - doneWhen is one string.
 - For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines (name + schedule or trigger + last run), and status (active, paused, or retired).
+- skills are the reusable workflows listed on the bot: a name and, when you can see it, one line on what it does. Leave the list out if you see none.
+- publicUrl is the bot's public share link. Include it only when the bot is public and you can see the link.
 - If you do not know a value, leave the field out. Never estimate or invent numbers.
 - Keep each item short, one line, in plain words.
 - Base everything on each bot's actual description. Don't invent bots or duties.
@@ -96,7 +102,9 @@ One JSON object. The only required key is `bots`, a list.
 | `lastActive` | no | ISO datetime of the bot's last run. This is not the time the file was imported. |
 | `runs30d` | no | Whole number. A numeric string is coerced. Anything else is left out and counted as a note. |
 | `tasksDone30d` | no | Same as `runs30d`. |
-| `routines` | no | A list of `{ name, schedule or trigger, lastRun }`. A bad entry is skipped and counted as a note. |
+| `routines` | no | A list of `{ name, schedule or trigger, description, lastRun }`. `description` is one line on what it does, never the instructions. A bad entry is skipped and counted as a note. |
+| `skills` | no | A list of `{ name, description }`: the reusable workflows Grok Bot lists on the bot. A skill without a name is left out. Shown in the seat's Profile tab. |
+| `publicUrl` | no | The bot's public share link, only when the bot is public. An https link; anything else is left out with a note. Shown in Profile as **Get this bot**, never edited in the app. |
 | `status` | no | `active`, `paused`, or `retired`. Stored as `botStatus` so it does not replace the seat's active or retired status. |
 
 `reportsTo` may name another bot in the same file. The writer makes two passes: it creates every seat file first, then it sets `reportsTo` for bots that report to someone who was just imported. A bot listed first can report to a bot listed later.
