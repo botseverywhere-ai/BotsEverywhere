@@ -78,11 +78,19 @@ export type BotRunStatus = 'active' | 'paused' | 'retired'
 export type GrokSyncState = 'new' | 'synced' | 'missing'
 const GROK_SYNC_STATES = new Set<GrokSyncState>(['new', 'synced', 'missing'])
 
-/** One routine reported by Grok Bot. `schedule` is the schedule or the trigger. */
+/** One routine reported by Grok Bot or typed in Profile. `schedule` is the schedule or the trigger. */
 export interface BotRoutine {
   name: string
   schedule: string
   lastRun?: string
+  /** One line on what it does. Never the instructions. */
+  description?: string
+}
+
+/** A reusable workflow the bot runs. */
+export interface BotSkill {
+  name: string
+  description?: string
 }
 
 export interface SeatDocument {
@@ -117,6 +125,12 @@ export interface SeatDocument {
   /** Tasks done in the last 30 days. Absent when Grok Bot did not report it. */
   tasksDone30d?: number
   routines?: BotRoutine[]
+  /** Reusable workflows: from Grok Bot for an imported bot, typed in Profile for one added by hand. */
+  skills?: BotSkill[]
+  /** The prompt Grok Bot gets, written in Profile. A directory bot starts from its directory prompt. */
+  instructions?: string
+  /** The bot's public share link from Grok Bot, when it is public. Shown, never edited in the app. */
+  publicUrl?: string
   /** Run status from the bots file. Separate from seat status, which is only active or retired. */
   botStatus?: BotRunStatus
   /** Set by Sync with Grok Bot. new: created by a sync. synced: seen in the last confirmed snapshot. missing: not in it. */
@@ -295,6 +309,9 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
       runs30d: seat.runs30d,
       tasksDone30d: seat.tasksDone30d,
       routines: seat.routines,
+      skills: seat.skills,
+      instructions: seat.instructions,
+      publicUrl: seat.publicUrl,
       botStatus: seat.botStatus,
       grokSync: seat.grokSync,
       grokSyncedAt: seat.grokSyncedAt,
@@ -354,6 +371,9 @@ export function serializeExistingSeat(seat: {
   runs30d?: number
   tasksDone30d?: number
   routines?: BotRoutine[]
+  skills?: BotSkill[]
+  instructions?: string
+  publicUrl?: string
   botStatus?: BotRunStatus
   grokSync?: GrokSyncState
   grokSyncedAt?: string
@@ -741,6 +761,9 @@ function metricLines(seat: {
   runs30d?: number
   tasksDone30d?: number
   routines?: BotRoutine[]
+  skills?: BotSkill[]
+  instructions?: string
+  publicUrl?: string
   botStatus?: BotRunStatus
   grokSync?: GrokSyncState
   grokSyncedAt?: string
@@ -754,6 +777,9 @@ function metricLines(seat: {
   if (seat.tasksDone30d !== undefined) lines.push(`tasksDone30d: ${seat.tasksDone30d}`)
   if (seat.botStatus) lines.push(`botStatus: ${seat.botStatus}`)
   if (seat.routines?.length) lines.push(`routines: ${quote(JSON.stringify(seat.routines))}`)
+  if (seat.skills?.length) lines.push(`skills: ${quote(JSON.stringify(seat.skills))}`)
+  if (seat.instructions?.trim()) lines.push(`instructions: ${quote(seat.instructions.trim())}`)
+  if (seat.publicUrl) lines.push(`publicUrl: ${quote(seat.publicUrl)}`)
   if (seat.grokSync) lines.push(`grokSync: ${seat.grokSync}`)
   if (seat.grokSyncedAt) lines.push(`grokSyncedAt: ${quote(seat.grokSyncedAt)}`)
   if (seat.grokMissingSince) lines.push(`grokMissingSince: ${quote(seat.grokMissingSince)}`)
@@ -774,13 +800,15 @@ function readSyncFields(data: Record<string, string>): Pick<SeatDocument, 'grokS
   return fields
 }
 
-function readBotMetrics(data: Record<string, string>): Pick<SeatDocument, 'createdAt' | 'lastActive' | 'runs30d' | 'tasksDone30d' | 'routines' | 'botStatus'> {
+type BotFields = Pick<SeatDocument, 'createdAt' | 'lastActive' | 'runs30d' | 'tasksDone30d' | 'routines' | 'botStatus' | 'skills' | 'instructions' | 'publicUrl'>
+
+function readBotMetrics(data: Record<string, string>): BotFields {
   const createdAt = data.createdAt?.trim() || ''
   const lastActive = data.lastActive?.trim() || ''
   const runs30d = readWholeNumber(data.runs30d)
   const tasksDone30d = readWholeNumber(data.tasksDone30d)
   const status = data.botStatus?.trim() || ''
-  const metrics: Pick<SeatDocument, 'createdAt' | 'lastActive' | 'runs30d' | 'tasksDone30d' | 'routines' | 'botStatus'> = {}
+  const metrics: BotFields = {}
   if (createdAt && !Number.isNaN(Date.parse(createdAt))) metrics.createdAt = createdAt
   if (lastActive && !Number.isNaN(Date.parse(lastActive))) metrics.lastActive = lastActive
   if (runs30d !== undefined) metrics.runs30d = runs30d
@@ -788,6 +816,12 @@ function readBotMetrics(data: Record<string, string>): Pick<SeatDocument, 'creat
   if (BOT_STATUSES.has(status as BotRunStatus)) metrics.botStatus = status as BotRunStatus
   const routines = readRoutineField(data.routines)
   if (routines.length) metrics.routines = routines
+  const skills = readSkillField(data.skills)
+  if (skills.length) metrics.skills = skills
+  const instructions = (data.instructions ?? '').trim()
+  if (instructions) metrics.instructions = instructions
+  const link = publicLink(data.publicUrl)
+  if (link) metrics.publicUrl = link
   return metrics
 }
 
@@ -814,11 +848,45 @@ function readRoutineField(value: string | undefined): BotRoutine[] {
     if (!name) continue
     const schedule = typeof record.schedule === 'string' ? record.schedule.trim() : ''
     const lastRun = typeof record.lastRun === 'string' ? record.lastRun.trim() : ''
+    const description = typeof record.description === 'string' ? record.description.trim() : ''
     const routine: BotRoutine = { name, schedule }
     if (lastRun) routine.lastRun = lastRun
+    if (description) routine.description = description
     routines.push(routine)
   }
   return routines
+}
+
+/** Skills as the seat file keeps them: a JSON list. A skill without a name, or a value that is not a list, is left out. */
+function readSkillField(value: string | undefined): BotSkill[] {
+  if (!value?.trim()) return []
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(value)
+  } catch {
+    return []
+  }
+  return cleanSkills(parsed)
+}
+
+export function cleanSkills(value: unknown): BotSkill[] {
+  if (!Array.isArray(value)) return []
+  const skills: BotSkill[] = []
+  for (const item of value) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+    const record = item as Record<string, unknown>
+    const name = typeof record.name === 'string' ? record.name.trim() : ''
+    if (!name) continue
+    const description = typeof record.description === 'string' ? record.description.trim() : ''
+    skills.push(description ? { name, description } : { name })
+  }
+  return skills
+}
+
+/** An https link, or '' for anything else. */
+export function publicLink(value: unknown): string {
+  const link = typeof value === 'string' ? value.trim() : ''
+  return link.startsWith('https://') && isHttpUrl(link) ? link : ''
 }
 
 export function quote(value: string): string {
