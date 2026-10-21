@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { parseSeatMarkdown, serializeExistingSeat, serializeSeat } from '../src/org-files.ts'
-import { createExistingBot, createHiredSeat, createOrgFiles, importBotsFile, readRequests, requestGrokBot, startTemplateServer, updateSeatProfile } from '../src/template-server.ts'
+import { clearFulfilledRequests, clearHandledUpdates, createExistingBot, createHiredSeat, createOrgFiles, importBotsFile, readOrgDir, readRequests, requestGrokBot, requestGrokUpdate, startTemplateServer, updateSeatProfile } from '../src/template-server.ts'
 import { SNAPSHOT_FORMAT, connectorPrompt } from '../src/connector-prompt.ts'
 import { GROK_BOTS_PROMPT } from '../../src/content/grok-bots-prompt.ts'
 import { parseBotsFile } from '../src/bots-file.ts'
@@ -304,4 +304,100 @@ test('the Connector and the import ask for each routine\'s start, event, time zo
     assert.match(format, /"enabled": true/)
   }
   assert.match(connectorPrompt({ id: 'k3f9', orgsFolder: '/o' }), /create each one for the bot, with its name, its start \(a schedule with its time zone, or an event\), its description, and paused when "enabled" is false/)
+})
+
+function updateProject() {
+  const dir = mkdtempSync(join(tmpdir(), 'be-update-'))
+  const orgs = join(dir, 'orgs')
+  mkdirSync(orgs)
+  const made = createOrgFiles(orgs, 'Desk', 'You')
+  assert.ok(made.ok)
+  const root = join(orgs, made.slug)
+  const bot = createExistingBot(root, made.slug, { name: 'Brand Bot', grokBotUrl: LINK, reportsTo: 'you', allowEmptyCard: true, grokSync: 'synced', grokSyncedAt: '2026-10-21T12:00:00.000Z' })
+  assert.ok(bot.ok)
+  assert.ok(updateSeatProfile(root, made.slug, bot.slug, { skills: SKILLS, routines: FULL_ROUTINES }).ok)
+  return { dir, orgs, root, org: made.slug, slug: bot.slug, done: () => rmSync(dir, { recursive: true, force: true }) }
+}
+
+test('Update bot asks the Connector to send a bot\'s skills and routines to Grok Bot, and says so in the logs', () => {
+  const p = updateProject()
+  try {
+    const asked = requestGrokUpdate(p.root, p.org, p.slug)
+    assert.ok(asked.ok, asked.ok ? '' : asked.errors.join(' '))
+    assert.equal(asked.request.kind, 'update')
+    assert.equal(asked.request.grokBotUrl, LINK, 'the Connector finds the bot by its link')
+    assert.deepEqual(asked.request.skills, SKILLS)
+    assert.deepEqual(asked.request.routines, FULL_ROUTINES)
+    const stored = readRequests(p.root).requests
+    assert.equal(stored.length, 1)
+    assert.equal(stored[0]!.kind, 'update')
+    const read = readOrgDir(p.root, p.org)
+    assert.ok(read.ok)
+    const event = read.bundle.activity.find((item) => item.summary === 'Asked the Connector to update Brand Bot in Grok Bot')
+    assert.ok(event, 'a To Grok Bot line in the logs')
+    assert.equal(event.grok, 'out')
+    const again = requestGrokUpdate(p.root, p.org, p.slug)
+    assert.ok(again.ok)
+    assert.equal(readRequests(p.root).requests.length, 1, 'a second click replaces the waiting update')
+    assert.ok(createHiredSeat(p.root, p.org, { name: 'New Bot', kind: 'bot', slug: 'new-bot', directorySlug: '', reportsTo: 'you', addToGrokBotUrl: '', owns: ['a'], may: ['b'], mustAskBefore: ['c'], doneWhen: ['d'] }).ok)
+    const notInGrok = requestGrokUpdate(p.root, p.org, 'new-bot')
+    assert.equal(notInGrok.ok, false, 'a bot not in Grok Bot yet is added, not updated')
+  } finally {
+    p.done()
+  }
+})
+
+test('an update waits until the Connector reports it carried it out; a Connector run alone never clears it', () => {
+  const p = updateProject()
+  try {
+    const asked = requestGrokUpdate(p.root, p.org, p.slug)
+    assert.ok(asked.ok)
+    mkdirSync(join(p.root, 'grok'), { recursive: true })
+    const snapshot = (updated: unknown) => JSON.stringify({ syncedAt: '2026-10-21T18:00:00.000Z', bots: [{ name: 'Brand Bot', grokBotUrl: LINK }], processes: [], ...(updated === undefined ? {} : { updated }) })
+    writeFileSync(join(p.root, 'grok', 'snapshot.json'), snapshot(undefined))
+    const plain = parseSnapshot(snapshot(undefined), '2026-10-21T18:00:00.000Z')
+    assert.ok(plain.ok)
+    clearFulfilledRequests(p.root, p.org, planSync(plain.snapshot, (readOrgDir(p.root, p.org) as { ok: true; bundle: { seats: [] } }).bundle.seats, []))
+    clearHandledUpdates(p.root, p.org)
+    assert.equal(readRequests(p.root).requests.length, 1, 'matched in the snapshot, but not reported as done: still waiting')
+    writeFileSync(join(p.root, 'grok', 'snapshot.json'), snapshot([{ seat: p.slug, requestedAt: '2026-01-01T00:00:00.000Z' }]))
+    clearHandledUpdates(p.root, p.org)
+    assert.equal(readRequests(p.root).requests.length, 1, 'an older update reported done does not clear a newer one')
+    writeFileSync(join(p.root, 'grok', 'snapshot.json'), snapshot([{ seat: p.slug, requestedAt: asked.request.requestedAt }]))
+    clearHandledUpdates(p.root, p.org)
+    assert.equal(readRequests(p.root).requests.length, 0)
+    const read = readOrgDir(p.root, p.org)
+    assert.ok(read.ok)
+    assert.ok(read.bundle.activity.some((item) => item.summary === 'Updated in Grok Bot: Brand Bot' && item.grok === 'in'))
+    const parsed = parseSnapshot(snapshot([{ seat: p.slug, requestedAt: asked.request.requestedAt }, 'junk', { seat: 'Bad Slug!' }]), '2026-10-21T18:00:00.000Z')
+    assert.ok(parsed.ok)
+    assert.deepEqual(parsed.snapshot.updated, [{ seat: p.slug, requestedAt: asked.request.requestedAt }], 'bad entries are left out')
+  } finally {
+    p.done()
+  }
+})
+
+test('POST /api/orgs/<org>/grok/updates asks for an update, and refuses another website', async () => {
+  const p = updateProject()
+  const started = await startTemplateServer({ port: 0, orgsDir: p.orgs, host: '127.0.0.1' })
+  try {
+    const url = `http://127.0.0.1:${started.port}/api/orgs/${p.org}/grok/updates`
+    const foreign = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://example.com' }, body: JSON.stringify({ seat: p.slug }) })
+    assert.equal(foreign.status, 403)
+    const ok = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://127.0.0.1:5199' }, body: JSON.stringify({ seat: p.slug }) })
+    assert.equal(ok.status, 200, await ok.text())
+    assert.equal(readRequests(p.root).requests[0]?.kind, 'update')
+  } finally {
+    await started.close()
+    p.done()
+  }
+})
+
+test('the Connector carries out an update on the bot it already runs and reports it as updated', () => {
+  const prompt = connectorPrompt({ id: 'k3f9', orgsFolder: '/o' })
+  assert.match(prompt, /An entry with "kind": "update" is a bot you already run/)
+  assert.match(prompt, /save each skill in "skills" to the Grok Bot skill library/)
+  assert.match(prompt, /message that bot and ask it to create each routine in "routines"/)
+  assert.match(prompt, /Never create a second bot for an update/)
+  assert.match(SNAPSHOT_FORMAT, /"updated": \[/)
 })

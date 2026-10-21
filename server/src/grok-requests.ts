@@ -18,6 +18,10 @@ export interface GrokRequest {
   skills?: BotSkill[]
   /** Routines from Profile, for the Connector to create for the new bot. */
   routines?: BotRoutine[]
+  /** update: the bot is already in Grok Bot; send it these skills and routines. Absent: create the bot. */
+  kind?: 'update'
+  /** For an update: the bot's Grok Bot link, so the Connector finds the right bot. */
+  grokBotUrl?: string
   requestedAt: string
 }
 
@@ -42,7 +46,7 @@ export function parseRequests(source: string): { ok: true; requests: GrokRequest
     if (!SEAT_SLUG.test(seat)) return []
     const skills = cleanSkills(row.skills)
     const routines = cleanRoutines(row.routines)
-    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), requestedAt: text(row.requestedAt) }]
+    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), ...(row.kind === 'update' ? { kind: 'update' as const } : {}), ...(text(row.grokBotUrl) ? { grokBotUrl: text(row.grokBotUrl) } : {}), requestedAt: text(row.requestedAt) }]
   })
   return { ok: true, requests }
 }
@@ -62,6 +66,12 @@ export function dropRequests(requests: GrokRequest[], seats: Set<string>): GrokR
 /** Seats the snapshot matched, so Grok Bot has them. */
 export function fulfilledSeats(plan: Pick<SyncPlan, 'rows'>): Set<string> {
   return new Set(plan.rows.flatMap((row) => (row.kind === 'updated' || row.kind === 'unchanged' ? [row.slug] : [])))
+}
+
+/** A bot already in Grok Bot can be sent its skills and routines: an active bot seat a sync saw or that carries a link. */
+export function canUpdate(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokSync' | 'grokBotUrl'>): boolean {
+  if (seat.kind !== 'bot' || seat.status === 'retired') return false
+  return seat.grokSync === 'synced' || seat.grokSync === 'new' || Boolean(seat.grokBotUrl?.trim())
 }
 
 /** Only a bot seat with no Grok Bot link can be created. A link means the bot exists, even when a snapshot lacked it, so asking again would make a duplicate. */

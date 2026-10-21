@@ -46,7 +46,7 @@ import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-pr
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
-import { REQUESTS_PATH, addRequest, canDelete, canRequest, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
+import { REQUESTS_PATH, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
 export const DEFAULT_ORG_SLUG = 'your-company'
@@ -897,14 +897,91 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
  * After a confirmed sync, drops requests for bots the snapshot found and for seats that are gone.
  * Each bot the Connector actually created gets one "Created in Grok Bot" line in Logs.
  */
+/**
+ * Update bot: asks the Connector to send a bot already in Grok Bot its skills and routines. One waiting update per
+ * bot; asking again replaces it with the current lists. Logged as going to Grok Bot.
+ */
+export function requestGrokUpdate(root: string, orgId: string, seatSlug: string): { ok: true; request: GrokRequest } | { ok: false; errors: string[] } {
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  const seat = read.bundle.seats.find((item) => item.slug === seatSlug)
+  if (!seat) return { ok: false, errors: [`seats/${seatSlug}.md is not in this org.`] }
+  if (!canUpdate(seat)) return { ok: false, errors: [`${seat.title} is not in Grok Bot yet. Add it to Grok Bot first.`] }
+  const path = seatFile(root, seat.slug)
+  if (!path) return { ok: false, errors: ['That seat slug is not valid.'] }
+  const request: GrokRequest = {
+    seat: seat.slug,
+    name: seat.title,
+    seatFile: path,
+    prompt: '',
+    ...(seat.skills?.length ? { skills: seat.skills } : {}),
+    ...(seat.routines?.length ? { routines: seat.routines } : {}),
+    kind: 'update',
+    ...(seat.grokBotUrl?.trim() ? { grokBotUrl: seat.grokBotUrl.trim() } : {}),
+    requestedAt: new Date().toISOString(),
+  }
+  writeRequests(root, addRequest(readRequests(root).requests, request))
+  const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
+  appendActivity(root, {
+    id: `grok-update-${seat.slug}-${request.requestedAt}`,
+    orgId,
+    type: 'edit',
+    actorSeatId: owner?.slug || seat.slug,
+    actorType: owner ? 'human' : 'bot',
+    timestamp: request.requestedAt,
+    summary: `Asked the Connector to update ${seat.title} in Grok Bot`,
+    subjectSeatId: seat.slug,
+    grok: 'out',
+    kind: 'request',
+    stats: [`Skills=${seat.skills?.length ?? 0}`, `Routines=${seat.routines?.length ?? 0}`].join('|'),
+  })
+  return { ok: true, request }
+}
+
+/**
+ * Drops each waiting update the Connector's snapshot reports as carried out, matched by seat and requestedAt, so an
+ * older report never clears a newer update. Only the Connector's own snapshot counts. Logs one line per update.
+ */
+export function clearHandledUpdates(root: string, orgId: string) {
+  const snap = readSnapshot(root)
+  if (!snap.ok || !snap.snapshot.updated?.length) return
+  const current = readRequests(root)
+  if (current.error) return
+  const handled = new Set(snap.snapshot.updated.map((item) => `${item.seat}|${item.requestedAt}`))
+  const done = current.requests.filter((item) => item.kind === 'update' && handled.has(`${item.seat}|${item.requestedAt}`))
+  if (!done.length) return
+  writeRequests(root, current.requests.filter((item) => !done.includes(item)))
+  const read = readOrgDir(root, orgId)
+  const owner = read.ok ? read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired') : undefined
+  const at = new Date().toISOString()
+  for (const item of done) {
+    const title = (read.ok ? read.bundle.seats.find((entry) => entry.slug === item.seat)?.title : '') || item.name
+    appendActivity(root, {
+      id: `grok-updated-${item.seat}-${at}`,
+      orgId,
+      type: 'edit',
+      actorSeatId: owner?.slug || item.seat,
+      actorType: owner ? 'human' : 'bot',
+      timestamp: at,
+      summary: `Updated in Grok Bot: ${title}`,
+      subjectSeatId: item.seat,
+      grok: 'in',
+      kind: 'updated',
+      stats: [`Skills=${item.skills?.length ?? 0}`, `Routines=${item.routines?.length ?? 0}`, `Asked=${localStamp(item.requestedAt)}`].join('|'),
+    })
+  }
+}
+
 export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPlan) {
   const current = readRequests(root)
   if (current.error || current.requests.length === 0) return
   const read = readOrgDir(root, orgId)
   const found = fulfilledSeats(plan)
-  const done = new Set(found)
+  // An update is for a bot Grok Bot already has: only the Connector's report that it carried it out clears it.
+  const creates = current.requests.filter((item) => item.kind !== 'update')
+  const done = new Set(creates.filter((item) => found.has(item.seat)).map((item) => item.seat))
   if (read.ok) {
-    for (const item of current.requests) {
+    for (const item of creates) {
       const seat = read.bundle.seats.find((entry) => entry.slug === item.seat)
       if (!seat || !canRequest(seat)) done.add(item.seat)
     }
@@ -914,7 +991,7 @@ export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPl
   writeRequests(root, next)
   const owner = read.ok ? read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired') : undefined
   const at = new Date().toISOString()
-  for (const item of current.requests) {
+  for (const item of creates) {
     if (!found.has(item.seat)) continue
     const title = (read.ok ? read.bundle.seats.find((entry) => entry.slug === item.seat)?.title : '') || item.name
     appendActivity(root, {
@@ -2053,7 +2130,10 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const applied = applySync(root, slug, plan)
       if (!applied.ok) return send(res, 422, { errors: applied.errors })
       // Only the Connector's own snapshot proves a bot exists; a pasted file does not clear requests.
-      if (request.source !== 'json') clearFulfilledRequests(root, slug, plan)
+      if (request.source !== 'json') {
+        clearFulfilledRequests(root, slug, plan)
+        clearHandledUpdates(root, slug)
+      }
       send(res, 200, applied)
       return
     }
@@ -2102,7 +2182,29 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       send(res, 200, { ok: true, request: made.request })
       return
     }
-    const managerMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/seats\/([a-z0-9]+(?:-[a-z0-9]+)*)\/manager$/.exec(url.pathname)
+    const updatesMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/grok\/updates$/.exec(url.pathname)
+    if (updatesMatch && req.method === 'POST') {
+      const slug = updatesMatch[1]!
+      // Like a create request, this changes a bot in Grok Bot, so only this computer may ask.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may update a bot.' })
+      if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { errors: ['Send JSON.'] })
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      let seat = ''
+      try {
+        seat = String((JSON.parse(body) as { seat?: unknown }).seat ?? '')
+      } catch {
+        return send(res, 422, { errors: ['That body is not JSON.'] })
+      }
+      const asked = requestGrokUpdate(root, slug, seat)
+      if (!asked.ok) return send(res, 422, { errors: asked.errors })
+      send(res, 200, { ok: true, request: asked.request })
+      return
+    }
+    const managerMatch =/^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/seats\/([a-z0-9]+(?:-[a-z0-9]+)*)\/manager$/.exec(url.pathname)
     if (managerMatch && req.method === 'PUT') {
       const slug = managerMatch[1]!
       const seatSlug = managerMatch[2]!

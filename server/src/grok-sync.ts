@@ -10,6 +10,8 @@ export interface Snapshot {
   syncedAt: string
   bots: BotsFileRow[]
   processes: ProcessImportRow[]
+  /** Update requests the Connector carried out on this run: their seat and requestedAt, copied from the request. */
+  updated?: { seat: string; requestedAt: string }[]
 }
 
 /** Fields a confirmed sync writes onto one seat file. Structure is never in here. */
@@ -135,7 +137,7 @@ export function parseSnapshot(text: string, fallbackSyncedAt: string): { ok: tru
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return { ok: false, error: 'The snapshot must be a JSON object with a bots list.' }
   }
-  const record = parsed as { syncedAt?: unknown; bots?: unknown; processes?: unknown }
+  const record = parsed as { syncedAt?: unknown; bots?: unknown; processes?: unknown; updated?: unknown }
   if (!Array.isArray(record.bots)) return { ok: false, error: 'The snapshot needs a bots list.' }
   // The project Connector does not list itself, so an org with no bots in Grok Bot yet is an empty list, not a failed run.
   let bots: BotsFileRow[] = []
@@ -153,7 +155,20 @@ export function parseSnapshot(text: string, fallbackSyncedAt: string): { ok: tru
   const stamp = typeof record.syncedAt === 'string' && !Number.isNaN(Date.parse(record.syncedAt))
     ? new Date(record.syncedAt).toISOString()
     : fallbackSyncedAt
-  return { ok: true, snapshot: { syncedAt: stamp, bots, processes } }
+  return { ok: true, snapshot: { syncedAt: stamp, bots, processes, ...readUpdated(record.updated) } }
+}
+
+/** Update requests the Connector says it carried out. A bad entry is left out. */
+function readUpdated(value: unknown): Pick<Snapshot, 'updated'> {
+  if (!Array.isArray(value)) return {}
+  const updated = value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return []
+    const row = item as { seat?: unknown; requestedAt?: unknown }
+    const seat = typeof row.seat === 'string' ? row.seat.trim() : ''
+    const requestedAt = typeof row.requestedAt === 'string' ? row.requestedAt.trim() : ''
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(seat) && requestedAt ? [{ seat, requestedAt }] : []
+  })
+  return updated.length ? { updated } : {}
 }
 
 /** The merge, as rows. The app owns structure; Grok Bot owns facts. Nothing here deletes. */
