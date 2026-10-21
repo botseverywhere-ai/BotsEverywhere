@@ -247,6 +247,8 @@ export function Workspace({
     id: seat.id,
     stats: { usageCount30d: metricsById.get(seat.id)?.usage ?? 0 },
   })))
+  // Only a bot being created is connecting; an update goes to a bot Grok Bot already has.
+  const createRequests = (sync?.requests ?? []).filter((item) => item.kind !== 'update')
 
   const applyLoaded = useCallback((loaded: OrgBundle): OrgBundle => {
     const canonical = bundleFromState(bundle.id, loaded.org, loaded.seats, loaded.work, loaded.activity ?? [])
@@ -589,6 +591,32 @@ export function Workspace({
       setSeatTab({ id: body.slug, tab: 'card' })
     }
     return { ok: true }
+  }
+
+  async function updateInGrok(slug: string, name: string) {
+    setBotNotice(null)
+    try {
+      const response = await fetch(`/api/orgs/${bundle.id}/grok/updates`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ seat: slug }),
+      })
+      const text = await response.text()
+      if (response.status === 404 && !text.includes('Org not found')) {
+        tell(saveNotice(false, 'The file writer needs a restart. Stop npm run dev and start it again.'))
+        return
+      }
+      const body = (text.trimStart().startsWith('{') ? JSON.parse(text) : {}) as { errors?: string[]; error?: string }
+      if (!response.ok) {
+        tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not ask the Connector.'))
+        return
+      }
+      await loadSync()
+      tell(saveNotice(true, `Asked the Connector to update ${name} in Grok Bot`))
+    } catch {
+      setWriter('down')
+      tell(saveNotice(false, SAVING_OFF))
+    }
   }
 
   async function createInGrok(slug: string, name: string) {
@@ -952,7 +980,7 @@ export function Workspace({
             <PerformanceTable
               bots={bots.map((seat) => ({ ...seat, shown: metricsById.get(seat.id) }))}
               leastId={least?.id}
-              requests={sync?.requests ?? []}
+              requests={createRequests}
               canRetire={editable && writer === 'up'}
               onRetire={(id) => {
                 setRetireSlug(id)
@@ -981,7 +1009,9 @@ export function Workspace({
           onCardCommit={editable ? () => { void flushCardSave() } : undefined}
           managers={editable ? managerChoices(seats, chartSeat.id) : undefined}
           onReportsTo={editable ? (slug) => { void moveSeat(chartSeat.id, slug) } : undefined}
-          grokRequestedAt={sync?.requests?.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
+          grokRequestedAt={createRequests.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
+          grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
+          onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}
           onCard={editable ? (card) => {

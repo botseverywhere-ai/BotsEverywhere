@@ -239,7 +239,7 @@ export function SyncDrawer({
               <section className="sync-group">
                 <h3>Waiting for the Connector ({going.waiting.length})</h3>
                 <ul className="sync-picks">
-                  {going.waiting.map((item) => <li key={item.slug}><i className="be-pulse" aria-hidden="true" />{item.name} → asked {formatShortDate(item.requestedAt)}, created on the Connector&apos;s next run</li>)}
+                  {going.waiting.map((item) => <li key={item.slug}><i className="be-pulse" aria-hidden="true" />{item.kind === 'update' ? <>{item.name} → update asked {formatShortDate(item.requestedAt)}, sent on the Connector&apos;s next run</> : <>{item.name} → asked {formatShortDate(item.requestedAt)}, created on the Connector&apos;s next run</>}</li>)}
                 </ul>
               </section>
             ) : null}

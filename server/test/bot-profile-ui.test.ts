@@ -6,7 +6,8 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { createExistingBot, createHiredSeat, createOrgFiles, readOrgDir, updateSeatProfile } from '../src/template-server.ts'
 import { companyFromBundle } from '../../src/org/company.ts'
-import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from '../../src/components/bot-profile-copy.ts'
+import { outgoing } from '../../src/components/sync-copy.ts'
+import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, UPDATE_HINT, UPDATE_LABEL, updateWaitingLine, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from '../../src/components/bot-profile-copy.ts'
 
 const source = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8')
 const CARD = { owns: ['Sorting new leads'], may: ['Read the lead list'], mustAskBefore: ['Contacting a lead'], doneWhen: ['Every lead is marked'] }
@@ -129,4 +130,25 @@ test('an imported bot\'s Profile opens with a card that says it came from Grok B
   const css = source('../../src/styles/app.css')
   assert.match(css, /\.profile-origin \{[^}]*border-left: 3px solid var\(--color-green-400\)/, 'the same green bar as an In Grok Bot card')
   assert.match(css, /\.profile-origin \{[^}]*background: var\(--color-green-50\)/)
+})
+
+test('Update bot sits under the skills and routines of a bot in Grok Bot, and the Sync drawer and Logs show the update', () => {
+  assert.equal(UPDATE_LABEL, 'Update bot')
+  assert.equal(UPDATE_HINT, 'Sends these skills and routines to Grok Bot on the Connector\'s next run. Skills go to the library every bot shares.')
+  assert.match(updateWaitingLine('2026-10-21T17:40:00.000Z'), /^Asked .+\. The Connector sends them on its next run\.$/)
+  const update = { seat: 'brand-bot', name: 'Brand Bot', seatFile: '', prompt: '', kind: 'update' as const, requestedAt: '2026-10-21T17:40:00.000Z' }
+  const create = { seat: 'new-bot', name: 'New Bot', seatFile: '', prompt: '', requestedAt: '2026-10-21T17:41:00.000Z' }
+  const going = outgoing(null, [update, create], [])
+  assert.deepEqual(going.waiting.map((item) => [item.slug, item.kind]), [['brand-bot', 'update'], ['new-bot', 'create']])
+  const drawer = source('../../src/components/SyncDrawer.tsx')
+  assert.match(drawer, /item\.kind === 'update' \?/, 'an update reads as an update, not a new bot')
+  const profile = source('../../src/components/BotProfile.tsx')
+  assert.match(profile, /\{UPDATE_LABEL\}/)
+  assert.match(profile, /Update waiting for the Connector/)
+  assert.match(profile, /onUpdateInGrok/)
+  const workspace = source('../../src/pages/Workspace.tsx')
+  assert.match(workspace, /\/grok\/updates`/)
+  assert.match(workspace, /grokRequestedAt=\{createRequests\.find\(\(item\) => item\.seat === chartSeat\.id\)\?\.requestedAt \?\? ''\}/, 'only a create request makes a bot say connecting')
+  assert.match(workspace, /grokUpdateAt=\{sync\?\.requests\?\.find\(\(item\) => item\.seat === chartSeat\.id && item\.kind === 'update'\)\?\.requestedAt \?\? ''\}/)
+  assert.match(workspace, /requests=\{createRequests\}/, 'the Performance table pulses only for bots being created')
 })

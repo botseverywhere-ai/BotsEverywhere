@@ -4,7 +4,7 @@ import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import { ROUTINE_STARTS, type BotRoutine, type RoutineStart } from '../../server/src/org-files.ts'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
-import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
+import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, UPDATE_HINT, UPDATE_LABEL, updateWaitingLine, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
 
 type Skill = { name: string; description?: string }
 
@@ -18,11 +18,13 @@ export interface ProfileChanges {
  * Profile on an organization of your own: how the bot works. A directory bot's prompt and a hand-added bot's
  * instructions are edited here; an imported bot's skills and routines come from Grok Bot and are only shown.
  */
-export function BotProfile({ seat, grokRequestedAt, onProfile, onCreateInGrok }: {
+export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', onProfile, onCreateInGrok, onUpdateInGrok }: {
   seat: Seat
   grokRequestedAt: string
+  grokUpdateAt?: string
   onProfile: (changes: ProfileChanges) => void
   onCreateInGrok?: () => void
+  onUpdateInGrok?: () => void
 }) {
   const parts = profileParts(seat)
   const directory = useDirectoryPrompt(parts.prompt === 'directory' ? seat.directoryId ?? '' : '')
@@ -68,6 +70,21 @@ export function BotProfile({ seat, grokRequestedAt, onProfile, onCreateInGrok }:
         <>
           <SkillEditor initial={seat.skills ?? []} onSave={(skills) => onProfile({ skills: draftRows(skills) })} />
           <RoutineEditor initial={seat.routines ?? []} onSave={(routines) => onProfile({ routines: draftRoutines(routines) })} />
+          {!parts.addToGrok && onUpdateInGrok ? (
+            <section className="profile-update">
+              {grokUpdateAt ? (
+                <>
+                  <p className="grok-create-state be-connecting"><i className="be-pulse" aria-hidden="true" /><strong>Update waiting for the Connector</strong></p>
+                  <p className="auth-note">{updateWaitingLine(grokUpdateAt)}</p>
+                </>
+              ) : (
+                <>
+                  <Button variant="primary" type="button" onClick={onUpdateInGrok}>{UPDATE_LABEL}</Button>
+                  <p className="field-hint">{UPDATE_HINT}</p>
+                </>
+              )}
+            </section>
+          ) : null}
         </>
       ) : (
         <ProfileLists seat={seat} />

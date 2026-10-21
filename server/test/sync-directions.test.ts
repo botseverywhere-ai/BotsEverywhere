@@ -39,7 +39,7 @@ test('going out: bots Grok Bot lacks, split into waiting for the Connector and r
   } as Pick<SyncPlan, 'rows'>
   const requests = [{ seat: 'metric-change-bot', name: 'Metric Change Bot', seatFile: '', prompt: '', requestedAt: '2026-10-18T10:40:00.000Z' }]
   assert.deepEqual(outgoing(plan, requests), {
-    waiting: [{ slug: 'metric-change-bot', name: 'Metric Change Bot', requestedAt: '2026-10-18T10:40:00.000Z' }],
+    waiting: [{ slug: 'metric-change-bot', name: 'Metric Change Bot', requestedAt: '2026-10-18T10:40:00.000Z', kind: 'create' }],
     ready: [{ slug: 'search-brief-bot', name: 'Search Brief Bot' }],
   })
   assert.deepEqual(outgoing(null, requests).waiting.map((item) => item.slug), ['metric-change-bot'], 'a request shows before any snapshot')

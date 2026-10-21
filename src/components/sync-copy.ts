@@ -149,11 +149,11 @@ export function grokDirectionLabel(direction: 'in' | 'out'): string {
  * so a template copy or a hand-built org can send its bots before any snapshot exists.
  */
 export function outgoing(plan: Pick<SyncPlan, 'rows'> | null, requests: GrokRequest[] = [], seats: SeatDocument[] = []): {
-  waiting: { slug: string; name: string; requestedAt: string }[]
+  waiting: { slug: string; name: string; requestedAt: string; kind: 'create' | 'update' }[]
   ready: { slug: string; name: string }[]
 } {
   const asked = new Map(requests.map((item) => [item.seat, item]))
-  const waiting = requests.map((item) => ({ slug: item.seat, name: item.name, requestedAt: item.requestedAt }))
+  const waiting = requests.map((item) => ({ slug: item.seat, name: item.name, requestedAt: item.requestedAt, kind: item.kind === 'update' ? 'update' as const : 'create' as const }))
   const matched = plan ? fulfilledSeats(plan) : new Set<string>()
   const ready: { slug: string; name: string }[] = []
   const seen = new Set<string>()

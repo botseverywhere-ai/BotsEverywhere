@@ -39,6 +39,8 @@ export function SeatDrawer({
   grokRequestedAt = '',
   onCreateInGrok,
   onProfile,
+  grokUpdateAt = '',
+  onUpdateInGrok,
   children,
 }: {
   seat: Seat
@@ -71,6 +73,10 @@ export function SeatDrawer({
   onCreateInGrok?: () => void
   /** Saves Profile on an organization of your own: the prompt or instructions, skills, and routines. */
   onProfile?: (changes: ProfileChanges) => void
+  /** When the app last asked the Connector to send this bot its skills and routines, or ''. */
+  grokUpdateAt?: string
+  /** Update bot: asks the Connector to send this bot's skills and routines to Grok Bot. */
+  onUpdateInGrok?: () => void
   children?: ReactNode
 }) {
   return (
@@ -158,7 +164,7 @@ export function SeatDrawer({
         )
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && onProfile ? (
-        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} onProfile={onProfile} onCreateInGrok={onCreateInGrok} />
+        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && !onProfile ? (
         <>

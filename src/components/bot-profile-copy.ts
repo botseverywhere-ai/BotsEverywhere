@@ -1,4 +1,5 @@
 import type { BotRoutine, RoutineStart } from '../../server/src/org-files.ts'
+import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import { grokSyncClass } from './sync-copy.ts'
 
 /** Where a bot seat came from: hired from the directory, imported from Grok Bot, or added by hand with Add a seat. */
@@ -146,4 +147,12 @@ export function draftRoutines(rows: BotRoutine[]): BotRoutine[] {
     if (row.lastRun) routine.lastRun = row.lastRun
     return [routine]
   })
+}
+
+export const UPDATE_LABEL = 'Update bot'
+export const UPDATE_HINT = "Sends these skills and routines to Grok Bot on the Connector's next run. Skills go to the library every bot shares."
+
+/** Under the waiting mark once Update bot was clicked. */
+export function updateWaitingLine(requestedAt: string): string {
+  return `Asked ${formatShortDate(requestedAt)}. The Connector sends them on its next run.`
 }
