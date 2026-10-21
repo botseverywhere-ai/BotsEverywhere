@@ -178,7 +178,7 @@ export function CompanyOverview({
       <Field label="Industry" placeholder="Industry" value={profile.industry} disabled={!editable} onChange={(industry) => setProfile({ ...profile, industry })} />
       <dl className="overview-counts">
         {countBox('People', counts.human, 'human')}
-        {countBox('Bots', counts.bot, 'bot')}
+        {countBox('Bots in this org', counts.bot, 'bot')}
         {countBox('In Grok Bot', account ? account.total : counts.inGrok, 'in-grok')}
         {countBox('Not in Grok Bot', counts.offGrok, 'off-grok')}
         {countBox('System', counts.system, 'system')}

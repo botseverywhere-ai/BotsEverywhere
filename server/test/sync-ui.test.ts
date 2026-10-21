@@ -160,7 +160,7 @@ test('Organization Overview shows counts from the org chart, not typed numbers',
   assert.equal(overview.includes('label="Size"'), false, 'no Size field')
   assert.match(overview, /legendCounts\(/)
   assert.match(overview, /<dt>\{label\}<\/dt>/)
-  for (const label of ['People', 'Bots', 'In Grok Bot', 'Not in Grok Bot', 'System', 'Retired']) assert.ok(overview.includes(`countBox('${label}', `), label)
+  for (const label of ['People', 'Bots in this org', 'In Grok Bot', 'Not in Grok Bot', 'System', 'Retired']) assert.ok(overview.includes(`countBox('${label}', `), label)
   assert.match(overview, /JSON\.stringify\(\{ \.\.\.profile, people: counts\.human, bots: counts\.bot \}\)/, 'a save writes the chart counts')
 })
 
