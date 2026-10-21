@@ -11,7 +11,7 @@ export const PROJECT_FILE = 'project.json'
 export const CONNECTOR_FILE = 'connector.json'
 
 /** No 0/o, 1/l/i, so the id reads the same in Grok Bot as here. */
-const ID_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789'
+export const ID_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789'
 const ID = /^[a-hjkmnp-z2-9]{4,12}$/
 
 export function newProjectId(random: () => number = Math.random): string {

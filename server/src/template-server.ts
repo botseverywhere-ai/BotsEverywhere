@@ -42,7 +42,7 @@ import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
-import { CONNECTOR_FILE, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
+import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { REQUESTS_PATH, addRequest, canDelete, canRequest, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
@@ -282,8 +282,8 @@ export function listOrgSlugs(orgsDir: string): string[] {
 }
 
 export function createOrgFiles(orgsDir: string, name: string, owner: string): { ok: true; slug: string } | { ok: false; errors: string[] } {
-  const slug = uniqueSlug(orgsDir, slugify(name))
-  if (!SEAT_SLUG.test(slug)) return { ok: false, errors: ['Org name needs at least one letter or number.'] }
+  if (!name.trim()) return { ok: false, errors: ['Org name is required.'] }
+  const slug = uniqueOrgId(orgsDir)
   const ownerName = owner.trim()
   if (!ownerName) return { ok: false, errors: ['Owner name is required.'] }
   const root = resolve(orgsDir, slug)
@@ -352,7 +352,7 @@ export function copyTemplateOrg(
   const read = readOrgDir(sampleRoot, templateSlug)
   if (!read.ok) return read
   const companyName = name?.trim() || read.bundle.org.company.name
-  const slug = uniqueSlug(orgsDir, slugify(companyName) || templateSlug)
+  const slug = uniqueOrgId(orgsDir)
   const root = resolve(orgsDir, slug)
   const org: OrgDocument = {
     ...read.bundle.org,
@@ -2426,14 +2426,22 @@ function slugify(name: string): string {
     .slice(0, 48)
 }
 
-function uniqueSlug(orgsDir: string, base: string): string {
-  const slug = base || 'org'
-  if (!existsSync(resolve(orgsDir, slug))) return slug
-  for (let n = 2; n < 100; n += 1) {
-    const next = `${slug}-${n}`
-    if (!existsSync(resolve(orgsDir, next))) return next
+/**
+ * An org's folder name, and its id: org- and 8 letters or digits without look-alikes. It never changes, so a bot
+ * that was told the folder path always finds its files; the name lives in org.md alone.
+ */
+export function newOrgId(random: () => number = Math.random): string {
+  let id = 'org-'
+  for (let n = 0; n < 8; n += 1) id += ID_CHARS[Math.floor(random() * ID_CHARS.length)]
+  return id
+}
+
+export function uniqueOrgId(orgsDir: string, random: () => number = Math.random): string {
+  for (let tries = 0; tries < 100; tries += 1) {
+    const id = newOrgId(random)
+    if (!existsSync(resolve(orgsDir, id))) return id
   }
-  return `${slug}-${Date.now()}`
+  return `org-${Date.now().toString(36)}`
 }
 
 function initials(name: string): string {

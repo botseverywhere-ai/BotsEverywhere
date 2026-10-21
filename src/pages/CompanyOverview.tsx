@@ -207,7 +207,7 @@ export function CompanyOverview({
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
       </form>
       ) : null}
-      {section === 'overview' && editable ? <FileGuide slug={slug} /> : null}
+      {section === 'overview' && editable ? <FileGuide slug={slug} name={org.company.name} /> : null}
       {section === 'backup' && editable ? (
         <section className="org-backup" aria-labelledby="backup-title">
           <h2 id="backup-title">Backup</h2>

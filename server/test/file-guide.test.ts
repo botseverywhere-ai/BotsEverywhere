@@ -130,7 +130,7 @@ test('each row says what is in it now', () => {
 
 test('Your files sits on the Overview of your own organizations, only tells, and stays current', () => {
   const overview = readFileSync(fileURLToPath(new URL('../../src/pages/CompanyOverview.tsx', import.meta.url)), 'utf8')
-  assert.match(overview, /section === 'overview' && editable \? <FileGuide slug=\{slug\} \/> : null/)
+  assert.match(overview, /section === 'overview' && editable \? <FileGuide slug=\{slug\} name=\{org\.company\.name\} \/> : null/)
   const guide = readFileSync(fileURLToPath(new URL('../../src/components/FileGuide.tsx', import.meta.url)), 'utf8')
   assert.match(guide, /fetch\(`\/api\/orgs\/\$\{slug\}\/files`\)/)
   assert.match(guide, /new EventSource\(`\/api\/orgs\/\$\{slug\}\/live`\)/, 'a bot or the Connector writing refreshes it')

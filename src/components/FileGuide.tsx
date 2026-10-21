@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { FileGuide as Guide } from '../../server/src/file-guide.ts'
 import { Button } from './Button'
-import { FILE_GROUPS, FILE_NAMES, FILE_WHAT, fileFact } from './file-guide-copy'
+import { FILE_GROUPS, FILE_ID_NOTE, FILE_NAMES, FILE_WHAT, fileFact } from './file-guide-copy'
 
 const COPY_RESET_MS = 2000
 
 /** Your files: where this organization sits on the computer and what each main file holds. It only tells; nothing here changes a file. */
-export function FileGuide({ slug }: { slug: string }) {
+export function FileGuide({ slug, name }: { slug: string; name: string }) {
   // The folder as last read, and when: the times below read against that moment.
   const [read, setRead] = useState<{ guide: Guide; at: number } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -60,9 +60,11 @@ export function FileGuide({ slug }: { slug: string }) {
       <h2 id="file-guide-title">Your files</h2>
       <p className="overview-note">This organization is a folder on your computer. These are its main files, and what writes each one.</p>
       <div className="file-guide-root">
+        <strong className="file-guide-name">{name}</strong>
         <code>{guide.folder}</code>
         <Button variant="secondary" type="button" onClick={() => void copy(guide.folder)}>{copied ? 'Copied' : 'Copy path'}</Button>
       </div>
+      <p className="overview-note">{FILE_ID_NOTE}</p>
       {FILE_GROUPS.map((group) => (
         <div className="file-guide-group" key={group.title}>
           <h3>{group.title}</h3>

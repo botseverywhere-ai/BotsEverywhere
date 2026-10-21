@@ -1807,6 +1807,7 @@ a.site-nav-cta:focus {
 .file-guide { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding: var(--space-4); border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); }
 .file-guide h2 { margin: 0; font-size: var(--text-base); font-weight: var(--weight-medium); }
 .file-guide-root { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.file-guide-name { font-weight: var(--weight-medium); }
 .file-guide-root code { min-width: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: var(--text-sm); }
 .file-guide-group { padding: var(--space-3); border: var(--hairline); border-radius: var(--control-radius); }
 .file-guide-group h3 { margin: 0 0 var(--space-2); font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; }

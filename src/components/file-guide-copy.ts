@@ -8,6 +8,8 @@ export const FILE_GROUPS: { title: string; keys: FileGuideKey[] }[] = [
   { title: 'The Connector writes these', keys: ['grok', 'connector'] },
 ]
 
+export const FILE_ID_NOTE = "The folder name is this organization's ID. It never changes, so bots always find their files."
+
 export const FILE_NAMES: Record<FileGuideKey, string> = {
   org: 'org.md',
   seats: 'seats/',
