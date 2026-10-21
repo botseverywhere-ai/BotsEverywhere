@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { readText } from './text-file.ts'
+import type { FileGuide, FileGuideKey, FileGuideRow } from './file-guide.js'
 import { normalizeText } from './normalize-text.ts'
 import { dirname, resolve, sep } from 'node:path'
 import {
@@ -41,7 +42,7 @@ import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
-import { ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
+import { CONNECTOR_FILE, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { REQUESTS_PATH, addRequest, canDelete, canRequest, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
@@ -1585,6 +1586,60 @@ export function deleteOrg(orgsDir: string, slug: string, confirm: string): { ok:
   return { ok: true, next: others[0]! }
 }
 
+/** Where an org's files sit and how many there are, for Your files on Organization Overview. Null when the org is not there. Never throws. */
+export function readFileGuide(orgsDir: string, slug: string): FileGuide | null {
+  const folder = orgRoot(orgsDir, slug)
+  if (!folder || folder === resolve(orgsDir) || !existsSync(resolve(folder, 'org.md'))) return null
+  const isMarkdown = (name: string) => name.endsWith('.md')
+  const log = guideFolder('log', resolve(folder, 'log'), isMarkdown)
+  return {
+    folder,
+    rows: [
+      guideFile('org', resolve(folder, 'org.md')),
+      guideFolder('seats', resolve(folder, 'seats'), isMarkdown),
+      guideFolder('processes', resolve(folder, 'processes'), isMarkdown),
+      { ...log, days: guideNames(log.path).filter(isRunLogName).length },
+      guideFolder('grok', resolve(folder, 'grok'), () => true),
+      guideFile('connector', resolve(orgsDir, CONNECTOR_FILE)),
+    ],
+  }
+}
+
+function guideFile(key: FileGuideKey, path: string): FileGuideRow {
+  const written = writtenAt(path)
+  return { key, path, files: written ? 1 : 0, updatedAt: written }
+}
+
+function guideFolder(key: FileGuideKey, path: string, keep: (name: string) => boolean): FileGuideRow {
+  let files = 0
+  let updatedAt = ''
+  for (const name of guideNames(path).filter(keep)) {
+    const written = writtenAt(resolve(path, name))
+    if (!written) continue
+    files += 1
+    if (written > updatedAt) updatedAt = written
+  }
+  return { key, path, files, updatedAt }
+}
+
+function guideNames(path: string): string[] {
+  try {
+    return readdirSync(path)
+  } catch {
+    return []
+  }
+}
+
+/** ISO time a file was written, or '' for a missing file, a folder, or one that cannot be read. */
+function writtenAt(path: string): string {
+  try {
+    const stat = statSync(path)
+    return stat.isFile() ? stat.mtime.toISOString() : ''
+  } catch {
+    return ''
+  }
+}
+
 export function orgRoot(orgsDir: string, slug: string): string | null {
   if (!SEAT_SLUG.test(slug)) return null
   const root = resolve(orgsDir)
@@ -1795,6 +1850,13 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       res.write('retry: 2000\n\n')
       const stop = hub.subscribe(slug, res)
       req.on('close', stop)
+      return
+    }
+    const filesMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/files$/.exec(url.pathname)
+    if (filesMatch && req.method === 'GET') {
+      const guide = readFileGuide(orgsDir, filesMatch[1]!)
+      if (!guide) return send(res, 404, { error: 'Org not found.' })
+      send(res, 200, guide)
       return
     }
     const runLogMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/run-log$/.exec(url.pathname)

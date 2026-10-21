@@ -6,6 +6,7 @@ import { Button } from '../components/Button'
 import { ConnectGrok } from '../components/ConnectGrok'
 import { LinkCompany } from '../components/LinkCompany'
 import { OrgFiles } from '../components/OrgFiles'
+import { FileGuide } from '../components/FileGuide'
 import { SaveAlert } from '../components/SaveAlert'
 import { saveNotice, type SaveNotice } from '../components/save-notice'
 import { accountRows, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, retiredGroups, seatListMeta, type LegendGroup } from '../components/sync-copy'
@@ -206,6 +207,7 @@ export function CompanyOverview({
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
       </form>
       ) : null}
+      {section === 'overview' && editable ? <FileGuide slug={slug} /> : null}
       {section === 'backup' && editable ? (
         <section className="org-backup" aria-labelledby="backup-title">
           <h2 id="backup-title">Backup</h2>
