@@ -115,3 +115,9 @@ test('Profile edits skills and routines the way the Grok Bot Graph panel does', 
     'Empty uses the bot timezone from Grok Bot settings.', '>Active<', 'Turn off for routines paused in Grok Bot.', '>Remove<', '>Done<', '+ Add routine',
   ]) assert.ok(profile.includes(text), text)
 })
+
+test('the prompt box in Profile reads like the directory prompt: paper background, monospace', () => {
+  const css = source('../../src/styles/app.css')
+  assert.match(css, /\.bot-prompt \{[^}]*background: var\(--color-paper\)/)
+  assert.match(css, /\.bot-prompt \{[^}]*font-family: var\(--font-mono\)/)
+})
