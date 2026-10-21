@@ -1,55 +1,68 @@
 # Status
 
-Where the app stands as of 18 October 2026, written for whoever picks it up next. Facts about the running org describe Miguel's own `orgs/your-company`, which is uncommitted user data.
+Where the app stands as of 21 October 2026, written for whoever picks it up next. Facts about the running org describe Miguel's own `orgs/your-company`, which is uncommitted user data.
 
 ## Branches
 
-Three branches stack on `master`, none merged yet. The dev server runs from the checkout on the top one.
+The main branch is `main`. Everything since it sits on one straight line of branches, each one holding the one before. None is merged into `main`. Every branch matches its copy on `origin`.
 
-| Branch | What it holds |
+| Branch | Adds on top of the one above |
 | --- | --- |
-| `fix/work-chart-honesty` | Process import skips duplicates instead of writing `-2` copies. Org chart cards count tasks from the run log. Run-log times are read in local time, not UTC. |
-| `feat/grok-sync` | Sync with Grok Bot: snapshot contract, planner, writer routes, drawer, tags, Reports to select, docs. Reviewed by a fresh reviewer; all Important findings fixed. |
-| `feat/org-chart-pan-zoom` | Drag to pan, wheel zoom around the pointer, the viewport keeps its own height, Grok Bot state on bot cards. |
+| `main` | Initial commit, Delete an organization from the Options menu, retired imported bots stay retired. |
+| `prompt-rules` | 2 commits. Delete an organization even when Windows holds its folder. Prompts say one Grok Bot account runs every bot, and a bot may sit in several organizations. |
+| `feat/grok-delete` | 19 commits. Retired in the legend and Delete in Grok Bot. The Connector's last run time in the header, with a dropdown. **Runs every** on Connect bots, and the interval the Connector reports. Find seat, Add a seat by short name, Overview boxes that open their lists. |
+| `performance-tracker` | 14 commits. Times used and Automated tasks done from the run log. In Grok Bot counts the whole Grok Bot account. Grok Bot's numbers apply on every Connector run. A requested bot pulses Connecting and links on its own. The light `GET /api/connector` endpoint. |
+| `homepage-content` | 9 commits. Homepage copy, Sync drawer button layout, the Logs tab shows a retire at once. |
 
-Decision pending from Miguel: merge locally into `master`, open a pull request, or keep as is. Never push to `main` without his OK.
+Decision pending from Miguel: how this line lands on `main`. Never push to `main` without his OK.
 
-Design and plan for the sync: `docs/superpowers/specs/2026-10-17-grok-sync-design.md` and `docs/superpowers/plans/2026-10-17-grok-sync.md`.
+Design docs: `docs/superpowers/specs/` (sync, one Connector per project, retire and delete) and `docs/superpowers/plans/2026-10-17-grok-sync.md`.
 
 ## What works
 
-- The Connector bot in Grok Bot runs every 15 minutes and writes `orgs/your-company/grok/snapshot.json`. It has done so twice on its own.
-- **Sync with Grok Bot** on the org tab row shows a count when the snapshot has something to apply, previews the merge, and writes it on Confirm. Two syncs have been confirmed and are in the Logs tab.
-- The org chart drags, zooms with the wheel and the buttons, and colors bot cards: green **In Grok Bot**, dashed **Not in Grok Bot**, muted **Not synced yet**.
+- One Connector per copy, `Connector - BotsEverywhere (uft5)`, runs in Grok Bot every 17 minutes. It writes each org's `grok/snapshot.json` and `orgs/connector.json`.
+- On every Connector run the writer applies Grok Bot's numbers to the seat files, links bots it was asked to create, and notices retired bots deleted in Grok Bot. Structure still waits for **Sync with Grok Bot**.
+- The header badge shows the last run time and opens the sync details. Connect bots sets the interval.
+- The org chart drags and zooms, colors bot cards by Grok Bot state, and finds a seat by name. The legend and Overview boxes open lists, including Retired.
 - A seat's manager can be changed from the seat drawer.
 
 ## State of the running org
 
-- 32 bot seats: 4 stamped `synced`, 26 with a Grok Bot link and no stamp (shown green through the link), 2 flagged `missing`: `metric-change-bot` and `search-brief-bot`, both hired from the directory and never created in Grok Bot.
-- Two bots named Connector - BotsEverywhere exist in Grok Bot. Seat `connector-botseverywhere` points at yesterday's; seat `connector-botseverywhere-2` is the live one. Delete the old bot in Grok Bot, let the next snapshot flag the old seat, then retire that seat from its drawer.
-- Four duplicate process files (`*-2.md`) still sit in `orgs/your-company/processes/`. Remove them by hand or with Delete on the Work Chart. The import that created them cannot happen again.
-- The Connector reported a GitHub token in plain text in one of Grok Bot's own files. Nothing under `orgs/` contains one. Rotate it anyway.
-- The writer inside Miguel's `npm run dev` predates the review fixes until it is restarted. Restarting it lets the next Confirm stamp the 26 linked bots with a real snapshot date.
+Read from `orgs/` on 21 October 2026 at about 15:00 local time.
+
+- Organization name BotsEverywhere, slug `your-company`. Project id `uft5`, interval 17 minutes in both `project.json` and `connector.json`, so there is no interval warning.
+- Last Connector run 14:56 local. Its snapshot lists 36 bots and 5 processes. `orgs/connector.json` lists no unassigned bots. `grok/requests.json` holds no requests.
+- 32 active bot seats, all `grokSync: synced` with a Grok Bot link. One Connector seat, `connector-botseverywhere-uft5`; the two older Connector seats are gone.
+- 3 active humans (You, Angel Rodriguez, Juan Delgado Marketing). One retired human seat, `grsgrf` titled "fhgtgf", which looks like a test seat.
+- 10 retired bot seats:
+  - Marked deleted in Grok Bot: `bug-bot`, `request-bot`, and `inbox-bot` with `inbox-bot-2`.
+  - Retired with a link and not marked deleted, so **Delete in Grok Bot** is offered: `acceptance-bot`, `bookkeeping-bot`, `chief-of-staff-bot`, `policy-bot`, `support-bot`.
+  - `bid-bot`: no link, `grokSync: missing`. It was never created in Grok Bot.
+- 5 process files, no `-2` duplicates left.
+- Last confirmed sync 20 October 2026, 23:19 local.
+- Earlier, the Connector reported a GitHub token in plain text in one of Grok Bot's own files. Nothing under `orgs/` contains one. Whether it was rotated is not recorded here; rotate it if not.
 
 ## How to verify
 
 ```bash
-npm test          # expect 1 failure: org-node-layout.test.ts needs Chrome at a Linux path
+npm test          # expect 1 failure on Windows: org-node-layout.test.ts needs Chrome at a Linux path
 npm run build     # then: git checkout -- src/generated/bots.ts
 npx playwright test e2e/org-chart-scroll.spec.ts e2e/owner-org-chart.spec.ts   # needs npm run dev running
 ```
 
-The two sync suites are `server/test/grok-sync.test.ts` and `server/test/sync-ui.test.ts`. The chart suite is `server/test/org-pan-zoom.test.ts`.
+The sync suites are `server/test/grok-sync.test.ts` and `server/test/sync-ui.test.ts`. The chart suite is `server/test/org-pan-zoom.test.ts`. The Connector suites are `server/test/connector-*.test.ts` and `server/test/project-connector.test.ts`.
 
 ## Known quirks
 
 - `server/test/dev-ports.test.ts` can fail while a browser spec holds ports; it passes alone.
 - A failed hot reload leaves the old module in the browser tab until a hard reload (F5). This cost an evening of confusion once already.
 - The writer is `tsx` without a watcher. Any change under `server/src/` needs `npm run dev` restarted.
+- VS Code marks the imports in `server/test/*.ts` as errors (TS5097 and TS2591) because no tsconfig includes `server/test/`. The tests run; `node --import tsx` does not type-check.
+- A changed Connector prompt reaches Grok Bot only when it is pasted into the Connector again from Connect bots. Until then a new interval or new rule does nothing there.
 
 ## Deferred
 
-Found in review, graded minor, not done:
+Found in the sync review (17 to 18 October), graded minor, not done, and not rechecked since:
 
 - A manager change through `retargetSeat` keeps a BOM or CRLF if the seat file came with one. Readers tolerate it.
 - The apply route wraps a pasted snapshot in JSON, so a very large pasted file can preview but hit the 100 KB body limit on apply.
@@ -59,8 +72,10 @@ Found in review, graded minor, not done:
 - CSRF on the writer's state-changing routes is the same on every route: loopback bind, loopback-only CORS, no token. A whole-writer follow-up.
 - The older `/bots-file` and `/seats/existing` routes still accept card lines that read as headings.
 
+## Open questions
+
+- README, SETUP, and Docs say the starter org is `orgs/your-company/`, but nothing under `orgs/` is in git, and `npm run dev` does not create it. A fresh clone may open to "That org is not on this computer". Ship a starter org, create one on first run, or change the docs.
+
 ## Next
 
-**Create in Grok Bot** is built on `feat/popup-notices` (see `AGENTS.md`, "Current status and next step"). To use it: restart `npm run dev` so the writer has the new route, and replace the Connector's prompt in Grok Bot with the one on the Connect bots tab so it reads `grok/requests.json`.
-
-Ideas raised and not built: apply a sync automatically instead of on Confirm; one Connector handling several org folders.
+Ideas raised and not built: apply a sync automatically instead of on Confirm.

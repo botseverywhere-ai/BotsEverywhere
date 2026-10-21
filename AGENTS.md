@@ -27,6 +27,8 @@ npm run build     # validate orgs, directory, and mocks; generate bots; tsc; vit
 
 `npm test` does not filter on extra arguments. To run one file: `node --import tsx --test server/test/<file>.test.ts`.
 
+VS Code marks the imports in `server/test/*.ts` as errors (TS5097, a path may not end in `.ts`; TS2591, no Node types) because no tsconfig includes `server/test/`. That is the editor only: `node --import tsx` does not type-check, and the tests run.
+
 Two things to know before reading a red run as a regression. `server/test/org-node-layout.test.ts` launches Chrome at a Linux path and fails on a Windows machine without it. `npm run build` regenerates `src/generated/bots.ts` from `bots/*.md`, and the committed file has drifted from that source; run `git checkout -- src/generated/bots.ts` after a build unless the change is about that file. The writer is started by `tsx` without a watcher, so a change under `server/src/` needs `npm run dev` restarted. A failed hot reload (Vite error overlay) leaves the old module in the tab until a hard reload.
 
 ## Folder map
@@ -54,11 +56,18 @@ Two things to know before reading a red run as a regression. `server/test/org-no
 
   `- HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -`
 
-  Bad lines are skipped. The header is not a line.
+  Bad lines are skipped. The header is not a line. A bot logs each chat as one line with `chat` as the process (`CHAT_PROCESS` in `server/src/bot-metrics.ts`).
 - `log/<event>.md` — one activity event (hire, fire, edit, work, approval, exception) with YAML frontmatter (`id`, `type`, `actorSeatId`, `actorType`, `timestamp`) and the summary as the body. A `YYYY-MM-DD.md` name is a run log, not an event.
 - `grok/snapshot.json` — written by the Connector on each run. One object: `syncedAt`, `bots` (the bots-file format), `processes` (the processes-file format). The app never writes it. A broken snapshot is reported in the Sync drawer and never breaks the org.
+- `grok/requests.json` — written by the app (**Create in Grok Bot**, below). One object, key `requests`. The Connector reads it and never edits it. A `deletes` list from an earlier version is ignored and dropped on the next write.
 
-The writer watches `log/`, `processes/`, `grok/`, `seats/*.md`, and `org.md` and pushes SSE on `GET /api/orgs/<slug>/live` (`event: log`, `event: processes`, `event: grok`, `event: org`).
+Beside the org folders, `orgs/` holds three project files, all gitignored:
+
+- `project.json` — `{ "id", "syncMinutes" }`. The app owns it. `id` is this copy's 4-character id (`server/src/project.ts`); a missing or bad file gets a fresh id.
+- `connector.json` — written by the Connector last on every run: `syncedAt`, `syncMinutes` (the interval it runs at), and `unassigned` (bots in Grok Bot that belong to no org). Its file time is the heartbeat.
+- `connector-log.json` — the writer's memory of what it already logged about each Connector run (`server/src/connector-log.ts`).
+
+The writer watches `log/`, `processes/`, `grok/`, `seats/*.md`, and `org.md` and pushes SSE on `GET /api/orgs/<slug>/live` (`event: log`, `event: processes`, `event: grok`, `event: org`). A change to `orgs/connector.json` or `orgs/project.json` sends `grok` to every open org, and two seconds later the writer runs `recordConnectorRun`.
 
 ## Bots JSON
 
@@ -66,9 +75,13 @@ Import and export use `botseverywhere-bots.json` (`docs/bots-file.md`, parser `s
 
 ## Connector
 
-The bot name is `Connector - BotsEverywhere`. Its run-log bot field is `Connector`. The prompt is `connectorPrompt` in `server/src/connector-prompt.ts`. The UI shows it on the Connect bots tab (`src/components/ConnectGrok.tsx`) and in Docs (`#connect-grok`).
+One Connector serves every org in a copy of BotsEverywhere (spec `docs/superpowers/specs/2026-10-18-project-connector-design.md`). The bot name is `Connector - BotsEverywhere (<id>)`, with `<id>` from `orgs/project.json`. Its run-log bot field is `Connector`. The prompt is `connectorPrompt` in `server/src/connector-prompt.ts`, built with this copy's absolute `orgs` folder, interval, and time zone. The UI shows it on the Connect bots tab (`src/components/ConnectGrok.tsx`) and in Docs (`#connect-grok`).
 
-The Connector writes `grok/snapshot.json` every run, reads `grok/requests.json`, and never edits the app's files. **Sync with Grok Bot** on the org tab row (`src/components/SyncDrawer.tsx`) previews the merge (`GET /api/orgs/<slug>/sync`) and applies it (`POST .../sync/apply`; `POST .../sync/preview` takes a pasted file). The plan is pure, in `server/src/grok-sync.ts`. The app owns `reportsTo`, step assignments, and filled card sections; Grok Bot owns the link, routines, run numbers, and whether a bot exists. A sync never deletes a seat: a bot missing from Grok Bot is tagged `grokSync: missing`. Seat frontmatter carries `grokSync`, `grokSyncedAt`, and `grokMissingSince`. `PUT /api/orgs/<slug>/seats/<seat>/manager` moves a seat and refuses cycles.
+On each run the Connector goes through every folder in `orgs/` that has an `org.md`: it creates the bots in `grok/requests.json`, writes that org's `grok/snapshot.json` with the bots that belong to it, keeps one routine per process, and tells each bot its manager and logging rules. It writes `orgs/connector.json` last. It never edits the app's files and never reads outside `orgs/`. Grok Bot gives it no tool to delete a bot.
+
+**Runs every** on Connect bots saves `syncMinutes` (15 minutes to 7 days) to `orgs/project.json` (`PUT /api/project/sync-minutes`), puts the interval in the prompt, and rewrites the schedule of the Connector's own process in every org (`syncConnectorProcesses`). Grok Bot runs the new interval only after the prompt is pasted again, so Connect bots and the header dropdown warn until `connector.json` reports the same `syncMinutes`. Three intervals without a run means the Connector stopped (`staleMinutes` in `server/src/connector-timing.ts`); Grok Bot does not run it on an exact clock. The header badge (`GrokStatusBadge.tsx`) and the connection bar (`ConnectionBar.tsx`) read the light `GET /api/connector`, which reads only `project.json` and `connector.json`; the org page loads the full sync plan apart. The badge shows the last run time under the state and opens a dropdown with Runs every, Last sync, and Next sync.
+
+**Sync with Grok Bot** on the org tab row (`src/components/SyncDrawer.tsx`) previews the merge (`GET /api/orgs/<slug>/sync`) and applies it (`POST .../sync/apply`; `POST .../sync/preview` takes a pasted file). The plan is pure, in `server/src/grok-sync.ts`. The app owns `reportsTo`, step assignments, and filled card sections; Grok Bot owns the link, routines, run numbers, and whether a bot exists. A sync never deletes a seat: a bot missing from Grok Bot is tagged `grokSync: missing`. Seat frontmatter carries `grokSync`, `grokSyncedAt`, `grokMissingSince`, and `grokDeletedAt`. Bots in `connector.json` `unassigned` show in every org's Sync drawer under **In Grok Bot, no organization**; Sync adds the ticked ones to this org as seats marked New. `PUT /api/orgs/<slug>/seats/<seat>/manager` moves a seat and refuses cycles.
 
 ## Org chart
 
@@ -78,11 +91,15 @@ On an org of your own (`grokStates={editable}`), a bot card shows its Grok Bot s
 
 ## Current status and next step
 
-Status, branch stack, the state of Miguel's own org, known quirks, and deferred items: `docs/STATUS.md`. Three branches stack on `master` and are not merged: `fix/work-chart-honesty`, `feat/grok-sync`, `feat/org-chart-pan-zoom`. The dev server runs from the checkout on the top one. Miguel decides how they land.
+Status, branches, the state of Miguel's own org, known quirks, and deferred items: `docs/STATUS.md`. The main branch is `main`. Work since the initial commit sits on one line of branches above it, not merged into `main`; `homepage-content` is the top and holds the others. Miguel decides how they land.
 
 Built: **Create in Grok Bot**. A bot card that says **Not in Grok Bot** or **Not synced yet** shows the button in the seat drawer. `POST /api/orgs/<slug>/grok/requests` (`{ "seat": "<slug>" }`) writes `orgs/<slug>/grok/requests.json` (`server/src/grok-requests.ts`): one entry per seat with `seat`, `name`, the absolute `seatFile`, `prompt`, the text of `directory/<directoryId>.md` below its frontmatter when it exists (inline, because the Connector never reads outside `orgs/`), and `requestedAt`. The seat file is not touched. Step 1 of the Connector prompt reads the file and creates each bot named exactly `name`. On each Connector run (`recordConnectorRun`), and on a confirmed sync from the Connector's snapshot, a requested seat the snapshot matched gets its link written (`applyPerformance` with the requested set), its request dropped, and a Created in Grok Bot line (`clearFulfilledRequests`); a pasted file never clears requests. Until then its Performance row pulses Connecting. `GET .../sync` carries `requests`, and the drawer says when the Connector was asked. The Connector bot already running in Grok Bot needs its prompt replaced once from the Connect bots tab to learn step 1.
 
 The Sync drawer has two sides. **Coming from Grok Bot** is the snapshot plan. **Going to Grok Bot** lists requests waiting for the Connector and bots not in Grok Bot as checkboxes; **Sync** applies the incoming plan, then posts a request for each ticked bot. Activity events carry an optional `grok: in|out` frontmatter field (a sync writes `in`, a request writes `out`); the Logs tab shows it as a From Grok Bot or To Grok Bot badge, and older `sync-` events count as `in`.
+
+Built: **Delete in Grok Bot** (spec `docs/superpowers/specs/2026-10-20-retire-and-delete-in-grok-design.md`; the delete request it describes was dropped). Retire takes a seat out of this org only; the bot keeps running in Grok Bot. **Retired** in the org chart legend, and the Retired box on Organization Overview, open `src/components/RetiredDrawer.tsx`: every retired seat with its date. A retired bot with a `grokBotUrl` gets **Delete in Grok Bot…**, a window that gives the steps (right-click the bot in the Grok Bot sidebar, Delete, confirm), warns when the same link is active in another org (`retiredActiveElsewhere`), and opens the bot. The person deletes it in Grok Bot. On each Connector run, `markDeletedBots` marks a retired bot deleted (`grokDeletedAt`) once a run newer than its retirement reports that bot in no snapshot and not in `connector.json`, and logs one Deleted in Grok Bot event per link. An unreadable file counts as the bot still there.
+
+Built: Performance from the log and the Connector. Times used (30d) counts the bot's `chat` lines in the run log; Automated tasks done (30d) counts its routine steps logged `done`. The Connector's own lines count for its seat. **In Grok Bot** on Overview and in the legend counts every bot in the Grok Bot account (`grokAccount`): each bot once across all org snapshots, bots in no org, and the Connector. Its list says where each one sits.
 
 Built: on every Connector run, `applyPerformance` (template-server) writes rows that change nothing but Grok Bot's numbers (`performanceOnly` in grok-sync: last active, runs, tasks, routines, created date) straight to the seat files, so Performance never waits for Sync; everything else still waits in the drawer. Ideas raised and not built: apply the whole sync automatically; one Connector handling several org folders.
 
