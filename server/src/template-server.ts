@@ -580,6 +580,8 @@ export interface ExistingBotInput {
   runs30d?: number
   tasksDone30d?: number
   routines?: SeatDocument['routines']
+  skills?: SeatDocument['skills']
+  publicUrl?: string
   botStatus?: SeatDocument['botStatus']
   /** Set by Sync with Grok Bot when the seat comes from a snapshot. */
   grokSync?: GrokSyncState
@@ -646,6 +648,8 @@ export function createExistingBot(
     ...(input.runs30d !== undefined ? { runs30d: input.runs30d } : {}),
     ...(input.tasksDone30d !== undefined ? { tasksDone30d: input.tasksDone30d } : {}),
     ...(input.routines?.length ? { routines: input.routines } : {}),
+    ...(input.skills?.length ? { skills: input.skills } : {}),
+    ...(input.publicUrl ? { publicUrl: input.publicUrl } : {}),
     ...(input.botStatus ? { botStatus: input.botStatus } : {}),
     ...(input.grokSync ? { grokSync: input.grokSync } : {}),
     ...(input.grokSyncedAt ? { grokSyncedAt: input.grokSyncedAt } : {}),
@@ -664,6 +668,8 @@ export function createExistingBot(
     runs30d: input.runs30d,
     tasksDone30d: input.tasksDone30d,
     routines: input.routines,
+    skills: input.skills,
+    publicUrl: input.publicUrl,
     botStatus: input.botStatus,
     grokSync: input.grokSync,
     grokSyncedAt: input.grokSyncedAt,
@@ -770,6 +776,8 @@ export function importBotsFile(
       runs30d: item.row.runs30d,
       tasksDone30d: item.row.tasksDone30d,
       routines: item.row.routines,
+      skills: item.row.skills,
+      publicUrl: item.row.publicUrl,
       botStatus: item.row.botStatus || undefined,
       grokSync: stamp?.grokSync,
       grokSyncedAt: stamp?.grokSyncedAt,

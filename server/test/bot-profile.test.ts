@@ -4,7 +4,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { parseSeatMarkdown, serializeExistingSeat, serializeSeat } from '../src/org-files.ts'
-import { createExistingBot, createOrgFiles, startTemplateServer } from '../src/template-server.ts'
+import { createExistingBot, createOrgFiles, importBotsFile, startTemplateServer } from '../src/template-server.ts'
+import { parseBotsFile } from '../src/bots-file.ts'
+import { parseSnapshot, patchSeatSource, performanceOnly, planSync } from '../src/grok-sync.ts'
 
 const INSTRUCTIONS = 'Sort new leads against the ideal-customer points.\nNever contact a lead: say "ask Miguel" instead.'
 const SKILLS = [{ name: 'Lead sort', description: 'Match a new lead to the ideal-customer points.' }, { name: 'Weekly recap' }]
@@ -135,4 +137,54 @@ test('an imported bot\'s skills and routines come from Grok Bot, so Profile refu
     assert.deepEqual(seatIn(orgs, org, imported.slug).routines, [{ name: 'daily summary', schedule: '15 18 * * 1-5' }])
     assert.equal((await put(base, org, 'nobody', { instructions: 'x' })).status, 422)
   })
+})
+
+const LINK = 'grokbot://app/v1/agent?id=1'
+const BOTS = JSON.stringify({ bots: [{ name: 'Grok Bot', grokBotUrl: LINK, skills: [...SKILLS, { description: 'no name' }], publicUrl: 'https://x.ai/bot/grok-bot' }, { name: 'Other Bot', publicUrl: 'ftp://nope' }] })
+
+test('the bots file and the snapshot bring each bot\'s skills and public link; a link that is not https is left out with a note', () => {
+  const parsed = parseBotsFile(BOTS)
+  assert.ok(parsed.ok)
+  assert.deepEqual(parsed.rows[0]!.skills, SKILLS)
+  assert.equal(parsed.rows[0]!.publicUrl, 'https://x.ai/bot/grok-bot')
+  assert.equal(parsed.rows[1]!.publicUrl, '')
+  assert.match(parsed.rows[1]!.note, /publicUrl was left out/)
+})
+
+test('importing a bot writes its skills and public link onto the new seat', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'be-profile-import-'))
+  try {
+    const made = createOrgFiles(dir, 'Desk', 'You')
+    assert.ok(made.ok)
+    const parsed = parseBotsFile(BOTS)
+    assert.ok(parsed.ok)
+    const result = importBotsFile(join(dir, made.slug), made.slug, parsed.rows.slice(0, 1))
+    assert.equal(result.errors.length, 0, JSON.stringify(result.errors))
+    const seat = seatIn(dir, made.slug, result.imported[0]!.slug)
+    assert.deepEqual(seat.skills, SKILLS)
+    assert.equal(seat.publicUrl, 'https://x.ai/bot/grok-bot')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('a Connector run fills skills and the public link without a Sync, and an empty list never clears them', () => {
+  const seat = parseSeatMarkdown('grok-bot', serializeExistingSeat({ name: 'Grok Bot', grokBotUrl: LINK, reportsTo: 'you', owns: ['Route any task'], may: [], mustAskBefore: [], doneWhen: [], grokSync: 'synced' }))
+  assert.ok(seat.ok)
+  const snap = parseSnapshot(JSON.stringify({ syncedAt: '2026-10-21T12:00:00.000Z', bots: [{ name: 'Grok Bot', grokBotUrl: LINK, skills: SKILLS, publicUrl: 'https://x.ai/bot/grok-bot' }], processes: [] }), '2026-10-21T12:00:00.000Z')
+  assert.ok(snap.ok)
+  const row = planSync(snap.snapshot, [seat.seat], []).rows.find((item) => item.kind === 'updated')
+  assert.ok(row && row.kind === 'updated', 'skills and the link are news')
+  assert.deepEqual(row.patch.skills, SKILLS)
+  assert.equal(row.patch.publicUrl, 'https://x.ai/bot/grok-bot')
+  assert.ok(performanceOnly(row), 'they apply on every Connector run, like routines')
+  const written = patchSeatSource('grok-bot', seat.seat.source, row.patch)
+  assert.ok(written.ok)
+  const after = parseSeatMarkdown('grok-bot', written.source)
+  assert.ok(after.ok)
+  assert.deepEqual(after.seat.skills, SKILLS)
+  assert.equal(after.seat.publicUrl, 'https://x.ai/bot/grok-bot')
+  const empty = parseSnapshot(JSON.stringify({ syncedAt: '2026-10-21T12:30:00.000Z', bots: [{ name: 'Grok Bot', grokBotUrl: LINK, skills: [] }], processes: [] }), '2026-10-21T12:30:00.000Z')
+  assert.ok(empty.ok)
+  assert.equal(planSync(empty.snapshot, [after.seat], []).rows[0]?.kind, 'unchanged', 'an empty list or a missing link changes nothing')
 })

@@ -1,4 +1,4 @@
-import { SEAT_SLUG, isSeatGrokLink, type BotRoutine, type BotRunStatus, type SeatDocument } from './org-files.ts'
+import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
 
 /** One bot from a bots file, after the field names are normalized. */
 export interface BotsFileRow {
@@ -15,6 +15,10 @@ export interface BotsFileRow {
   runs30d?: number
   tasksDone30d?: number
   routines: BotRoutine[]
+  /** Reusable workflows Grok Bot lists on the bot. */
+  skills: BotSkill[]
+  /** The bot's public share link, when it is public. '' otherwise. */
+  publicUrl: string
   botStatus: '' | BotRunStatus
   /** Soft issues. The bot still imports. */
   note: string
@@ -74,6 +78,8 @@ function readRow(entry: unknown, index: number): BotsFileRow {
     createdAt: '',
     lastActive: '',
     routines: [],
+    skills: [],
+    publicUrl: '',
     botStatus: '',
     note: '',
     error: '',
@@ -104,6 +110,9 @@ function readRow(entry: unknown, index: number): BotsFileRow {
   blank.routines = performance.routines
   blank.botStatus = performance.botStatus
   blank.note = joinNotes(blank.note, performance.note)
+  blank.skills = cleanSkills(record.skills)
+  blank.publicUrl = publicLink(record.publicUrl)
+  if (typeof record.publicUrl === 'string' && record.publicUrl.trim() && !blank.publicUrl) blank.note = joinNotes(blank.note, 'publicUrl was left out.')
   return blank
 }
 
@@ -278,6 +287,8 @@ export interface BotsFileBot {
   runs30d?: number
   tasksDone30d?: number
   routines?: { name: string; schedule: string; lastRun?: string }[]
+  skills?: BotSkill[]
+  publicUrl?: string
   status?: BotRunStatus
 }
 
@@ -303,6 +314,8 @@ export function exportBotsFile(seats: SeatDocument[]): string {
     if (seat.lastActive) bot.lastActive = seat.lastActive
     if (seat.runs30d !== undefined) bot.runs30d = seat.runs30d
     if (seat.tasksDone30d !== undefined) bot.tasksDone30d = seat.tasksDone30d
+    if (seat.skills?.length) bot.skills = seat.skills
+    if (seat.publicUrl) bot.publicUrl = seat.publicUrl
     if (seat.botStatus) bot.status = seat.botStatus
     if (seat.routines?.length) {
       bot.routines = seat.routines.map((routine) => {

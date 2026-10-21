@@ -1,7 +1,7 @@
 import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.ts'
 import { formatShortDate } from './bot-metrics.ts'
 import { normalizeText } from './normalize-text.ts'
-import { parseSeatMarkdown, serializeSeat, type BotRoutine, type BotRunStatus, type GrokSyncState, type SeatDocument } from './org-files.ts'
+import { parseSeatMarkdown, serializeSeat, type BotRoutine, type BotRunStatus, type BotSkill, type GrokSyncState, type SeatDocument } from './org-files.ts'
 import { parseProcessesFile, processSlug, type ProcessFile, type ProcessImportRow } from './processes.ts'
 import type { GrokRequest } from './grok-requests.ts'
 
@@ -22,6 +22,8 @@ export interface SeatPatch {
   runs30d?: number
   tasksDone30d?: number
   routines?: BotRoutine[]
+  skills?: BotSkill[]
+  publicUrl?: string
   botStatus?: BotRunStatus
   owns?: string[]
   may?: string[]
@@ -280,6 +282,8 @@ export function patchSeatSource(slug: string, source: string, patch: SeatPatch):
   if (patch.runs30d !== undefined) next.runs30d = patch.runs30d
   if (patch.tasksDone30d !== undefined) next.tasksDone30d = patch.tasksDone30d
   if (patch.routines !== undefined) next.routines = patch.routines
+  if (patch.skills !== undefined) next.skills = patch.skills
+  if (patch.publicUrl !== undefined) next.publicUrl = patch.publicUrl
   if (patch.botStatus !== undefined) next.botStatus = patch.botStatus
   if (patch.owns !== undefined) next.owns = patch.owns
   if (patch.may !== undefined) next.may = patch.may
@@ -368,6 +372,15 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
     patch.routines = bot.routines
     changes.push(`${bot.routines.length} ${bot.routines.length === 1 ? 'routine' : 'routines'}`)
   }
+  // Like routines: a list Grok Bot reports replaces the seat's, and an empty one never clears it.
+  if (bot.skills.length && JSON.stringify(bot.skills) !== JSON.stringify(seat.skills ?? [])) {
+    patch.skills = bot.skills
+    changes.push(`${bot.skills.length} ${bot.skills.length === 1 ? 'skill' : 'skills'}`)
+  }
+  if (bot.publicUrl && bot.publicUrl !== (seat.publicUrl ?? '')) {
+    patch.publicUrl = bot.publicUrl
+    changes.push('public link')
+  }
   if (bot.botStatus && bot.botStatus !== seat.botStatus) {
     patch.botStatus = bot.botStatus
     changes.push(bot.botStatus)
@@ -395,7 +408,7 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
   return { kind: 'updated', name: seat.title, slug: seat.slug, renamed: patch.title !== undefined, changes, patch }
 }
 
-const PERFORMANCE_KEYS = new Set<keyof SeatPatch>(['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'routines'])
+const PERFORMANCE_KEYS = new Set<keyof SeatPatch>(['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'routines', 'skills', 'publicUrl'])
 const STAMP_KEYS = new Set<keyof SeatPatch>(['grokSync', 'grokSyncedAt'])
 
 /**
