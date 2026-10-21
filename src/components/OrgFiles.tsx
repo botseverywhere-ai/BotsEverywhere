@@ -18,7 +18,8 @@ const BACKUP_ROWS: { what: string; file: string; saved: boolean; restore: string
   { what: 'Work Chart processes', file: 'processes/', saved: true, restore: 'Restored exactly as in the backup' },
   { what: 'Log events: hires, syncs, Connector lines', file: 'log/', saved: true, restore: 'Restored' },
   { what: 'Daily run logs the bots write', file: 'log/YYYY-MM-DD.md', saved: true, restore: 'Restored exactly as in the backup' },
-  { what: "Connector's snapshot and waiting requests", file: 'grok/', saved: false, restore: 'Kept as they are now. The Connector rewrites them on its next run' },
+  { what: 'Bots waiting to be created in Grok Bot', file: 'grok/requests.json', saved: true, restore: 'Restored, pointing at the seat files on this computer. A backup made before this version keeps the ones here' },
+  { what: "Connector's snapshot", file: 'grok/snapshot.json', saved: false, restore: 'Kept as it is now. The Connector rewrites it on its next run' },
 ]
 
 export function OrgFiles({ slug, onImported }: { slug: string; onImported: () => Promise<void> }) {
@@ -202,10 +203,20 @@ async function importOrg(slug: string, list: FileList, setNotice: (notice: SaveN
     for (const file of files.filter((item) => item.webkitRelativePath.includes('/log/') && RUN_LOG_NAME.test(item.name))) {
       runLogs.push({ name: file.name, source: await file.text() })
     }
+    // Bots waiting to be created. A folder without the file keeps the requests here; a bad file is skipped.
+    let requests: unknown
+    const requestsFile = files.find((item) => item.webkitRelativePath.endsWith('/grok/requests.json'))
+    if (requestsFile) {
+      try {
+        requests = (JSON.parse(await requestsFile.text()) as { requests?: unknown }).requests
+      } catch {
+        requests = undefined
+      }
+    }
     const response = await fetch(`/api/orgs/${slug}/import`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ org, seats, work, activity, processes, runLogs }),
+      body: JSON.stringify({ org, seats, work, activity, processes, runLogs, requests }),
     })
     await finishImport(response, setNotice, onImported)
   } catch (error) {

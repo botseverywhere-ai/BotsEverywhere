@@ -379,7 +379,7 @@ export function orgZip(root: string, slug: string): { ok: true; body: Buffer; fi
   for (const seat of read.bundle.seats) {
     files.push({ name: `seats/${seat.slug}.md`, data: Buffer.from(seat.source.endsWith('\n') ? seat.source : `${seat.source}\n`) })
   }
-  // The rest of the organization, as the files are on disk. grok/ stays out: the Connector rewrites it every run.
+  // The rest of the organization, as the files are on disk. The snapshot stays out: the Connector rewrites it every run.
   const processDir = resolve(root, 'processes')
   if (existsSync(processDir)) {
     for (const name of readdirSync(processDir).filter((file) => file.endsWith('.md') && SEAT_SLUG.test(file.slice(0, -3))).sort()) {
@@ -400,7 +400,10 @@ export function orgZip(root: string, slug: string): { ok: true; body: Buffer; fi
       }
     }
   }
-  files.push({ name: BACKUP_NOTE, data: Buffer.from(`${JSON.stringify({ app: 'BotsEverywhere', version: 2, exportedAt: new Date().toISOString(), includes: ['processes', 'runLogs'] }, null, 2)}\n`) })
+  // Bots waiting to be created in Grok Bot. A file the app cannot read is left out.
+  const waiting = readRequests(root)
+  if (!waiting.error && existsSync(resolve(root, REQUESTS_PATH))) files.push({ name: REQUESTS_PATH, data: Buffer.from(serializeRequests(waiting.requests)) })
+  files.push({ name: BACKUP_NOTE, data: Buffer.from(`${JSON.stringify({ app: 'BotsEverywhere', version: 2, exportedAt: new Date().toISOString(), includes: ['processes', 'runLogs', 'requests'] }, null, 2)}\n`) })
   return { ok: true, body: zipStore(files), filename: `${slug}.zip` }
 }
 
@@ -410,6 +413,8 @@ const BACKUP_NOTE = 'backup.json'
 interface BackupExtras {
   processes?: { slug: string; source: string }[]
   runLogs?: { name: string; source: string }[]
+  /** Bots waiting to be created. Undefined keeps the requests here, as a backup from before they were saved does. */
+  requests?: GrokRequest[]
 }
 
 function keepOmittedSeats(root: string, bundle: OrgBundle): { bundle: OrgBundle; errors: string[]; retired: SeatDocument[] } {
@@ -2198,11 +2203,14 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
         send(res, 200, { ok: true, slug, files: imported.files })
         return
       }
-      // Import folder: the page reads the folder and sends its files. Processes and run logs come along when the folder has them.
+      // Import folder: the page reads the folder and sends its files. Processes, run logs, and waiting requests come along when the folder has them.
       const parsed = JSON.parse(raw.toString('utf8')) as OrgBundle & BackupExtras
+      // Requests go through the same reader as the file, so a bad entry is skipped.
+      const sentRequests = Array.isArray(parsed.requests) ? parseRequests(JSON.stringify({ requests: parsed.requests })) : null
       const extras: BackupExtras = {
         processes: Array.isArray(parsed.processes) ? parsed.processes : undefined,
         runLogs: Array.isArray(parsed.runLogs) ? parsed.runLogs : undefined,
+        requests: sentRequests?.ok ? sentRequests.requests : undefined,
       }
       const imported = importOrgBundle(root, slug, parsed, extras)
       if (!imported.ok) return send(res, imported.status, { errors: imported.errors })
@@ -2301,6 +2309,15 @@ function importOrgBundle(root: string, slug: string, parsed: OrgBundle, extras: 
     const processes = extras.processes.map((item) => ({ name: `${item.slug}.md`, source: item.source }))
     for (const name of replaceFolder(resolve(root, 'processes'), () => true, processes)) files.push(`orgs/${slug}/processes/${name}`)
   }
+  if (extras.requests) {
+    // A request names its seat file by absolute path, so it points at this computer's copy. Seats the backup lacks lose theirs.
+    const seats = new Set(bundle.seats.map((seat) => seat.slug))
+    const kept = extras.requests.filter((item) => seats.has(item.seat)).map((item) => ({ ...item, seatFile: resolve(root, 'seats', `${item.seat}.md`) }))
+    if (kept.length || existsSync(resolve(root, REQUESTS_PATH))) {
+      writeRequests(root, kept)
+      files.push(`orgs/${slug}/${REQUESTS_PATH}`)
+    }
+  }
   return { ok: true, files }
 }
 
@@ -2365,18 +2382,24 @@ function bundleFromZip(entries: { name: string; data: Buffer }[]): { ok: true; b
   }
   // A full backup says so; then processes and run logs are restored exactly, even when it has none.
   let full = false
+  let savesRequests = false
   const note = files.get(BACKUP_NOTE)
   if (note) {
     try {
       const data = JSON.parse(normalizeText(note.toString('utf8'))) as { includes?: unknown }
       full = Array.isArray(data.includes) && data.includes.includes('processes') && data.includes.includes('runLogs')
+      savesRequests = Array.isArray(data.includes) && data.includes.includes('requests')
     } catch {
       return { ok: false, errors: [`${BACKUP_NOTE}: not JSON.`] }
     }
   }
+  // A backup that saved requests restores them, none included; a bad requests file is skipped and the ones here stay.
+  const requestsFile = files.get(REQUESTS_PATH)
+  const parsedRequests = requestsFile ? parseRequests(requestsFile.toString('utf8')) : null
   const extras: BackupExtras = {
     processes: full || processes.length ? processes : undefined,
     runLogs: full || runLogs.length ? runLogs : undefined,
+    requests: parsedRequests ? (parsedRequests.ok ? parsedRequests.requests : undefined) : savesRequests ? [] : undefined,
   }
   const seats: SeatDocument[] = []
   for (const [name, data] of files) {
