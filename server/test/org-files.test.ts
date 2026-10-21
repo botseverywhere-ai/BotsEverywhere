@@ -15,7 +15,7 @@ import {
 } from '../src/org-files.ts'
 import { parseOrgMarkdown } from '../src/org-markdown.ts'
 import { unzipStore, zipStore } from '../src/zip-store.ts'
-import { appendActivity, readOrgDir, seatFile, startTemplateServer, writeOrgDir } from '../src/template-server.ts'
+import { appendActivity, createOrgFiles, readOrgDir, seatFile, startTemplateServer, writeOrgDir } from '../src/template-server.ts'
 
 function seat(patch: Partial<SeatDocument> = {}): SeatDocument {
   const draft = {
@@ -179,15 +179,22 @@ describe('org files', () => {
     assert.ok(safe?.endsWith(`${join('seats', 'you.md')}`))
   })
 
-  it('loads the shipped starter and the harbor sample', () => {
-    const orgDir = fileURLToPath(new URL('../../orgs/your-company', import.meta.url))
-    const harborDir = fileURLToPath(new URL('../../samples/harbor', import.meta.url))
-    const org = readOrgDir(orgDir, 'org')
-    const harbor = readOrgDir(harborDir, 'harbor')
-    assert.equal(org.ok, true)
-    assert.equal(harbor.ok, true)
-    if (org.ok) assert.ok(org.bundle.seats.every((item) => item.addToGrokBotUrl === ''))
-    if (harbor.ok) assert.ok(harbor.bundle.seats.every((item) => item.addToGrokBotUrl === ''))
+  it('loads a new org and the harbor sample, both without share links', () => {
+    // A new org, not the one on this computer: orgs/ is each person's own data and is not in git.
+    const fresh = mkdtempSync(join(tmpdir(), 'be-starter-'))
+    try {
+      const made = createOrgFiles(fresh, 'Your organization', 'You')
+      assert.ok(made.ok)
+      const harborDir = fileURLToPath(new URL('../../samples/harbor', import.meta.url))
+      const org = readOrgDir(join(fresh, made.slug), made.slug)
+      const harbor = readOrgDir(harborDir, 'harbor')
+      assert.equal(org.ok, true)
+      assert.equal(harbor.ok, true)
+      if (org.ok) assert.ok(org.bundle.seats.every((item) => item.addToGrokBotUrl === ''))
+      if (harbor.ok) assert.ok(harbor.bundle.seats.every((item) => item.addToGrokBotUrl === ''))
+    } finally {
+      rmSync(fresh, { recursive: true, force: true })
+    }
   })
 
   it('includes every preview company as a read-only sample folder', () => {

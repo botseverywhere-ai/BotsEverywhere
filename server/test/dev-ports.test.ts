@@ -83,7 +83,12 @@ test('overview, seat cards, and hire use the save alert', () => {
   const workspace = readFileSync(join(root, 'src/pages/Workspace.tsx'), 'utf8')
   const drawer = readFileSync(join(root, 'src/components/SeatDrawer.tsx'), 'utf8')
   const hire = readFileSync(join(root, 'src/components/HireDrawer.tsx'), 'utf8')
-  const starter = readFileSync(join(root, 'orgs/your-company/org.md'), 'utf8')
+  // A new org's org.md, not the one on this computer: orgs/ is each person's own data and is not in git.
+  const fresh = mkdtempSync(join(tmpdir(), 'be-starter-'))
+  const made = createOrgFiles(fresh, 'Your organization', 'You')
+  assert.ok(made.ok)
+  const starter = readFileSync(join(fresh, made.slug, 'org.md'), 'utf8')
+  rmSync(fresh, { recursive: true, force: true })
   const files = readFileSync(join(root, 'src/components/OrgFiles.tsx'), 'utf8')
   const docs = readFileSync(join(root, 'src/pages/DocsPage.tsx'), 'utf8')
   assert.match(overview, /saveNotice\(true, 'Org saved'\)/)

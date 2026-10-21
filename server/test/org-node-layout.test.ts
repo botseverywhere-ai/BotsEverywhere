@@ -1,15 +1,31 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
+import { fileURLToPath } from 'node:url'
 import { chromium, type Page } from 'playwright'
+import { copyTemplateOrg } from '../src/template-server.ts'
 
-const base = 'http://127.0.0.1:5199'
+// CHROME_PATH runs it with another Chrome, like the one installed on Windows; without Chrome it is skipped.
+const CHROME = process.env.CHROME_PATH || '/usr/bin/google-chrome'
+// Its own ports, so a dev server already running on this computer is never used or disturbed.
+const WEB_PORT = 5390
+const WRITER_PORT = 8890
+const base = `http://127.0.0.1:${WEB_PORT}`
 const MIN_WIDTH = 200
 
-test('org chart nodes stay at least 200px wide and do not overlap', { timeout: 120_000 }, async () => {
-  const server = await ensureServer()
+test('org chart nodes stay at least 200px wide and do not overlap', { timeout: 120_000, skip: existsSync(CHROME) ? false : `needs Chrome at ${CHROME}` }, async () => {
+  // An org of its own in a temporary orgs folder: orgs/ is each person's data and is not in git.
+  const dir = mkdtempSync(join(tmpdir(), 'be-layout-'))
+  const orgs = join(dir, 'orgs')
+  mkdirSync(orgs)
+  const copied = copyTemplateOrg(orgs, fileURLToPath(new URL('../../samples', import.meta.url)), 'corbett-construction')
+  assert.ok(copied.ok, copied.ok ? '' : copied.errors.join(' '))
+  const server = await startApp(orgs)
   const browser = await chromium.launch({
-    executablePath: '/usr/bin/google-chrome',
+    executablePath: CHROME,
     headless: true,
     args: ['--no-sandbox', '--disable-gpu'],
   })
@@ -21,7 +37,7 @@ test('org chart nodes stay at least 200px wide and do not overlap', { timeout: 1
     ]) {
       await page.setViewportSize(viewport)
       await assertChart(page, '/#sample/corbett-construction?view=org', viewport.width, true)
-      await assertChart(page, '/#o/your-company/org', viewport.width, false)
+      await assertChart(page, `/#o/${copied.slug}/org`, viewport.width, false)
     }
     await page.goto(`${base}/#sample/corbett-construction?view=org`, { waitUntil: 'domcontentloaded' })
     await page.waitForSelector('.org-avatar-human')
@@ -34,7 +50,8 @@ test('org chart nodes stay at least 200px wide and do not overlap', { timeout: 1
     assert.ok(initials >= 11 - 0.05, `initials paint at ${initials}px`)
   } finally {
     await browser.close()
-    if (server) server.kill('SIGTERM')
+    server.kill('SIGTERM')
+    rmSync(dir, { recursive: true, force: true })
   }
 })
 
@@ -111,9 +128,14 @@ async function assertChart(page: Page, path: string, viewport: number, expectSib
   }
 }
 
-async function ensureServer(): Promise<ReturnType<typeof spawn> | null> {
-  if (await reachable()) return null
-  const child = spawn('npm', ['run', 'dev'], { cwd: process.cwd(), stdio: 'ignore', detached: false })
+/** The site and the file writer, as npm run dev starts them, over the given orgs folder and on this test's own ports. */
+async function startApp(orgs: string): Promise<ReturnType<typeof spawn>> {
+  const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/dev-all.ts'], {
+    cwd: fileURLToPath(new URL('../..', import.meta.url)),
+    env: { ...process.env, ORGS_DIR: orgs, PORT: String(WRITER_PORT), WEB_PORT: String(WEB_PORT) },
+    stdio: 'ignore',
+    detached: false,
+  })
   const deadline = Date.now() + 60_000
   while (Date.now() < deadline) {
     if (await reachable()) return child
