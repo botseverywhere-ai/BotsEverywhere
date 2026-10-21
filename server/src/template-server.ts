@@ -1432,7 +1432,7 @@ export interface SeatProfileInput {
 
 /**
  * Saves a bot's Profile: the instructions Grok Bot gets, its skills, and its routines. The seat card and the manager
- * are never touched. An imported bot's skills and routines come from Grok Bot, so they are refused here.
+ * are never touched. Any bot of your own takes skills and routines; a Connector report merges into them.
  */
 export function updateSeatProfile(root: string, orgId: string, slug: string, input: SeatProfileInput): { ok: true; file: string } | { ok: false; errors: string[] } {
   if (unsafePath(slug) || !SEAT_SLUG.test(slug)) return { ok: false, errors: ['Seat slug must be a lowercase slug.'] }
@@ -1441,9 +1441,6 @@ export function updateSeatProfile(root: string, orgId: string, slug: string, inp
   const parsed = parseSeatMarkdown(slug, readText(path))
   if (!parsed.ok) return parsed
   if (parsed.seat.kind !== 'bot') return { ok: false, errors: ['Only a bot has a Profile to save.'] }
-  if (parsed.seat.seatOrigin === 'existing' && (input.skills !== undefined || input.routines !== undefined)) {
-    return { ok: false, errors: [`${parsed.seat.title} was imported from Grok Bot, so its skills and routines come from Grok Bot.`] }
-  }
   const next: SeatDocument = { ...parsed.seat, source: '' }
   if (input.instructions !== undefined) {
     const text = typeof input.instructions === 'string' ? input.instructions.trim() : ''

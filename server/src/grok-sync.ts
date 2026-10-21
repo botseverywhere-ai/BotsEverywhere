@@ -368,14 +368,16 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
     patch.tasksDone30d = bot.tasksDone30d
     changes.push(`${bot.tasksDone30d} tasks`)
   }
-  if (bot.routines.length && JSON.stringify(bot.routines) !== JSON.stringify(seat.routines ?? [])) {
-    patch.routines = bot.routines
-    changes.push(`${bot.routines.length} ${bot.routines.length === 1 ? 'routine' : 'routines'}`)
+  // A report merges by name: Grok Bot updates its own entries and adds new ones; the ones added in the app stay.
+  const routines = mergeByName(seat.routines ?? [], bot.routines, true)
+  if (JSON.stringify(routines) !== JSON.stringify(seat.routines ?? [])) {
+    patch.routines = routines
+    changes.push(`${routines.length} ${routines.length === 1 ? 'routine' : 'routines'}`)
   }
-  // Like routines: a list Grok Bot reports replaces the seat's, and an empty one never clears it.
-  if (bot.skills.length && JSON.stringify(bot.skills) !== JSON.stringify(seat.skills ?? [])) {
-    patch.skills = bot.skills
-    changes.push(`${bot.skills.length} ${bot.skills.length === 1 ? 'skill' : 'skills'}`)
+  const skills = mergeByName(seat.skills ?? [], bot.skills, false)
+  if (JSON.stringify(skills) !== JSON.stringify(seat.skills ?? [])) {
+    patch.skills = skills
+    changes.push(`${skills.length} ${skills.length === 1 ? 'skill' : 'skills'}`)
   }
   if (bot.publicUrl && bot.publicUrl !== (seat.publicUrl ?? '')) {
     patch.publicUrl = bot.publicUrl
@@ -406,6 +408,25 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
   if (!changes.length) return { kind: 'unchanged', name: seat.title, slug: seat.slug }
   patch.grokSyncedAt = syncedAt
   return { kind: 'updated', name: seat.title, slug: seat.slug, renamed: patch.title !== undefined, changes, patch }
+}
+
+/**
+ * Entries the seat has, updated by Grok Bot's entry of the same name (any case), then Grok Bot's new ones.
+ * Nothing is dropped. A field Grok Bot leaves out keeps the seat's value, except a routine's pause: Grok Bot runs it,
+ * so a routine it reports without enabled: false is active.
+ */
+function mergeByName<T extends { name: string; enabled?: boolean }>(current: T[], reported: T[], pauseFromReport: boolean): T[] {
+  const key = (item: { name: string }) => item.name.trim().toLowerCase()
+  const byName = new Map(reported.map((item) => [key(item), item]))
+  const merged = current.map((item) => {
+    const update = byName.get(key(item))
+    if (!update) return item
+    const next = { ...item, ...update }
+    if (pauseFromReport && update.enabled === undefined) delete next.enabled
+    return next
+  })
+  const known = new Set(current.map(key))
+  return [...merged, ...reported.filter((item) => !known.has(key(item)))]
 }
 
 const PERFORMANCE_KEYS = new Set<keyof SeatPatch>(['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'routines', 'skills', 'publicUrl'])

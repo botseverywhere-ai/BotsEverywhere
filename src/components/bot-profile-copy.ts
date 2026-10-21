@@ -13,14 +13,14 @@ export interface ProfileParts {
   note: string
   /** none: Grok Bot owns the prompt. directory: the directory prompt, editable after hiring. instructions: typed by hand. */
   prompt: 'none' | 'directory' | 'instructions'
-  /** An imported bot's skills and routines come from Grok Bot, so they are shown, not edited. */
+  /** Skills and routines can be added on every bot of your own; a Connector report merges into them. */
   listsEditable: boolean
   /** A bot added by hand and not in Grok Bot yet can be sent there from Profile. */
   addToGrok: boolean
 }
 
 export function profileParts(seat: { origin?: BotOrigin; grokSync?: 'new' | 'synced' | 'missing'; grokBotUrl?: string | null }): ProfileParts {
-  if (seat.origin === 'imported') return { note: IMPORTED_NOTE, prompt: 'none', listsEditable: false, addToGrok: false }
+  if (seat.origin === 'imported') return { note: IMPORTED_NOTE, prompt: 'none', listsEditable: true, addToGrok: false }
   if (seat.origin === 'directory') return { note: '', prompt: 'directory', listsEditable: true, addToGrok: false }
   return { note: '', prompt: 'instructions', listsEditable: true, addToGrok: grokSyncClass({ grokSync: seat.grokSync, grokBotUrl: seat.grokBotUrl ?? '' }) !== 'is-in-grok' }
 }

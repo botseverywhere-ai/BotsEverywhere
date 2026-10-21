@@ -130,15 +130,43 @@ test('Profile saves a hand-added bot\'s instructions, skills, and routines, and 
   })
 })
 
-test('an imported bot\'s skills and routines come from Grok Bot, so Profile refuses to change them', async () => {
+test('Profile adds skills and routines to an imported bot too', async () => {
   await withServer(async (base, orgs, org) => {
     const imported = createExistingBot(join(orgs, org), org, { name: 'Grok Bot', grokBotUrl: 'grokbot://app/v1/agent?id=1', reportsTo: 'you', allowEmptyCard: true, routines: [{ name: 'daily summary', schedule: '15 18 * * 1-5' }] })
     assert.ok(imported.ok, imported.ok ? '' : imported.errors.join(' '))
-    const refused = await put(base, org, imported.slug, { skills: SKILLS })
-    assert.equal(refused.status, 422)
-    assert.deepEqual(seatIn(orgs, org, imported.slug).routines, [{ name: 'daily summary', schedule: '15 18 * * 1-5' }])
+    const routines = [{ name: 'daily summary', schedule: '15 18 * * 1-5' }, { name: 'Weekly recap', schedule: '0 9 * * 1', trigger: 'schedule' }]
+    assert.equal((await put(base, org, imported.slug, { skills: SKILLS, routines })).status, 200)
+    const seat = seatIn(orgs, org, imported.slug)
+    assert.deepEqual(seat.skills, SKILLS)
+    assert.deepEqual(seat.routines, routines)
+    assert.equal(seat.seatOrigin, 'existing', 'it stays an imported bot')
     assert.equal((await put(base, org, 'nobody', { instructions: 'x' })).status, 422)
   })
+})
+
+test('a Connector report merges into the skills and routines: same name updated, new ones added, the ones added here kept', () => {
+  const seat = parseSeatMarkdown('grok-bot', serializeExistingSeat({
+    name: 'Grok Bot', grokBotUrl: LINK, reportsTo: 'you', owns: ['Route any task'], may: [], mustAskBefore: [], doneWhen: [], grokSync: 'synced',
+    skills: [{ name: 'Notes', description: 'Added here' }],
+    routines: [{ name: 'daily summary', schedule: '15 18 * * 1-5', description: 'Posts the day, written here' }, { name: 'My outline', schedule: 'Fridays', description: 'Added here' }],
+  }))
+  assert.ok(seat.ok)
+  const snap = parseSnapshot(JSON.stringify({ syncedAt: '2026-10-21T12:00:00.000Z', bots: [{ name: 'Grok Bot', grokBotUrl: LINK, skills: [{ name: 'Route', description: 'Send a task on' }], routines: [{ name: 'Daily Summary', schedule: '15 18 * * 1-5', lastRun: '2026-10-21T16:15:00.000Z' }, { name: 'weekly report', schedule: '0 9 * * 1' }] }], processes: [] }), '2026-10-21T12:00:00.000Z')
+  assert.ok(snap.ok)
+  const row = planSync(snap.snapshot, [seat.seat], []).rows.find((item) => item.kind === 'updated')
+  assert.ok(row && row.kind === 'updated')
+  assert.deepEqual(row.patch.skills, [{ name: 'Notes', description: 'Added here' }, { name: 'Route', description: 'Send a task on' }])
+  assert.deepEqual(row.patch.routines, [
+    { name: 'Daily Summary', schedule: '15 18 * * 1-5', lastRun: '2026-10-21T16:15:00.000Z', description: 'Posts the day, written here' },
+    { name: 'My outline', schedule: 'Fridays', description: 'Added here' },
+    { name: 'weekly report', schedule: '0 9 * * 1' },
+  ], 'Grok Bot updates its routine without losing the line written here, and nothing added here is dropped')
+  assert.ok(performanceOnly(row))
+  const written = patchSeatSource('grok-bot', seat.seat.source, row.patch)
+  assert.ok(written.ok)
+  const after = parseSeatMarkdown('grok-bot', written.source)
+  assert.ok(after.ok)
+  assert.equal(planSync(snap.snapshot, [after.seat], []).rows[0]?.kind, 'unchanged', 'the same report again changes nothing')
 })
 
 const LINK = 'grokbot://app/v1/agent?id=1'

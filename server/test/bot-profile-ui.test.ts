@@ -44,7 +44,7 @@ test('Profile shows how each kind of bot works: a note for imported bots, the ed
   assert.equal(IMPORTED_NOTE, 'This seat is not in the directory. It was imported from Grok Bot.')
   assert.equal(INSTRUCTIONS_LABEL, 'Instructions for Grok Bot')
   assert.equal(INSTRUCTIONS_PLACEHOLDER, 'What this bot should do, in your words…')
-  assert.deepEqual(profileParts({ origin: 'imported', grokSync: 'synced', grokBotUrl: 'grokbot://x' }), { note: IMPORTED_NOTE, prompt: 'none', listsEditable: false, addToGrok: false })
+  assert.deepEqual(profileParts({ origin: 'imported', grokSync: 'synced', grokBotUrl: 'grokbot://x' }), { note: IMPORTED_NOTE, prompt: 'none', listsEditable: true, addToGrok: false }, 'skills and routines can be added to every bot')
   assert.deepEqual(profileParts({ origin: 'directory' }), { note: '', prompt: 'directory', listsEditable: true, addToGrok: false })
   assert.deepEqual(profileParts({ origin: 'manual' }), { note: '', prompt: 'instructions', listsEditable: true, addToGrok: true }, 'a bot added by hand and not in Grok Bot yet')
   assert.equal(profileParts({ origin: 'manual', grokSync: 'synced' }).addToGrok, false, 'once in Grok Bot there is nothing to add')
