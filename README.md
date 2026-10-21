@@ -30,11 +30,12 @@ orgs/<slug>/work-chart.md
 orgs/<slug>/processes/<slug>.md
 orgs/<slug>/log/<event>.md
 orgs/<slug>/grok/snapshot.json   written by the Connector bot in Grok Bot
+orgs/connector.json              written by the Connector: when it last ran, and bots in no org
 ```
 
 `directory/` stays at the repo root. It is the shared bot catalog, not part of an org. A save or a hire writes only inside the org folder you picked.
 
-To keep the org in step with Grok Bot, paste the Connector prompt from Organization Overview into Grok Bot once. The Connector then writes `grok/snapshot.json` every 15 minutes, and **Sync with Grok Bot** on the org tab row previews what changed and applies it when you confirm. Nothing is ever deleted by a sync. The current state of this work is in [docs/STATUS.md](docs/STATUS.md).
+To keep your orgs in step with Grok Bot, copy the Connector prompt from the Connect bots tab and paste it into Grok Bot once. One Connector serves every org in this copy. It runs every 15 minutes unless you change **Runs every** on Connect bots, and writes each org's `grok/snapshot.json` and `orgs/connector.json`. Grok Bot's numbers reach Performance on every run. For new bots, missing bots, and routines, **Sync with Grok Bot** on the org tab row previews what changed and applies it when you confirm. Nothing is ever deleted by a sync. The current state of this work is in [docs/STATUS.md](docs/STATUS.md).
 
 The writer root is `ORGS_DIR` (default `./orgs`). Nothing is uploaded. Commit `orgs/` with git if you want history. `samples/` stays read-only. The starter org is `orgs/your-company/`.
 

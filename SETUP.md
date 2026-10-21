@@ -63,7 +63,10 @@ You can also edit the files by hand:
 | `orgs/<slug>/processes/<slug>.md` | One process: trigger, ordered steps, done when. The Work Chart tab shows these |
 | `orgs/<slug>/log/<event>.md` | One log event (hire, fire, work, approval, exception) |
 | `orgs/<slug>/log/YYYY-MM-DD.md` | The run log the bots append to, one line per step |
-| `orgs/<slug>/grok/snapshot.json` | Written by the Connector bot in Grok Bot every 15 minutes. The app only reads it. **Sync with Grok Bot** applies it |
+| `orgs/<slug>/grok/snapshot.json` | Written by the Connector bot in Grok Bot on each run, every 15 minutes unless **Runs every** on Connect bots says otherwise. The app only reads it. **Sync with Grok Bot** applies it |
+| `orgs/<slug>/grok/requests.json` | Bots the app asked the Connector to create (**Create in Grok Bot**). The Connector reads it |
+| `orgs/project.json` | This copy's id, which names its Connector, and how often the Connector runs. The app writes it |
+| `orgs/connector.json` | Written by the Connector last on each run: when it ran, its interval, and bots in Grok Bot that belong to no org |
 
 `directory/` at the repo root is the shared bot catalog. Hiring writes `orgs/<chosen>/seats/<bot>.md` and adds that seat to that org's chart. It does not write another org's folder.
 

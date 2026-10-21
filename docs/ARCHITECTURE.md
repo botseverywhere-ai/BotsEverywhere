@@ -29,11 +29,16 @@ One clone looks like this:
 ```text
 botseverywhere/
   the app            site code (src/, server/, public/)
-  orgs/<slug>/
-    org.md           organization overview and the org chart
-    seats/*.md       one file per seat
-    work-chart.md    triggers, steps, handoffs, checkpoints
-    log/*.md         one file per log event
+  orgs/
+    project.json     this copy's id and how often the Connector runs
+    connector.json   written by the Connector each run: bots in no org
+    <slug>/
+      org.md         organization overview and the org chart
+      seats/*.md     one file per seat
+      work-chart.md  triggers, steps, handoffs, checkpoints
+      processes/*.md one file per process
+      log/*.md       run logs by date, and one file per log event
+      grok/          snapshot.json from the Connector, requests.json from the app
   directory/*.md     shared bot catalog, one prompt per bot
 ```
 
@@ -43,7 +48,7 @@ A computer can hold many orgs, each in its own `orgs/<slug>/` folder. Hiring ask
 
 `samples/` holds the read-only template organizations. Copying one creates a new folder under `orgs/`. It does not edit the sample.
 
-**Import bots file**, on Organization Overview, reads one JSON file and writes one `source: existing` seat file per bot. The format is in [bots-file.md](bots-file.md). A name whose file already exists is saved as `<slug>-2.md` and does not overwrite the first file. `reportsTo` is a seat name. It defaults to You. Bots in the same file can report to each other: the writer creates every file first, then links those reports. The seat card shows **Open in Grok Bot** when `grokBotUrl` is set. **Add existing bot** on the org chart writes one of these seats at a time.
+**Import bots file**, on the Connect bots tab, reads one JSON file and writes one `source: existing` seat file per bot. The format is in [bots-file.md](bots-file.md). A name whose file already exists is saved as `<slug>-2.md` and does not overwrite the first file. `reportsTo` is a seat name. It defaults to You. Bots in the same file can report to each other: the writer creates every file first, then links those reports. The seat card shows **Open in Grok Bot** when `grokBotUrl` is set. **Add existing bot** on the org chart writes one of these seats at a time.
 
 ## 4. Navigation
 
@@ -57,16 +62,18 @@ The main menu is the same on both builds:
 Inside an org, a second row of tabs:
 
 - **Organization Overview**
+- **Connect bots** (your own orgs only)
 - **Org Chart**
 - **Work Chart**
 - **Performance**
 - **Logs**
+- **Backup** (your own orgs only)
 
 Local routes look like `#/org/<slug>/overview`. A template you are only browsing uses `#/template/<slug>/overview` and stays read-only until you copy it into `orgs/`.
 
 ## 5. Making it live with Grok Bot
 
-The org folder is the channel. The Connector routine in Grok Bot runs every 15 minutes, reads `org.md`, `seats/`, and `processes/`, keeps one routine per process, and writes `orgs/<slug>/grok/snapshot.json` with every bot and routine it runs. Bots append one run-log line per step to `orgs/<slug>/log/<date>.md`. The app watches that folder, so Logs, Performance, and the work chart update while you watch.
+The `orgs/` folder is the channel. One Connector bot in Grok Bot serves every org in a copy of BotsEverywhere. It runs every 15 minutes unless **Runs every** on the Connect bots tab sets another interval. On each run it goes through every org folder: it creates the bots the app asked for in `grok/requests.json`, reads `org.md`, `seats/`, and `processes/`, keeps one routine per process, and writes `orgs/<slug>/grok/snapshot.json` with the bots that belong to that org. Last it writes `orgs/connector.json`, which lists bots that belong to no org and shows the app when the Connector last ran. Bots append one run-log line per step, and one per chat, to `orgs/<slug>/log/<date>.md`. The app watches that folder, so Logs, Performance, and the work chart update while you watch, and Grok Bot's numbers reach Performance on every run.
 
 A new snapshot shows up on the **Sync with Grok Bot** button as a count. The drawer previews the merge: new bots become seats marked New, bots missing from Grok Bot are tagged and never deleted, matched bots take their link, routines and run numbers from Grok Bot and keep the manager, step, and card text set in the app. New routines become processes. Confirm applies it and logs one event.
 
@@ -75,6 +82,8 @@ The other direction needs no channel. Changing a seat's manager in the app rewri
 There is no public Grok Bot API, so nothing is read back faster than the Connector's schedule.
 
 The org chart shows what the sync knows. A bot card is green with **In Grok Bot** when the last snapshot had it, or when the seat carries a Grok Bot link and no snapshot has said otherwise. It is dashed with **Not in Grok Bot** when a snapshot lacked it, for example a bot hired from the directory that was never created in Grok Bot. **Not synced yet** means no link and no snapshot. The chart pans by dragging and zooms with the wheel or the buttons, and the seat drawer's **Reports to** select moves a seat under another.
+
+Retire takes a seat out of one org; the bot keeps running in Grok Bot. Grok Bot gives the Connector no way to delete a bot, so **Delete in Grok Bot** on a retired bot opens it there and the person deletes it by hand. The app marks the seat deleted once a later Connector run no longer reports that bot anywhere.
 
 Status of this work and the next steps are in [STATUS.md](STATUS.md).
 
