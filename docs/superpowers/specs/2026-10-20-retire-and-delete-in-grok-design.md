@@ -1,6 +1,6 @@
 # Retired in the legend, Delete from Grok Bot, and last sync in the header
 
-Date: 2026-10-20. Status: draft for Miguel's review.
+Date: 2026-10-20. Status: built, with one change. Grok Bot gives the Connector no delete tool, so section 3's delete request, its Cancel, and the Connector instruction were dropped (commits `47613c4`, `e8715ad`). **Delete in Grok Bot** opens the bot so the person deletes it there, and each Connector run marks a retired bot deleted (`grokDeletedAt`) once no report lists it. Sections 1 and 2 are built; later commits made every legend number open a list. See `AGENTS.md`.
 
 ## Why
 
