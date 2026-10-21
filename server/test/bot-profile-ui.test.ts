@@ -6,7 +6,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { createExistingBot, createHiredSeat, createOrgFiles, readOrgDir, updateSeatProfile } from '../src/template-server.ts'
 import { companyFromBundle } from '../../src/org/company.ts'
-import { CRON_PRESETS, IMPORTED_NOTE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from '../../src/components/bot-profile-copy.ts'
+import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from '../../src/components/bot-profile-copy.ts'
 
 const source = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8')
 const CARD = { owns: ['Sorting new leads'], may: ['Read the lead list'], mustAskBefore: ['Contacting a lead'], doneWhen: ['Every lead is marked'] }
@@ -120,4 +120,13 @@ test('the prompt box in Profile reads like the directory prompt: paper backgroun
   const css = source('../../src/styles/app.css')
   assert.match(css, /\.bot-prompt \{[^}]*background: var\(--color-paper\)/)
   assert.match(css, /\.bot-prompt \{[^}]*font-family: var\(--font-mono\)/)
+})
+
+test('an imported bot\'s Profile opens with a card that says it came from Grok Bot', () => {
+  assert.equal(IMPORTED_TITLE, 'Imported from Grok Bot')
+  const profile = source('../../src/components/BotProfile.tsx')
+  assert.match(profile, /<div className="profile-origin" role="note">\s*<strong>\{IMPORTED_TITLE\}<\/strong>\s*<p>\{IMPORTED_NOTE\}<\/p>/)
+  const css = source('../../src/styles/app.css')
+  assert.match(css, /\.profile-origin \{[^}]*border-left: 3px solid var\(--color-green-400\)/, 'the same green bar as an In Grok Bot card')
+  assert.match(css, /\.profile-origin \{[^}]*background: var\(--color-green-50\)/)
 })

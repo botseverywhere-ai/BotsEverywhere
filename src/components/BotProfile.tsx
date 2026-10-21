@@ -4,7 +4,7 @@ import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import { ROUTINE_STARTS, type BotRoutine, type RoutineStart } from '../../server/src/org-files.ts'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
-import { CRON_PRESETS, IMPORTED_NOTE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
+import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
 
 type Skill = { name: string; description?: string }
 
@@ -37,7 +37,12 @@ export function BotProfile({ seat, grokRequestedAt, onProfile, onCreateInGrok }:
 
   return (
     <div className="bot-profile">
-      {parts.note ? <p className="auth-note">{IMPORTED_NOTE}</p> : null}
+      {parts.note ? (
+        <div className="profile-origin" role="note">
+          <strong>{IMPORTED_TITLE}</strong>
+          <p>{IMPORTED_NOTE}</p>
+        </div>
+      ) : null}
       {parts.prompt === 'directory' && directory === undefined ? <p className="auth-note">Loading the directory profile…</p> : null}
       {parts.prompt === 'directory' && directory !== undefined ? (
         <>

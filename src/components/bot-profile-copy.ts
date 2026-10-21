@@ -4,6 +4,7 @@ import { grokSyncClass } from './sync-copy.ts'
 /** Where a bot seat came from: hired from the directory, imported from Grok Bot, or added by hand with Add a seat. */
 export type BotOrigin = 'directory' | 'imported' | 'manual'
 
+export const IMPORTED_TITLE = 'Imported from Grok Bot'
 export const IMPORTED_NOTE = 'This seat is not in the directory. It was imported from Grok Bot.'
 export const INSTRUCTIONS_LABEL = 'Instructions for Grok Bot'
 export const INSTRUCTIONS_PLACEHOLDER = 'What this bot should do, in your words…'
