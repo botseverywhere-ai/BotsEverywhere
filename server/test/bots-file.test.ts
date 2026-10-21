@@ -447,7 +447,7 @@ test('a Grok Bot file with loose fields still imports', () => {
 })
 
 test('performance fields are optional, lenient, and round-trip through the seat file', () => {
-  assert.match(GROK_BOTS_PROMPT, /For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines \(name \+ schedule or trigger \+ last run\), and status \(active, paused, or retired\)\./)
+  assert.match(GROK_BOTS_PROMPT, /For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines \(name, description, how it starts, schedule and time zone or event, whether it is paused, last run\), and status \(active, paused, or retired\)\./)
   assert.match(GROK_BOTS_PROMPT, /If you do not know a value, leave the field out\. Never estimate or invent numbers\./)
   const parsed = parseBotsFile(JSON.stringify({
     bots: [{

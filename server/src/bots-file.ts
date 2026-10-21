@@ -1,4 +1,4 @@
-import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
+import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, routineDetails, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
 
 /** One bot from a bots file, after the field names are normalized. */
 export interface BotsFileRow {
@@ -191,6 +191,7 @@ function readRoutines(value: unknown): { routines: BotRoutine[]; note: string } 
       skipped += 1
       continue
     }
+    // An older file put the schedule in trigger, in words; it stays the schedule the Seat card shows. A trigger that names a start is also the start.
     const scheduleValue = record.schedule ?? record.trigger
     const schedule = typeof scheduleValue === 'string' ? scheduleValue.trim() : scheduleValue === undefined || scheduleValue === null ? '' : ''
     if (scheduleValue !== undefined && scheduleValue !== null && scheduleValue !== '' && !schedule) skipped += 1
@@ -198,7 +199,7 @@ function readRoutines(value: unknown): { routines: BotRoutine[]; note: string } 
     if (last.note) skipped += 1
     const routine: BotRoutine = { name, schedule }
     if (last.value) routine.lastRun = last.value
-    routines.push(routine)
+    routines.push({ ...routine, ...routineDetails(record) })
   }
   return { routines, note: skipped ? 'routines: some entries were left out.' : '' }
 }

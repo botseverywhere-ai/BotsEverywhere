@@ -34,7 +34,7 @@ Use exactly this JSON format and nothing else:
       "runs30d": 0,
       "tasksDone30d": 0,
       "routines": [
-        { "name": "routine name", "schedule": "schedule or trigger", "description": "one line on what it does", "lastRun": "ISO datetime" }
+        { "name": "routine name", "description": "one line on what it does", "trigger": "schedule, or the product an event comes from (slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty)", "schedule": "the cron line, like 0 9 * * 1-5, for a schedule", "timeZone": "IANA time zone, or leave it out for the bot's own", "event": "for an event, a short rule like Mentions in #support", "enabled": true, "lastRun": "ISO datetime" }
       ],
       "skills": [
         { "name": "skill name", "description": "one line on what it does" }
@@ -51,7 +51,7 @@ Rules:
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
 - owns, may, and needsApproval are lists of short strings.
 - doneWhen is one string.
-- For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines (name + schedule or trigger + last run), and status (active, paused, or retired).
+- For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines (name, description, how it starts, schedule and time zone or event, whether it is paused, last run), and status (active, paused, or retired).
 - skills are the reusable workflows listed on the bot: a name and, when you can see it, one line on what it does. Leave the list out if you see none.
 - publicUrl is the bot's public share link. Include it only when the bot is public and you can see the link.
 - If you do not know a value, leave the field out. Never estimate or invent numbers.
@@ -102,7 +102,7 @@ One JSON object. The only required key is `bots`, a list.
 | `lastActive` | no | ISO datetime of the bot's last run. This is not the time the file was imported. |
 | `runs30d` | no | Whole number. A numeric string is coerced. Anything else is left out and counted as a note. |
 | `tasksDone30d` | no | Same as `runs30d`. |
-| `routines` | no | A list of `{ name, schedule or trigger, description, lastRun }`. `description` is one line on what it does, never the instructions. A bad entry is skipped and counted as a note. |
+| `routines` | no | A list of `{ name, description, trigger, schedule, timeZone, event, enabled, lastRun }`. `trigger` is `schedule` or the product an event comes from (`slack`, `github`, `email`, `webhook`, `microsoftTeams`, `linear`, `sentry`, `pagerduty`; `cron` reads as `schedule`). `schedule` is the cron line; an older file's schedule in words, or in `trigger`, still loads. `timeZone` is an IANA name; one that does not exist is left out. `enabled: false` means paused. `description` is one line on what it does, never the instructions. A bad entry is skipped and counted as a note. |
 | `skills` | no | A list of `{ name, description }`: the reusable workflows Grok Bot lists on the bot. A skill without a name is left out. Shown in the seat's Profile tab. |
 | `publicUrl` | no | The bot's public share link, only when the bot is public. An https link; anything else is left out with a note. Shown in Profile as **Get this bot**, never edited in the app. |
 | `status` | no | `active`, `paused`, or `retired`. Stored as `botStatus` so it does not replace the seat's active or retired status. |

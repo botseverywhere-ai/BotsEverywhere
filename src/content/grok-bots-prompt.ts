@@ -18,7 +18,7 @@ Use exactly this JSON format and nothing else:
       "runs30d": 0,
       "tasksDone30d": 0,
       "routines": [
-        { "name": "routine name", "schedule": "schedule or trigger", "description": "one line on what it does", "lastRun": "ISO datetime" }
+        { "name": "routine name", "description": "one line on what it does", "trigger": "schedule, or the product an event comes from (slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty)", "schedule": "the cron line, like 0 9 * * 1-5, for a schedule", "timeZone": "IANA time zone, or leave it out for the bot's own", "event": "for an event, a short rule like Mentions in #support", "enabled": true, "lastRun": "ISO datetime" }
       ],
       "skills": [
         { "name": "skill name", "description": "one line on what it does" }
@@ -35,7 +35,7 @@ Rules:
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
 - owns, may, and needsApproval are lists of short strings.
 - doneWhen is one string.
-- For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines (name + schedule or trigger + last run), and status (active, paused, or retired).
+- For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines (name, description, how it starts, schedule and time zone or event, whether it is paused, last run), and status (active, paused, or retired).
 - skills are the reusable workflows listed on the bot: a name and, when you can see it, one line on what it does. Leave the list out if you see none.
 - publicUrl is the bot's public share link. Include it only when the bot is public and you can see the link.
 - If you do not know a value, leave the field out. Never estimate or invent numbers.

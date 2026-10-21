@@ -23,7 +23,7 @@ export const SNAPSHOT_FORMAT = `{
       "lastActive": "ISO datetime",
       "runs30d": 0,
       "tasksDone30d": 0,
-      "routines": [{ "name": "routine name", "schedule": "schedule or trigger", "description": "one line on what it does", "lastRun": "ISO datetime" }],
+      "routines": [{ "name": "routine name", "description": "one line on what it does", "trigger": "schedule, or the product an event comes from (slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty)", "schedule": "the cron line, like 0 9 * * 1-5, for a schedule", "timeZone": "IANA time zone, or leave it out for the bot's own", "event": "for an event, a short rule like Mentions in #support", "enabled": true, "lastRun": "ISO datetime" }],
       "skills": [{ "name": "skill name", "description": "one line on what it does" }],
       "publicUrl": "the bot's public link (https://...) when it has one, or leave it out",
       "status": "active"
@@ -47,7 +47,7 @@ Rules:
 - runs30d, tasksDone30d, lastActive, and each routine's lastRun come from Grok Bot's own data. Never count them from the run log: BotsEverywhere counts the log itself.
 - status is active, paused, or retired.
 - skills are the reusable workflows Grok Bot lists on the bot: a name and, when you can see it, one line on what it does. Never invent skills; leave the list out if you see none.
-- A routine's description is one line on what it does, never its instructions.
+- A routine's description is one line on what it does, never its instructions. enabled is false when the routine is paused. An event rule never holds tokens or private links.
 - Include publicUrl only for a bot that has a public link in Grok Bot, exactly as Grok Bot shows it. Never make one.
 - trigger.type is schedule, event, or manual. For event, set source to email, slack, github, webhook, or form.
 - Do not add fields that are not in this object.`
@@ -96,7 +96,7 @@ Send each bot the rules in steps 5 to 7 once: when the bot is new to you, when i
 A seat file counts as changed only when its title, reportsTo, or its Owns, May, Needs approval, or Done when changed. Ignore the lines BotsEverywhere fills from your own report (createdAt, lastActive, runs30d, tasksDone30d, routines, skills, publicUrl, botStatus, grokSync, grokSyncedAt, grokMissingSince, grokDeletedAt): they change on every run.
 
 On each run, for every organization:
-1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. Never create yourself. When "prompt" is set, use it as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". When "skills" is set, add each one to the bot as a skill, with its name and description. When "routines" is set, create each one for the bot, with its name, its schedule or trigger, and its description. That bot belongs to this organization.
+1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. Never create yourself. When "prompt" is set, use it as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". When "skills" is set, add each one to the bot as a skill, with its name and description. When "routines" is set, create each one for the bot, with its name, its start (a schedule with its time zone, or an event), its description, and paused when "enabled" is false. That bot belongs to this organization.
 2. Write <org>/${SNAPSHOT_PATH} with the bots that belong to this organization, every routine they run, and their performance, in the snapshot format below. A bot belongs to an organization when you created it from that organization's requests, when its link matches a seat file there, when its name matches a seat title there, or when it is named "Title · Organization name". One Grok Bot account runs every bot, and the same bot can belong to several organizations: list it in every organization it belongs to. Do not list yourself.
    Send performance for every bot on every run, from Grok Bot's own data, never from the run log:
    - runs30d: how many chat messages the bot received in Grok Bot in the last 30 days (from people or other bots, not counting your own Connector notices).

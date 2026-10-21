@@ -85,6 +85,14 @@ export interface BotRoutine {
   lastRun?: string
   /** One line on what it does. Never the instructions. */
   description?: string
+  /** How it starts. Absent on routines from before starts were kept, whose schedule may be the trigger in words. */
+  trigger?: RoutineStart
+  /** For an event start: a short matching rule, like Mentions in #support. */
+  event?: string
+  /** IANA time zone for a schedule. Absent uses the bot's time zone in Grok Bot. */
+  timeZone?: string
+  /** false when the routine is paused in Grok Bot. Absent means active. */
+  enabled?: boolean
 }
 
 /** A reusable workflow the bot runs. */
@@ -853,13 +861,47 @@ export function cleanRoutines(value: unknown): BotRoutine[] {
     if (!name) continue
     const schedule = typeof record.schedule === 'string' ? record.schedule.trim() : ''
     const lastRun = typeof record.lastRun === 'string' ? record.lastRun.trim() : ''
-    const description = typeof record.description === 'string' ? record.description.trim() : ''
     const routine: BotRoutine = { name, schedule }
     if (lastRun) routine.lastRun = lastRun
-    if (description) routine.description = description
-    routines.push(routine)
+    routines.push({ ...routine, ...routineDetails(record) })
   }
   return routines
+}
+
+/** How a routine can start: on a schedule, or after an event in one of these products. */
+export const ROUTINE_STARTS = ['schedule', 'slack', 'github', 'email', 'webhook', 'microsoftTeams', 'linear', 'sentry', 'pagerduty', 'origin'] as const
+export type RoutineStart = (typeof ROUTINE_STARTS)[number]
+
+/** A start by its id or its name, in any case and spacing. cron is a schedule. Anything else is ''. */
+export function routineStart(value: unknown): RoutineStart | '' {
+  if (typeof value !== 'string') return ''
+  const key = value.replace(/[\s_-]+/g, '').toLowerCase()
+  if (key === 'cron') return 'schedule'
+  return ROUTINE_STARTS.find((start) => start.toLowerCase() === key) ?? ''
+}
+
+/** The parts of a routine beyond its name and schedule. A time zone that does not exist is left out; only a paused routine says enabled. */
+export function routineDetails(record: Record<string, unknown>): Pick<BotRoutine, 'description' | 'trigger' | 'event' | 'timeZone' | 'enabled'> {
+  const details: Pick<BotRoutine, 'description' | 'trigger' | 'event' | 'timeZone' | 'enabled'> = {}
+  const description = typeof record.description === 'string' ? record.description.trim() : ''
+  if (description) details.description = description
+  const trigger = routineStart(record.trigger)
+  if (trigger) details.trigger = trigger
+  const event = typeof record.event === 'string' ? record.event.trim() : ''
+  if (event) details.event = event
+  const timeZone = typeof record.timeZone === 'string' ? record.timeZone.trim() : ''
+  if (timeZone && realTimeZone(timeZone)) details.timeZone = timeZone
+  if (record.enabled === false) details.enabled = false
+  return details
+}
+
+function realTimeZone(zone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: zone })
+    return true
+  } catch {
+    return false
+  }
 }
 
 /** Skills as the seat file keeps them: a JSON list. A skill without a name, or a value that is not a list, is left out. */

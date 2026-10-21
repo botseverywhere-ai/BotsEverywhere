@@ -238,3 +238,42 @@ test('the Connector adds the skills and routines, and reports skills and the pub
   assert.match(GROK_BOTS_PROMPT, /"publicUrl":/, 'importing asks for the public link')
   assert.match(GROK_BOTS_PROMPT, /"skills": \[/)
 })
+
+const FULL_ROUTINES = [
+  { name: 'Weekday lead sweep', schedule: '0 9 * * 1-5', description: 'Sweep new leads and post the list.', trigger: 'schedule', timeZone: 'Europe/Madrid' },
+  { name: 'Support mentions', schedule: '', description: 'Answer a mention.', trigger: 'slack', event: 'Mentions in #support', enabled: false },
+]
+
+test('a routine keeps how it starts, its event, its time zone, and whether it is paused', () => {
+  const seat = parseSeatMarkdown('lead-sorter', HIRED.replace(/^routines: .*$/m, `routines: ${JSON.stringify(JSON.stringify([...FULL_ROUTINES, { name: 'Graph style', schedule: '0 8 * * *', trigger: 'cron', timeZone: 'Not/AZone' }]))}`))
+  assert.ok(seat.ok, seat.ok ? '' : seat.errors.join(' '))
+  assert.deepEqual(seat.seat.routines, [...FULL_ROUTINES, { name: 'Graph style', schedule: '0 8 * * *', trigger: 'schedule' }], 'cron reads as schedule, and a time zone that does not exist is left out')
+  const again = parseSeatMarkdown('lead-sorter', serializeSeat(seat.seat))
+  assert.ok(again.ok)
+  assert.deepEqual(again.seat.routines, seat.seat.routines)
+})
+
+test('imported routines bring the same details, and an old file that put the schedule in trigger still loads', () => {
+  const parsed = parseBotsFile(JSON.stringify({ bots: [{ name: 'Grok Bot', routines: [...FULL_ROUTINES, { name: 'Old style', trigger: 'Mon 09:00' }] }] }))
+  assert.ok(parsed.ok)
+  assert.deepEqual(parsed.rows[0]!.routines, [...FULL_ROUTINES, { name: 'Old style', schedule: 'Mon 09:00' }])
+})
+
+test('Profile saves the routine details', async () => {
+  await withServer(async (base, orgs, org) => {
+    const added = await fetch(`${base}/api/orgs/${org}/seats`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Lead Sorter', kind: 'bot', slug: 'lead-sorter', directorySlug: '', reportsTo: 'you', addToGrokBotUrl: '', owns: ['a'], may: ['b'], mustAskBefore: ['c'], doneWhen: ['d'] }) })
+    assert.equal(added.status, 201)
+    assert.equal((await put(base, org, 'lead-sorter', { routines: FULL_ROUTINES })).status, 200)
+    assert.deepEqual(seatIn(orgs, org, 'lead-sorter').routines, FULL_ROUTINES)
+  })
+})
+
+test('the Connector and the import ask for each routine\'s start, event, time zone, and pause, and create routines with them', () => {
+  for (const format of [SNAPSHOT_FORMAT, GROK_BOTS_PROMPT]) {
+    assert.match(format, /"trigger": "schedule, or the product an event comes from/)
+    assert.match(format, /"event":/)
+    assert.match(format, /"timeZone":/)
+    assert.match(format, /"enabled": true/)
+  }
+  assert.match(connectorPrompt({ id: 'k3f9', orgsFolder: '/o' }), /create each one for the bot, with its name, its start \(a schedule with its time zone, or an event\), its description, and paused when "enabled" is false/)
+})
