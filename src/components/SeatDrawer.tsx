@@ -7,6 +7,7 @@ import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import type { SeatDrawerTab } from './seat-drawer-tab'
 import { grokRequestLine, grokSyncClass, grokSyncLine, grokSyncTag } from './sync-copy'
+import { BotProfile, ProfileLists, type ProfileChanges } from './BotProfile'
 
 export interface DirectoryProfileView {
   category: string
@@ -37,6 +38,7 @@ export function SeatDrawer({
   onEditAttempt,
   grokRequestedAt = '',
   onCreateInGrok,
+  onProfile,
   children,
 }: {
   seat: Seat
@@ -67,6 +69,8 @@ export function SeatDrawer({
   grokRequestedAt?: string
   /** Writes a request the Connector reads on its next run. */
   onCreateInGrok?: () => void
+  /** Saves Profile on an organization of your own: the prompt or instructions, skills, and routines. */
+  onProfile?: (changes: ProfileChanges) => void
   children?: ReactNode
 }) {
   return (
@@ -153,14 +157,20 @@ export function SeatDrawer({
           <p className="auth-note">Performance is tracked for bots.</p>
         )
       ) : null}
-      {tab === 'profile' && seat.type === 'bot' ? (
-        directoryProfile ? (
-          <DirectoryProfileBody profile={directoryProfile} />
-        ) : directoryProfile === null || !directorySlug ? (
-          <p className="auth-note">This seat is not in the directory.</p>
-        ) : (
-          <DirectoryProfile slug={directorySlug} />
-        )
+      {tab === 'profile' && seat.type === 'bot' && onProfile ? (
+        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} onProfile={onProfile} onCreateInGrok={onCreateInGrok} />
+      ) : null}
+      {tab === 'profile' && seat.type === 'bot' && !onProfile ? (
+        <>
+          {directoryProfile ? (
+            <DirectoryProfileBody profile={directoryProfile} />
+          ) : directoryProfile === null || !directorySlug ? (
+            <p className="auth-note">This seat is not in the directory.</p>
+          ) : (
+            <DirectoryProfile slug={directorySlug} />
+          )}
+          <ProfileLists seat={seat} />
+        </>
       ) : null}
       {tab === 'profile' && seat.type !== 'bot' && seat.profile ? (
         <dl className="stat-list">

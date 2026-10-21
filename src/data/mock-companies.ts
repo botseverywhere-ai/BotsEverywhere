@@ -116,7 +116,17 @@ export interface Seat {
   importedLastActive?: string
   runs30d?: number
   importedTasks30d?: number
-  routines?: { name: string; schedule: string; lastRun?: string }[]
+  routines?: { name: string; schedule: string; lastRun?: string; description?: string }[]
+  /** Bot only. Where the seat came from: the directory, an import from Grok Bot, or Add a seat. */
+  origin?: 'directory' | 'imported' | 'manual'
+  /** Bot only. The directory entry a hired bot came from. */
+  directoryId?: string
+  /** Bot only. Reusable workflows, shown in Profile. */
+  skills?: { name: string; description?: string }[]
+  /** Bot only. The prompt Grok Bot gets, written in Profile. */
+  instructions?: string
+  /** Bot only. The public share link from Grok Bot, when the bot is public. */
+  publicUrl?: string
   /** Live performance for this bot. Absent on sample charts that still use stats. */
   shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null }
   /** Set by Sync with Grok Bot. */

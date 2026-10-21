@@ -11,6 +11,7 @@ import { formatShortDate, shownBotMetrics } from '../../server/src/bot-metrics.t
 import { liveSeats } from '../../server/src/run-log.ts'
 import { useRunLines } from '../live/use-run-log'
 import { SeatDrawer } from '../components/SeatDrawer'
+import type { ProfileChanges } from '../components/BotProfile'
 import { SaveAlert } from '../components/SaveAlert'
 import { saveNotice } from '../components/save-notice'
 import { shownSeatTab } from '../components/seat-drawer-tab'
@@ -637,6 +638,25 @@ export function Workspace({
     }
   }
 
+  async function saveProfile(slug: string, changes: ProfileChanges) {
+    try {
+      const response = await fetch(`/api/orgs/${bundle.id}/seats/${slug}/profile`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(changes),
+      })
+      const body = (await response.json()) as { errors?: string[]; error?: string }
+      if (!response.ok) {
+        tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not save the profile.'))
+        return
+      }
+      await rereadOrg()
+    } catch {
+      setWriter('down')
+      tell(saveNotice(false, SAVING_OFF))
+    }
+  }
+
   async function commitHire(draft: HireDraft): Promise<HireResult> {
     let orgSlug = draft.orgSlug
     if (draft.newOrg) {
@@ -963,17 +983,7 @@ export function Workspace({
           onReportsTo={editable ? (slug) => { void moveSeat(chartSeat.id, slug) } : undefined}
           grokRequestedAt={sync?.requests?.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
-          onGrokUrl={editable ? (url) => {
-            const current = seats.find((seat) => seat.slug === chartSeat.id)
-            if (!current) return
-            setSeats((items) => items.map((seat) => {
-              if (seat.slug !== chartSeat.id) return seat
-              const next = { ...seat, addToGrokBotUrl: url }
-              next.source = serializeSeat(next)
-              return next
-            }))
-            queueCardSave(chartSeat.id, current, url)
-          } : undefined}
+          onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}
           onCard={editable ? (card) => {
             setSeats((items) => items.map((seat) => {
               if (seat.slug !== chartSeat.id) return seat
