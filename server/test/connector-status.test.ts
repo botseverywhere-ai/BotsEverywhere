@@ -133,3 +133,11 @@ test('the connection bar opens on the last Connector state this tab saw, shared 
   assert.match(badge, /from '\.\.\/live\/connector-memory'/, 'one memory for both')
   assert.doesNotMatch(badge, /sessionStorage/)
 })
+
+test('the org page sends the light Connector status before its sync plan, so the bar never waits for the plan', () => {
+  const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
+  const start = page.indexOf('const loadSync = useCallback(async () => {')
+  const body = page.slice(start, page.indexOf('}, [bundle.id, editable, loadConnection])', start))
+  assert.match(body, /const connected = loadConnection\(\)/)
+  assert.match(body, /syncBusy\.current = true\s+try \{\s+await connected\s+do \{\s+syncAgain\.current = false\s+await fetchOnce\(\)/, 'the plan waits for the status answer')
+})

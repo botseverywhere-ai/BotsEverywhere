@@ -156,7 +156,8 @@ export function Workspace({
   const syncAgain = useRef(false)
   const loadSync = useCallback(async () => {
     if (!editable) return
-    void loadConnection()
+    // The writer answers one request at a time, so the light status goes first and the plan waits for its answer.
+    const connected = loadConnection()
     if (syncBusy.current) {
       syncAgain.current = true
       return
@@ -181,6 +182,7 @@ export function Workspace({
     }
     syncBusy.current = true
     try {
+      await connected
       do {
         syncAgain.current = false
         await fetchOnce()
