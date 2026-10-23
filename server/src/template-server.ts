@@ -73,6 +73,24 @@ export function readOrgDir(root: string, id: string): { ok: true; bundle: OrgBun
   }
 }
 
+type OrgRead = ReturnType<typeof readOrgDir>
+
+/**
+ * Reads each org folder of the project at most once, for the life of one request: the project view, the account, and
+ * the retired list each ask about every org. Callers only read the bundles. `known` holds orgs the caller already read.
+ */
+function orgReader(orgsDir: string, known: Record<string, OrgRead> = {}): (orgId: string) => OrgRead {
+  const reads = new Map(Object.entries(known))
+  return (orgId) => {
+    let read = reads.get(orgId)
+    if (!read) {
+      read = readOrgDir(resolve(orgsDir, orgId), orgId)
+      reads.set(orgId, read)
+    }
+    return read
+  }
+}
+
 function readSeats(root: string, id: string, errors: string[]): SeatDocument[] {
   const seatDir = resolve(root, 'seats')
   const seats: SeatDocument[] = []
@@ -1082,12 +1100,12 @@ export function markDeletedBots(orgsDir: string): Map<string, Set<string>> {
  * For each retired bot that can still be deleted in Grok Bot, the organizations where the same bot is still active.
  * One pass over the folder, not one per retired bot: the status request runs on every live event, and each org read costs real time.
  */
-export function retiredActiveElsewhere(orgsDir: string, seats: SeatDocument[]): Record<string, string[]> {
+export function retiredActiveElsewhere(orgsDir: string, seats: SeatDocument[], readOrg = orgReader(orgsDir)): Record<string, string[]> {
   const wanted = seats.filter((seat) => canDelete(seat))
   if (!wanted.length) return {}
   const activeIn = new Map<string, string[]>()
   for (const orgId of listOrgSlugs(orgsDir)) {
-    const read = readOrgDir(resolve(orgsDir, orgId), orgId)
+    const read = readOrg(orgId)
     if (!read.ok) continue
     const orgName = read.bundle.org.company.name
     for (const seat of read.bundle.seats) {
@@ -1165,8 +1183,10 @@ export function syncStatus(root: string, orgId: string, orgsDir = ''): { ok: tru
   const lastConfirmed = lastSyncConfirmed(read.bundle)
   const folder = resolve(root)
   const { requests } = readRequests(root)
-  const project = orgsDir ? projectInfo(orgsDir, orgId) : undefined
-  const retiredElsewhere = orgsDir ? retiredActiveElsewhere(orgsDir, read.bundle.seats) : {}
+  // The project view and the retired list each ask about every org; this request reads each one once.
+  const readOrg = orgsDir ? orgReader(orgsDir, resolve(orgsDir, orgId) === folder ? { [orgId]: read } : {}) : undefined
+  const project = orgsDir ? projectInfo(orgsDir, orgId, readOrg) : undefined
+  const retiredElsewhere = orgsDir ? retiredActiveElsewhere(orgsDir, read.bundle.seats, readOrg) : {}
   const snap = readSnapshot(root)
   if (!snap.ok) {
     if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, retiredElsewhere, project } }
@@ -1189,9 +1209,9 @@ export function accountBots(orgsDir: string, orgId: string): { name: string; gro
 }
 
 /** Active bot seats of every org in the project, read once. A bad org is skipped. */
-function projectBots(orgsDir: string): { orgId: string; orgName: string; slug: string; title: string }[] {
+function projectBots(orgsDir: string, readOrg = orgReader(orgsDir)): { orgId: string; orgName: string; slug: string; title: string }[] {
   return listOrgSlugs(orgsDir).flatMap((orgId) => {
-    const read = readOrgDir(resolve(orgsDir, orgId), orgId)
+    const read = readOrg(orgId)
     if (!read.ok) return []
     return read.bundle.seats
       .filter((seat) => seat.kind === 'bot' && seat.status !== 'retired')
@@ -1210,10 +1230,10 @@ export function renamedSeats(orgsDir: string, orgId: string, bots = projectBots(
   return renamed
 }
 
-export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
+export function projectInfo(orgsDir: string, orgId: string, readOrg = orgReader(orgsDir)): ProjectInfo {
   const id = ensureProjectId(orgsDir)
   const connector = readConnector(orgsDir)
-  const bots = projectBots(orgsDir)
+  const bots = projectBots(orgsDir, readOrg)
   return {
     id,
     connectorName: connectorName(id),
@@ -1223,7 +1243,7 @@ export function projectInfo(orgsDir: string, orgId: string): ProjectInfo {
     bots: bots.length,
     renamed: renamedSeats(orgsDir, orgId, bots),
     syncMinutes: readSyncMinutes(orgsDir),
-    account: grokAccount(orgsDir, orgId),
+    account: grokAccount(orgsDir, orgId, readOrg),
     timeZone: localTimeZone(),
     windows: process.platform === 'win32',
   }
@@ -1258,7 +1278,7 @@ function localTimeZone(): string {
  * Every bot in the Grok Bot account, counted once whatever its organization: the bots in each org's snapshot,
  * the bots in no organization, and the Connector, which never lists itself. Matched by link, else by name.
  */
-export function grokAccount(orgsDir: string, orgId: string): GrokAccount | null {
+export function grokAccount(orgsDir: string, orgId: string, readOrg = orgReader(orgsDir)): GrokAccount | null {
   const connector = readConnector(orgsDir)
   if (!connector) return null
   const found = new Map<string, AccountBot>()
@@ -1271,7 +1291,7 @@ export function grokAccount(orgsDir: string, orgId: string): GrokAccount | null 
       if (!snap.missing) complete = false
       continue
     }
-    const read = readOrgDir(root, other)
+    const read = readOrg(other)
     const orgName = read.ok ? read.bundle.org.company.name : other
     const seats = read.ok ? read.bundle.seats.filter((seat) => seat.kind === 'bot') : []
     for (const bot of snap.snapshot.bots) {
