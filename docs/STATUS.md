@@ -1,10 +1,10 @@
 # Status
 
-Where the app stands as of 21 October 2026, written for whoever picks it up next. Facts about the running org describe Miguel's own `orgs/your-company`, which is uncommitted user data.
+Where the app stands as of 23 October 2026, written for whoever picks it up next. Facts about the running org describe Miguel's own `orgs/your-company`, which is uncommitted user data.
 
 ## Branches
 
-The main branch is `main`. Everything since it sits on one straight line of branches, each one holding the one before. None is merged into `main`. Every branch matches its copy on `origin`.
+The main branch is `main`. Everything since it sits on one straight line of branches, each one holding the one before. None is merged into `main`. Every branch on the line matches its copy on `origin`.
 
 | Branch | Adds on top of the one above |
 | --- | --- |
@@ -13,6 +13,14 @@ The main branch is `main`. Everything since it sits on one straight line of bran
 | `feat/grok-delete` | 19 commits. Retired in the legend and Delete in Grok Bot. The Connector's last run time in the header, with a dropdown. **Runs every** on Connect bots, and the interval the Connector reports. Find seat, Add a seat by short name, Overview boxes that open their lists. |
 | `performance-tracker` | 14 commits. Times used and Automated tasks done from the run log. In Grok Bot counts the whole Grok Bot account. Grok Bot's numbers apply on every Connector run. A requested bot pulses Connecting and links on its own. The light `GET /api/connector` endpoint. |
 | `homepage-content` | 9 commits. Homepage copy, Sync drawer button layout, the Logs tab shows a retire at once. |
+| `docs/refresh` | 3 commits. AGENTS, STATUS, architecture, README, and SETUP describe one Connector per project; the retire and delete spec says what was built. |
+| `feat/overview-files` | 2 commits. **Your files** on Organization Overview: where the main files sit and what writes each. |
+| `feat/org-folder-ids` | 5 commits. An organization's folder is its ID and never changes. **Files the Connector uses** on Connect bots, by real path. Backup carries the bots waiting to be created. Overview says Bots in this org. |
+| `feat/bot-profile` | 16 commits. The Profile tab: instructions, skills, and routines for every bot of your own. **Update bot** sends skills and routines to Grok Bot. Imports and Connector runs bring each bot's skills and public link. |
+| `fix/fresh-clone` | 4 commits. Tests never read `orgs/`. LF line endings on every computer. Docs for a fresh clone. **Status file** on Connect bots, Step 1 (commit `cnnector`). |
+| `perf/connector-status` | 7 commits. The Connector status shows at once (see Speed). The Status file time sits next to its text. |
+
+Off the line: `fix/org-folder-names` (3 commits, local only, from `feat/overview-files`) tried folders named after the organization. `feat/org-folder-ids` went the other way: folders are IDs.
 
 Decision pending from Miguel: how this line lands on `main`. Never push to `main` without his OK.
 
@@ -25,6 +33,7 @@ Design docs: `docs/superpowers/specs/` (sync, one Connector per project, retire 
 - The header badge shows the last run time and opens the sync details. Connect bots sets the interval.
 - The org chart drags and zooms, colors bot cards by Grok Bot state, and finds a seat by name. The legend and Overview boxes open lists, including Retired.
 - A seat's manager can be changed from the seat drawer.
+- The Connector status shows at once when you open an org or switch tabs, and a Connector run no longer floods open pages with requests.
 
 ## State of the running org
 
@@ -45,8 +54,8 @@ Read from `orgs/` on 21 October 2026 at about 15:00 local time.
 ## How to verify
 
 ```bash
-npm test          # expect 1 failure on Windows: org-node-layout.test.ts needs Chrome at a Linux path
-npm run build     # then: git checkout -- src/generated/bots.ts
+npm test          # expect 1 skipped on Windows: org-node-layout.test.ts needs Chrome at a Linux path
+npm run build     # if it changes src/generated/bots.ts: git checkout -- src/generated/bots.ts
 npx playwright test e2e/org-chart-scroll.spec.ts e2e/owner-org-chart.spec.ts   # needs npm run dev running
 ```
 
@@ -59,6 +68,26 @@ The sync suites are `server/test/grok-sync.test.ts` and `server/test/sync-ui.tes
 - The writer is `tsx` without a watcher. Any change under `server/src/` needs `npm run dev` restarted.
 - VS Code marks the imports in `server/test/*.ts` as errors (TS5097 and TS2591) because no tsconfig includes `server/test/`. The tests run; `node --import tsx` does not type-check.
 - A changed Connector prompt reaches Grok Bot only when it is pasted into the Connector again from Connect bots. Until then a new interval or new rule does nothing there.
+- A seat or log file changed while the app runs reaches the **Open your org** shortcut and the start of the org list only on a page reload. Org pages read the writer and are current. See Speed in AGENTS.md.
+- A brand-new browser tab opened straight on an org still shows **Checking the Connector…** for about a second: nothing is remembered in that tab yet.
+
+## Speed (measured 23 October 2026)
+
+**Checking the Connector…** stayed on screen because the light `GET /api/connector` waited behind heavier requests on the writer, which answers one at a time. Three things fed that queue: every Connector run sent about a hundred Vite hot updates into the open pages, and each re-ran their requests; each sync read every org three or four times; and every org tab read the whole org every 5 s to check the writer was up. On top of that, every tab switch started the bar from nothing. The fixes are on `perf/connector-status`; the rules to keep them are in AGENTS.md under Speed.
+
+Measured on a copy of `orgs/` (8 orgs; `your-company` has 53 seats and 197 log files), the old and new code one after the other, same ports, one browser tab, the writer otherwise idle:
+
+| | Before | After |
+| --- | --- | --- |
+| Tab switch | Checking shown every time, 0.30 to 0.69 s | Not shown |
+| Open the org from another page | Checking shown, 0.44 to 0.75 s | Not shown |
+| New browser tab straight on the org | 1.18 to 1.39 s, Checking shown | 1.07 to 1.14 s, Checking shown |
+| Hot updates after a Connector run | 96 | 0 |
+| `GET /api/connector` during that run, slowest | 349 ms | 148 ms |
+| `GET /api/orgs/your-company/sync`, median | 171 ms | 92 ms |
+| The 5 s writer check | the whole org, 148 KB | `GET /api/connector`, 4 ms |
+
+The running writer serving Miguel's open tabs was busier than this copy: before the fix, during a Connector run, the audit saw `GET /api/connector` take up to 15.8 s, with the audit's own test scripts also calling the writer.
 
 ## Deferred
 
@@ -79,3 +108,11 @@ A fresh clone has no `orgs/` folder. `npm run dev` starts; **Open your org** ope
 ## Next
 
 Ideas raised and not built: apply a sync automatically instead of on Confirm.
+
+Writer load found in the speed audit and not changed:
+
+- In dev, React StrictMode runs every mount request twice, so a tab switch sends two sync requests.
+- Each org tab polls the run log every 2 s, on top of the live events that already announce new lines.
+- Organization Overview opens a second live connection for Your files (`FileGuide.tsx`) beside the page's own.
+- Step 1 on Connect bots takes its Status line from the full sync, not from `GET /api/connector`.
+- `recordConnectorRun` reads every org on each Connector run.
