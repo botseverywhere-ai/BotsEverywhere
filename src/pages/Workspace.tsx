@@ -10,6 +10,7 @@ import { ProcessChart } from '../components/ProcessChart'
 import { formatShortDate, shownBotMetrics } from '../../server/src/bot-metrics.ts'
 import { liveSeats } from '../../server/src/run-log.ts'
 import { useRunLines } from '../live/use-run-log'
+import { remember, remembered, type RememberedStatus } from '../live/connector-memory'
 import { SeatDrawer } from '../components/SeatDrawer'
 import type { ProfileChanges } from '../components/BotProfile'
 import { SaveAlert } from '../components/SaveAlert'
@@ -134,14 +135,17 @@ export function Workspace({
   const focusSeat = seatFromHash()
   const bundledLog = useMemo(() => bundle.runLog ?? [], [bundle.runLog])
   // The connection bar reads the Connector's light view (two small files), so it answers at once and never waits for a sync plan.
-  const [connection, setConnection] = useState<ConnectionView | null>(null)
+  // A tab switch mounts a new page, so it opens on the last state this browser tab saw instead of Checking.
+  const [connection, setConnection] = useState<ConnectionView | null>(() => remembered()?.status ?? null)
   const loadConnection = useCallback(async () => {
     if (!editable) return
     try {
       const response = await fetch('/api/connector')
       if (!response.ok) return
       const info = (await response.json()) as ConnectorInfo
-      setConnection({ snapshot: null, error: '', folder: '', project: info })
+      const next: RememberedStatus = { snapshot: null, error: '', project: info }
+      setConnection({ ...next, folder: '' })
+      remember(info.orgs[0] ?? '', next)
     } catch {
       setConnection({ snapshot: null, error: SAVING_OFF })
     }

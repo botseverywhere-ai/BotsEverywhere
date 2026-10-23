@@ -1,32 +1,11 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ConnectorInfo } from '../../server/src/grok-sync.ts'
+import { remember, remembered, type RememberedStatus } from '../live/connector-memory'
 import { canEditFiles } from '../mode'
 import { Button } from './Button'
 import { connectorDetails, connectorRanAt, connectorState, headerBadgeLabel, lastRunShort, type ConnectorView } from './sync-copy'
 
 const SAVING_OFF = 'The file writer is not running.'
-/** The last state this browser saw, so the badge shows it at once on the next page instead of nothing until the writer answers. */
-const REMEMBER_KEY = 'be:grok-status'
-
-type Remembered = { slug: string; status: ConnectorView }
-
-function remembered(): Remembered | null {
-  try {
-    const raw = sessionStorage.getItem(REMEMBER_KEY)
-    const saved = raw ? (JSON.parse(raw) as Partial<Remembered>) : null
-    return saved && typeof saved.slug === 'string' && saved.status && typeof saved.status === 'object' ? { slug: saved.slug, status: saved.status } : null
-  } catch {
-    return null
-  }
-}
-
-function remember(slug: string, status: ConnectorView) {
-  try {
-    sessionStorage.setItem(REMEMBER_KEY, JSON.stringify({ slug, status }))
-  } catch {
-    // Storage can be off; the badge still works from the writer's answer.
-  }
-}
 
 /**
  * Before Open your org, on every page of your own copy: is Grok Bot connected?
@@ -64,7 +43,7 @@ export function GrokStatusBadge() {
         const info = (await response.json()) as ConnectorInfo
         if (cancel) return
         const first = info.orgs[0] ?? ''
-        const next: ConnectorView = { snapshot: null, error: '', project: info }
+        const next: RememberedStatus = { snapshot: null, error: '', project: info }
         setSlug(first)
         setStatus(next)
         setNow(Date.now())

@@ -107,3 +107,29 @@ test('the header badge and the connection bar read the light Connector view: nev
   assert.match(page, /if \(syncBusy\.current\) \{\s+syncAgain\.current = true\s+return\s+\}/, 'the org page never stacks status requests')
   assert.match(page, /\} while \(syncAgain\.current\)/, 'and asks once more when events kept coming')
 })
+
+test('the connection bar opens on the last Connector state this tab saw, shared with the header badge', async () => {
+  const store = new Map<string, string>()
+  const storage = { getItem: (key: string) => store.get(key) ?? null, setItem: (key: string, value: string) => void store.set(key, value) }
+  Object.assign(globalThis, { sessionStorage: storage })
+  try {
+    const { remember, remembered } = await import('../../src/live/connector-memory.ts')
+    assert.equal(remembered(), null, 'nothing seen yet')
+    const status = { snapshot: null, error: '', project: { id: 'uft5', connectorName: 'Connector - BotsEverywhere (uft5)', orgsFolder: '/home/ada/app/orgs', connector: { stamp: '1:2', syncedAt: '', error: '' }, syncMinutes: 17, orgs: ['acme'] } }
+    remember('acme', status)
+    assert.deepEqual(remembered(), { slug: 'acme', status })
+    store.set('be:grok-status', '{not json')
+    assert.equal(remembered(), null, 'a bad entry reads as nothing')
+    Object.assign(globalThis, { sessionStorage: { getItem: () => { throw new Error('storage off') }, setItem: () => { throw new Error('storage off') } } })
+    assert.equal(remembered(), null)
+    assert.doesNotThrow(() => remember('acme', status), 'storage can be off')
+  } finally {
+    Reflect.deleteProperty(globalThis, 'sessionStorage')
+  }
+  const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
+  const badge = readFileSync(fileURLToPath(new URL('../../src/components/GrokStatusBadge.tsx', import.meta.url)), 'utf8')
+  assert.match(page, /useState<ConnectionView \| null>\(\(\) => remembered\(\)\?\.status \?\? null\)/, 'a tab switch shows the known state at once')
+  assert.match(page, /remember\(info\.orgs\[0\] \?\? '', next\)/, 'and keeps it current for the badge')
+  assert.match(badge, /from '\.\.\/live\/connector-memory'/, 'one memory for both')
+  assert.doesNotMatch(badge, /sessionStorage/)
+})
