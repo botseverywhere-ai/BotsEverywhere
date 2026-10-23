@@ -141,3 +141,12 @@ test('the org page sends the light Connector status before its sync plan, so the
   assert.match(body, /const connected = loadConnection\(\)/)
   assert.match(body, /syncBusy\.current = true\s+try \{\s+await connected\s+do \{\s+syncAgain\.current = false\s+await fetchOnce\(\)/, 'the plan waits for the status answer')
 })
+
+test('the 5 s writer check asks for the light Connector status, not the whole organization', () => {
+  const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
+  const start = page.indexOf('const probe = () => {')
+  const probe = page.slice(start, page.indexOf('window.setInterval(probe, 5000)', start))
+  assert.ok(start !== -1 && probe.length > 0)
+  assert.match(probe, /fetch\('\/api\/connector'\)/)
+  assert.doesNotMatch(probe, /\/api\/orgs\//, 'reading the whole org every 5 s held the writer up')
+})

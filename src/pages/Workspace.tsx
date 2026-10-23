@@ -344,8 +344,9 @@ export function Workspace({
   useEffect(() => {
     if (!editable) return
     let cancelled = false
+    // Only asks whether the writer answers, so it reads two small files, not the whole organization.
     const probe = () => {
-      fetch(`/api/orgs/${bundle.id}`)
+      fetch('/api/connector')
         .then(async (response) => {
           if (cancelled) return
           const text = await response.text()
