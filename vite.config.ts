@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
 import { webPort, writerOrigin } from './scripts/dev-ports.ts'
+import { quietOrgFiles } from './scripts/quiet-org-files.ts'
 
 function contentIndexes(): Plugin {
   const generate = () => {
@@ -28,7 +29,7 @@ function contentIndexes(): Plugin {
 // Static demo, served from the root of botseverywhere.ai.
 export default defineConfig({
   base: '/',
-  plugins: [contentIndexes(), react()],
+  plugins: [contentIndexes(), quietOrgFiles(), react()],
   server: {
     host: '127.0.0.1',
     port: webPort(),
