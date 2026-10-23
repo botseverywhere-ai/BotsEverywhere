@@ -1,5 +1,6 @@
 import type { FileGuideKey, FileGuideRow } from '../../server/src/file-guide.ts'
-import { lastRunShort } from './sync-copy.ts'
+import type { ProjectInfo } from '../../server/src/grok-sync.ts'
+import { connectorRanAt, lastRunShort } from './sync-copy.ts'
 
 /** Your files on Organization Overview, grouped by who writes each part. */
 export const FILE_GROUPS: { title: string; keys: FileGuideKey[] }[] = [
@@ -47,6 +48,23 @@ export function fileFact(row: FileGuideRow, now = Date.now()): string {
     case 'connector':
       return time ? `Last run ${time}` : 'The Connector has not run yet'
   }
+}
+
+/** Step 1 shows the orgs folder right above, so the Status file row leaves out where the file sits. */
+const STATUS_FILE_WHAT = 'When the Connector last ran'
+
+/**
+ * Status file on Connect bots: connector.json, with the name and fact Your files gives it. The time is the one the
+ * Status line reads. The fact stays empty until the writer answers.
+ */
+export function connectorStatusFile(status: { project?: Pick<ProjectInfo, 'orgsFolder' | 'connector'> } | null, now = Date.now()): { name: string; path: string; what: string; fact: string } {
+  const folder = status?.project?.orgsFolder.trim() || 'orgs'
+  const sep = folder.includes('\\') ? '\\' : '/'
+  const path = `${folder}${sep}${FILE_NAMES.connector}`
+  if (!status?.project) return { name: FILE_NAMES.connector, path, what: STATUS_FILE_WHAT, fact: '' }
+  const ran = status.project.connector ? connectorRanAt({ snapshot: null, project: status.project }) : undefined
+  const row: FileGuideRow = { key: 'connector', path, files: ran ? 1 : 0, updatedAt: ran ? new Date(ran).toISOString() : '' }
+  return { name: FILE_NAMES.connector, path, what: STATUS_FILE_WHAT, fact: fileFact(row, now) }
 }
 
 function count(value: number, noun: string): string {

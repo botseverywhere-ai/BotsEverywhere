@@ -7,6 +7,7 @@ import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import { CONNECTOR_FILES_NOTE, connectorFiles, connectorState, intervalWarning, type ConnectorState } from './sync-copy'
+import { connectorStatusFile } from './file-guide-copy'
 
 const BADGE: Record<ConnectorState, string> = {
   checking: 'Checking',
@@ -51,6 +52,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
   const shown = editing ? { amount, unit } : { ...splitSyncMinutes(saved), amount: String(splitSyncMinutes(saved).amount) }
   const prompt = connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes, timeZone: project?.timeZone ?? '', windows: project?.windows ?? false })
   const { state, line } = connectorState(status)
+  const statusFile = connectorStatusFile(status)
 
   function change() {
     const split = splitSyncMinutes(saved)
@@ -96,6 +98,12 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
         <dd><strong>{name}</strong></dd>
         <dt>Folder it uses</dt>
         <dd><code>{project?.orgsFolder || 'Waiting for the file writer…'}</code></dd>
+        <dt>Status file</dt>
+        <dd className="connect-file">
+          <code title={statusFile.path}>{statusFile.name}</code>
+          <span>{statusFile.what}</span>
+          {statusFile.fact ? <span className="connect-file-fact">{statusFile.fact}</span> : null}
+        </dd>
         <dt>Status</dt>
         <dd className="connect-status">
           <span className={`connect-badge is-${state}`}><i aria-hidden="true" />{BADGE[state]}</span>
