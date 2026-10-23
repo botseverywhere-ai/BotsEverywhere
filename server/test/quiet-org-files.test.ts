@@ -1,18 +1,42 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { isQuietOrgFile, quietOrgFiles } from '../../scripts/quiet-org-files.ts'
+import { isQuietOrgFile, orgFolders, quietOrgFiles } from '../../scripts/quiet-org-files.ts'
 
 test('files the Connector, the bots, and the writer rewrite under orgs/ are quiet; org.md stays live', () => {
   const root = '/home/ada/app'
-  for (const file of ['orgs/acme/log/2026-10-23.md', 'orgs/acme/log/connector-day-2026-10-23.md', 'orgs/acme/seats/invoice-bot.md', 'orgs/acme/work-chart.md', 'orgs/acme/processes/daily.md', 'orgs/acme/grok/snapshot.json', 'orgs/connector.json']) {
-    assert.equal(isQuietOrgFile(root, `${root}/${file}`), true, file)
+  const folders = [`${root}/orgs`]
+  for (const file of ['orgs/acme/log/2026-10-23.md', 'orgs/acme/log/connector-day-2026-10-23.md', 'orgs/acme/seats/invoice-bot.md', 'orgs/acme/work-chart.md', 'orgs/acme/processes/daily.md', 'orgs/acme/grok/snapshot.json', 'orgs/connector.json', 'orgs/acme/seats/billing-org.md']) {
+    assert.equal(isQuietOrgFile(folders, `${root}/${file}`), true, file)
   }
   for (const file of ['orgs/acme/org.md', 'src/App.tsx', 'src/org/load.ts', 'orgs-old/acme/log/a.md', 'samples/harbor/seats/amina.md']) {
-    assert.equal(isQuietOrgFile(root, `${root}/${file}`), false, file)
+    assert.equal(isQuietOrgFile(folders, `${root}/${file}`), false, file)
   }
-  assert.equal(isQuietOrgFile('C:/Users/ada/app', 'C:/Users/ada/app/orgs/acme/log/2026-10-23.md'), true, 'Windows paths')
+  assert.equal(isQuietOrgFile(['C:/Users/ada/app/orgs'], 'C:/Users/ada/app/orgs/acme/log/2026-10-23.md'), true, 'Windows paths')
+  assert.equal(isQuietOrgFile([`${root}/orgs`, '/mnt/sync/orgs'], '/mnt/sync/orgs/acme/log/a.md'), true, 'orgs/ kept as a link elsewhere')
+})
+
+test('orgs/ as a link counts by its real folder too, and a missing orgs/ is fine', () => {
+  const dir = realpathSync(mkdtempSync(join(tmpdir(), 'be-quiet-')))
+  try {
+    const app = join(dir, 'app')
+    const elsewhere = join(dir, 'synced-orgs')
+    mkdirSync(app)
+    assert.deepEqual(orgFolders(app), [join(app, 'orgs')], 'a fresh clone has no orgs/')
+    mkdirSync(elsewhere)
+    symlinkSync(elsewhere, join(app, 'orgs'), 'junction')
+    assert.deepEqual(orgFolders(app), [join(app, 'orgs'), elsewhere])
+    const plugin = quietOrgFiles()
+    ;(plugin.configResolved as (config: { root: string }) => void)({ root: app })
+    const hook = plugin.hotUpdate as { handler: (this: unknown, options: { type: string; file: string; modules: unknown[] }) => unknown }
+    const context = { environment: { moduleGraph: { invalidateModule: () => undefined } } }
+    assert.deepEqual(hook.handler.call(context, { type: 'update', file: join(elsewhere, 'acme', 'log', 'a.md').replace(/\\/g, '/'), modules: [] }), [])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('a quiet file sends no hot update, but marks its modules stale for the next page load', () => {
