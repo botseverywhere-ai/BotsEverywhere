@@ -70,6 +70,56 @@ Rules:
 - Send me the file to download. If you can't, reply with only the JSON so I can save it myself.
 ```
 
+## Paste this into any AI
+
+Option 2, **Import from a template .json**, is for an organization built with any AI (Claude, ChatGPT, Gemini, Codex, Grok Bot, or another). Copy this prompt, give it to the AI together with the downloaded template (attached, or pasted below the prompt), answer its questions, confirm the bots it proposes, and import the file it writes. The template carries the same prompt as its `instructions` list, so an AI given only the file does the same. An AI that cannot make a file replies with the JSON in one code block: save that block as a `.json` file, or save the whole reply; the import reads the one `json` code block in it. The copy on Connect bots names the time zone of the computer showing it.
+
+```text
+I want to set up my organization in BotsEverywhere, an open source tool that runs a team of bots in Grok Bot. These instructions come with the BotsEverywhere bots file template (bots.json): attached, pasted, or the file you are reading. Read its readme and fields: they are the rules for the file.
+
+Before you write anything, interview me with the questions below, as you would to set up a real organization. Ask them in order, a few at a time, and wait for my answers. Ask a follow-up question when an answer is vague, and skip any question I already answered.
+
+The organization
+1. What is your organization called?
+2. Where is it based, and in which time zone do you work?
+3. What does it do, and who are its customers?
+4. What do you want to get done in the next three months?
+
+The team
+5. Who works in the organization, and what does each person do?
+6. Should every bot report to you, or should one lead bot coordinate the others and report to you?
+
+The work
+7. What work repeats every day or every week?
+8. Which of that work should bots do, and which stays with people?
+9. For each job a bot takes, what does done look like?
+10. On which days and at what times should each recurring job run?
+
+Where work comes in
+11. Where does new work arrive: email, a web form, WhatsApp, Slack, GitHub, phone calls, or somewhere else?
+12. Which tools hold your information, such as a CRM, spreadsheets, a calendar, or a website?
+
+The limits
+13. What may a bot do on its own, without asking you?
+14. What must a bot never do without your OK, such as spending money, signing or changing a contract, sharing personal data, sending a message to a client, or publishing anything?
+
+The bots
+15. In which languages should the bots work?
+16. How many bots do you want to start with?
+
+Then show me the bots you propose as a short list: name, what it owns, and who it reports to. Wait for my OK or my changes. Don't write the file until I confirm.
+
+When I confirm, write the file:
+- Use exactly the template's format, with the Northwind example bots replaced by mine.
+- Start every bot name with a short form of the organization's name, so it can't match a bot I already run.
+- reportsTo is You or another bot in the file.
+- A routine starts on a schedule, with a cron line and my IANA time zone as timeZone, or on an event from email, slack, github, webhook, microsoftTeams, linear, sentry, or pagerduty. Nothing else.
+- Make owns, may, needsApproval, and doneWhen specific: they become each bot's instructions in Grok Bot.
+- Leave out grokBotUrl, createdAt, lastActive, runs30d, tasksDone30d, publicUrl, and status: these bots don't exist yet.
+- Set section to the organization's name.
+- Put your assumptions and notes in your reply, not in the file. Write them first, then the file: as a file named botseverywhere-bots.json if you can, otherwise the JSON alone in one code block.
+```
+
 ## File
 
 One JSON object. The only required key is `bots`, a list.
@@ -120,6 +170,6 @@ One JSON object. The only required key is `bots`, a list.
 
 If `seats/<slug>.md` already exists, the new bot is saved as `seats/<slug>-2.md`. The first file is not overwritten. The same rule applies inside one file when two different names would share a file name.
 
-Those performance fields are saved in the seat frontmatter and written back by **Export bots file**. Any other extra field is ignored. A bot is skipped only when it has no name. A file that is not JSON, or that has no bots list, is not imported. Bots that only have a note still import. The page then re-reads the org chart. A clean file says **Imported N bots**. A file that left some links out says **N bots imported, M notes**.
+Those performance fields are saved in the seat frontmatter and written back by **Export bots file**. Any other extra field is ignored. A bot is skipped only when it has no name. A file that is not JSON, or that has no bots list, is not imported. A leading byte-order mark, Windows line endings, and a saved AI reply with notes around one `json` code block still import. Bots that only have a note still import. The page then re-reads the org chart. A clean file says **Imported N bots**. A file that left some links out says **N bots imported, M notes**.
 
 **Download bots file template** on Connect bots saves `public/bots-file-template.json` as `bots.json`: a `readme` for a person or any AI, a `fields` guide to every field in the same order as the Grok Bot prompt, and three complete Northwind example bots. The import reads only `bots`, so a file that keeps `readme` and `fields` still imports. **Export bots file** saves the org you have open as `botseverywhere-bots.json`. Zip export, zip import, and folder import stay on the same page for a full backup.

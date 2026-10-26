@@ -485,7 +485,8 @@ test('performance fields are optional, lenient, and round-trip through the seat 
   assert.equal(invoice?.tasksDone30d, 9)
   assert.equal(invoice?.botStatus, 'paused')
   assert.equal(invoice?.routines.length, 2)
-  assert.equal(invoice?.routines[0]?.schedule, 'email')
+  assert.equal(invoice?.routines[0]?.schedule, '', 'email is how it starts, not a schedule')
+  assert.equal(invoice?.routines[0]?.trigger, 'email')
   assert.match(invoice?.note ?? '', /routines: some entries were left out/)
   assert.equal(invoice?.error, '')
   assert.equal(quiet?.runs30d, undefined)
@@ -533,7 +534,8 @@ test('performance fields are optional, lenient, and round-trip through the seat 
   assert.equal(again?.runs30d, 14)
   assert.equal(again?.tasksDone30d, 9)
   assert.equal(again?.botStatus, 'paused')
-  assert.equal(again?.routines[0]?.schedule, 'email')
+  assert.equal(again?.routines[0]?.schedule, '')
+  assert.equal(again?.routines[0]?.trigger, 'email', 'Export keeps how a routine starts')
   assert.equal(again?.routines[0]?.lastRun, '2026-10-17T19:32:00.000Z')
   const quietAgain = exported.rows.find((row) => row.name === 'Quiet Bot')
   assert.equal(quietAgain?.createdAt, '')
@@ -552,7 +554,7 @@ test('the import prompt asks for each bot\'s sidebar section, real values only, 
   assert.doesNotMatch(GROK_BOTS_PROMPT, /Europe\/Madrid/)
   assert.match(grokBotsPrompt('America/New_York'), /Write every time as ISO 8601 with the UTC offset of America\/New_York at that moment, in the shape 2026-10-20T20:06:16\+02:00\. createdAt is only the date, YYYY-MM-DD\./)
   const panel = readFileSync(new URL('../../src/components/GrokBotsPrompt.tsx', import.meta.url), 'utf8')
-  assert.match(panel, /const prompt = grokBotsPrompt\(localTimeZone\(\)\)/, 'the copy on Connect bots names the zone of the computer showing it')
+  assert.match(panel, /const prompt = given \?\? grokBotsPrompt\(localTimeZone\(\)\)/, 'the copy on Connect bots names the zone of the computer showing it')
   const parsed = parseBotsFile(JSON.stringify({ bots: [{ name: 'Clip Bot', section: 'aurafarming' }] }))
   assert.ok(parsed.ok)
   assert.equal(parsed.rows[0]!.error, '')
@@ -573,7 +575,7 @@ test('the bots file template explains itself to a person or any AI, covers every
   assert.ok(bots.length >= 3)
   for (const bot of bots) {
     for (const key of ['name', 'reportsTo', 'owns', 'may', 'needsApproval', 'doneWhen']) assert.ok(key in bot, `${String(bot.name)} has ${key}`)
-    for (const key of ['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'grokBotUrl', 'publicUrl']) assert.equal(key in bot, false, `${String(bot.name)} invents no ${key}`)
+    for (const key of ['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'grokBotUrl', 'publicUrl', 'status']) assert.equal(key in bot, false, `${String(bot.name)} invents no ${key}`)
     assert.match(String(bot.name), /^Northwind /, 'example names cannot match a real bot by accident')
   }
   const routines = bots.flatMap((bot) => (Array.isArray(bot.routines) ? bot.routines as Record<string, unknown>[] : []))
@@ -595,8 +597,114 @@ test('the bots file template explains itself to a person or any AI, covers every
   }
 })
 
-test('Option 2 downloads the template and imports it; Export lives in Step 2 once the organization has bots', () => {
+test('Option 2 gives a prompt for any AI with the template, then imports the file it writes; Export lives in Step 2 once the organization has bots', () => {
   const page = readFileSync(new URL('../../src/components/BotsFileImport.tsx', import.meta.url), 'utf8')
   assert.doesNotMatch(page, /Export bots file/, 'an empty organization has nothing to export')
-  assert.match(page, /Download the template and fill it in yourself, or give it to any AI with a description of your organization and import the file it writes\./)
+  assert.match(page, /prompt=\{botsFilePrompt\(localTimeZone\(\)\)\}/)
+  assert.match(page, /pasteTitle="Step 1\. Paste this prompt into any AI, with the template"/)
+  assert.match(page, /copyActions=\{<Button variant="secondary" href="\/bots-file-template\.json" download="bots\.json">Download bots file template<\/Button>\}/)
+  assert.match(page, /importTitle="Step 2\. Import the \.json file it writes"/)
+  const steps = readFileSync(new URL('../../src/components/GrokBotsPrompt.tsx', import.meta.url), 'utf8')
+  assert.match(steps, /pasteTitle = 'Step 1\. Paste this prompt into Grok Bot'/, 'Option 1 keeps its own titles')
+  assert.match(steps, /importTitle = 'Step 2\. Import the Grok Bot \.json file'/)
+})
+
+test('the prompt for any AI interviews the owner and waits for a yes before it writes the bots file', async () => {
+  const { BOTS_FILE_PROMPT, botsFilePrompt } = await import('../../src/content/bots-file-prompt.ts')
+  assert.match(BOTS_FILE_PROMPT, /Before you write anything, interview me with the questions below, as you would to set up a real organization\. Ask them in order, a few at a time, and wait for my answers\. Ask a follow-up question when an answer is vague, and skip any question I already answered\./)
+  const questions = BOTS_FILE_PROMPT.split('\n').filter((line) => /^\d+\. /.test(line))
+  assert.ok(questions.length >= 14, `real questions, not topics: ${questions.length}`)
+  for (const line of questions) assert.match(line, /\?$/, `asked as a question: ${line}`)
+  for (const asked of ['What is your organization called?', 'What must a bot never do without your OK, such as spending money, signing or changing a contract, sharing personal data, sending a message to a client, or publishing anything?', 'For each job a bot takes, what does done look like?', 'How many bots do you want to start with?']) {
+    assert.ok(questions.some((line) => line.endsWith(asked)), `asks: ${asked}`)
+  }
+  assert.match(BOTS_FILE_PROMPT, /Then show me the bots you propose as a short list: name, what it owns, and who it reports to\. Wait for my OK or my changes\. Don't write the file until I confirm\./)
+  assert.match(BOTS_FILE_PROMPT, /Put your assumptions and notes in your reply, not in the file\./)
+  assert.doesNotMatch(BOTS_FILE_PROMPT, /10 or fewer/, 'the owner decides how many bots')
+  assert.match(BOTS_FILE_PROMPT, /on an event from email, slack, github, webhook, microsoftTeams, linear, sentry, or pagerduty\. Nothing else\./, 'only starts the app keeps')
+  assert.match(BOTS_FILE_PROMPT, /with a cron line and my IANA time zone as timeZone/)
+  assert.match(botsFilePrompt('Europe/Madrid'), /with a cron line and timeZone "Europe\/Madrid"/)
+  assert.doesNotMatch(BOTS_FILE_PROMPT, /\bcompany\b/i)
+  const docs = readFileSync(new URL('../../docs/bots-file.md', import.meta.url), 'utf8')
+  assert.equal(docs.includes(BOTS_FILE_PROMPT), true, 'docs/bots-file.md carries the same prompt')
+})
+
+test('the template tells an AI to ask first, to leave status out for new bots, and why names start with the organization', () => {
+  const file = JSON.parse(readFileSync(fileURLToPath(new URL('../../public/bots-file-template.json', import.meta.url)), 'utf8')) as { readme: string[]; fields: Record<string, string> }
+  assert.equal(file.readme[0], 'If you are an AI reading this file: follow instructions, the next list in this file, step by step. Interview the owner, show the bots you propose, and write nothing until the owner confirms.')
+  assert.ok(file.readme.includes('Put your assumptions and notes in your reply, not in this file.'))
+  assert.match(file.fields.status!, /Leave it out for a new bot: Grok Bot creates it active\. To start a routine paused, set its enabled to false\./)
+  assert.match(file.fields.name!, /Start it with a short form of the organization's name, like the Northwind examples, so it cannot match a bot you already run in Grok Bot\./)
+})
+
+test('a bots file from any AI imports: a byte-order mark, Windows line endings, or a reply with one json code block', () => {
+  const file = JSON.stringify({ bots: [{ name: 'Acme Lead Bot', reportsTo: 'You', owns: ['New leads'] }] }, null, 2)
+  const marked = parseBotsFile(`﻿${file.replace(/\n/g, '\r\n')}\r\n`)
+  assert.ok(marked.ok, 'a byte-order mark and CRLF are fine')
+  if (marked.ok) assert.equal(marked.rows[0]!.name, 'Acme Lead Bot')
+  const reply = `Here is your file. I assumed sales only.\n\n\`\`\`json\n${file}\n\`\`\`\n\nImport it on Connect bots.`
+  const fenced = parseBotsFile(reply)
+  assert.ok(fenced.ok, 'the json block inside an AI reply')
+  if (fenced.ok) assert.equal(fenced.rows[0]!.name, 'Acme Lead Bot')
+  const prose = parseBotsFile('Sorry, I cannot write that file.')
+  assert.equal(prose.ok, false)
+  if (!prose.ok) assert.deepEqual(prose.errors, ['This file is not JSON.'])
+})
+
+test('the prompt and template work with any AI: the template attached or pasted, the file back as a file or one code block', async () => {
+  const { BOTS_FILE_PROMPT } = await import('../../src/content/bots-file-prompt.ts')
+  assert.match(BOTS_FILE_PROMPT, /^I want to set up my organization in BotsEverywhere, an open source tool that runs a team of bots in Grok Bot\. These instructions come with the BotsEverywhere bots file template \(bots\.json\): attached, pasted, or the file you are reading\. Read its readme and fields: they are the rules for the file\./)
+  assert.match(BOTS_FILE_PROMPT, /- Put your assumptions and notes in your reply, not in the file\. Write them first, then the file: as a file named botseverywhere-bots\.json if you can, otherwise the JSON alone in one code block\.$/)
+  assert.equal(BOTS_FILE_PROMPT.split('assumptions and notes').length, 2, 'said once')
+  assert.doesNotMatch(BOTS_FILE_PROMPT, /Return only the JSON/, 'no clash with notes in the reply')
+  const file = JSON.parse(readFileSync(fileURLToPath(new URL('../../public/bots-file-template.json', import.meta.url)), 'utf8')) as { readme: string[] }
+  assert.ok(file.readme.some((line) => /any AI \(Claude, ChatGPT, Gemini, Codex, Grok Bot, or another\)/.test(line)))
+})
+
+test('the template carries the whole prompt, so any AI given only the file interviews the owner and writes it', async () => {
+  const { BOTS_FILE_PROMPT } = await import('../../src/content/bots-file-prompt.ts')
+  const file = JSON.parse(readFileSync(fileURLToPath(new URL('../../public/bots-file-template.json', import.meta.url)), 'utf8')) as Record<string, unknown>
+  assert.deepEqual(Object.keys(file), ['readme', 'instructions', 'fields', 'bots'], 'readme first, then the instructions an AI follows')
+  assert.ok(Array.isArray(file.instructions) && file.instructions.every((line) => typeof line === 'string'))
+  assert.equal((file.instructions as string[]).join('\n'), BOTS_FILE_PROMPT, 'the same words as Copy prompt, line for line')
+  assert.ok((file.readme as string[]).includes('Only the bots list is imported. readme, instructions, and fields are for you and the AI, and the import skips them.'))
+  const parsed = parseBotsFile(JSON.stringify(file))
+  assert.ok(parsed.ok, 'the import still reads only bots')
+})
+
+test('an event routine keeps an empty schedule; an old file that wrote the schedule in trigger still loads', () => {
+  const parsed = parseBotsFile(JSON.stringify({ bots: [{ name: 'Acme Inquiry Bot', routines: [
+    { name: 'Answer an inquiry', trigger: 'email', event: 'A new inquiry arrives by email', enabled: true },
+    { name: 'Morning sweep', trigger: 'schedule', schedule: '0 8 * * 1-5', timeZone: 'Europe/Madrid' },
+    { name: 'Old weekly', trigger: 'Mondays 09:00' },
+  ] }] }))
+  assert.ok(parsed.ok)
+  if (!parsed.ok) return
+  const [event, scheduled, old] = parsed.rows[0]!.routines
+  assert.equal(event!.schedule, '', 'email is how it starts, not when')
+  assert.equal(event!.trigger, 'email')
+  assert.equal(event!.event, 'A new inquiry arrives by email')
+  assert.equal(scheduled!.schedule, '0 8 * * 1-5')
+  assert.equal(old!.schedule, 'Mondays 09:00', 'an older file\'s schedule in words still loads')
+})
+
+test('Export writes every routine detail, so export then import gives back the same routines', () => {
+  const routines = [
+    { name: 'Morning sweep', schedule: '0 8 * * 1-5', description: 'Sweeps new leads', trigger: 'schedule' as const, timeZone: 'Europe/Madrid', lastRun: '2026-10-26T08:00:00.000Z' },
+    { name: 'Answer an inquiry', schedule: '', description: 'Replies to email', trigger: 'email' as const, event: 'A new inquiry arrives by email', enabled: false },
+  ]
+  const seat = { slug: 'acme-bot', title: 'Acme Bot', kind: 'bot', status: 'active', reportsTo: 'you', grokBotUrl: '', owns: ['a'], may: [], mustAskBefore: [], doneWhen: [], routines }
+  const back = parseBotsFile(exportBotsFile([seat as never]))
+  assert.ok(back.ok)
+  if (back.ok) assert.deepEqual(back.rows[0]!.routines, routines)
+})
+
+test('a list item with a semicolon stays one line; a single string is still split on "; "', () => {
+  const parsed = parseBotsFile(JSON.stringify({ bots: [
+    { name: 'CTV2 Captación Alicante', owns: ['Crear una línea base en la primera ejecución; en ejecuciones posteriores identificar anuncios nuevos.'], may: 'Read the inbox; flag a mismatch' },
+  ] }))
+  assert.ok(parsed.ok)
+  if (!parsed.ok) return
+  assert.deepEqual(parsed.rows[0]!.owns, ['Crear una línea base en la primera ejecución; en ejecuciones posteriores identificar anuncios nuevos.'])
+  assert.deepEqual(parsed.rows[0]!.may, ['Read the inbox', 'flag a mismatch'])
 })

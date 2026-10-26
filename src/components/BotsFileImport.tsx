@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { exportBotsFile, parseBotsFile, type BotsFileRow } from '../../server/src/bots-file.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
-import { BOTS_FILE_NAME } from '../content/grok-bots-prompt'
+import { BOTS_FILE_NAME, localTimeZone } from '../content/grok-bots-prompt'
+import { botsFilePrompt } from '../content/bots-file-prompt'
 import { Button } from './Button'
 import { GrokBotsPrompt } from './GrokBotsPrompt'
 import { SaveAlert } from './SaveAlert'
@@ -119,17 +120,18 @@ export function BotsFileImport({
   return (
     <div className="bots-file">
       {mode === 'template' ? (
-        <>
-          <p className="overview-note">Download the template and fill it in yourself, or give it to any AI with a description of your organization and import the file it writes.</p>
-          <div className="dir-actions">
-            <Button variant="secondary" href="/bots-file-template.json" download="bots.json">Download bots file template</Button>
-            {importButton}
-          </div>
-        </>
+        <GrokBotsPrompt
+          prompt={botsFilePrompt(localTimeZone())}
+          pasteTitle="Step 1. Paste this prompt into any AI, with the template"
+          copyActions={<Button variant="secondary" href="/bots-file-template.json" download="bots.json">Download bots file template</Button>}
+          importTitle="Step 2. Import the .json file it writes"
+          importAction={importButton}
+        >
+          {preview}
+        </GrokBotsPrompt>
       ) : (
         <GrokBotsPrompt importAction={importButton}>{preview}</GrokBotsPrompt>
       )}
-      {mode === 'template' ? preview : null}
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
       <input
         ref={fileRef}

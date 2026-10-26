@@ -52,8 +52,6 @@ test('Connect bots shows Step 2 in a box like Step 1 once the organization has b
   assert.match(workspace, /onAddSeat=\{\(\) => setAdding\(true\)\}/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.link-company\.connect-grok \.dir-actions \{ margin-top: 0; \}/)
-  assert.match(css, /\.bots-file > \.overview-note \+ \.dir-actions \{ margin-top: var\(--space-3\); \}/, 'Option 2 keeps a gap between its note and its buttons inside the box')
-  assert.ok(css.indexOf('.bots-file > .overview-note + .dir-actions') > css.indexOf('.link-company.connect-grok .dir-actions'), 'after the box rule, so it wins')
   const { seatsFolder } = await import('../../src/org/folder-path.ts')
   assert.equal(seatsFolder('C:\\Users\\migue\\app\\orgs\\your-company'), 'C:\\Users\\migue\\app\\orgs\\your-company\\seats')
   assert.equal(seatsFolder('/home/ana/app/orgs/desk'), '/home/ana/app/orgs/desk/seats')

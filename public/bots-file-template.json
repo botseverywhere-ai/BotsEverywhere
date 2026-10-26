@@ -1,17 +1,64 @@
 {
   "readme": [
+    "If you are an AI reading this file: follow instructions, the next list in this file, step by step. Interview the owner, show the bots you propose, and write nothing until the owner confirms.",
     "This is a BotsEverywhere bots file: the bots of one organization, who each one reports to, and what each one does.",
-    "Fill it in yourself, or give it to any AI (Grok Bot, Claude, ChatGPT, Codex, or another) with a description of your organization, and ask it to return a file in exactly this format with the Northwind example bots replaced by yours.",
+    "Fill it in yourself, or give it to any AI (Claude, ChatGPT, Gemini, Codex, Grok Bot, or another) with a description of your organization, and ask it to return a file in exactly this format with the Northwind example bots replaced by yours.",
+    "Put your assumptions and notes in your reply, not in this file.",
     "Then import it on the Connect bots tab: Step 2, Option 2, Import bots file. Import into an organization with no bots yet. After that, importing is off, and new bots come through Add a seat, the Bot directory, or Sync with Grok Bot.",
-    "Only the bots list is imported. readme and fields are notes for you and the AI, and the import skips them.",
+    "Only the bots list is imported. readme, instructions, and fields are for you and the AI, and the import skips them.",
     "One entry per bot, each with its real name. People are not listed here: You is the owner of the organization.",
     "reportsTo is You, another bot in this file, or a person already in the organization.",
-    "Leave out any field you do not know. Never invent numbers, dates, or links: createdAt, lastActive, runs30d, tasksDone30d, grokBotUrl, and publicUrl are only for bots that already run in Grok Bot.",
+    "Leave out any field you do not know. Never invent numbers, dates, or links: createdAt, lastActive, runs30d, tasksDone30d, grokBotUrl, publicUrl, and status are only for bots that already run in Grok Bot.",
     "A bot without a grokBotUrl is not in Grok Bot yet. After the import, open Sync with Grok Bot, tick it under Not in Grok Bot, and the Connector creates it on its next run, with its skills and routines.",
     "The file is plain JSON: keep the quotes and commas, and do not add comments."
   ],
+  "instructions": [
+    "I want to set up my organization in BotsEverywhere, an open source tool that runs a team of bots in Grok Bot. These instructions come with the BotsEverywhere bots file template (bots.json): attached, pasted, or the file you are reading. Read its readme and fields: they are the rules for the file.",
+    "",
+    "Before you write anything, interview me with the questions below, as you would to set up a real organization. Ask them in order, a few at a time, and wait for my answers. Ask a follow-up question when an answer is vague, and skip any question I already answered.",
+    "",
+    "The organization",
+    "1. What is your organization called?",
+    "2. Where is it based, and in which time zone do you work?",
+    "3. What does it do, and who are its customers?",
+    "4. What do you want to get done in the next three months?",
+    "",
+    "The team",
+    "5. Who works in the organization, and what does each person do?",
+    "6. Should every bot report to you, or should one lead bot coordinate the others and report to you?",
+    "",
+    "The work",
+    "7. What work repeats every day or every week?",
+    "8. Which of that work should bots do, and which stays with people?",
+    "9. For each job a bot takes, what does done look like?",
+    "10. On which days and at what times should each recurring job run?",
+    "",
+    "Where work comes in",
+    "11. Where does new work arrive: email, a web form, WhatsApp, Slack, GitHub, phone calls, or somewhere else?",
+    "12. Which tools hold your information, such as a CRM, spreadsheets, a calendar, or a website?",
+    "",
+    "The limits",
+    "13. What may a bot do on its own, without asking you?",
+    "14. What must a bot never do without your OK, such as spending money, signing or changing a contract, sharing personal data, sending a message to a client, or publishing anything?",
+    "",
+    "The bots",
+    "15. In which languages should the bots work?",
+    "16. How many bots do you want to start with?",
+    "",
+    "Then show me the bots you propose as a short list: name, what it owns, and who it reports to. Wait for my OK or my changes. Don't write the file until I confirm.",
+    "",
+    "When I confirm, write the file:",
+    "- Use exactly the template's format, with the Northwind example bots replaced by mine.",
+    "- Start every bot name with a short form of the organization's name, so it can't match a bot I already run.",
+    "- reportsTo is You or another bot in the file.",
+    "- A routine starts on a schedule, with a cron line and my IANA time zone as timeZone, or on an event from email, slack, github, webhook, microsoftTeams, linear, sentry, or pagerduty. Nothing else.",
+    "- Make owns, may, needsApproval, and doneWhen specific: they become each bot's instructions in Grok Bot.",
+    "- Leave out grokBotUrl, createdAt, lastActive, runs30d, tasksDone30d, publicUrl, and status: these bots don't exist yet.",
+    "- Set section to the organization's name.",
+    "- Put your assumptions and notes in your reply, not in the file. Write them first, then the file: as a file named botseverywhere-bots.json if you can, otherwise the JSON alone in one code block."
+  ],
   "fields": {
-    "name": "Required. The bot's name, unique in this organization. The bot gets this name in Grok Bot.",
+    "name": "Required. The bot's name, unique in this organization. The bot gets this name in Grok Bot. Start it with a short form of the organization's name, like the Northwind examples, so it cannot match a bot you already run in Grok Bot.",
     "grokBotUrl": "The bot's Grok Bot link (grokbot://... or https://...), only for a bot that already runs in Grok Bot. Leave it out for a new bot.",
     "section": "The Grok Bot sidebar section the bot sits in, usually the organization's name. Leave it out when you do not know it.",
     "reportsTo": "Who the bot reports to: You, another bot in this file, or a person already in the organization. Leave it out for You.",
@@ -26,53 +73,99 @@
     "routines": "Work the bot starts on its own. Each one has a name, a one-line description (never its instructions), a trigger (schedule, or the product an event comes from: slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty), a cron schedule for a schedule, an IANA timeZone or none for the bot's own, an event rule for an event, and enabled false when it is paused.",
     "skills": "Reusable workflows the bot uses, each a name and one line on what it does. List only the ones this bot needs.",
     "publicUrl": "The bot's public https share link, only when it is public in Grok Bot. Never make one up.",
-    "status": "active, paused, or retired. Leave it out for active."
+    "status": "active, paused, or retired, as Grok Bot shows it for a bot that already runs there. Leave it out for a new bot: Grok Bot creates it active. To start a routine paused, set its enabled to false."
   },
   "bots": [
     {
       "name": "Northwind Ops Bot",
       "section": "Northwind",
       "reportsTo": "You",
-      "owns": ["The weekly operations summary", "Keeping the other bots on schedule"],
-      "may": ["Read every bot's run log", "Message the other bots"],
-      "needsApproval": ["Changing another bot's routine", "Contacting anyone outside the organization"],
+      "owns": [
+        "The weekly operations summary",
+        "Keeping the other bots on schedule"
+      ],
+      "may": [
+        "Read every bot's run log",
+        "Message the other bots"
+      ],
+      "needsApproval": [
+        "Changing another bot's routine",
+        "Contacting anyone outside the organization"
+      ],
       "doneWhen": "The weekly summary is sent and every open item has an owner",
       "routines": [
-        { "name": "Weekly ops summary", "description": "Sums up the week's runs and open items every Monday morning", "trigger": "schedule", "schedule": "0 9 * * 1", "enabled": true }
-      ],
-      "status": "active"
+        {
+          "name": "Weekly ops summary",
+          "description": "Sums up the week's runs and open items every Monday morning",
+          "trigger": "schedule",
+          "schedule": "0 9 * * 1",
+          "enabled": true
+        }
+      ]
     },
     {
       "name": "Northwind Invoice Bot",
       "section": "Northwind",
       "reportsTo": "Northwind Ops Bot",
-      "owns": ["Matching each supplier invoice to its purchase order"],
-      "may": ["Read the bill and the purchase order", "Flag a mismatch to the owner"],
-      "needsApproval": ["Paying a supplier", "Changing an amount"],
+      "owns": [
+        "Matching each supplier invoice to its purchase order"
+      ],
+      "may": [
+        "Read the bill and the purchase order",
+        "Flag a mismatch to the owner"
+      ],
+      "needsApproval": [
+        "Paying a supplier",
+        "Changing an amount"
+      ],
       "doneWhen": "Every invoice of the day is matched or flagged",
       "routines": [
-        { "name": "Morning invoice match", "description": "Matches the invoices that arrived since yesterday", "trigger": "schedule", "schedule": "0 8 * * 1-5", "enabled": true }
+        {
+          "name": "Morning invoice match",
+          "description": "Matches the invoices that arrived since yesterday",
+          "trigger": "schedule",
+          "schedule": "0 8 * * 1-5",
+          "enabled": true
+        }
       ],
       "skills": [
-        { "name": "Match invoice to order", "description": "Compares an invoice with its purchase order and lists the differences" }
-      ],
-      "status": "active"
+        {
+          "name": "Match invoice to order",
+          "description": "Compares an invoice with its purchase order and lists the differences"
+        }
+      ]
     },
     {
       "name": "Northwind Collections Bot",
       "section": "Northwind",
       "reportsTo": "Northwind Invoice Bot",
-      "owns": ["Chasing unpaid customer invoices"],
-      "may": ["Read the open invoices", "Draft a payment reminder"],
-      "needsApproval": ["Sending a reminder", "Sending a legal notice"],
+      "owns": [
+        "Chasing unpaid customer invoices"
+      ],
+      "may": [
+        "Read the open invoices",
+        "Draft a payment reminder"
+      ],
+      "needsApproval": [
+        "Sending a reminder",
+        "Sending a legal notice"
+      ],
       "doneWhen": "The reminder is drafted for approval or the invoice is marked paid",
       "routines": [
-        { "name": "Reply to a payment question", "description": "Answers when a customer replies to a payment reminder", "trigger": "email", "event": "A customer replies to a payment reminder", "enabled": true }
+        {
+          "name": "Reply to a payment question",
+          "description": "Answers when a customer replies to a payment reminder",
+          "trigger": "email",
+          "event": "A customer replies to a payment reminder",
+          "enabled": true
+        }
       ],
       "skills": [
-        { "name": "Payment reminder", "description": "Writes a polite reminder for an unpaid invoice" }
-      ],
-      "status": "active"
+        {
+          "name": "Payment reminder",
+          "description": "Writes a polite reminder for an unpaid invoice"
+        }
+      ]
     }
   ]
 }

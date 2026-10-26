@@ -393,7 +393,7 @@ npm run dev`}</CodeBlock>
         </p>
         <ul>
           <li><strong>Option 1: Import from your Grok Bot.</strong> Copy a prompt, ask Grok Bot for the bots you already run, and import the file it writes. See <To id="files">Import and export</To>.</li>
-          <li><strong>Option 2: Import from a template .json.</strong> Download the template file, fill it in yourself or give it to any AI with a description of your organization, and import the file. The template explains every field. Once the organization has bots, <strong>Export bots file</strong> sits in Step 2.</li>
+          <li><strong>Option 2: Import from a template .json.</strong> Copy the prompt and give it to any AI together with the downloaded template. The AI asks about your organization, shows the bots it proposes, and writes the file once you confirm; then import it. The template carries the same instructions, so an AI given only the file does the same, and it explains every field, so you can also fill it in yourself. Once the organization has bots, <strong>Export bots file</strong> sits in Step 2.</li>
           <li><strong>Option 3: Add your organization manually.</strong> Fill in the organization fields on <strong>Organization Overview</strong>, then add seats on the <To id="org-chart">org chart</To>.</li>
         </ul>
         <p>

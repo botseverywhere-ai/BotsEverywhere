@@ -1,5 +1,6 @@
-import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, routineDetails, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
+import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, routineDetails, routineStart, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
 import { CONNECTOR_BOT_NAME } from './connector-prompt.ts'
+import { normalizeText } from './normalize-text.ts'
 
 /** Shown on Connect bots and sent by the writer when an organization that already has bots is imported again. */
 export const IMPORT_LOCKED = 'This organization already has bots, so importing again is off: it would add a second copy of each bot. New bots from Grok Bot arrive through Sync with Grok Bot.'
@@ -61,10 +62,25 @@ export const BOTS_FILE_TEMPLATE = `{
 `
 
 /** Reads a bots file. A bad document fails the whole file. A bot fails only when it has no name. */
+/**
+ * The JSON in a bots file, from whichever AI wrote it: one leading byte-order mark and Windows line endings are fine, and
+ * a saved reply with notes around one ```json block reads that block. Throws when there is no JSON.
+ */
+function readBotsJson(text: string): unknown {
+  const clean = normalizeText(text).trim()
+  try {
+    return JSON.parse(clean)
+  } catch {
+    const fenced = /```(?:json)?[ \t]*\n([\s\S]*?)\n[ \t]*```/.exec(clean)
+    if (!fenced) throw new Error('not JSON')
+    return JSON.parse(fenced[1]!)
+  }
+}
+
 export function parseBotsFile(text: string): { ok: true; rows: BotsFileRow[] } | { ok: false; errors: string[] } {
   let parsed: unknown
   try {
-    parsed = JSON.parse(text)
+    parsed = readBotsJson(text)
   } catch {
     return { ok: false, errors: ['This file is not JSON.'] }
   }
@@ -203,8 +219,9 @@ function readRoutines(value: unknown): { routines: BotRoutine[]; note: string } 
       skipped += 1
       continue
     }
-    // An older file put the schedule in trigger, in words; it stays the schedule the Seat card shows. A trigger that names a start is also the start.
-    const scheduleValue = record.schedule ?? record.trigger
+    // An older file put the schedule in trigger, in words; it stays the schedule the Seat card shows. A trigger that names a
+    // start, like email, is only the start: an event routine has no schedule.
+    const scheduleValue = record.schedule ?? (routineStart(record.trigger) ? undefined : record.trigger)
     const schedule = typeof scheduleValue === 'string' ? scheduleValue.trim() : scheduleValue === undefined || scheduleValue === null ? '' : ''
     if (scheduleValue !== undefined && scheduleValue !== null && scheduleValue !== '' && !schedule) skipped += 1
     const last = readDate(record.lastRun, 'lastRun', false)
@@ -232,19 +249,19 @@ function managerName(value: unknown): string {
   return 'You'
 }
 
-/** A list, a single string, or bullet text. Missing values are an empty list. */
-function stringList(value: unknown): string[] {
+/** A list, a single string, or bullet text. Missing values are an empty list. A list item is one line, semicolons and all. */
+function stringList(value: unknown, inList = false): string[] {
   if (value === undefined || value === null || value === '') return []
-  if (typeof value === 'string') return splitPieces(value)
+  if (typeof value === 'string') return splitPieces(value, inList)
   if (typeof value === 'number' || typeof value === 'boolean') return [String(value)]
-  if (Array.isArray(value)) return value.flatMap((item) => stringList(item))
+  if (Array.isArray(value)) return value.flatMap((item) => stringList(item, true))
   const text = JSON.stringify(value)
   return text ? [text] : []
 }
 
-function splitPieces(value: string): string[] {
+function splitPieces(value: string, inList: boolean): string[] {
   return value
-    .split(/\r?\n|; /)
+    .split(inList ? /\r?\n/ : /\r?\n|; /)
     .map((part) => part.replace(/^\s*[-*•]\s+/, '').trim())
     .filter(Boolean)
 }
@@ -299,7 +316,7 @@ export interface BotsFileBot {
   lastActive?: string
   runs30d?: number
   tasksDone30d?: number
-  routines?: { name: string; schedule: string; lastRun?: string }[]
+  routines?: (Partial<BotRoutine> & { name: string })[]
   skills?: BotSkill[]
   publicUrl?: string
   status?: BotRunStatus
@@ -331,8 +348,15 @@ export function exportBotsFile(seats: SeatDocument[]): string {
     if (seat.publicUrl) bot.publicUrl = seat.publicUrl
     if (seat.botStatus) bot.status = seat.botStatus
     if (seat.routines?.length) {
+      // Every detail a routine keeps, so an exported file imports back to the same routines.
       bot.routines = seat.routines.map((routine) => {
-        const item: { name: string; schedule: string; lastRun?: string } = { name: routine.name, schedule: routine.schedule }
+        const item: Partial<BotRoutine> & { name: string } = { name: routine.name }
+        if (routine.description) item.description = routine.description
+        if (routine.trigger) item.trigger = routine.trigger
+        if (routine.schedule) item.schedule = routine.schedule
+        if (routine.timeZone) item.timeZone = routine.timeZone
+        if (routine.event) item.event = routine.event
+        if (routine.enabled === false) item.enabled = false
         if (routine.lastRun) item.lastRun = routine.lastRun
         return item
       })
