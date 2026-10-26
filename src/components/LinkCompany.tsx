@@ -78,7 +78,7 @@ export function LinkCompany({
           <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
             <BotsFileImport slug={slug} mode="grok" onImported={onImported} />
           </Panel>
-          <Panel id="import-from-template" option={2} title="Import from a template .json" open={open === 'template'} onPick={(event) => pick('template', event)}>
+          <Panel id="import-from-template" option={2} title="Import from a template .json (build an organization from an interview with an LLM)" open={open === 'template'} onPick={(event) => pick('template', event)}>
             <BotsFileImport slug={slug} mode="template" onImported={onImported} />
           </Panel>
           <Panel id="add-manually" option={3} title="Add your organization manually" open={open === 'manual'} onPick={(event) => pick('manual', event)}>

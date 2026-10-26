@@ -2,7 +2,7 @@
 
 The same `bots` objects described here are what the Connector writes into `orgs/<slug>/grok/snapshot.json` on every run, next to `syncedAt` and a `processes` list in the processes-file format. **Sync with Grok Bot** reads that snapshot; this page describes the one-off import and export.
 
-Organization Overview → **How to link your organization to BotsEverywhere** uses one JSON file both ways. **Import from a template .json** downloads the template and imports a file. Once the organization has bots, Step 2 is locked for import and holds **Export bots file**. Zip **Backup** (Export, Import zip, Import folder) sits under the organization fields and replaces the whole org.
+Organization Overview → **How to link your organization to BotsEverywhere** uses one JSON file both ways. **Import from a template .json (build an organization from an interview with an LLM)** downloads the template and imports a file. Once the organization has bots, Step 2 is locked for import and holds **Export bots file**. Zip **Backup** (Export, Import zip, Import folder) sits under the organization fields and replaces the whole org.
 
 **Export bots file** downloads `botseverywhere-bots.json` built from `seats/*.md`. Each bot seat is one entry. A directory bot is included, and its `addToGrokBotUrl` is written as `grokBotUrl`. People, including You, are not in the file.
 
@@ -72,7 +72,7 @@ Rules:
 
 ## Paste this into any AI
 
-Option 2, **Import from a template .json**, is for an organization built with any AI (Claude, ChatGPT, Gemini, Codex, Grok Bot, or another). Copy this prompt, give it to the AI together with the downloaded template (attached, or pasted below the prompt), answer its questions, confirm the bots it proposes, and import the file it writes. The template carries the same prompt as its `instructions` list, so an AI given only the file does the same. An AI that cannot make a file replies with the JSON in one code block: save that block as a `.json` file, or save the whole reply; the import reads the one `json` code block in it. The copy on Connect bots names the time zone of the computer showing it.
+Option 2, **Import from a template .json (build an organization from an interview with an LLM)**, is for an organization built with any AI (Claude, ChatGPT, Gemini, Codex, Grok Bot, or another). Copy this prompt, give it to the AI together with the downloaded template (attached, or pasted below the prompt), answer its questions, confirm the bots it proposes, and import the file it writes. The template carries the same prompt as its `instructions` list, so an AI given only the file does the same. An AI that cannot make a file replies with the JSON in one code block: save that block as a `.json` file, or save the whole reply; the import reads the one `json` code block in it. The copy on Connect bots names the time zone of the computer showing it.
 
 ```text
 I want to set up my organization in BotsEverywhere, an open source tool that runs a team of bots in Grok Bot. These instructions come with the BotsEverywhere bots file template (bots.json): attached, pasted, or the file you are reading. Read its readme and fields: they are the rules for the file.
