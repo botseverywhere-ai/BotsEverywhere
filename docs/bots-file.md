@@ -2,7 +2,7 @@
 
 The same `bots` objects described here are what the Connector writes into `orgs/<slug>/grok/snapshot.json` on every run, next to `syncedAt` and a `processes` list in the processes-file format. **Sync with Grok Bot** reads that snapshot; this page describes the one-off import and export.
 
-Organization Overview → **How to link your organization to BotsEverywhere** uses one JSON file both ways. **Import from a template .json** downloads the template, imports a file, and exports the current bots. Zip **Backup** (Export, Import zip, Import folder) sits under the organization fields and replaces the whole org.
+Organization Overview → **How to link your organization to BotsEverywhere** uses one JSON file both ways. **Import from a template .json** downloads the template and imports a file. Once the organization has bots, Step 2 is locked for import and holds **Export bots file**. Zip **Backup** (Export, Import zip, Import folder) sits under the organization fields and replaces the whole org.
 
 **Export bots file** downloads `botseverywhere-bots.json` built from `seats/*.md`. Each bot seat is one entry. A directory bot is included, and its `addToGrokBotUrl` is written as `grokBotUrl`. People, including You, are not in the file.
 
@@ -24,6 +24,7 @@ Use exactly this JSON format and nothing else:
     {
       "name": "Bot name",
       "grokBotUrl": "the bot's Grok Bot link (grokbot://... is fine), or leave it out",
+      "section": "the Grok Bot sidebar section the bot sits in, or leave it out",
       "reportsTo": "name of the bot or person it reports to, or You",
       "owns": ["what this bot is responsible for"],
       "may": ["what it can do without asking"],
@@ -45,19 +46,27 @@ Use exactly this JSON format and nothing else:
   ]
 }
 
+The values above are examples of the shape only. Never copy an example value, including the 0s, true, and "active", into the file.
+
 Rules:
-- One entry per bot, using each bot's real name.
+- One entry per bot, using each bot's real name. Don't invent bots or duties.
 - Leave out any bot named "Connector - BotsEverywhere" or "Connector - BotsEverywhere (…)". It only syncs files.
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
-- owns, may, and needsApproval are lists of short strings.
-- doneWhen is one string.
-- For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines (name, description, how it starts, schedule and time zone or event, whether it is paused, last run), and status (active, paused, or retired).
-- skills are the reusable workflows listed on the bot: a name and, when you can see it, one line on what it does. Leave the list out if you see none.
-- publicUrl is the bot's public share link. Include it only when the bot is public and you can see the link.
+- section is the name of the Grok Bot sidebar section the bot is in, exactly as the sidebar shows it. Leave it out for unassigned bots or when you can't see it.
+- owns, may, and needsApproval are lists of short strings, based on the bot's actual description. doneWhen is one string.
+- Take performance from Grok Bot's own data, never from any run log:
+  - runs30d: how many chat messages the bot received in Grok Bot in the last 30 days, from people or other bots, not counting Connector notices.
+  - tasksDone30d: how many of its routine runs finished successfully in the last 30 days, as Grok Bot records them. Leave it out when Grok Bot has no run history for that bot.
+  - lastActive: when the bot last sent a message.
+  - each routine's lastRun: when that routine last ran.
+- Write every time as ISO 8601 with the UTC offset of the owner's time zone at that moment, in the shape 2026-10-20T20:06:16+02:00. createdAt is only the date, YYYY-MM-DD.
+- routines: one entry per routine, with its name, a one-line description (never its instructions), how it starts, its cron line and time zone or its event, enabled false when it is paused, and its last run. An event rule never holds tokens or private links.
+- skills: list only the skills the bot's own description tells it to use, with a name and, when you can see it, one line on what it does. Grok Bot skills are a shared library, so never list the whole library on every bot. Leave the list out if the bot names none.
+- publicUrl: include it only when the bot is public and you can see its share link exactly as Grok Bot shows it. Never make one.
+- status is active, paused, or retired.
 - If you do not know a value, leave the field out. Never estimate or invent numbers.
 - Keep each item short, one line, in plain words.
-- Base everything on each bot's actual description. Don't invent bots or duties.
-- If you don't know a field, leave it out instead of guessing.
+- Do not add fields that are not in this object.
 - Send me the file to download. If you can't, reply with only the JSON so I can save it myself.
 ```
 
@@ -113,4 +122,4 @@ If `seats/<slug>.md` already exists, the new bot is saved as `seats/<slug>-2.md`
 
 Those performance fields are saved in the seat frontmatter and written back by **Export bots file**. Any other extra field is ignored. A bot is skipped only when it has no name. A file that is not JSON, or that has no bots list, is not imported. Bots that only have a note still import. The page then re-reads the org chart. A clean file says **Imported N bots**. A file that left some links out says **N bots imported, M notes**.
 
-**Download bots file template** on Organization Overview saves this example as `bots.json`. **Export bots file** saves the org you have open as `botseverywhere-bots.json`. Zip export, zip import, and folder import stay on the same page for a full backup.
+**Download bots file template** on Connect bots saves `public/bots-file-template.json` as `bots.json`: a `readme` for a person or any AI, a `fields` guide to every field in the same order as the Grok Bot prompt, and three complete Northwind example bots. The import reads only `bots`, so a file that keeps `readme` and `fields` still imports. **Export bots file** saves the org you have open as `botseverywhere-bots.json`. Zip export, zip import, and folder import stay on the same page for a full backup.

@@ -30,7 +30,7 @@ test('the writer imports a bots file into an empty organization once, then refus
     assert.equal(((await again.json()) as { error?: string }).error, IMPORT_LOCKED)
     const read = readOrgDir(join(orgs, made.slug), made.slug)
     assert.ok(read.ok)
-    assert.deepEqual(read.bundle.seats.filter((seat) => seat.kind === 'bot').map((seat) => seat.slug).sort(), ['collections-bot', 'invoice-bot'], 'no second copy')
+    assert.deepEqual(read.bundle.seats.filter((seat) => seat.kind === 'bot').map((seat) => seat.slug).sort(), ['northwind-collections-bot', 'northwind-invoice-bot', 'northwind-ops-bot'], 'no second copy')
   } finally {
     await started.close()
     rmSync(dir, { recursive: true, force: true })
@@ -39,7 +39,7 @@ test('the writer imports a bots file into an empty organization once, then refus
 
 test('Connect bots shows Step 2 in a box like Step 1 once the organization has bots: status, where the bot files are, and Export', async () => {
   const link = readFileSync(new URL('../../src/components/LinkCompany.tsx', import.meta.url), 'utf8')
-  assert.match(link, /<section className=\{locked \? 'link-company connect-grok' : 'link-company dir-page'\}/)
+  assert.match(link, /<section className="link-company connect-grok" aria-labelledby="link-company-title">/, 'Step 2 is a box like Step 1, with or without bots')
   assert.match(link, /\{locked \? \(/)
   assert.match(link, /<p>\{IMPORT_LOCKED\}<\/p>\s*<dl className="connect-facts">/)
   assert.match(link, /<span className="connect-badge is-connected"><i aria-hidden="true" \/>Linked<\/span>\s*<span className="connect-status-detail">\{botsLine\(seats\)\}<\/span>/)
@@ -52,6 +52,8 @@ test('Connect bots shows Step 2 in a box like Step 1 once the organization has b
   assert.match(workspace, /onAddSeat=\{\(\) => setAdding\(true\)\}/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.link-company\.connect-grok \.dir-actions \{ margin-top: 0; \}/)
+  assert.match(css, /\.bots-file > \.overview-note \+ \.dir-actions \{ margin-top: var\(--space-3\); \}/, 'Option 2 keeps a gap between its note and its buttons inside the box')
+  assert.ok(css.indexOf('.bots-file > .overview-note + .dir-actions') > css.indexOf('.link-company.connect-grok .dir-actions'), 'after the box rule, so it wins')
   const { seatsFolder } = await import('../../src/org/folder-path.ts')
   assert.equal(seatsFolder('C:\\Users\\migue\\app\\orgs\\your-company'), 'C:\\Users\\migue\\app\\orgs\\your-company\\seats')
   assert.equal(seatsFolder('/home/ana/app/orgs/desk'), '/home/ana/app/orgs/desk/seats')

@@ -116,7 +116,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
         <li>Come back here. The status turns green after its first run, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
       </ol>
       <p className="overview-note">
-        The prompt changed: the Connector now reports each bot's skills and public link, creates new bots with the skills and routines from their Profile, and still leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
+        The prompt changed: the Connector now puts each bot it creates in the Grok Bot sidebar section named like its organization, so make one section per organization there. It also reports each bot's skills and public link, creates new bots with the skills and routines from their Profile, and still leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
       </p>
       {editable && ready ? (
         <div className="connect-interval">

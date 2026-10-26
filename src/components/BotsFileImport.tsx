@@ -11,12 +11,10 @@ const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
 export function BotsFileImport({
   slug,
-  seats = [],
   onImported,
   mode = 'grok',
 }: {
   slug: string
-  seats?: SeatDocument[]
   onImported: () => Promise<void>
   mode?: 'grok' | 'template'
 }) {
@@ -122,11 +120,10 @@ export function BotsFileImport({
     <div className="bots-file">
       {mode === 'template' ? (
         <>
-          <p className="overview-note">Download the template, fill it in (or use a file you exported), then import.</p>
+          <p className="overview-note">Download the template and fill it in yourself, or give it to any AI with a description of your organization and import the file it writes.</p>
           <div className="dir-actions">
             <Button variant="secondary" href="/bots-file-template.json" download="bots.json">Download bots file template</Button>
             {importButton}
-            <Button variant="secondary" type="button" onClick={() => downloadBotsFile(seats)}>Export bots file</Button>
           </div>
         </>
       ) : (

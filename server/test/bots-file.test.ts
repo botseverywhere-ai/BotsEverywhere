@@ -19,7 +19,7 @@ test('Company Overview previews the bots file and confirms before writing', () =
   const page = readFileSync(new URL('../../src/components/BotsFileImport.tsx', import.meta.url), 'utf8')
   const overview = readFileSync(new URL('../../src/pages/CompanyOverview.tsx', import.meta.url), 'utf8')
   assert.match(page, /Import bots file/)
-  assert.match(page, /Export bots file/)
+  assert.match(readFileSync(new URL('../../src/components/LinkCompany.tsx', import.meta.url), 'utf8'), /Export bots file/, 'Export sits in Step 2 once the organization has bots')
   assert.match(page, /Download bots file template/)
   assert.match(page, /GrokBotsPrompt/)
   assert.match(page, /mode === 'template'/)
@@ -447,7 +447,8 @@ test('a Grok Bot file with loose fields still imports', () => {
 })
 
 test('performance fields are optional, lenient, and round-trip through the seat file', () => {
-  assert.match(GROK_BOTS_PROMPT, /For each bot, also include only what you can actually see: createdAt, lastActive, runs30d, tasksDone30d, routines \(name, description, how it starts, schedule and time zone or event, whether it is paused, last run\), and status \(active, paused, or retired\)\./)
+  assert.match(GROK_BOTS_PROMPT, /Take performance from Grok Bot's own data, never from any run log:/)
+  assert.match(GROK_BOTS_PROMPT, /tasksDone30d: how many of its routine runs finished successfully in the last 30 days, as Grok Bot records them\. Leave it out when Grok Bot has no run history for that bot\./)
   assert.match(GROK_BOTS_PROMPT, /If you do not know a value, leave the field out\. Never estimate or invent numbers\./)
   const parsed = parseBotsFile(JSON.stringify({
     bots: [{
@@ -540,4 +541,62 @@ test('performance fields are optional, lenient, and round-trip through the seat 
   assert.equal(exportBotsFile(loaded.bundle.seats).includes('"runs30d"'), true)
   assert.equal(exportBotsFile([loaded.bundle.seats.find((item) => item.title === 'Quiet Bot')!]).includes('runs30d'), false)
   rmSync(dir, { recursive: true, force: true })
+})
+
+test('the import prompt asks for each bot\'s sidebar section, real values only, and times in the owner\'s own time zone', async () => {
+  const { grokBotsPrompt } = await import('../../src/content/grok-bots-prompt.ts')
+  assert.match(GROK_BOTS_PROMPT, /"section": "the Grok Bot sidebar section the bot sits in, or leave it out",/)
+  assert.match(GROK_BOTS_PROMPT, /The values above are examples of the shape only\. Never copy an example value, including the 0s, true, and "active", into the file\./)
+  assert.match(GROK_BOTS_PROMPT, /Grok Bot skills are a shared library, so never list the whole library on every bot\./)
+  assert.match(GROK_BOTS_PROMPT, /Write every time as ISO 8601 with the UTC offset of the owner's time zone at that moment/, 'the shared copy names no one zone')
+  assert.doesNotMatch(GROK_BOTS_PROMPT, /Europe\/Madrid/)
+  assert.match(grokBotsPrompt('America/New_York'), /Write every time as ISO 8601 with the UTC offset of America\/New_York at that moment, in the shape 2026-10-20T20:06:16\+02:00\. createdAt is only the date, YYYY-MM-DD\./)
+  const panel = readFileSync(new URL('../../src/components/GrokBotsPrompt.tsx', import.meta.url), 'utf8')
+  assert.match(panel, /const prompt = grokBotsPrompt\(localTimeZone\(\)\)/, 'the copy on Connect bots names the zone of the computer showing it')
+  const parsed = parseBotsFile(JSON.stringify({ bots: [{ name: 'Clip Bot', section: 'aurafarming' }] }))
+  assert.ok(parsed.ok)
+  assert.equal(parsed.rows[0]!.error, '')
+  assert.equal(parsed.rows[0]!.note, '', 'a section imports without a note')
+})
+
+test('the bots file template explains itself to a person or any AI, covers every field, and imports clean', async () => {
+  const { GROK_BOTS_PROMPT } = await import('../../src/content/grok-bots-prompt.ts')
+  const text = readFileSync(fileURLToPath(new URL('../../public/bots-file-template.json', import.meta.url)), 'utf8')
+  const file = JSON.parse(text) as { readme?: unknown; fields?: Record<string, string>; bots?: Record<string, unknown>[] }
+  assert.ok(Array.isArray(file.readme) && file.readme.every((line) => typeof line === 'string'), 'readme is a list of lines')
+  assert.match((file.readme as string[]).join(' '), /any AI/)
+  assert.match((file.readme as string[]).join(' '), /reportsTo is You, another bot in this file, or a person already in the organization/)
+  const shape = GROK_BOTS_PROMPT.slice(GROK_BOTS_PROMPT.indexOf('{'), GROK_BOTS_PROMPT.indexOf('\n\nThe values above'))
+  const promptFields = Object.keys((JSON.parse(shape) as { bots: Record<string, unknown>[] }).bots[0]!)
+  assert.deepEqual(Object.keys(file.fields ?? {}), promptFields, 'the field guide matches the Grok Bot import prompt, field for field')
+  const bots = file.bots ?? []
+  assert.ok(bots.length >= 3)
+  for (const bot of bots) {
+    for (const key of ['name', 'reportsTo', 'owns', 'may', 'needsApproval', 'doneWhen']) assert.ok(key in bot, `${String(bot.name)} has ${key}`)
+    for (const key of ['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'grokBotUrl', 'publicUrl']) assert.equal(key in bot, false, `${String(bot.name)} invents no ${key}`)
+    assert.match(String(bot.name), /^Northwind /, 'example names cannot match a real bot by accident')
+  }
+  const routines = bots.flatMap((bot) => (Array.isArray(bot.routines) ? bot.routines as Record<string, unknown>[] : []))
+  assert.ok(routines.some((item) => item.trigger === 'schedule' && typeof item.schedule === 'string'), 'a scheduled routine')
+  assert.ok(routines.some((item) => item.trigger !== 'schedule' && typeof item.event === 'string'), 'an event routine')
+  assert.ok(bots.some((bot) => Array.isArray(bot.skills) && bot.skills.length > 0), 'a skill')
+  const parsed = parseBotsFile(text)
+  assert.ok(parsed.ok)
+  assert.deepEqual(parsed.rows.map((row) => row.error), bots.map(() => ''))
+  const dir = mkdtempSync(join(tmpdir(), 'be-template-'))
+  try {
+    const made = createOrgFiles(dir, 'Northwind', 'You')
+    assert.ok(made.ok)
+    const result = importBotsFile(join(dir, made.slug), made.slug, parsed.rows)
+    assert.deepEqual(result.errors, [], 'every manager resolves: You or a bot in the file')
+    assert.equal(result.imported.length, bots.length)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('Option 2 downloads the template and imports it; Export lives in Step 2 once the organization has bots', () => {
+  const page = readFileSync(new URL('../../src/components/BotsFileImport.tsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(page, /Export bots file/, 'an empty organization has nothing to export')
+  assert.match(page, /Download the template and fill it in yourself, or give it to any AI with a description of your organization and import the file it writes\./)
 })

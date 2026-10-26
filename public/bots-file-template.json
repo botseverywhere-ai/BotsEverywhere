@@ -1,21 +1,78 @@
 {
+  "readme": [
+    "This is a BotsEverywhere bots file: the bots of one organization, who each one reports to, and what each one does.",
+    "Fill it in yourself, or give it to any AI (Grok Bot, Claude, ChatGPT, Codex, or another) with a description of your organization, and ask it to return a file in exactly this format with the Northwind example bots replaced by yours.",
+    "Then import it on the Connect bots tab: Step 2, Option 2, Import bots file. Import into an organization with no bots yet. After that, importing is off, and new bots come through Add a seat, the Bot directory, or Sync with Grok Bot.",
+    "Only the bots list is imported. readme and fields are notes for you and the AI, and the import skips them.",
+    "One entry per bot, each with its real name. People are not listed here: You is the owner of the organization.",
+    "reportsTo is You, another bot in this file, or a person already in the organization.",
+    "Leave out any field you do not know. Never invent numbers, dates, or links: createdAt, lastActive, runs30d, tasksDone30d, grokBotUrl, and publicUrl are only for bots that already run in Grok Bot.",
+    "A bot without a grokBotUrl is not in Grok Bot yet. After the import, open Sync with Grok Bot, tick it under Not in Grok Bot, and the Connector creates it on its next run, with its skills and routines.",
+    "The file is plain JSON: keep the quotes and commas, and do not add comments."
+  ],
+  "fields": {
+    "name": "Required. The bot's name, unique in this organization. The bot gets this name in Grok Bot.",
+    "grokBotUrl": "The bot's Grok Bot link (grokbot://... or https://...), only for a bot that already runs in Grok Bot. Leave it out for a new bot.",
+    "section": "The Grok Bot sidebar section the bot sits in, usually the organization's name. Leave it out when you do not know it.",
+    "reportsTo": "Who the bot reports to: You, another bot in this file, or a person already in the organization. Leave it out for You.",
+    "owns": "A list of short lines: what this bot is responsible for.",
+    "may": "A list of short lines: what it can do without asking.",
+    "needsApproval": "A list of short lines: what it must ask before doing.",
+    "doneWhen": "One sentence: what finished looks like.",
+    "createdAt": "The date the bot was created in Grok Bot, YYYY-MM-DD. Only for a bot that already runs there.",
+    "lastActive": "When the bot last sent a message, ISO 8601 with its UTC offset, like 2026-10-20T20:06:16+02:00. Only for a bot that already runs in Grok Bot.",
+    "runs30d": "A whole number: chat messages the bot received in Grok Bot in the last 30 days. Only from Grok Bot's own data.",
+    "tasksDone30d": "A whole number: routine runs that finished successfully in the last 30 days. Only from Grok Bot's own data.",
+    "routines": "Work the bot starts on its own. Each one has a name, a one-line description (never its instructions), a trigger (schedule, or the product an event comes from: slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty), a cron schedule for a schedule, an IANA timeZone or none for the bot's own, an event rule for an event, and enabled false when it is paused.",
+    "skills": "Reusable workflows the bot uses, each a name and one line on what it does. List only the ones this bot needs.",
+    "publicUrl": "The bot's public https share link, only when it is public in Grok Bot. Never make one up.",
+    "status": "active, paused, or retired. Leave it out for active."
+  },
   "bots": [
     {
-      "name": "Invoice Bot",
-      "grokBotUrl": "",
+      "name": "Northwind Ops Bot",
+      "section": "Northwind",
       "reportsTo": "You",
-      "owns": ["Match the invoice to the purchase order"],
-      "may": ["Read the bill and the purchase order"],
-      "needsApproval": ["Pay the vendor"],
-      "doneWhen": "The match is recorded"
+      "owns": ["The weekly operations summary", "Keeping the other bots on schedule"],
+      "may": ["Read every bot's run log", "Message the other bots"],
+      "needsApproval": ["Changing another bot's routine", "Contacting anyone outside the organization"],
+      "doneWhen": "The weekly summary is sent and every open item has an owner",
+      "routines": [
+        { "name": "Weekly ops summary", "description": "Sums up the week's runs and open items every Monday morning", "trigger": "schedule", "schedule": "0 9 * * 1", "enabled": true }
+      ],
+      "status": "active"
     },
     {
-      "name": "Collections Bot",
-      "reportsTo": "Invoice Bot",
-      "owns": ["Chase the unpaid invoice"],
-      "may": ["Read the open invoices"],
-      "needsApproval": ["Send a legal notice"],
-      "doneWhen": "The reminder is sent or the invoice is marked paid"
+      "name": "Northwind Invoice Bot",
+      "section": "Northwind",
+      "reportsTo": "Northwind Ops Bot",
+      "owns": ["Matching each supplier invoice to its purchase order"],
+      "may": ["Read the bill and the purchase order", "Flag a mismatch to the owner"],
+      "needsApproval": ["Paying a supplier", "Changing an amount"],
+      "doneWhen": "Every invoice of the day is matched or flagged",
+      "routines": [
+        { "name": "Morning invoice match", "description": "Matches the invoices that arrived since yesterday", "trigger": "schedule", "schedule": "0 8 * * 1-5", "enabled": true }
+      ],
+      "skills": [
+        { "name": "Match invoice to order", "description": "Compares an invoice with its purchase order and lists the differences" }
+      ],
+      "status": "active"
+    },
+    {
+      "name": "Northwind Collections Bot",
+      "section": "Northwind",
+      "reportsTo": "Northwind Invoice Bot",
+      "owns": ["Chasing unpaid customer invoices"],
+      "may": ["Read the open invoices", "Draft a payment reminder"],
+      "needsApproval": ["Sending a reminder", "Sending a legal notice"],
+      "doneWhen": "The reminder is drafted for approval or the invoice is marked paid",
+      "routines": [
+        { "name": "Reply to a payment question", "description": "Answers when a customer replies to a payment reminder", "trigger": "email", "event": "A customer replies to a payment reminder", "enabled": true }
+      ],
+      "skills": [
+        { "name": "Payment reminder", "description": "Writes a polite reminder for an unpaid invoice" }
+      ],
+      "status": "active"
     }
   ]
 }

@@ -1,16 +1,18 @@
 import { useState, type ReactNode } from 'react'
-import { GROK_BOTS_PROMPT } from '../content/grok-bots-prompt'
+import { grokBotsPrompt, localTimeZone } from '../content/grok-bots-prompt'
 import { CopyPromptButton } from '../directory/prompt-actions'
 
 export function GrokBotsPrompt({ importAction, children }: { importAction?: ReactNode; children?: ReactNode }) {
   const [notice, setNotice] = useState('')
+  // Times in the file come back in this computer's own time zone.
+  const prompt = grokBotsPrompt(localTimeZone())
   return (
     <div className="grok-steps">
       <section className="grok-step">
         <h3>Step 1. Paste this prompt into Grok Bot</h3>
-        <pre className="dir-prompt">{GROK_BOTS_PROMPT}</pre>
+        <pre className="dir-prompt">{prompt}</pre>
         <div className="dir-actions">
-          <CopyPromptButton text={GROK_BOTS_PROMPT} onCopied={setNotice} />
+          <CopyPromptButton text={prompt} onCopied={setNotice} />
         </div>
         {notice ? <p className="toast show" role="status">{notice}</p> : null}
       </section>

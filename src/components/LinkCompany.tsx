@@ -47,7 +47,7 @@ export function LinkCompany({
   }
 
   return (
-    <section className={locked ? 'link-company connect-grok' : 'link-company dir-page'} aria-labelledby="link-company-title">
+    <section className="link-company connect-grok" aria-labelledby="link-company-title">
       <h2 id="link-company-title"><span className="step-label">Step 2</span>How to link your organization to BotsEverywhere</h2>
       {locked ? (
         <>
@@ -76,10 +76,10 @@ export function LinkCompany({
         <>
           <p className="overview-note">Pick one way to fill this organization. You can do this before or after Step 1.</p>
           <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
-            <BotsFileImport slug={slug} seats={seats} mode="grok" onImported={onImported} />
+            <BotsFileImport slug={slug} mode="grok" onImported={onImported} />
           </Panel>
           <Panel id="import-from-template" option={2} title="Import from a template .json" open={open === 'template'} onPick={(event) => pick('template', event)}>
-            <BotsFileImport slug={slug} seats={seats} mode="template" onImported={onImported} />
+            <BotsFileImport slug={slug} mode="template" onImported={onImported} />
           </Panel>
           <Panel id="add-manually" option={3} title="Add your organization manually" open={open === 'manual'} onPick={(event) => pick('manual', event)}>
             <p className="overview-note">Fill in the organization details below, then hire bots from the directory or add an existing bot.</p>
