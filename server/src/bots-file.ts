@@ -66,7 +66,7 @@ export const BOTS_FILE_TEMPLATE = `{
  * The JSON in a bots file, from whichever AI wrote it: one leading byte-order mark and Windows line endings are fine, and
  * a saved reply with notes around one ```json block reads that block. Throws when there is no JSON.
  */
-function readBotsJson(text: string): unknown {
+export function readBotsJson(text: string): unknown {
   const clean = normalizeText(text).trim()
   try {
     return JSON.parse(clean)
@@ -250,7 +250,7 @@ function managerName(value: unknown): string {
 }
 
 /** A list, a single string, or bullet text. Missing values are an empty list. A list item is one line, semicolons and all. */
-function stringList(value: unknown, inList = false): string[] {
+export function stringList(value: unknown, inList = false): string[] {
   if (value === undefined || value === null || value === '') return []
   if (typeof value === 'string') return splitPieces(value, inList)
   if (typeof value === 'number' || typeof value === 'boolean') return [String(value)]

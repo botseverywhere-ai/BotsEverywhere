@@ -60,7 +60,7 @@ test('Connect bots shows Step 2 in a box like Step 1 once the organization has b
   assert.equal(botsLine([bot('Invoice Bot'), bot('Old Bot', 'retired'), bot('Connector - BotsEverywhere (uft5)'), { kind: 'human' as const, title: 'You', status: 'active' }]), '1 bot in this organization')
   assert.equal(botsLine([bot('A'), bot('B')]), '2 bots in this organization')
   const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
-  assert.match(docs, /These three options are for an organization with no bots yet\./)
+  assert.match(docs, /These options are for an organization with no bots yet, and Option 4 for one that has only You, so it goes first\./)
 })
 
 test('adding a seat says so, with a link to the org chart, wherever it was added from', () => {

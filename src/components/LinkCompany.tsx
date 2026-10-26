@@ -4,9 +4,10 @@ import { IMPORT_LOCKED, importLocked } from '../../server/src/bots-file.ts'
 import { FOLDER_EVENT, orgFolder, seatsFolder } from '../org/folder-path'
 import { Button } from './Button'
 import { BotsFileImport, downloadBotsFile } from './BotsFileImport'
+import { OrgFileImport } from './OrgFileImport'
 import { FILE_NAMES, FILE_WHAT, botsLine } from './file-guide-copy'
 
-type LinkPanel = 'grok' | 'template' | 'manual'
+type LinkPanel = 'grok' | 'template' | 'manual' | 'existing'
 
 export function LinkCompany({
   slug,
@@ -88,6 +89,9 @@ export function LinkCompany({
               <Button variant="secondary" type="button" onClick={onAddExisting}>Add existing bot</Button>
               <Button variant="secondary" type="button" onClick={onCompanyFields}>Organization fields</Button>
             </div>
+          </Panel>
+          <Panel id="import-existing-org" option={4} title="Import an existing organization .json (describe your organization to an LLM)" open={open === 'existing'} onPick={(event) => pick('existing', event)}>
+            <OrgFileImport slug={slug} seats={seats} onImported={onImported} />
           </Panel>
         </>
       )}

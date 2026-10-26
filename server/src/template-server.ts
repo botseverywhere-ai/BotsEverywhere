@@ -29,6 +29,7 @@ import {
   type GrokSyncState,
   type OrgBundle,
   type OrgDocument,
+  type OrgPerson,
   type OrgProfile,
   type SeatDocument,
   type WorkDocument,
@@ -40,6 +41,7 @@ import { createLiveHub, type LiveKind } from './live-hub.js'
 import { isRunLogName, planRun } from './run-log.js'
 import { playRun, readRunLogDir } from './run-log-files.js'
 import { IMPORT_LOCKED, importLocked, parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
+import { ORG_IMPORT_LOCKED, orgImportLocked, parseOrgFile, plainSlug, type OrgFile } from './org-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
@@ -818,6 +820,116 @@ export function importBotsFile(
     if (!pointed.ok) errors.push({ name: item.row.name, error: pointed.errors.join(' ') })
   }
   return { imported, errors }
+}
+
+/**
+ * Builds an organization that already exists from an organization file: its departments, one seat per person, the org
+ * chart, and the description, purpose, industry, and size. Only on a new organization: You and the Connector's seat.
+ * The person named in you becomes the You seat; without one, You stays at the top beside the people. Nothing is written
+ * when the result would not read back.
+ */
+export function importOrgFile(root: string, orgId: string, file: OrgFile): { ok: true; imported: { name: string; slug: string }[] } | { ok: false; errors: string[] } {
+  if (!orgExists(root)) return { ok: false, errors: ['Org not found.'] }
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  if (orgImportLocked(read.bundle.seats)) return { ok: false, errors: [ORG_IMPORT_LOCKED] }
+  const people = file.people.filter((person) => !person.error)
+  if (people.length === 0) return { ok: false, errors: ['No one in this file can be imported.'] }
+  const org = read.bundle.org
+  const departments = [...org.departments]
+  const departmentId = (name: string): string => {
+    const label = name.trim() || 'General'
+    const known = departments.find((item) => item.name.trim().toLowerCase() === label.toLowerCase() || item.id === plainSlug(label))
+    if (known) return known.id
+    const base = plainSlug(label) || 'department'
+    let id = base
+    for (let n = 2; departments.some((item) => item.id === id); n += 1) id = `${base}-${n}`
+    departments.push({ id, name: label })
+    return id
+  }
+  for (const name of file.departments) departmentId(name)
+  const you = read.bundle.seats.find((seat) => seat.slug === 'you')
+  const taken = new Set(read.bundle.seats.map((seat) => seat.slug))
+  const slugs = new Map<string, string>()
+  for (const person of people) {
+    if (you && person.name === file.you) {
+      slugs.set(person.name, 'you')
+      continue
+    }
+    const slug = reserveSeatSlug(root, plainSlug(person.name) || 'person', taken)
+    if (!slug) return { ok: false, errors: [`Could not pick a free file name for ${person.name}.`] }
+    slugs.set(person.name, slug)
+  }
+  const roster = [...org.people]
+  const seats = read.bundle.seats.map((seat) => ({ ...seat }))
+  const imported: { name: string; slug: string }[] = []
+  for (const person of people) {
+    const slug = slugs.get(person.name)!
+    const department = departmentId(person.department)
+    const reportsTo = person.reportsTo ? slugs.get(person.reportsTo) ?? '' : ''
+    const also = person.alsoReportsTo.length ? `Also reports to ${andList(person.alsoReportsTo)}.` : ''
+    const details: Omit<OrgPerson, 'id'> = { name: person.name, department }
+    const optional = { title: person.title, email: person.email, phone: person.phone, location: person.location, bio: [person.about, also].filter(Boolean).join(' ') }
+    for (const [key, value] of Object.entries(optional) as [keyof typeof optional, string][]) {
+      if (value) details[key] = value
+    }
+    if (slug === 'you' && you) {
+      const seat = seats.find((item) => item.slug === 'you')!
+      const personId = seat.personId || 'person-you'
+      const at = roster.findIndex((item) => item.id === personId)
+      if (at >= 0) roster[at] = { id: personId, ...details }
+      else roster.push({ id: personId, ...details })
+      Object.assign(seat, { title: person.name, role: person.title || seat.role, department, reportsTo, personId, ...(person.owns.length ? { owns: person.owns } : {}) })
+    } else {
+      roster.push({ id: `person-${slug}`, ...details })
+      seats.push({
+        slug,
+        title: person.name,
+        department,
+        reportsTo,
+        addToGrokBotUrl: '',
+        status: 'active',
+        kind: 'human',
+        role: person.title || person.name,
+        personId: `person-${slug}`,
+        hiredAt: '',
+        retiredAt: '',
+        directoryId: '',
+        owns: person.owns,
+        may: [],
+        mustAskBefore: [],
+        doneWhen: [],
+        source: '',
+      })
+    }
+    imported.push({ name: person.name, slug })
+  }
+  const facts = file.organization
+  const company = { ...org.company, tagline: facts.description || org.company.tagline, industry: facts.industry || org.company.industry }
+  const written = writeOrgDir(root, { ...read.bundle, org: { ...org, company, departments, people: roster }, seats })
+  if (written.errors.length) return { ok: false, errors: written.errors }
+  const reread = readOrgDir(root, orgId)
+  if (reread.ok && (facts.purpose || facts.size)) {
+    const profile = readOrgProfile(root, reread.bundle.org, reread.bundle.seats)
+    writeOrgProfile(root, { ...profile, purpose: facts.purpose || profile.purpose, size: facts.size || profile.size })
+  }
+  const count = imported.length === 1 ? '1 person' : `${imported.length} people`
+  appendActivity(root, {
+    id: `org-file-${Date.now()}`,
+    orgId,
+    type: 'edit',
+    actorSeatId: managerSeat(seats)?.slug || 'you',
+    actorType: 'human',
+    timestamp: new Date().toISOString(),
+    summary: `Imported the organization: ${count} from an organization file`,
+  })
+  return { ok: true, imported }
+}
+
+/** Ada, Ada and Ben, or Ada, Ben, and Cy. */
+function andList(names: string[]): string {
+  if (names.length < 3) return names.join(' and ')
+  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
 }
 
 export function readSnapshot(root: string): { ok: true; snapshot: Snapshot; stamp: string } | { ok: false; error: string; stamp: string; missing: boolean } {
@@ -2123,6 +2235,22 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const current = readOrgDir(root, slug)
       if (current.ok && importLocked(current.bundle.seats)) return send(res, 409, { error: IMPORT_LOCKED })
       send(res, 200, importBotsFile(root, slug, parsed.rows))
+      return
+    }
+    const orgFileMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/org-file$/.exec(url.pathname)
+    if (orgFileMatch && req.method === 'POST') {
+      const slug = orgFileMatch[1]!
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      const parsed = parseOrgFile(body)
+      if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
+      const current = readOrgDir(root, slug)
+      if (current.ok && orgImportLocked(current.bundle.seats)) return send(res, 409, { errors: [ORG_IMPORT_LOCKED] })
+      const result = importOrgFile(root, slug, parsed.file)
+      if (!result.ok) return send(res, 422, { errors: result.errors })
+      send(res, 200, result)
       return
     }
     const syncMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/sync$/.exec(url.pathname)
