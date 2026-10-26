@@ -152,7 +152,8 @@ export function draftRoutines(rows: BotRoutine[]): BotRoutine[] {
 export const UPDATE_LABEL = 'Update bot'
 export const UPDATE_HINT = "Sends these skills and routines to Grok Bot on the Connector's next run. Skills go to the library every bot shares."
 
-/** Under the waiting mark once Update bot was clicked. */
-export function updateWaitingLine(requestedAt: string): string {
-  return `Asked ${formatShortDate(requestedAt)}. The Connector sends them on its next run.`
+/** Under the waiting mark once Update bot was clicked or the bot moved. With a count, the waiting changes are listed below it. */
+export function updateWaitingLine(requestedAt: string, count = 0): string {
+  if (!count) return `Asked ${formatShortDate(requestedAt)}. The Connector sends them on its next run.`
+  return `Asked ${formatShortDate(requestedAt)}. The Connector sends these on its next run:`
 }

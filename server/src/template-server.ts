@@ -46,7 +46,7 @@ import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-pr
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
-import { REQUESTS_PATH, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
+import { REQUESTS_PATH, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
 export const DEFAULT_ORG_SLUG = 'your-company'
@@ -568,7 +568,7 @@ export function createHiredSeat(
   if (!linked.ok) return linked
   if (input.stepId) assignWorkStep(root, input.stepId, slug)
   const hiredAt = new Date().toISOString()
-  const actor = read.bundle.seats.find((seat) => seat.kind === 'human')?.slug || slug
+  const actor = managerSeat(read.bundle.seats)?.slug || slug
   appendActivity(root, {
     id: `hire-${slug}`,
     orgId,
@@ -702,7 +702,7 @@ export function createExistingBot(
   const linked = linkSeatOnChart(root, slug, reportsTo, 'bot')
   if (!linked.ok) return linked
   const addedAt = new Date().toISOString()
-  const actor = read.bundle.seats.find((seat) => seat.kind === 'human')?.slug || reportsTo
+  const actor = managerSeat(read.bundle.seats)?.slug || reportsTo
   appendActivity(root, {
     id: `existing-${slug}`,
     orgId,
@@ -894,7 +894,7 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
     requestedAt: new Date().toISOString(),
   }
   writeRequests(root, addRequest(readRequests(root).requests, request))
-  const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
+  const owner = managerSeat(read.bundle.seats)
   appendActivity(root, {
     id: `grok-request-${seat.slug}-${request.requestedAt}`,
     orgId,
@@ -927,6 +927,8 @@ export function requestGrokUpdate(root: string, orgId: string, seatSlug: string)
   if (!canUpdate(seat)) return { ok: false, errors: [`${seat.title} is not in Grok Bot yet. Add it to Grok Bot first.`] }
   const path = seatFile(root, seat.slug)
   if (!path) return { ok: false, errors: ['That seat slug is not valid.'] }
+  // A new manager already waiting for this bot still goes with the skills and routines.
+  const waiting = readRequests(root).requests.find((item) => item.seat === seat.slug && item.kind === 'update')
   const request: GrokRequest = {
     seat: seat.slug,
     name: seat.title,
@@ -936,10 +938,12 @@ export function requestGrokUpdate(root: string, orgId: string, seatSlug: string)
     ...(seat.routines?.length ? { routines: seat.routines } : {}),
     kind: 'update',
     ...(seat.grokBotUrl?.trim() ? { grokBotUrl: seat.grokBotUrl.trim() } : {}),
+    ...(waiting?.reportsTo ? { reportsTo: waiting.reportsTo } : {}),
+    ...(waiting?.reportsTo && waiting.previousReportsTo ? { previousReportsTo: waiting.previousReportsTo } : {}),
     requestedAt: new Date().toISOString(),
   }
   writeRequests(root, addRequest(readRequests(root).requests, request))
-  const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
+  const owner = managerSeat(read.bundle.seats)
   appendActivity(root, {
     id: `grok-update-${seat.slug}-${request.requestedAt}`,
     orgId,
@@ -951,7 +955,7 @@ export function requestGrokUpdate(root: string, orgId: string, seatSlug: string)
     subjectSeatId: seat.slug,
     grok: 'out',
     kind: 'request',
-    stats: [`Skills=${seat.skills?.length ?? 0}`, `Routines=${seat.routines?.length ?? 0}`].join('|'),
+    stats: requestStats(request).join('|'),
   })
   return { ok: true, request }
 }
@@ -970,7 +974,7 @@ export function clearHandledUpdates(root: string, orgId: string) {
   if (!done.length) return
   writeRequests(root, current.requests.filter((item) => !done.includes(item)))
   const read = readOrgDir(root, orgId)
-  const owner = read.ok ? read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired') : undefined
+  const owner = read.ok ? managerSeat(read.bundle.seats) : undefined
   const at = new Date().toISOString()
   for (const item of done) {
     const title = (read.ok ? read.bundle.seats.find((entry) => entry.slug === item.seat)?.title : '') || item.name
@@ -985,7 +989,7 @@ export function clearHandledUpdates(root: string, orgId: string) {
       subjectSeatId: item.seat,
       grok: 'in',
       kind: 'updated',
-      stats: [`Skills=${item.skills?.length ?? 0}`, `Routines=${item.routines?.length ?? 0}`, `Asked=${localStamp(item.requestedAt)}`].join('|'),
+      stats: [...requestStats(item), `Asked=${localStamp(item.requestedAt)}`].join('|'),
     })
   }
 }
@@ -1007,7 +1011,7 @@ export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPl
   const next = dropRequests(current.requests, done)
   if (next.length === current.requests.length) return
   writeRequests(root, next)
-  const owner = read.ok ? read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired') : undefined
+  const owner = read.ok ? managerSeat(read.bundle.seats) : undefined
   const at = new Date().toISOString()
   for (const item of creates) {
     if (!found.has(item.seat)) continue
@@ -1068,7 +1072,7 @@ export function markDeletedBots(orgsDir: string): Map<string, Set<string>> {
       return canDelete(seat) && !Number.isNaN(retired) && ranAt > retired && !stillInGrok({ grokBotUrl: seat.grokBotUrl ?? '', name: seat.title }, reported)
     })
     if (!gone.length) continue
-    const owner = read.bundle.seats.find((item) => item.kind === 'human' && item.status !== 'retired')
+    const owner = managerSeat(read.bundle.seats)
     const seats = new Set<string>()
     const logged = new Set<string>()
     for (const seat of gone) {
@@ -1329,7 +1333,7 @@ export function adoptUnassigned(orgsDir: string, root: string, orgId: string, na
   const added = imported.imported.map((item) => item.name)
   if (added.length) {
     const at = new Date().toISOString()
-    const owner = read.bundle.seats.find((seat) => seat.kind === 'human' && seat.status !== 'retired')
+    const owner = managerSeat(read.bundle.seats)
     appendActivity(root, {
       id: `sync-adopt-${at}`,
       orgId,
@@ -1584,7 +1588,8 @@ export function updateSeatCard(
 }
 
 /** Moves one seat under another. Rewrites the seat file and the org.md chart line, refuses self and cycles, logs an edit event. */
-export function setSeatManager(root: string, orgId: string, slug: string, reportsTo: string): { ok: true; file: string } | { ok: false; errors: string[] } {
+/** sent: the bot is in Grok Bot, so the Connector is asked to give it the new manager on its next run. */
+export function setSeatManager(root: string, orgId: string, slug: string, reportsTo: string): { ok: true; file: string; sent: boolean } | { ok: false; errors: string[] } {
   if (unsafePath(slug) || unsafePath(reportsTo)) return { ok: false, errors: ['That name is not a safe file name.'] }
   if (!SEAT_SLUG.test(slug)) return { ok: false, errors: ['Seat slug must be a lowercase slug.'] }
   const target = reportsTo.trim()
@@ -1606,11 +1611,30 @@ export function setSeatManager(root: string, orgId: string, slug: string, report
     cursor = parent.get(cursor) || ''
   }
   const file = `orgs/${orgId}/seats/${slug}.md`
-  if (seat.reportsTo === target) return { ok: true, file }
+  if (seat.reportsTo === target) return { ok: true, file, sent: false }
   const pointed = retargetSeat(root, slug, target)
   if (!pointed.ok) return pointed
-  const actor = read.bundle.seats.find((item) => item.kind === 'human')?.slug || 'you'
+  const actor = managerSeat(read.bundle.seats)?.slug || 'you'
   const stamp = new Date().toISOString()
+  const before = read.bundle.seats.find((item) => item.slug === seat.reportsTo)?.title ?? ''
+  let sent = false
+  const path = seatFile(root, slug)
+  const current = readRequests(root)
+  if (canUpdate(seat) && path && !current.error) {
+    const next = addManagerChange(current.requests, {
+      seat: slug,
+      name: seat.title,
+      seatFile: path,
+      prompt: '',
+      kind: 'update',
+      ...(seat.grokBotUrl?.trim() ? { grokBotUrl: seat.grokBotUrl.trim() } : {}),
+      reportsTo: manager.title,
+      previousReportsTo: before,
+      requestedAt: stamp,
+    })
+    if (next !== current.requests) writeRequests(root, next)
+    sent = next.some((item) => item.seat === slug && item.kind === 'update' && Boolean(item.reportsTo))
+  }
   appendActivity(root, {
     id: `move-${slug}-${stamp}`,
     orgId,
@@ -1620,8 +1644,10 @@ export function setSeatManager(root: string, orgId: string, slug: string, report
     timestamp: stamp,
     summary: `Moved ${seat.title} under ${manager.title}`,
     subjectSeatId: slug,
+    ...(sent ? { grok: 'out' as const } : {}),
+    stats: requestStats({ reportsTo: manager.title, previousReportsTo: before }).join('|'),
   })
-  return { ok: true, file }
+  return { ok: true, file, sent }
 }
 
 function founderFromChart(org: OrgDocument): SeatDocument | null {
@@ -2235,7 +2261,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const parsed = JSON.parse(body) as { reportsTo?: string }
       const moved = setSeatManager(root, slug, seatSlug, parsed.reportsTo || '')
       if (!moved.ok) return send(res, 422, { errors: moved.errors })
-      send(res, 200, { ok: true, file: moved.file })
+      send(res, 200, { ok: true, file: moved.file, sent: moved.sent })
       return
     }
     const profileSeatMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/seats\/([a-z0-9]+(?:-[a-z0-9]+)*)\/profile$/.exec(url.pathname)
@@ -2331,7 +2357,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
         if (line.errors.length) return send(res, 422, { errors: line.errors, files: written.files })
         appended.push(...line.files)
       }
-      const actor = bundle.seats.find((seat) => seat.kind === 'human')?.slug || written.retired[0]?.slug || 'you'
+      const actor = managerSeat(bundle.seats)?.slug || written.retired[0]?.slug || 'you'
       for (const seat of written.retired) {
         const line = appendActivity(root, {
           id: `fire-${seat.slug}-${seat.retiredAt}`,

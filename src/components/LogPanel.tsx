@@ -12,10 +12,13 @@ const FILTERS: [LogFilter, string][] = [
 
 export function LogPanel({
   events,
+  waiting,
   stepNames,
   onStep,
 }: {
   events: FileActivity[]
+  /** To Grok Bot lines still waiting for the Connector. They pulse like the Sync drawer's waiting list. */
+  waiting?: Set<string>
   stepNames: Map<string, { workstream: string; index: number }>
   onStep: (stepId: string) => void
 }) {
@@ -54,6 +57,7 @@ export function LogPanel({
                 <span className="be-log-text">
                   {event.summary}
                   {figures ? <small className="be-log-figures"> · {figures}</small> : null}
+                  {waiting?.has(event.id) ? <span className="be-log-syncing be-connecting"><i className="be-pulse" aria-hidden="true" />Syncing with Grok Bot</span> : null}
                 </span>
                 {step && event.stepId ? (
                   <button type="button" className="be-step-chip" onClick={() => onStep(event.stepId!)}>

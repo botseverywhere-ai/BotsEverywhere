@@ -149,11 +149,13 @@ export function grokDirectionLabel(direction: 'in' | 'out'): string {
  * so a template copy or a hand-built org can send its bots before any snapshot exists.
  */
 export function outgoing(plan: Pick<SyncPlan, 'rows'> | null, requests: GrokRequest[] = [], seats: SeatDocument[] = []): {
-  waiting: { slug: string; name: string; requestedAt: string; kind: 'create' | 'update' }[]
+  waiting: ({ slug: string; name: string; requestedAt: string; kind: 'create' } | { slug: string; name: string; requestedAt: string; kind: 'update'; items: string[] })[]
   ready: { slug: string; name: string }[]
 } {
   const asked = new Map(requests.map((item) => [item.seat, item]))
-  const waiting = requests.map((item) => ({ slug: item.seat, name: item.name, requestedAt: item.requestedAt, kind: item.kind === 'update' ? 'update' as const : 'create' as const }))
+  const waiting = requests.map((item) => (item.kind === 'update'
+    ? { slug: item.seat, name: item.name, requestedAt: item.requestedAt, kind: 'update' as const, items: updateItems(item) }
+    : { slug: item.seat, name: item.name, requestedAt: item.requestedAt, kind: 'create' as const }))
   const matched = plan ? fulfilledSeats(plan) : new Set<string>()
   const ready: { slug: string; name: string }[] = []
   const seen = new Set<string>()
@@ -192,6 +194,29 @@ const KIND_LABELS: Record<string, string> = {
 const TYPE_LABELS: Record<string, string> = { hire: 'Hire', fire: 'Retired', edit: 'Edit', work: 'Work', approval: 'Approval', exception: 'Exception' }
 
 /** The word in front of a log line. Older lines have no kind, so their id says what they were. */
+/** A waiting update, one change per line for Profile and Sync: the new manager, then each skill and routine. */
+export function updateItems(request: Pick<GrokRequest, 'skills' | 'routines' | 'reportsTo' | 'previousReportsTo'>): string[] {
+  return [
+    ...(request.reportsTo ? [`Reports to ${request.reportsTo}${request.previousReportsTo ? ` (was ${request.previousReportsTo})` : ''}`] : []),
+    ...(request.skills ?? []).map((item) => `Skill: ${item.name}`),
+    ...(request.routines ?? []).map((item) => `Routine: ${item.name}`),
+  ]
+}
+
+/**
+ * To Grok Bot lines in Logs the Connector has not carried out yet: a request for that seat still waits, and no Updated or
+ * Created line for that seat came after the line.
+ */
+export function waitingLogIds(events: Pick<FileActivity, 'id' | 'grok' | 'kind' | 'subjectSeatId' | 'timestamp'>[], requests: Pick<GrokRequest, 'seat'>[]): Set<string> {
+  const waiting = new Set(requests.map((item) => item.seat))
+  const done = new Map<string, number>()
+  for (const event of events) {
+    if (event.grok !== 'in' || (event.kind !== 'updated' && event.kind !== 'created') || !event.subjectSeatId) continue
+    done.set(event.subjectSeatId, Math.max(done.get(event.subjectSeatId) ?? -Infinity, Date.parse(event.timestamp)))
+  }
+  return new Set(events.filter((event) => event.grok === 'out' && event.subjectSeatId && waiting.has(event.subjectSeatId) && Date.parse(event.timestamp) > (done.get(event.subjectSeatId) ?? -Infinity)).map((event) => event.id))
+}
+
 export function logLabel(event: Pick<FileActivity, 'id' | 'type' | 'kind'>): string {
   if (event.kind && KIND_LABELS[event.kind]) return KIND_LABELS[event.kind]!
   if (event.id.startsWith('sync-adopt-')) return 'Added'

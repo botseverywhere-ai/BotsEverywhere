@@ -159,6 +159,7 @@ test('importBotsFile stamps new seats as new from a sync', () => {
 })
 
 import { parseSnapshot, planSync, patchSeatSource, summaryLine } from '../src/grok-sync.ts'
+import { formatShortDate } from '../src/bot-metrics.ts'
 import type { SeatDocument } from '../src/org-files.ts'
 import type { ProcessFile } from '../src/processes.ts'
 
@@ -242,7 +243,7 @@ test('planSync sorts bots into new, updated, unchanged, and missing under the au
   const inv = byName.get('Invoice Bot')
   assert.equal(inv?.kind, 'updated')
   if (inv?.kind !== 'updated') return
-  assert.deepEqual(inv.changes, ['last active 17 Oct 2026, 19:00', '5 runs', '2 tasks', '1 routine', 'first seen'])
+  assert.deepEqual(inv.changes, [`last active ${formatShortDate('2026-10-17T19:00:00Z')}`, '5 runs', '2 tasks', '1 routine', 'first seen'])
   assert.equal(inv.patch.runs30d, 5)
   assert.equal(inv.patch.grokSync, 'synced')
   assert.equal(inv.patch.grokSyncedAt, SNAP)

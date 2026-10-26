@@ -4,6 +4,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { GROK_SNAPSHOT_PROMPT, SNAPSHOT_FILE_NAME, SYNC_NOW_PROMPT, grokSnapshotPrompt } from '../../src/content/grok-snapshot-prompt.ts'
 import { grokSyncClass, grokSyncLine, grokSyncTag, rowLine, statusLine, syncButtonLabel } from '../../src/components/sync-copy.ts'
+import { formatShortDate } from '../src/bot-metrics.ts'
 import { managerChoices } from '../../src/org/manager-choices.ts'
 
 const SNAP = '2026-10-17T20:10:00.000Z'
@@ -22,8 +23,8 @@ test('sync copy helpers name the button, the rows, and the status', () => {
   assert.equal(rowLine({ kind: 'skipped', name: 'Bot 3', error: 'Name is required.' }), 'Bot 3 → Name is required.')
   assert.equal(statusLine({ snapshot: null, error: '', lastConfirmed: '' }, 'your-company'), 'No snapshot yet. The Connector writes orgs/your-company/grok/snapshot.json on each run.')
   assert.equal(statusLine({ snapshot: { stamp: '1:1', syncedAt: '' }, error: 'This file is not JSON.', lastConfirmed: '' }, 'x'), 'The snapshot could not be read: This file is not JSON.')
-  assert.equal(statusLine({ snapshot: { stamp: '1:1', syncedAt: SNAP }, error: '', lastConfirmed: '' }, 'x'), 'Snapshot from 17 Oct 2026, 20:10. Not confirmed yet.')
-  assert.equal(statusLine({ snapshot: { stamp: '1:1', syncedAt: SNAP }, error: '', lastConfirmed: '2026-10-17T20:14:00.000Z' }, 'x'), 'Snapshot from 17 Oct 2026, 20:10. Last confirmed 17 Oct 2026, 20:14.')
+  assert.equal(statusLine({ snapshot: { stamp: '1:1', syncedAt: SNAP }, error: '', lastConfirmed: '' }, 'x'), `Snapshot from ${formatShortDate(SNAP)}. Not confirmed yet.`)
+  assert.equal(statusLine({ snapshot: { stamp: '1:1', syncedAt: SNAP }, error: '', lastConfirmed: '2026-10-17T20:14:00.000Z' }, 'x'), `Snapshot from ${formatShortDate(SNAP)}. Last confirmed ${formatShortDate('2026-10-17T20:14:00.000Z')}.`)
   assert.equal(grokSyncTag({ grokSync: 'new' }), 'New in Grok Bot')
   assert.equal(grokSyncTag({ grokSync: 'missing' }), 'Not in Grok Bot')
   assert.equal(grokSyncTag({ grokSync: 'synced' }), 'In Grok Bot')
@@ -36,9 +37,9 @@ test('sync copy helpers name the button, the rows, and the status', () => {
   assert.equal(grokSyncClass({}), 'is-unsynced')
   assert.equal(grokSyncClass({ grokBotUrl: 'grokbot://app/v1/agent?id=abc' }), 'is-in-grok')
   assert.equal(grokSyncClass({ grokBotUrl: '' }), 'is-unsynced')
-  assert.equal(grokSyncLine({ grokSync: 'synced', grokSyncedAt: SNAP }), 'synced 17 Oct 2026, 20:10')
-  assert.equal(grokSyncLine({ grokSync: 'new', grokSyncedAt: SNAP }), 'new since 17 Oct 2026, 20:10')
-  assert.equal(grokSyncLine({ grokSync: 'missing', grokMissingSince: SNAP }), 'not found since 17 Oct 2026, 20:10')
+  assert.equal(grokSyncLine({ grokSync: 'synced', grokSyncedAt: SNAP }), `synced ${formatShortDate(SNAP)}`)
+  assert.equal(grokSyncLine({ grokSync: 'new', grokSyncedAt: SNAP }), `new since ${formatShortDate(SNAP)}`)
+  assert.equal(grokSyncLine({ grokSync: 'missing', grokMissingSince: SNAP }), `not found since ${formatShortDate(SNAP)}`)
   assert.equal(grokSyncLine({}), 'not synced yet')
   assert.equal(SNAPSHOT_FILE_NAME, 'snapshot.json')
   assert.match(GROK_SNAPSHOT_PROMPT, /"syncedAt"/)

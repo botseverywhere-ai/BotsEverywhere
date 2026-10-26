@@ -22,6 +22,10 @@ export interface GrokRequest {
   kind?: 'update'
   /** For an update: the bot's Grok Bot link, so the Connector finds the right bot. */
   grokBotUrl?: string
+  /** For an update: the name of the bot's new manager, for the Connector to tell the bot. */
+  reportsTo?: string
+  /** For an update: the manager Grok Bot knew before, so Sync and the logs say what changed. */
+  previousReportsTo?: string
   requestedAt: string
 }
 
@@ -46,7 +50,7 @@ export function parseRequests(source: string): { ok: true; requests: GrokRequest
     if (!SEAT_SLUG.test(seat)) return []
     const skills = cleanSkills(row.skills)
     const routines = cleanRoutines(row.routines)
-    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), ...(row.kind === 'update' ? { kind: 'update' as const } : {}), ...(text(row.grokBotUrl) ? { grokBotUrl: text(row.grokBotUrl) } : {}), requestedAt: text(row.requestedAt) }]
+    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), ...(row.kind === 'update' ? { kind: 'update' as const } : {}), ...(text(row.grokBotUrl) ? { grokBotUrl: text(row.grokBotUrl) } : {}), ...(text(row.reportsTo) ? { reportsTo: text(row.reportsTo) } : {}), ...(text(row.previousReportsTo) ? { previousReportsTo: text(row.previousReportsTo) } : {}), requestedAt: text(row.requestedAt) }]
   })
   return { ok: true, requests }
 }
@@ -57,6 +61,35 @@ export function serializeRequests(requests: GrokRequest[]): string {
 
 export function addRequest(requests: GrokRequest[], next: GrokRequest): GrokRequest[] {
   return [...requests.filter((item) => item.seat !== next.seat), next]
+}
+
+/**
+ * A new manager for a bot already in Grok Bot, joined to the update waiting for that bot. The manager Grok Bot knew stays
+ * the first one, so moving the bot back leaves nothing to send about it. A bot waiting to be created is left alone: the
+ * Connector creates it with the manager in its seat file.
+ */
+export function addManagerChange(requests: GrokRequest[], change: GrokRequest & { reportsTo: string; previousReportsTo: string }): GrokRequest[] {
+  if (requests.some((item) => item.seat === change.seat && item.kind !== 'update')) return requests
+  const waiting = requests.find((item) => item.seat === change.seat && item.kind === 'update')
+  const known = waiting?.reportsTo ? waiting.previousReportsTo ?? '' : change.previousReportsTo
+  const { reportsTo: _sent, previousReportsTo: _known, ...base } = waiting ?? change
+  const others = requests.filter((item) => item.seat !== change.seat)
+  if (change.reportsTo === known) {
+    // Back to the manager Grok Bot has. Skills or routines still waiting still go.
+    return base.skills?.length || base.routines?.length ? [...others, { ...base, requestedAt: change.requestedAt }] : others
+  }
+  return [...others, { ...base, reportsTo: change.reportsTo, ...(known ? { previousReportsTo: known } : {}), requestedAt: change.requestedAt }]
+}
+
+/** What a request sends, as log figures: its skills and routines by name, and the new manager. */
+export function requestStats(request: Pick<GrokRequest, 'skills' | 'routines' | 'reportsTo' | 'previousReportsTo'>): string[] {
+  const clean = (value: string) => value.replace(/\|/g, '/')
+  const named = (items: { name: string }[] | undefined) => (items?.length ? `${items.length}: ${items.map((item) => clean(item.name)).join(', ')}` : '0')
+  const stats: string[] = []
+  if (request.skills?.length || request.routines?.length || !request.reportsTo) stats.push(`Skills=${named(request.skills)}`, `Routines=${named(request.routines)}`)
+  if (request.reportsTo) stats.push(`Reports to=${clean(request.reportsTo)}`)
+  if (request.reportsTo && request.previousReportsTo) stats.push(`Was=${clean(request.previousReportsTo)}`)
+  return stats
 }
 
 export function dropRequests(requests: GrokRequest[], seats: Set<string>): GrokRequest[] {

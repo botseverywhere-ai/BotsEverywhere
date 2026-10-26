@@ -22,7 +22,7 @@ import { SyncDrawer } from '../components/SyncDrawer'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
-import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, type ConnectionView } from '../components/sync-copy'
+import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { managerChoices } from '../org/manager-choices'
 import { slugify, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
@@ -255,6 +255,8 @@ export function Workspace({
   })))
   // Only a bot being created is connecting; an update goes to a bot Grok Bot already has.
   const createRequests = (sync?.requests ?? []).filter((item) => item.kind !== 'update')
+  // The update waiting for the open bot: a move, skills and routines, or both.
+  const waitingUpdate = chartSeat ? sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update') : undefined
 
   const applyLoaded = useCallback((loaded: OrgBundle): OrgBundle => {
     const canonical = bundleFromState(bundle.id, loaded.org, loaded.seats, loaded.work, loaded.activity ?? [])
@@ -660,13 +662,13 @@ export function Workspace({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ reportsTo }),
       })
-      const body = (await response.json()) as { errors?: string[]; error?: string }
+      const body = (await response.json()) as { errors?: string[]; error?: string; sent?: boolean }
       if (!response.ok) {
         tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not move that seat.'))
         return
       }
       await rereadOrg()
-      tell(saveNotice(true, 'Seat moved'), orgChartLink)
+      tell(saveNotice(true, body.sent ? "Seat moved. Grok Bot gets the new manager on the Connector's next run." : 'Seat moved'), orgChartLink)
     } catch {
       setWriter('down')
       tell(saveNotice(false, SAVING_OFF))
@@ -995,7 +997,7 @@ export function Workspace({
               }}
             />
           ) : null}
-          {view === 'log' ? <LogPanel events={activity} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} /> : null}
+          {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} /> : null}
         </main>
         {(view === 'org' || view === 'work') && chartSeat ? (
         <SeatDrawer
@@ -1018,6 +1020,7 @@ export function Workspace({
           onReportsTo={editable ? (slug) => { void moveSeat(chartSeat.id, slug) } : undefined}
           grokRequestedAt={createRequests.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
+          grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate) : []}
           onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}

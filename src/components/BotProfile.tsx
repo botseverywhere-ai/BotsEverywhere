@@ -18,10 +18,12 @@ export interface ProfileChanges {
  * Profile on an organization of your own: how the bot works. A directory bot's prompt and a hand-added bot's
  * instructions are edited here; an imported bot's skills and routines come from Grok Bot and are only shown.
  */
-export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', onProfile, onCreateInGrok, onUpdateInGrok }: {
+export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdateItems = [], onProfile, onCreateInGrok, onUpdateInGrok }: {
   seat: Seat
   grokRequestedAt: string
   grokUpdateAt?: string
+  /** The waiting update's changes, one per line. A move waits as an update too, so Update bot stays to add skills and routines to it. */
+  grokUpdateItems?: string[]
   onProfile: (changes: ProfileChanges) => void
   onCreateInGrok?: () => void
   onUpdateInGrok?: () => void
@@ -74,15 +76,13 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', onProfile
             <section className="profile-update">
               {grokUpdateAt ? (
                 <>
-                  <p className="grok-create-state be-connecting"><i className="be-pulse" aria-hidden="true" /><strong>Update waiting for the Connector</strong></p>
-                  <p className="auth-note">{updateWaitingLine(grokUpdateAt)}</p>
+                  <p className="grok-create-state be-connecting">{grokUpdateItems.length ? null : <i className="be-pulse" aria-hidden="true" />}<strong>Update waiting for the Connector</strong></p>
+                  <p className="auth-note">{updateWaitingLine(grokUpdateAt, grokUpdateItems.length)}</p>
+                  {grokUpdateItems.length ? <ul className="profile-update-items">{grokUpdateItems.map((item, index) => <li key={index}><i className="be-pulse" aria-hidden="true" />{item}</li>)}</ul> : null}
                 </>
-              ) : (
-                <>
-                  <Button variant="primary" type="button" onClick={onUpdateInGrok}>{UPDATE_LABEL}</Button>
-                  <p className="field-hint">{UPDATE_HINT}</p>
-                </>
-              )}
+              ) : null}
+              <Button variant="primary" type="button" onClick={onUpdateInGrok}>{UPDATE_LABEL}</Button>
+              <p className="field-hint">{UPDATE_HINT}</p>
             </section>
           ) : null}
         </>

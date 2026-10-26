@@ -109,11 +109,10 @@ export function formatShortDate(iso: string): string {
   const text = iso.trim()
   const date = new Date(text)
   if (!text || Number.isNaN(date.getTime())) return '—'
-  const day = date.getUTCDate()
-  const month = MONTHS[date.getUTCMonth()]
-  const year = date.getUTCFullYear()
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return `${day} ${month} ${year}`
-  const hours = String(date.getUTCHours()).padStart(2, '0')
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
-  return `${day} ${month} ${year}, ${hours}:${minutes}`
+  // A date alone is read as midnight UTC, so it keeps its UTC day: the same day everywhere.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`
+  // A moment shows in the time zone of the computer showing it, the same clock as Logs.
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}, ${hours}:${minutes}`
 }

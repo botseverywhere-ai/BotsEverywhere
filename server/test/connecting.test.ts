@@ -76,7 +76,7 @@ test('a requested bot pulses as connecting on Performance and in the waiting lis
   const css = read('../../src/styles/app.css')
   assert.match(workspace, /requests=\{createRequests\}/, 'Performance pulses for bots being created; an update is not a create')
   assert.match(workspace, /<td colSpan=\{4\} className="be-connecting"><i className="be-pulse" aria-hidden="true" \/>Connecting to Grok Bot…/)
-  assert.match(drawer, /<li key=\{item\.slug\}><i className="be-pulse" aria-hidden="true" \/>\{item\.kind === 'update' \? <>[^<]*\{item\.name\} → update asked[\s\S]*?: <>\{item\.name\} → asked/, 'a create still reads asked, created on the next run; an update reads update asked')
+  assert.match(drawer, /<li key=\{item\.slug\}>\{item\.kind === 'update' \? \([\s\S]*?<strong>\{item\.name\}<\/strong> · asked[\s\S]*?: <><i className="be-pulse" aria-hidden="true" \/>\{item\.name\} → asked/, 'a create still reads asked, created on the next run; an update lists its changes')
   assert.match(css, /@keyframes be-pulse/)
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{ \.be-pulse \{ animation: none; \} \}/)
   assert.match(css, /\.be-pulse \{[^}]*border-radius: var\(--control-radius\)/, 'square, like every other corner')

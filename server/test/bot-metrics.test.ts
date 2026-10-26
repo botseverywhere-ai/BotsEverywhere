@@ -32,7 +32,7 @@ test('last active uses the import or a newer log line, and counts add after that
   assert.equal(shown.usage, 14, 'routine lines are automated tasks, not uses: the reported 14 stays')
   assert.equal(shown.tasks, 10, 'the reported 9 plus the done line after the report')
   assert.equal(formatShortDate(shown.createdAt), '2 Mar 2026')
-  assert.equal(formatShortDate('2026-10-17T19:41:00.000Z'), '17 Oct 2026, 19:41')
+  assert.equal(formatShortDate(local(19, 41).toISOString()), '17 Oct 2026, 19:41', "a moment shows in this computer's own time")
   assert.equal(formatShortDate(''), '—')
 
   const unknown = shownBotMetrics({
@@ -67,4 +67,20 @@ test('a run-log line stamped this evening in local time counts today', () => {
   assert.equal(shown.usage, null, 'no chat logged')
   assert.equal(shown.tasks, 1)
   assert.equal(shown.lastActive, local(22, 20).toISOString())
+})
+
+test('a time shows in the time zone of the computer showing it, and a date alone stays the same day', () => {
+  const before = process.env.TZ
+  try {
+    process.env.TZ = 'America/New_York'
+    assert.equal(formatShortDate('2026-10-17T19:41:00.000Z'), '17 Oct 2026, 15:41')
+    assert.equal(formatShortDate('2026-10-14'), '14 Oct 2026', 'a date alone never slips to the day before')
+    process.env.TZ = 'Asia/Tokyo'
+    assert.equal(formatShortDate('2026-10-17T19:41:00.000Z'), '18 Oct 2026, 04:41')
+    process.env.TZ = 'Europe/Madrid'
+    assert.equal(formatShortDate('2026-10-26T12:23:06.005Z'), '26 Oct 2026, 13:23', 'Sync says the same time as Logs')
+  } finally {
+    if (before === undefined) delete process.env.TZ
+    else process.env.TZ = before
+  }
 })

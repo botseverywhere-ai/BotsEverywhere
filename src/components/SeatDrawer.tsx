@@ -40,6 +40,7 @@ export function SeatDrawer({
   onCreateInGrok,
   onProfile,
   grokUpdateAt = '',
+  grokUpdateItems = [],
   onUpdateInGrok,
   children,
 }: {
@@ -75,6 +76,8 @@ export function SeatDrawer({
   onProfile?: (changes: ProfileChanges) => void
   /** When the app last asked the Connector to send this bot its skills and routines, or ''. */
   grokUpdateAt?: string
+  /** What that waiting update sends, one change per line: a new manager, skills, routines. */
+  grokUpdateItems?: string[]
   /** Update bot: asks the Connector to send this bot's skills and routines to Grok Bot. */
   onUpdateInGrok?: () => void
   children?: ReactNode
@@ -164,7 +167,7 @@ export function SeatDrawer({
         )
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && onProfile ? (
-        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
+        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} grokUpdateItems={grokUpdateItems} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && !onProfile ? (
         <>
