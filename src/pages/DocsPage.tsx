@@ -397,6 +397,9 @@ npm run dev`}</CodeBlock>
           <li><strong>Option 3: Add your organization manually.</strong> Fill in the organization fields on <strong>Organization Overview</strong>, then add seats on the <To id="org-chart">org chart</To>.</li>
         </ul>
         <p>
+          These three options are for an organization with no bots yet. Once it has bots, importing again is off, because it would add a second copy of each bot. New bots from Grok Bot arrive through <strong>Sync with Grok Bot</strong>, and one bot at a time is <strong>Add existing bot</strong> or the directory.
+        </p>
+        <p>
           To start from a sample, open <a href="#/templates">Templates</a>, pick one, and choose <strong>Use this template</strong>. It is copied into a new folder under <code>orgs/</code>;
           the sample itself stays read-only.
         </p>

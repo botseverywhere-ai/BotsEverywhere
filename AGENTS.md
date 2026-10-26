@@ -75,7 +75,7 @@ The writer watches `log/`, `processes/`, `grok/`, `seats/*.md`, and `org.md` and
 
 ## Bots JSON
 
-Import and export use `botseverywhere-bots.json` (`docs/bots-file.md`, parser `server/src/bots-file.ts`). One object, key `bots`. Each bot: `name` (required), optional `grokBotUrl`, `reportsTo` (defaults to You), `owns`, `may`, `needsApproval`, `doneWhen`, and performance fields `createdAt`, `lastActive`, `runs30d`, `tasksDone30d`, `routines` (`name`, `schedule` or `trigger`, optional `lastRun`), `status` (`active`, `paused`, or `retired`). Unknown numbers and dates are dropped with a note. `status` is stored as seat frontmatter `botStatus`, not seat `status`. Prompt rule: if a value is unknown, leave the field out. Never estimate or invent numbers.
+Import and export use `botseverywhere-bots.json` (`docs/bots-file.md`, parser `server/src/bots-file.ts`). Import fills an empty organization once: when it has a bot other than the Connector (`importLocked`), Connect bots shows `IMPORT_LOCKED` with Bot directory, Add existing bot, and Export bots file instead of the three options, and `POST /api/orgs/<slug>/bots-file` answers 409. Sync and adopting bots in no organization still add bots. One object, key `bots`. Each bot: `name` (required), optional `grokBotUrl`, `reportsTo` (defaults to You), `owns`, `may`, `needsApproval`, `doneWhen`, and performance fields `createdAt`, `lastActive`, `runs30d`, `tasksDone30d`, `routines` (`name`, `schedule` or `trigger`, optional `lastRun`), `status` (`active`, `paused`, or `retired`). Unknown numbers and dates are dropped with a note. `status` is stored as seat frontmatter `botStatus`, not seat `status`. Prompt rule: if a value is unknown, leave the field out. Never estimate or invent numbers.
 
 ## Connector
 

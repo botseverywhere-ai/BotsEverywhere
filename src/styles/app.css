@@ -1813,6 +1813,7 @@ a.site-nav-cta:focus {
 .overview h1, .overview h2 { margin: 0; }
 .link-company { display: grid; gap: var(--space-3); }
 .link-company > h2 { margin: 0; font-size: var(--text-xl); font-weight: var(--weight-medium); }
+.link-company.connect-grok .dir-actions { margin-top: 0; }
 .link-panel { border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); }
 .link-panel:not([open]) > :not(summary) { display: none; }
 .link-panel summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: var(--btn-height); padding: var(--space-3) var(--space-4); cursor: pointer; list-style: none; font-size: var(--text-base); font-weight: var(--weight-medium); color: var(--color-ink); }

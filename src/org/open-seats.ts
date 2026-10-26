@@ -22,7 +22,10 @@ export function isUnstaffedStep(step: { executorSeatId: string }, seats: { id: s
  */
 export function openOrgSeats(steps: Step[], seats: Seat[], orgId: string): Seat[] {
   const active = seats.filter((seat) => seat.status !== 'retired')
-  const root = active.find((seat) => seat.type === 'human' && !seat.reportsTo) ?? active.find((seat) => seat.type === 'human')
+  // You first, like a new seat's default manager; never just the first person by file name.
+  const root = active.find((seat) => seat.type === 'human' && (seat.id === 'you' || seat.name.trim().toLowerCase() === 'you'))
+    ?? active.find((seat) => seat.type === 'human' && !seat.reportsTo)
+    ?? active.find((seat) => seat.type === 'human')
   return steps.filter((step) => isUnstaffedStep(step, seats)).map((step) => ({
     id: `${OPEN_SEAT_PREFIX}${step.id}`,
     orgId,

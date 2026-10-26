@@ -70,3 +70,9 @@ export function connectorStatusFile(status: { project?: Pick<ProjectInfo, 'orgsF
 function count(value: number, noun: string): string {
   return `${value} ${noun}${value === 1 ? '' : 's'}`
 }
+
+/** Step 2 on Connect bots once the organization has bots: how many active bots it has. The Connector only syncs files. */
+export function botsLine(seats: { kind: string; title: string; status: string }[]): string {
+  const count = seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !seat.title.trim().toLowerCase().startsWith('connector - botseverywhere')).length
+  return `${count} ${count === 1 ? 'bot' : 'bots'} in this organization`
+}

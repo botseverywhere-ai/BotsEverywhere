@@ -1,7 +1,10 @@
-import { useState, type ReactNode, type MouseEvent } from 'react'
+import { useEffect, useState, type ReactNode, type MouseEvent } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
+import { IMPORT_LOCKED, importLocked } from '../../server/src/bots-file.ts'
+import { FOLDER_EVENT, orgFolder, seatsFolder } from '../org/folder-path'
 import { Button } from './Button'
-import { BotsFileImport } from './BotsFileImport'
+import { BotsFileImport, downloadBotsFile } from './BotsFileImport'
+import { FILE_NAMES, FILE_WHAT, botsLine } from './file-guide-copy'
 
 type LinkPanel = 'grok' | 'template' | 'manual'
 
@@ -9,6 +12,7 @@ export function LinkCompany({
   slug,
   seats,
   onImported,
+  onAddSeat,
   onAddExisting,
   onCompanyFields,
   defaultOpen = null,
@@ -16,12 +20,26 @@ export function LinkCompany({
   slug: string
   seats: SeatDocument[]
   onImported: () => Promise<void>
+  /** Add a seat, as on the org chart: a person or a bot. */
+  onAddSeat: () => void
   onAddExisting: () => void
   onCompanyFields: () => void
   /** Organization Overview leaves every panel closed. The empty-organization start screen opens the first. */
   defaultOpen?: LinkPanel | null
 }) {
   const [open, setOpen] = useState<LinkPanel | null>(defaultOpen)
+  // The writer's real folder once the sync status named it, so the path is the one on this computer.
+  const [folder, setFolder] = useState(() => orgFolder(slug))
+  useEffect(() => {
+    const onFolder = (event: Event) => {
+      const detail = (event as CustomEvent<{ slug?: string; value?: string }>).detail
+      if (detail?.slug === slug && typeof detail.value === 'string') setFolder(detail.value)
+    }
+    window.addEventListener(FOLDER_EVENT, onFolder)
+    return () => window.removeEventListener(FOLDER_EVENT, onFolder)
+  }, [slug])
+  const locked = importLocked(seats)
+  const seatsAt = seatsFolder(folder)
 
   function pick(id: LinkPanel, event: MouseEvent<HTMLElement>) {
     event.preventDefault()
@@ -29,23 +47,50 @@ export function LinkCompany({
   }
 
   return (
-    <section className="link-company dir-page" aria-labelledby="link-company-title">
+    <section className={locked ? 'link-company connect-grok' : 'link-company dir-page'} aria-labelledby="link-company-title">
       <h2 id="link-company-title"><span className="step-label">Step 2</span>How to link your organization to BotsEverywhere</h2>
-      <p className="overview-note">Pick one way to fill this organization. You can do this before or after Step 1.</p>
-      <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
-        <BotsFileImport slug={slug} seats={seats} mode="grok" onImported={onImported} />
-      </Panel>
-      <Panel id="import-from-template" option={2} title="Import from a template .json" open={open === 'template'} onPick={(event) => pick('template', event)}>
-        <BotsFileImport slug={slug} seats={seats} mode="template" onImported={onImported} />
-      </Panel>
-      <Panel id="add-manually" option={3} title="Add your organization manually" open={open === 'manual'} onPick={(event) => pick('manual', event)}>
-        <p className="overview-note">Fill in the organization details below, then hire bots from the directory or add an existing bot.</p>
-        <div className="dir-actions">
-          <Button variant="secondary" href="#/directory">Bot directory</Button>
-          <Button variant="secondary" type="button" onClick={onAddExisting}>Add existing bot</Button>
-          <Button variant="secondary" type="button" onClick={onCompanyFields}>Organization fields</Button>
-        </div>
-      </Panel>
+      {locked ? (
+        <>
+          <p>{IMPORT_LOCKED}</p>
+          <dl className="connect-facts">
+            <dt>Status</dt>
+            <dd className="connect-status">
+              <span className="connect-badge is-connected"><i aria-hidden="true" />Linked</span>
+              <span className="connect-status-detail">{botsLine(seats)}</span>
+            </dd>
+            <dt>Bot files</dt>
+            <dd className="connect-file">
+              <code title={seatsAt}>{FILE_NAMES.seats}</code>
+              <span>{FILE_WHAT.seats}</span>
+              <span className="connect-file-fact">{seatsAt}</span>
+            </dd>
+          </dl>
+          <div className="dir-actions">
+            <Button variant="primary" type="button" onClick={onAddSeat}>Add a seat</Button>
+            <Button variant="secondary" href="#/directory">Bot directory</Button>
+            <Button variant="secondary" type="button" onClick={onAddExisting}>Add existing bot</Button>
+            <Button variant="secondary" type="button" onClick={() => downloadBotsFile(seats)}>Export bots file</Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="overview-note">Pick one way to fill this organization. You can do this before or after Step 1.</p>
+          <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
+            <BotsFileImport slug={slug} seats={seats} mode="grok" onImported={onImported} />
+          </Panel>
+          <Panel id="import-from-template" option={2} title="Import from a template .json" open={open === 'template'} onPick={(event) => pick('template', event)}>
+            <BotsFileImport slug={slug} seats={seats} mode="template" onImported={onImported} />
+          </Panel>
+          <Panel id="add-manually" option={3} title="Add your organization manually" open={open === 'manual'} onPick={(event) => pick('manual', event)}>
+            <p className="overview-note">Fill in the organization details below, then hire bots from the directory or add an existing bot.</p>
+            <div className="dir-actions">
+              <Button variant="secondary" href="#/directory">Bot directory</Button>
+              <Button variant="secondary" type="button" onClick={onAddExisting}>Add existing bot</Button>
+              <Button variant="secondary" type="button" onClick={onCompanyFields}>Organization fields</Button>
+            </div>
+          </Panel>
+        </>
+      )}
     </section>
   )
 }

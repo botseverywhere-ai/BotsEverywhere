@@ -39,7 +39,7 @@ import { parseProcessesFile, parseProcessMarkdown, serializeProcess, type Proces
 import { createLiveHub, type LiveKind } from './live-hub.js'
 import { isRunLogName, planRun } from './run-log.js'
 import { playRun, readRunLogDir } from './run-log-files.js'
-import { parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
+import { IMPORT_LOCKED, importLocked, parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
@@ -2120,6 +2120,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
       const parsed = parseBotsFile(body)
       if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
+      const current = readOrgDir(root, slug)
+      if (current.ok && importLocked(current.bundle.seats)) return send(res, 409, { error: IMPORT_LOCKED })
       send(res, 200, importBotsFile(root, slug, parsed.rows))
       return
     }

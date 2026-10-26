@@ -1,4 +1,16 @@
 import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, routineDetails, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
+import { CONNECTOR_BOT_NAME } from './connector-prompt.ts'
+
+/** Shown on Connect bots and sent by the writer when an organization that already has bots is imported again. */
+export const IMPORT_LOCKED = 'This organization already has bots, so importing again is off: it would add a second copy of each bot. New bots from Grok Bot arrive through Sync with Grok Bot.'
+
+/**
+ * A bots file fills an empty organization once. After that Sync with Grok Bot brings new bots, and a second import would
+ * write a copy of each bot beside the first. The Connector's own seat does not count: it only syncs files.
+ */
+export function importLocked(seats: Pick<SeatDocument, 'kind' | 'title'>[]): boolean {
+  return seats.some((seat) => seat.kind === 'bot' && !seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()))
+}
 
 /** One bot from a bots file, after the field names are normalized. */
 export interface BotsFileRow {

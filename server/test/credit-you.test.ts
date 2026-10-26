@@ -53,3 +53,29 @@ test('no change in the writer is credited to the first person in name order', ()
   const source = readFileSync(new URL('../src/template-server.ts', import.meta.url), 'utf8')
   assert.doesNotMatch(source, /bundle\.seats\.find\(\((seat|item)\) => \1\.kind === 'human'/, 'use managerSeat: You first, then the first person')
 })
+
+test('a new seat reports to You by default, even when another person comes first by name', async () => {
+  const { defaultManager } = await import('../../src/org/manager-choices.ts')
+  const person = (slug: string, title: string, extra: Record<string, string> = {}) => ({ slug, title, kind: 'human' as const, status: 'active', reportsTo: '', ...extra })
+  assert.equal(defaultManager([person('angel', 'Angel Rodriguez'), person('you', 'You')])?.slug, 'you')
+  assert.equal(defaultManager([person('angel', 'Angel Rodriguez', { reportsTo: 'maria' }), person('maria', 'Maria')])?.slug, 'maria', 'no You seat: the person at the top')
+  assert.equal(defaultManager([person('you', 'You', { status: 'retired' }), person('angel', 'Angel Rodriguez')])?.slug, 'angel', 'never a retired seat')
+  const hire = readFileSync(new URL('../../src/components/HireDrawer.tsx', import.meta.url), 'utf8')
+  assert.match(hire, /const root = defaultManager\(seats\)/)
+  assert.match(hire, /const nextRoot = defaultManager\(bundle\.seats\)/)
+})
+
+test('empty chart boxes for unstaffed steps hang under You', async () => {
+  const { openOrgSeats } = await import('../../src/org/open-seats.ts')
+  const seats = [
+    { id: 'angel', orgId: 'o', name: 'Angel Rodriguez', role: 'Sales', type: 'human', status: 'active' },
+    { id: 'you', orgId: 'o', name: 'You', role: 'Founder', type: 'human', status: 'active' },
+  ]
+  const open = openOrgSeats([{ id: 'step-1', name: 'Check invoices', executorSeatId: '' }] as never, seats as never, 'o')
+  assert.equal(open[0]?.reportsTo, 'you')
+})
+
+test('retiring a seat is credited to You', () => {
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /actorSeatId: defaultManager\(seats\.filter\(\(item\) => item\.slug !== seat\.slug\)\)\?\.slug \|\| seat\.slug,/)
+})

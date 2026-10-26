@@ -8,6 +8,7 @@ import type { OrgBundle, SeatDocument, WorkDocument } from '../../server/src/org
 import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice } from './save-notice'
+import { defaultManager } from '../org/manager-choices'
 
 const SECTIONS = [
   ['owns', 'Owns'],
@@ -58,7 +59,7 @@ export function HireDrawer({
 }) {
   const choices = orgs.some((org) => org.slug === orgSlug) ? orgs : [{ slug: orgSlug, name: orgName }, ...orgs]
   const initialOrg = choices.some((org) => org.slug === orgSlug) ? orgSlug : choices.length === 1 ? choices[0]!.slug : orgSlug
-  const root = seats.find((seat) => seat.kind === 'human' && !seat.reportsTo) ?? seats.find((seat) => seat.kind === 'human')
+  const root = defaultManager(seats)
   const [name, setName] = useState(entry?.name ?? '')
   const [target, setTarget] = useState(initialOrg)
   const [newName, setNewName] = useState('')
@@ -105,7 +106,7 @@ export function HireDrawer({
       if (!response.ok) throw new Error('Could not read that org.')
       const bundle = (await response.json()) as OrgBundle
       setRemote(bundle)
-      const nextRoot = bundle.seats.find((seat) => seat.kind === 'human' && !seat.reportsTo) ?? bundle.seats.find((seat) => seat.kind === 'human')
+      const nextRoot = defaultManager(bundle.seats)
       setReportsTo(nextRoot?.slug ?? '')
       setStep('')
     } catch {

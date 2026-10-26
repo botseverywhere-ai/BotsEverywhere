@@ -181,7 +181,7 @@ function noteCountFor(imported: { name: string }[], ready: BotsFileRow[]): numbe
   return notes
 }
 
-function downloadBotsFile(seats: SeatDocument[]) {
+export function downloadBotsFile(seats: SeatDocument[]) {
   const blob = new Blob([exportBotsFile(seats)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

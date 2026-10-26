@@ -18,3 +18,9 @@ export function rememberOrgFolder(slug: string, value: string) {
   }
   window.dispatchEvent(new CustomEvent(FOLDER_EVENT, { detail: { slug, value } }))
 }
+
+/** Where the organization's seat files sit, with the separator its own path uses. */
+export function seatsFolder(folder: string): string {
+  const sep = folder.includes('\\') ? '\\' : '/'
+  return `${folder.replace(/[\\/]+$/, '')}${sep}seats`
+}

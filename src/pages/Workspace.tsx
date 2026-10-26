@@ -23,7 +23,7 @@ import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
-import { managerChoices } from '../org/manager-choices'
+import { defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
@@ -798,7 +798,7 @@ export function Workspace({
       id: `fire-${seat.slug}-${Date.now()}`,
       orgId: bundle.id,
       type: 'fire',
-      actorSeatId: seats.find((item) => item.kind === 'human' && item.status !== 'retired' && item.slug !== seat.slug)?.slug || seat.slug,
+      actorSeatId: defaultManager(seats.filter((item) => item.slug !== seat.slug))?.slug || seat.slug,
       actorType: 'human',
       timestamp: retiredAt,
       summary: reason.trim() ? `Retired ${seat.title} · ${reason.trim()}` : `Retired ${seat.title}`,
@@ -903,6 +903,7 @@ export function Workspace({
                 setAdding(false)
                 setError('')
                 setWriter('up')
+                tell(saveNotice(true, `${seat.title} was added`), orgChartLink)
               } catch {
                 setError(SAVING_OFF)
               }
@@ -923,6 +924,7 @@ export function Workspace({
               sample={sample}
               onOrg={setOrg}
               onImported={rereadOrg}
+              onAddSeat={() => setAdding(true)}
               onAddExisting={() => setExistingBot(true)}
               sync={sync}
               onSyncChanged={loadSync}
