@@ -262,7 +262,7 @@ test('the Connector adds the skills and routines, and reports skills and the pub
   assert.match(SNAPSHOT_FORMAT, /"skills": \[/)
   assert.match(SNAPSHOT_FORMAT, /"publicUrl":/)
   assert.match(SNAPSHOT_FORMAT, /Include publicUrl only for a bot that has a public link in Grok Bot/)
-  assert.match(SNAPSHOT_FORMAT, /Never invent skills/)
+  assert.match(SNAPSHOT_FORMAT, /never invent skills/)
   assert.match(GROK_BOTS_PROMPT, /"publicUrl":/, 'importing asks for the public link')
   assert.match(GROK_BOTS_PROMPT, /"skills": \[/)
 })

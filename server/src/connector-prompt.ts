@@ -25,6 +25,7 @@ export const SNAPSHOT_FORMAT = `{
       "tasksDone30d": 0,
       "routines": [{ "name": "routine name", "description": "one line on what it does", "trigger": "schedule, or the product an event comes from (slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty)", "schedule": "the cron line, like 0 9 * * 1-5, for a schedule", "timeZone": "IANA time zone, or leave it out for the bot's own", "event": "for an event, a short rule like Mentions in #support", "enabled": true, "lastRun": "ISO datetime" }],
       "skills": [{ "name": "skill name", "description": "one line on what it does" }],
+      "apps": ["names of connected apps this bot's description or routines use, e.g. Gmail"],
       "publicUrl": "the bot's public link (https://...) when it has one, or leave it out",
       "status": "active"
     }
@@ -41,13 +42,16 @@ export const SNAPSHOT_FORMAT = `{
   "updated": [{ "seat": "the seat of an update request you carried out on this run", "requestedAt": "copied exactly from that request" }]
 }
 
+The values above show the shape only. Never copy an example value, including the 0s, true, and "active", into a file.
+
 Rules:
 - One entry per bot, using each bot's real name. One entry per routine.
 - owns, may, and needsApproval are lists of short strings. doneWhen is one string.
 - Include only what you can actually see. If you do not know a value, leave the field out. Never estimate or invent numbers.
 - runs30d, tasksDone30d, lastActive, and each routine's lastRun come from Grok Bot's own data. Never count them from the run log: BotsEverywhere counts the log itself.
 - status is active, paused, or retired.
-- skills are the reusable workflows Grok Bot lists on the bot: a name and, when you can see it, one line on what it does. Never invent skills; leave the list out if you see none.
+- skills: Grok Bot skills are one shared library, so list only the skills the bot's own description or a request tells it to use, with a name and, when you can see it, one line on what it does. Never list the whole library on every bot, and never invent skills; leave the list out if the bot uses none.
+- apps lists only connected apps the bot's own description or routines name or clearly use, using the names from "apps" in connector.json. Never list every app on every bot; leave the list out when the bot uses none.
 - A routine's description is one line on what it does, never its instructions. enabled is false when the routine is paused. An event rule never holds tokens or private links.
 - Include publicUrl only for a bot that has a public link in Grok Bot, exactly as Grok Bot shows it. Never make one.
 - updated lists each "kind": "update" request you carried out on this run, with its seat and requestedAt copied exactly. Leave it out when you carried out none.
@@ -95,7 +99,7 @@ Run this routine every ${everyLabel(syncMinutes)}.
 
 Do every step below on your own, on every run. Never ask the owner to confirm a step, a message to a bot, or how many bots to message. The only time anyone asks the owner is a checkpoint (step 8).
 Send each bot the rules in steps 5 to 7 once: when the bot is new to you, when its seat file or process file changed, or when these rules changed. Do not repeat them on every run.
-A seat file counts as changed only when its title, reportsTo, or its Owns, May, Needs approval, or Done when changed. Ignore the lines BotsEverywhere fills from your own report (createdAt, lastActive, runs30d, tasksDone30d, routines, skills, publicUrl, botStatus, grokSync, grokSyncedAt, grokMissingSince, grokDeletedAt): they change on every run.
+A seat file counts as changed only when its title, reportsTo, or its Owns, May, Needs approval, or Done when changed. Ignore the lines BotsEverywhere fills from your own report (createdAt, lastActive, runs30d, tasksDone30d, routines, skills, apps, publicUrl, botStatus, grokSync, grokSyncedAt, grokMissingSince, grokDeletedAt): they change on every run.
 
 On each run, for every organization:
 1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. Never create yourself. When "prompt" is set, use it as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". When "skills" is set, add each one to the bot as a skill, with its name and description. When "routines" is set, create each one for the bot, with its name, its start (a schedule with its time zone, or an event), its description, and paused when "enabled" is false. That bot belongs to this organization.
@@ -124,7 +128,11 @@ On each run, for every organization:
 10. When a process file changes, update that bot's routine, or message it to update it, as in step 4.
 
 Then, once per run:
-11. Write ${path}/connector.json with "syncedAt" (ISO datetime of now), "syncMinutes": ${syncMinutes} (how often you run, in minutes), and "unassigned": every bot you run that belongs to no organization, in the same bot format as the snapshot, performance included.
+11. Write ${path}/connector.json with:
+   - "syncedAt": ISO datetime of now.
+   - "syncMinutes": ${syncMinutes} (how often you run, in minutes).
+   - "unassigned": every bot you run that belongs to no organization, in the same bot format as the snapshot, performance included.
+   - "apps": every app (connector) connected to this Grok Bot account, as [{ "name": "app name as Grok Bot shows it", "status": "connected" or "needsAuth" }]. Names and status only: never an account email, token, or private link.
 
 Write every file as UTF-8 without a byte-order mark and with LF line endings.${windows ? ' ' + WINDOWS_WRITE : ''}
 

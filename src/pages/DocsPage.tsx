@@ -366,7 +366,7 @@ npm run dev`}</CodeBlock>
           <li>Tells each bot to read its process file and seat file at the start of every run, and to append one line to <code>log/YYYY-MM-DD.md</code> after every step.</li>
         </ol>
         <p>
-          Then it writes <code>orgs/connector.json</code> with the time of the run and any bots that belong to no organization. Its own log lines use the bot field {CONNECTOR_LOG_BOT}.
+          Then it writes <code>orgs/connector.json</code> with the time of the run, any bots that belong to no organization, and the apps connected to your Grok Bot account, by name and status only. Each bot in a snapshot lists the apps it uses, which show on its card, in Profile, in Performance, and in Logs, with any app Grok Bot wants signed in again marked. Its own log lines use the bot field {CONNECTOR_LOG_BOT}.
         </p>
         <p>
           A bot belongs to an organization when the Connector created it from that organization&apos;s requests, when its link matches a seat there, or when its name matches a seat title there.

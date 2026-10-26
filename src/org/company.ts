@@ -35,6 +35,7 @@ export function companyFromBundle(bundle: OrgBundle): CompanySeed {
       ...(seat.kind === 'bot' ? { origin: seat.seatOrigin === 'existing' ? 'imported' as const : seat.directoryId ? 'directory' as const : 'manual' as const } : {}),
       ...(seat.directoryId ? { directoryId: seat.directoryId } : {}),
       ...(seat.skills?.length ? { skills: seat.skills } : {}),
+      ...(seat.apps?.length ? { apps: seat.apps } : {}),
       ...(seat.instructions ? { instructions: seat.instructions } : {}),
       ...(seat.publicUrl ? { publicUrl: seat.publicUrl } : {}),
       ...(seat.grokSync ? { grokSync: seat.grokSync } : {}),

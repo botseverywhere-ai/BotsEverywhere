@@ -184,6 +184,8 @@ const KIND_LABELS: Record<string, string> = {
   'connector-error': 'Error',
   'bot-connected': 'Bot connected',
   'bot-disconnected': 'Bot left',
+  apps: 'Apps',
+  'bot-apps': 'Bot apps',
   sync: 'Sync',
   request: 'Request',
   created: 'Created',

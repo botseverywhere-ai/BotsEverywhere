@@ -1,4 +1,4 @@
-import { SEAT_SLUG, cleanSkills, isSeatGrokLink, publicLink, routineDetails, routineStart, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
+import { SEAT_SLUG, cleanApps, cleanSkills, isSeatGrokLink, publicLink, routineDetails, routineStart, type BotRoutine, type BotRunStatus, type BotSkill, type SeatDocument } from './org-files.ts'
 import { CONNECTOR_BOT_NAME } from './connector-prompt.ts'
 import { normalizeText } from './normalize-text.ts'
 
@@ -30,6 +30,8 @@ export interface BotsFileRow {
   routines: BotRoutine[]
   /** Reusable workflows Grok Bot lists on the bot. */
   skills: BotSkill[]
+  /** Connected apps the bot uses, by name. Empty when the report left them out. */
+  apps: string[]
   /** The bot's public share link, when it is public. '' otherwise. */
   publicUrl: string
   botStatus: '' | BotRunStatus
@@ -107,6 +109,7 @@ function readRow(entry: unknown, index: number): BotsFileRow {
     lastActive: '',
     routines: [],
     skills: [],
+    apps: [],
     publicUrl: '',
     botStatus: '',
     note: '',
@@ -139,6 +142,7 @@ function readRow(entry: unknown, index: number): BotsFileRow {
   blank.botStatus = performance.botStatus
   blank.note = joinNotes(blank.note, performance.note)
   blank.skills = cleanSkills(record.skills)
+  blank.apps = cleanApps(record.apps)
   blank.publicUrl = publicLink(record.publicUrl)
   if (typeof record.publicUrl === 'string' && record.publicUrl.trim() && !blank.publicUrl) blank.note = joinNotes(blank.note, 'publicUrl was left out.')
   return blank

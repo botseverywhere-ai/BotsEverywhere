@@ -135,6 +135,8 @@ export interface SeatDocument {
   routines?: BotRoutine[]
   /** Reusable workflows: from Grok Bot for an imported bot, typed in Profile for one added by hand. */
   skills?: BotSkill[]
+  /** Connected apps the bot uses, by name, as the Connector last reported them. Only Grok Bot sets these. */
+  apps?: string[]
   /** The prompt Grok Bot gets, written in Profile. A directory bot starts from its directory prompt. */
   instructions?: string
   /** The bot's public share link from Grok Bot, when it is public. Shown, never edited in the app. */
@@ -318,6 +320,7 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
       tasksDone30d: seat.tasksDone30d,
       routines: seat.routines,
       skills: seat.skills,
+      apps: seat.apps,
       instructions: seat.instructions,
       publicUrl: seat.publicUrl,
       botStatus: seat.botStatus,
@@ -380,6 +383,7 @@ export function serializeExistingSeat(seat: {
   tasksDone30d?: number
   routines?: BotRoutine[]
   skills?: BotSkill[]
+  apps?: string[]
   instructions?: string
   publicUrl?: string
   botStatus?: BotRunStatus
@@ -770,6 +774,7 @@ function metricLines(seat: {
   tasksDone30d?: number
   routines?: BotRoutine[]
   skills?: BotSkill[]
+  apps?: string[]
   instructions?: string
   publicUrl?: string
   botStatus?: BotRunStatus
@@ -786,6 +791,7 @@ function metricLines(seat: {
   if (seat.botStatus) lines.push(`botStatus: ${seat.botStatus}`)
   if (seat.routines?.length) lines.push(`routines: ${quote(JSON.stringify(seat.routines))}`)
   if (seat.skills?.length) lines.push(`skills: ${quote(JSON.stringify(seat.skills))}`)
+  if (seat.apps?.length) lines.push(`apps: ${quote(JSON.stringify(seat.apps))}`)
   if (seat.instructions?.trim()) lines.push(`instructions: ${quote(seat.instructions.trim())}`)
   if (seat.publicUrl) lines.push(`publicUrl: ${quote(seat.publicUrl)}`)
   if (seat.grokSync) lines.push(`grokSync: ${seat.grokSync}`)
@@ -808,7 +814,7 @@ function readSyncFields(data: Record<string, string>): Pick<SeatDocument, 'grokS
   return fields
 }
 
-type BotFields = Pick<SeatDocument, 'createdAt' | 'lastActive' | 'runs30d' | 'tasksDone30d' | 'routines' | 'botStatus' | 'skills' | 'instructions' | 'publicUrl'>
+type BotFields = Pick<SeatDocument, 'createdAt' | 'lastActive' | 'runs30d' | 'tasksDone30d' | 'routines' | 'botStatus' | 'skills' | 'apps' | 'instructions' | 'publicUrl'>
 
 function readBotMetrics(data: Record<string, string>): BotFields {
   const createdAt = data.createdAt?.trim() || ''
@@ -826,6 +832,8 @@ function readBotMetrics(data: Record<string, string>): BotFields {
   if (routines.length) metrics.routines = routines
   const skills = readSkillField(data.skills)
   if (skills.length) metrics.skills = skills
+  const apps = readJsonField(data.apps, cleanApps)
+  if (apps.length) metrics.apps = apps
   const instructions = (data.instructions ?? '').trim()
   if (instructions) metrics.instructions = instructions
   const link = publicLink(data.publicUrl)
@@ -928,6 +936,28 @@ export function cleanSkills(value: unknown): BotSkill[] {
     skills.push(description ? { name, description } : { name })
   }
   return skills
+}
+
+/** App names: a list of names, or of objects with a name. Blanks and repeats (any case) are dropped. */
+export function cleanApps(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  const apps: string[] = []
+  for (const item of value) {
+    const record = item && typeof item === 'object' && !Array.isArray(item) ? item as Record<string, unknown> : null
+    const raw = typeof item === 'string' ? item : typeof record?.name === 'string' ? record.name : ''
+    const name = raw.replace(/\s+/g, ' ').trim().slice(0, 80)
+    if (name && !apps.some((known) => known.toLowerCase() === name.toLowerCase())) apps.push(name)
+  }
+  return apps
+}
+
+function readJsonField<T>(value: string | undefined, clean: (parsed: unknown) => T[]): T[] {
+  if (!value?.trim()) return []
+  try {
+    return clean(JSON.parse(value))
+  } catch {
+    return []
+  }
 }
 
 /** An https link, or '' for anything else. */

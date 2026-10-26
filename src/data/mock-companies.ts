@@ -124,6 +124,8 @@ export interface Seat {
   directoryId?: string
   /** Bot only. Reusable workflows, shown in Profile. */
   skills?: { name: string; description?: string }[]
+  /** Bot only. Connected apps it uses, as the Connector reported them. */
+  apps?: string[]
   /** Bot only. The prompt Grok Bot gets, written in Profile. */
   instructions?: string
   /** Bot only. The public share link from Grok Bot, when the bot is public. */

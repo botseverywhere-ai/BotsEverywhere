@@ -2232,6 +2232,9 @@ a.site-nav-cta:focus {
 .process-flow { position: absolute; top: 50%; left: 0; width: 8px; height: 8px; margin-top: -4px; background: var(--color-link); animation: process-travel 1.1s linear infinite; }
 .org-card-hit.is-live { border-color: var(--color-link); animation: seat-glow 1.4s ease-in-out infinite; }
 .org-last { display: block; margin-top: var(--space-1); font-size: var(--text-xs); line-height: var(--leading-title); color: var(--color-muted); }
+.org-apps { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; margin-top: var(--space-1); font-size: var(--text-xs); line-height: var(--leading-title); color: var(--color-muted); }
+.org-app-auth, .app-needs-auth { color: var(--color-amber-800); }
+.profile-list .app-needs-auth { display: block; font-size: var(--text-sm); }
 .org-tree li.is-reporting::before,
 .org-tree li.is-reporting::after { animation: report-up 1.1s linear infinite; }
 @keyframes process-pulse { 50% { border-color: var(--color-blue-300); } }

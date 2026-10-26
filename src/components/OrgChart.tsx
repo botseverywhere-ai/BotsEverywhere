@@ -6,7 +6,8 @@ import { Button } from './Button'
 import { SeatListDrawer } from './SeatListDrawer'
 import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
 import { accountRows, grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
-import type { GrokAccount } from '../../server/src/grok-sync.ts'
+import type { AccountApp, GrokAccount } from '../../server/src/grok-sync.ts'
+import { botApps } from '../org/bot-apps'
 
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 1.8
@@ -37,6 +38,7 @@ export function OrgChart({
   legendLists = false,
   focusId = '',
   account = null,
+  accountApps,
 }: {
   seats: Seat[]
   selectedId: string
@@ -63,6 +65,8 @@ export function OrgChart({
   focusId?: string
   /** Every bot in the Grok Bot account. When set, In Grok Bot counts and lists the account, not only this chart. */
   account?: GrokAccount | null
+  /** Apps connected to the Grok Bot account, so a bot card can mark an app that needs sign-in. */
+  accountApps?: AccountApp[]
 }) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLUListElement>(null)
@@ -345,6 +349,7 @@ export function OrgChart({
               workOwners={workOwners}
               workHref={workHref}
               live={live}
+              accountApps={accountApps}
               grokStates={grokStates}
             />
           ))}
@@ -449,6 +454,7 @@ function OrgBranch({
   workHref,
   live,
   grokStates = false,
+  accountApps,
 }: {
   seat: Seat
   childrenOf: Map<string, Seat[]>
@@ -467,6 +473,7 @@ function OrgBranch({
   workHref?: (seatId: string) => string
   live?: ReadonlyMap<string, { running: boolean; reporting: boolean; last: string }>
   grokStates?: boolean
+  accountApps?: AccountApp[]
 }) {
   const empty = emptyIds.includes(seat.id)
   const reports = childrenOf.get(seat.id) ?? []
@@ -491,7 +498,7 @@ function OrgBranch({
       <div className="org-node">
         {empty ? (
           <div className={`org-card-hit is-empty ${classes}`} data-seat-id={seat.id}>
-            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} />
+            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} accountApps={accountApps} />
           </div>
         ) : (
           <button
@@ -502,7 +509,7 @@ function OrgBranch({
             aria-label={orgCardLabel(seat)}
             onClick={() => onSelect(seat.id)}
           >
-            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} />
+            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} accountApps={accountApps} />
           </button>
         )}
         {empty ? <SeatCardCue hire={allowHire} onHire={() => onHireEmpty?.(seat.id)} /> : null}
@@ -541,6 +548,7 @@ function OrgBranch({
               workOwners={workOwners}
               workHref={workHref}
               live={live}
+              accountApps={accountApps}
               grokStates={grokStates}
             />
           ))}
@@ -556,6 +564,7 @@ function OrgCardFace({
   sampleUsage,
   last = '',
   sync = null,
+  accountApps,
 }: {
   seat: Seat
   leastUsedId?: string
@@ -563,8 +572,10 @@ function OrgCardFace({
   last?: string
   /** Grok Bot state tag for a bot card, when the chart shows those states. */
   sync?: { tag: string; className: string } | null
+  accountApps?: AccountApp[]
 }) {
   const blurb = seat.type === 'bot' ? botBlurb(seat) : ''
+  const apps = seat.type === 'bot' ? botApps(seat.apps, accountApps) : []
   return (
     <>
       {seat.type === 'bot' ? <span className="org-bot-tag">BOT</span> : (
@@ -579,6 +590,13 @@ function OrgCardFace({
           <>
             <span className="org-blurb" title={blurb}>{blurb}</span>
             <span className="org-tasks">{taskNote(seat, leastUsedId, sampleUsage)}</span>
+            {apps.length ? (
+              <span className="org-apps" title={apps.map((app) => (app.status === 'needsAuth' ? `${app.name} (needs sign-in)` : app.name)).join(', ')}>
+                Apps: {apps.map((app, index) => (
+                  <span key={app.name} className={app.status === 'needsAuth' ? 'org-app-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
+                ))}
+              </span>
+            ) : null}
             {last ? <span className="org-last">{last}</span> : null}
           </>
         ) : (

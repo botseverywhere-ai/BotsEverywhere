@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { BotsFileRow } from './bots-file.ts'
-import { parseSnapshot } from './grok-sync.ts'
+import { parseSnapshot, type AccountApp } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import { DEFAULT_SYNC_MINUTES, validSyncMinutes } from './connector-timing.ts'
 
@@ -90,6 +90,8 @@ export interface ConnectorFile {
   error: string
   /** How often the Connector says it runs. Absent from a Connector on an older prompt. */
   syncMinutes?: number
+  /** Apps connected to the Grok Bot account. Absent from a Connector on an older prompt. */
+  apps?: AccountApp[]
 }
 
 /** Reads orgs/connector.json. Null when the project Connector never wrote it. Never throws. */
@@ -105,7 +107,7 @@ export function readConnector(orgsDir: string): ConnectorFile | null {
   } catch {
     return { stamp: '', syncedAt: '', unassigned: [], error: 'Could not read connector.json.' }
   }
-  let data: { syncedAt?: unknown; unassigned?: unknown; syncMinutes?: unknown }
+  let data: { syncedAt?: unknown; unassigned?: unknown; syncMinutes?: unknown; apps?: unknown }
   try {
     data = JSON.parse(normalizeText(readFileSync(path, 'utf8'))) as typeof data
   } catch {
@@ -116,5 +118,22 @@ export function readConnector(orgsDir: string): ConnectorFile | null {
   const parsed = parseSnapshot(JSON.stringify({ syncedAt: data?.syncedAt, bots }), fallback)
   if (!parsed.ok) return { stamp, syncedAt: '', unassigned: [], error: parsed.error }
   const syncMinutes = validSyncMinutes(data?.syncMinutes)
-  return { stamp, syncedAt: parsed.snapshot.syncedAt, unassigned: parsed.snapshot.bots.filter((bot) => !bot.error), error: '', ...(syncMinutes === null ? {} : { syncMinutes }) }
+  const apps = Array.isArray(data?.apps) ? accountApps(data.apps) : undefined
+  return { stamp, syncedAt: parsed.snapshot.syncedAt, unassigned: parsed.snapshot.bots.filter((bot) => !bot.error), error: '', ...(syncMinutes === null ? {} : { syncMinutes }), ...(apps ? { apps } : {}) }
+}
+
+/**
+ * The account's apps: a name, and needsAuth or connected. They are listed as connected apps, so any other status reads
+ * as connected. Anything else an entry carries, such as an account email, is dropped. Repeats (any case) are dropped.
+ */
+function accountApps(value: unknown[]): AccountApp[] {
+  const apps: AccountApp[] = []
+  for (const item of value) {
+    const record = item && typeof item === 'object' && !Array.isArray(item) ? item as Record<string, unknown> : null
+    const raw = typeof item === 'string' ? item : typeof record?.name === 'string' ? record.name : ''
+    const name = raw.replace(/\s+/g, ' ').trim().slice(0, 80)
+    if (!name || apps.some((app) => app.name.toLowerCase() === name.toLowerCase())) continue
+    apps.push({ name, status: record?.status === 'needsAuth' ? 'needsAuth' : 'connected' })
+  }
+  return apps
 }

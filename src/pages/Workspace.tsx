@@ -24,7 +24,8 @@ import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { defaultManager, managerChoices } from '../org/manager-choices'
-import { slugify, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
+import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
+import { botApps } from '../org/bot-apps'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -257,6 +258,8 @@ export function Workspace({
   const createRequests = (sync?.requests ?? []).filter((item) => item.kind !== 'update')
   // The update waiting for the open bot: a move, skills and routines, or both.
   const waitingUpdate = chartSeat ? sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update') : undefined
+  // Apps connected to the Grok Bot account, from the Connector's last report: one list for every organization.
+  const accountApps = editable ? sync?.project?.connector?.apps ?? connection?.project?.connector?.apps : undefined
 
   const applyLoaded = useCallback((loaded: OrgBundle): OrgBundle => {
     const canonical = bundleFromState(bundle.id, loaded.org, loaded.seats, loaded.work, loaded.activity ?? [])
@@ -968,6 +971,7 @@ export function Workspace({
                 legendLists={editable}
                 focusId={view === 'org' ? focusSeat : ''}
                 account={editable ? sync?.project?.account ?? null : null}
+                accountApps={accountApps}
                 retired={editable ? { count: retiredGroups(retired).length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
                 actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
               />
@@ -992,6 +996,7 @@ export function Workspace({
               bots={bots.map((seat) => ({ ...seat, shown: metricsById.get(seat.id) }))}
               leastId={least?.id}
               requests={createRequests}
+              accountApps={accountApps}
               canRetire={editable && writer === 'up'}
               onRetire={(id) => {
                 setRetireSlug(id)
@@ -1023,6 +1028,7 @@ export function Workspace({
           grokRequestedAt={createRequests.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
           grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate) : []}
+          accountApps={accountApps}
           onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}
@@ -1117,13 +1123,16 @@ function PerformanceTable({
   bots,
   leastId,
   requests = [],
+  accountApps,
   canRetire,
   onRetire,
 }: {
-  bots: { id: string; name: string; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
+  bots: { id: string; name: string; apps?: string[]; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
   /** Bots the app asked the Connector to create. Their row says Connecting until the Connector reports them. */
   requests?: { seat: string; requestedAt: string }[]
+  /** Apps connected to the Grok Bot account, so an app that needs sign-in is marked. */
+  accountApps?: AccountApp[]
   canRetire: boolean
   onRetire: (id: string) => void
 }) {
@@ -1133,7 +1142,7 @@ function PerformanceTable({
     <>
       <table className="be-performance">
         <thead>
-          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Action</th></tr>
+          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Apps</th><th>Action</th></tr>
         </thead>
         <tbody>
           {rows.map((seat) => {
@@ -1151,6 +1160,9 @@ function PerformanceTable({
                     <td>{formatShortDate(seat.shown?.lastActive || '')}</td>
                   </>
                 )}
+                <td>{seat.apps?.length ? botApps(seat.apps, accountApps).map((app, index) => (
+                  <span key={app.name} className={app.status === 'needsAuth' ? 'app-needs-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
+                )) : '—'}</td>
                 <td>{canRetire ? <Button variant="secondary" type="button" onClick={() => onRetire(seat.id)}>Retire…</Button> : null}</td>
               </tr>
             )

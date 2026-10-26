@@ -601,6 +601,7 @@ export interface ExistingBotInput {
   tasksDone30d?: number
   routines?: SeatDocument['routines']
   skills?: SeatDocument['skills']
+  apps?: string[]
   publicUrl?: string
   botStatus?: SeatDocument['botStatus']
   /** Set by Sync with Grok Bot when the seat comes from a snapshot. */
@@ -669,6 +670,7 @@ export function createExistingBot(
     ...(input.tasksDone30d !== undefined ? { tasksDone30d: input.tasksDone30d } : {}),
     ...(input.routines?.length ? { routines: input.routines } : {}),
     ...(input.skills?.length ? { skills: input.skills } : {}),
+    ...(input.apps?.length ? { apps: input.apps } : {}),
     ...(input.publicUrl ? { publicUrl: input.publicUrl } : {}),
     ...(input.botStatus ? { botStatus: input.botStatus } : {}),
     ...(input.grokSync ? { grokSync: input.grokSync } : {}),
@@ -689,6 +691,7 @@ export function createExistingBot(
     tasksDone30d: input.tasksDone30d,
     routines: input.routines,
     skills: input.skills,
+    apps: input.apps,
     publicUrl: input.publicUrl,
     botStatus: input.botStatus,
     grokSync: input.grokSync,
@@ -797,6 +800,7 @@ export function importBotsFile(
       tasksDone30d: item.row.tasksDone30d,
       routines: item.row.routines,
       skills: item.row.skills,
+      apps: item.row.apps,
       publicUrl: item.row.publicUrl,
       botStatus: item.row.botStatus || undefined,
       grokSync: stamp?.grokSync,
@@ -927,7 +931,7 @@ export function importOrgFile(root: string, orgId: string, file: OrgFile): { ok:
 }
 
 /** Ada, Ada and Ben, or Ada, Ben, and Cy. */
-function andList(names: string[]): string {
+export function andList(names: string[]): string {
   if (names.length < 3) return names.join(' and ')
   return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
 }
@@ -1354,7 +1358,7 @@ export function projectInfo(orgsDir: string, orgId: string, readOrg = orgReader(
     id,
     connectorName: connectorName(id),
     orgsFolder: resolve(orgsDir),
-    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error, ...(connector.syncMinutes ? { syncMinutes: connector.syncMinutes } : {}) } : null,
+    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error, ...(connector.syncMinutes ? { syncMinutes: connector.syncMinutes } : {}), ...(connector.apps ? { apps: connector.apps } : {}) } : null,
     unassigned: connector?.unassigned.map((bot) => bot.name) ?? [],
     bots: bots.length,
     renamed: renamedSeats(orgsDir, orgId, bots),
@@ -1373,7 +1377,7 @@ export function connectorInfo(orgsDir: string): ConnectorInfo {
     id,
     connectorName: connectorName(id),
     orgsFolder: resolve(orgsDir),
-    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error, ...(connector.syncMinutes ? { syncMinutes: connector.syncMinutes } : {}) } : null,
+    connector: connector ? { stamp: connector.stamp, syncedAt: connector.syncedAt, error: connector.error, ...(connector.syncMinutes ? { syncMinutes: connector.syncMinutes } : {}), ...(connector.apps ? { apps: connector.apps } : {}) } : null,
     syncMinutes: readSyncMinutes(orgsDir),
     timeZone: localTimeZone(),
     windows: process.platform === 'win32',

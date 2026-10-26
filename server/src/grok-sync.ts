@@ -25,6 +25,7 @@ export interface SeatPatch {
   tasksDone30d?: number
   routines?: BotRoutine[]
   skills?: BotSkill[]
+  apps?: string[]
   publicUrl?: string
   botStatus?: BotRunStatus
   owns?: string[]
@@ -84,8 +85,8 @@ export interface ProjectInfo {
   connectorName: string
   /** Absolute path of orgs/, the only folder the Connector uses. */
   orgsFolder: string
-  /** orgs/connector.json, or null when the project Connector never wrote it. */
-  connector: { stamp: string; syncedAt: string; error: string; syncMinutes?: number } | null
+  /** orgs/connector.json, or null when the project Connector never wrote it. apps is absent from a Connector on an older prompt. */
+  connector: { stamp: string; syncedAt: string; error: string; syncMinutes?: number; apps?: AccountApp[] } | null
   /** Names of bots in Grok Bot that belong to no organization. */
   unassigned: string[]
   /** Active bot seats across every org: they share one Grok Bot account. */
@@ -106,6 +107,12 @@ export interface ProjectInfo {
 export interface ConnectorInfo extends Pick<ProjectInfo, 'id' | 'connectorName' | 'orgsFolder' | 'connector' | 'syncMinutes' | 'timeZone' | 'windows'> {
   /** Organizations in the folder, by slug. */
   orgs: string[]
+}
+
+/** One app connected to the Grok Bot account, as connector.json names it. needsAuth: Grok Bot wants it signed in again. */
+export interface AccountApp {
+  name: string
+  status: 'connected' | 'needsAuth'
 }
 
 /** One bot in the Grok Bot account and where it sits here. */
@@ -298,6 +305,7 @@ export function patchSeatSource(slug: string, source: string, patch: SeatPatch):
   if (patch.tasksDone30d !== undefined) next.tasksDone30d = patch.tasksDone30d
   if (patch.routines !== undefined) next.routines = patch.routines
   if (patch.skills !== undefined) next.skills = patch.skills
+  if (patch.apps !== undefined) next.apps = patch.apps.length ? patch.apps : undefined
   if (patch.publicUrl !== undefined) next.publicUrl = patch.publicUrl
   if (patch.botStatus !== undefined) next.botStatus = patch.botStatus
   if (patch.owns !== undefined) next.owns = patch.owns
@@ -394,6 +402,11 @@ function diffSeat(raw: BotsFileRow, seat: SeatDocument, byUrl: boolean, syncedAt
     patch.skills = skills
     changes.push(`${skills.length} ${skills.length === 1 ? 'skill' : 'skills'}`)
   }
+  // Apps belong to Grok Bot alone, so each report replaces them: one the bot stopped using drops off.
+  if (JSON.stringify(bot.apps) !== JSON.stringify(seat.apps ?? [])) {
+    patch.apps = bot.apps
+    changes.push(bot.apps.length ? `apps: ${bot.apps.join(', ')}` : 'no apps')
+  }
   if (bot.publicUrl && bot.publicUrl !== (seat.publicUrl ?? '')) {
     patch.publicUrl = bot.publicUrl
     changes.push('public link')
@@ -444,7 +457,7 @@ function mergeByName<T extends { name: string; enabled?: boolean }>(current: T[]
   return [...merged, ...reported.filter((item) => !known.has(key(item)))]
 }
 
-const PERFORMANCE_KEYS = new Set<keyof SeatPatch>(['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'routines', 'skills', 'publicUrl'])
+const PERFORMANCE_KEYS = new Set<keyof SeatPatch>(['createdAt', 'lastActive', 'runs30d', 'tasksDone30d', 'routines', 'skills', 'apps', 'publicUrl'])
 const STAMP_KEYS = new Set<keyof SeatPatch>(['grokSync', 'grokSyncedAt'])
 
 /**

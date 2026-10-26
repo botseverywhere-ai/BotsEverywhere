@@ -8,8 +8,8 @@ import { readConnector, readSyncMinutes } from './project.ts'
 import { GROK_ACTIVITY_PROCESS } from './bot-metrics.ts'
 import { formatRunLine, runLogHeader, type RunLine } from './run-log.ts'
 import { readRunLogDir } from './run-log-files.ts'
-import { appendActivity, applyPerformance, clearFulfilledRequests, clearHandledUpdates, listOrgSlugs, markDeletedBots, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
-import { planSync } from './grok-sync.ts'
+import { andList, appendActivity, applyPerformance, clearFulfilledRequests, clearHandledUpdates, listOrgSlugs, markDeletedBots, readOrgDir, readRequests, readSnapshot } from './template-server.ts'
+import { planSync, type AccountApp, type SyncPlan } from './grok-sync.ts'
 
 /** The app's memory of what it already logged about the Connector, so a run is never logged twice. */
 export const CONNECTOR_LOG_FILE = 'connector-log.json'
@@ -37,6 +37,8 @@ interface Memory {
   lastRunAt: string
   state: '' | 'connected' | 'stopped'
   orgs: Record<string, OrgMemory>
+  /** App name → status in the last report that listed the account's apps. Absent before the first one. */
+  apps?: Record<string, AccountApp['status']>
 }
 
 function readMemory(orgsDir: string): Memory {
@@ -50,6 +52,7 @@ function readMemory(orgsDir: string): Memory {
       lastRunAt: typeof data.lastRunAt === 'string' ? data.lastRunAt : '',
       state: data.state === 'connected' || data.state === 'stopped' ? data.state : '',
       orgs: data.orgs && typeof data.orgs === 'object' ? data.orgs : {},
+      ...(data.apps && typeof data.apps === 'object' && !Array.isArray(data.apps) ? { apps: data.apps } : {}),
     }
   } catch {
     // A bad memory file only means the next run is treated as new.
@@ -183,6 +186,51 @@ function botStats(bot: BotsFileRow): string {
   ])
 }
 
+/**
+ * What changed in the account's apps since the last report that listed them. The first such report is one line with
+ * every app; after that, one line per app that connected, needs sign-in, or left.
+ */
+function appChanges(apps: AccountApp[], before: Memory['apps']): { key: string; summary: string; stats?: string }[] {
+  const label = (app: AccountApp) => (app.status === 'needsAuth' ? `${app.name} (needs sign-in)` : app.name)
+  if (!before) {
+    if (!apps.length) return []
+    const waiting = apps.filter((app) => app.status === 'needsAuth').map((app) => app.name)
+    return [{ key: 'apps', summary: `Apps in Grok Bot: ${apps.map(label).join(', ')}`, stats: stats([['Connected', apps.length - waiting.length], ['Needs sign-in', waiting.join(', ') || undefined]]) }]
+  }
+  const lines: { key: string; summary: string }[] = []
+  const was = new Map(Object.entries(before).map(([name, status]) => [name.toLowerCase(), { name, status }]))
+  for (const app of apps) {
+    const prev = was.get(app.name.toLowerCase())
+    was.delete(app.name.toLowerCase())
+    if (prev?.status === app.status) continue
+    const key = `app-${slugPart(app.name)}`
+    lines.push({ key, summary: app.status === 'needsAuth' ? `${app.name} needs sign-in in Grok Bot` : `${app.name} connected to Grok Bot` })
+  }
+  for (const gone of was.values()) lines.push({ key: `app-${slugPart(gone.name)}`, summary: `${gone.name} is no longer connected to Grok Bot` })
+  return lines
+}
+
+/** One line per bot whose apps this run changed: the seats the run wrote, with the apps the seat had before. */
+function botAppChanges(plan: SyncPlan, applied: string[], seats: SeatDocument[]): { slug: string; summary: string }[] {
+  const lines: { slug: string; summary: string }[] = []
+  for (const row of plan.rows) {
+    if (row.kind !== 'updated' || !applied.includes(row.slug) || row.patch.apps === undefined) continue
+    const seat = seats.find((item) => item.slug === row.slug)
+    if (!seat) continue
+    const had = seat.apps ?? []
+    const has = row.patch.apps
+    const added = has.filter((name) => !had.some((old) => old.toLowerCase() === name.toLowerCase()))
+    const dropped = had.filter((name) => !has.some((now) => now.toLowerCase() === name.toLowerCase()))
+    const parts = [added.length ? `now uses ${andList(added)}` : '', dropped.length ? `no longer uses ${andList(dropped)}` : ''].filter(Boolean)
+    if (parts.length) lines.push({ slug: seat.slug, summary: `${seat.title} ${parts.join(' and ')}` })
+  }
+  return lines
+}
+
+function slugPart(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'app'
+}
+
 function event(orgId: string, id: string, at: Date, kind: string, summary: string, extra: Partial<FileActivity> = {}): FileActivity {
   return { id, orgId, type: 'edit', actorSeatId: 'connector', actorType: 'bot', timestamp: at.toISOString(), summary, kind, grok: 'in', ...extra }
 }
@@ -205,6 +253,8 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
   const stamp = at.toISOString()
   // Retired bots this run shows deleted get their own line, so they are not also logged as gone.
   const deleted = markDeletedBots(orgsDir)
+  // The account's apps are one list for every organization. A Connector on an older prompt reports none and changes nothing.
+  const apps = connector.apps ? appChanges(connector.apps, memory.apps) : []
   for (const orgId of listOrgSlugs(orgsDir)) {
     const root = resolve(orgsDir, orgId)
     const read = readOrgDir(root, orgId)
@@ -221,6 +271,9 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
       appendActivity(root, event(orgId, `connector-connected-${stamp}`, at, 'connected', 'Connected to Grok Bot again', {
         stats: stats([['Connector', connectorName], ['Run', localWhen(at)], ['Down for', previousRun ? span(at.getTime() - previousRun.getTime()) : undefined]]),
       }))
+    }
+    for (const app of apps) {
+      appendActivity(root, event(orgId, `connector-${app.key}-${stamp}`, at, 'apps', app.summary, app.stats ? { stats: app.stats } : {}))
     }
     const snap = readSnapshot(root)
     let bots = before.bots
@@ -256,7 +309,11 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
       try {
         // Grok Bot's numbers land now, and a bot the owner asked for gets its link; the rest of the plan waits for Sync.
         const plan = planSync(snap.snapshot, seats, read.bundle.processes ?? [], orgName)
-        performance = applyPerformance(root, plan, new Set(readRequests(root).requests.filter((item) => item.kind !== 'update').map((item) => item.seat))).length
+        const applied = applyPerformance(root, plan, new Set(readRequests(root).requests.filter((item) => item.kind !== 'update').map((item) => item.seat)))
+        performance = applied.length
+        for (const change of botAppChanges(plan, applied, seats)) {
+          appendActivity(root, event(orgId, `connector-bot-apps-${change.slug}-${stamp}`, at, 'bot-apps', change.summary, { subjectSeatId: change.slug }))
+        }
         clearFulfilledRequests(root, orgId, plan)
         clearHandledUpdates(root, orgId)
         seenNow = briefPerformance(root, snap.snapshot.bots, seats, orgName, before.seen, at.getTime())
@@ -282,6 +339,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     }), true)
     memory.orgs[orgId] = { bots, day, runs, firstRunAt, ...(seenNow ? { seen: seenNow } : {}) }
   }
+  if (connector.apps) memory.apps = Object.fromEntries(connector.apps.map((app) => [app.name, app.status]))
   memory.lastStamp = connector.stamp
   memory.lastRunAt = stamp
   memory.state = 'connected'

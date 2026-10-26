@@ -31,7 +31,7 @@ botseverywhere/
   the app            site code (src/, server/, public/)
   orgs/
     project.json     this copy's id and how often the Connector runs
-    connector.json   written by the Connector each run: bots in no org
+    connector.json   written by the Connector each run: bots in no org, connected apps
     <slug>/
       org.md         organization overview and the org chart
       seats/*.md     one file per seat
