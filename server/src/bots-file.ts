@@ -19,6 +19,8 @@ export interface BotsFileRow {
   grokBotUrl: string
   /** Seat name. Missing values become "You". */
   reportsTo: string
+  /** Names of extra managers, beside the main one. */
+  alsoReportsTo?: string[]
   owns: string[]
   may: string[]
   needsApproval: string[]
@@ -129,6 +131,8 @@ function readRow(entry: unknown, index: number): BotsFileRow {
   blank.grokBotUrl = link.link
   blank.note = link.note
   blank.reportsTo = managerName(record.reportsTo)
+  const also = stringList(record.alsoReportsTo)
+  if (also.length) blank.alsoReportsTo = also
   blank.owns = stringList(record.owns)
   blank.may = stringList(record.may)
   blank.needsApproval = stringList(record.needsApproval)

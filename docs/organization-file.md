@@ -63,7 +63,7 @@ One JSON object. Only `organization`, `departments`, `people`, and `you` are rea
 - **organization**: `description`, `purpose`, `industry`, and `size` fill the organization fields. The organization keeps the name it was created with; `name` is for the AI.
 - **departments**: names. A department named only on a person is added too. A person without one sits in General.
 - **people**: `name` (required, unique in the file), `title`, `department`, `reportsTo`, `owns` (a list), and `email`, `phone`, `location`, `about` when known.
-- **reportsTo**: left out for the people at the top. Several people can be at the top: founders, owners, or partners. Otherwise one name, or a list of names with the main one first. The org chart has one line per seat, so it shows the main one, and the person's profile says "Also reports to …" for the rest.
+- **reportsTo**: left out for the people at the top. Several people can be at the top: founders, owners, or partners. Otherwise one name, or a list of names with the main one first. The org chart draws the main one as a solid line and the rest as dotted lines (Also reports to).
 - **you**: the name of the person importing, exactly as in `people`. That person's seat becomes You. Without it, You stays at the top beside the people.
 
 ## Import rules

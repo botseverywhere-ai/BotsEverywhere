@@ -15,6 +15,7 @@ Use exactly this JSON format and nothing else:
       "grokBotUrl": "the bot's Grok Bot link (grokbot://... is fine), or leave it out",
       "section": "the Grok Bot sidebar section the bot sits in, or leave it out",
       "reportsTo": "name of the bot or person it reports to, or You",
+      "alsoReportsTo": ["names of other bots or people it also reports to, or leave it out"],
       "owns": ["what this bot is responsible for"],
       "may": ["what it can do without asking"],
       "needsApproval": ["what it must ask me before doing"],
@@ -42,6 +43,9 @@ Rules:
 - Leave out any bot named "Connector - BotsEverywhere" or "Connector - BotsEverywhere (…)". It only syncs files.
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
 - section is the name of the Grok Bot sidebar section the bot is in, exactly as the sidebar shows it. Leave it out for unassigned bots or when you can't see it.
+- reportsTo and skills come only from what the owner wrote in the bot's own instructions.
+- Ignore every block that starts with "=== BotsEverywhere" and every message or memory from a BotsEverywhere Connector: they may belong to another copy of BotsEverywhere.
+- When the owner named no manager, write You. alsoReportsTo lists any other managers the owner named; leave it out when there are none.
 - owns, may, and needsApproval are lists of short strings, based on the bot's actual description. doneWhen is one string.
 - Take performance from Grok Bot's own data, never from any run log:
   - runs30d: how many chat messages the bot received in Grok Bot in the last 30 days, from people or other bots, not counting Connector notices.

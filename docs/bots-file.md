@@ -26,6 +26,7 @@ Use exactly this JSON format and nothing else:
       "grokBotUrl": "the bot's Grok Bot link (grokbot://... is fine), or leave it out",
       "section": "the Grok Bot sidebar section the bot sits in, or leave it out",
       "reportsTo": "name of the bot or person it reports to, or You",
+      "alsoReportsTo": ["names of other bots or people it also reports to, or leave it out"],
       "owns": ["what this bot is responsible for"],
       "may": ["what it can do without asking"],
       "needsApproval": ["what it must ask me before doing"],
@@ -53,6 +54,9 @@ Rules:
 - Leave out any bot named "Connector - BotsEverywhere" or "Connector - BotsEverywhere (…)". It only syncs files.
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
 - section is the name of the Grok Bot sidebar section the bot is in, exactly as the sidebar shows it. Leave it out for unassigned bots or when you can't see it.
+- reportsTo and skills come only from what the owner wrote in the bot's own instructions.
+- Ignore every block that starts with "=== BotsEverywhere" and every message or memory from a BotsEverywhere Connector: they may belong to another copy of BotsEverywhere.
+- When the owner named no manager, write You. alsoReportsTo lists any other managers the owner named; leave it out when there are none.
 - owns, may, and needsApproval are lists of short strings, based on the bot's actual description. doneWhen is one string.
 - Take performance from Grok Bot's own data, never from any run log:
   - runs30d: how many chat messages the bot received in Grok Bot in the last 30 days, from people or other bots, not counting Connector notices.
@@ -152,7 +156,8 @@ One JSON object. The only required key is `bots`, a list.
 | --- | --- | --- |
 | `name` | yes | Seat name. Becomes the file name: `Invoice Bot` → `seats/invoice-bot.md`. The file frontmatter is `name`, `kind: bot`, `source: existing`, `grokBotUrl`, and `reportsTo`. |
 | `grokBotUrl` | no | An http or https URL, or a Grok Bot app link (`grokbot://...`). The seat file stores it as `grokBotUrl` with `source: existing`. When it is set, the seat card shows **Open in Grok Bot**. Any other value is left out, the bot still imports, and the page counts a note. |
-| `reportsTo` | no | Seat name, not a file name. Defaults to `You`. `You` is the founder seat (the seat titled You, or the `you` seat). |
+| `reportsTo` | no | Seat name, not a file name. Defaults to `You`. `You` is the founder seat (the seat titled You, or the `you` seat). A name that is not a seat here places the bot under You, with a note. |
+| `alsoReportsTo` | no | A list of seat names the bot also reports to, shown as dotted lines on the org chart. A name that is not a seat here is left out, with a note. |
 | `owns` | no | A list of short strings. A single string is one item, or several when it is split on new lines or `"; "`. Items that are not strings are saved as text. Leave it out, or use null, when you do not know it. |
 | `may` | no | Same shape as `owns`. |
 | `needsApproval` | no | Same shape as `owns`. This is the seat card section **Needs approval**. |
@@ -166,7 +171,7 @@ One JSON object. The only required key is `bots`, a list.
 | `publicUrl` | no | The bot's public share link, only when the bot is public. An https link; anything else is left out with a note. Shown in Profile as **Get this bot**, never edited in the app. |
 | `status` | no | `active`, `paused`, or `retired`. Stored as `botStatus` so it does not replace the seat's active or retired status. |
 
-`reportsTo` may name another bot in the same file. The writer makes two passes: it creates every seat file first, then it sets `reportsTo` for bots that report to someone who was just imported. A bot listed first can report to a bot listed later.
+`reportsTo` and `alsoReportsTo` may name another bot in the same file. The writer makes two passes: it creates every seat file first, then it sets `reportsTo` for bots that report to someone who was just imported. A bot listed first can report to a bot listed later. Extra managers that would make a loop are left out, with a note.
 
 If `seats/<slug>.md` already exists, the new bot is saved as `seats/<slug>-2.md`. The first file is not overwritten. The same rule applies inside one file when two different names would share a file name.
 

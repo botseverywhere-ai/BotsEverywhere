@@ -62,6 +62,7 @@
     "grokBotUrl": "The bot's Grok Bot link (grokbot://... or https://...), only for a bot that already runs in Grok Bot. Leave it out for a new bot.",
     "section": "The Grok Bot sidebar section the bot sits in, usually the organization's name. Leave it out when you do not know it.",
     "reportsTo": "Who the bot reports to: You, another bot in this file, or a person already in the organization. Leave it out for You.",
+    "alsoReportsTo": "A list of other bots or people the bot also reports to, shown as dotted lines on the org chart. Leave it out when there are none.",
     "owns": "A list of short lines: what this bot is responsible for.",
     "may": "A list of short lines: what it can do without asking.",
     "needsApproval": "A list of short lines: what it must ask before doing.",

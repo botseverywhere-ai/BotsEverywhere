@@ -735,12 +735,27 @@ function managerSeat(seats: SeatDocument[]): SeatDocument | undefined {
 export interface BotsFileResult {
   imported: { name: string; slug: string; file: string }[]
   errors: { name: string; error: string }[]
+  /** Imported, with something changed on the way, such as a manager that is not here. */
+  notes: { name: string; note: string }[]
+}
+
+/** Writes a seat's extra managers on the line after reportsTo, or takes the line out when there are none. */
+function writeAlsoLine(root: string, slug: string, also: string[]): { ok: true } | { ok: false; errors: string[] } {
+  const path = seatFile(root, slug)
+  if (!path || !existsSync(path)) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
+  const without = readText(path).replace(/^alsoReportsTo:.*\n?/m, '')
+  const nextSource = also.length ? without.replace(/^(reportsTo:.*)$/m, `$1\nalsoReportsTo: ${quote(JSON.stringify(also))}`) : without
+  const checked = parseSeatMarkdown(slug, nextSource)
+  if (!checked.ok) return checked
+  writeFileSync(path, nextSource.endsWith('\n') ? nextSource : `${nextSource}\n`)
+  return { ok: true }
 }
 
 /**
  * Writes one seat file per bot. Pass 1 creates every file. Pass 2 points
  * reportsTo at other bots from this same file, which did not exist yet in pass 1.
  * A slug that is already on disk is saved as `<slug>-2` and the first file is left alone.
+ * A manager that is not here places the bot under You with a note; extra managers are written last.
  */
 export function importBotsFile(
   root: string,
@@ -748,12 +763,13 @@ export function importBotsFile(
   rows: BotsFileRow[],
   stamp?: { grokSync: GrokSyncState; grokSyncedAt: string },
 ): BotsFileResult {
-  if (!orgExists(root)) return { imported: [], errors: [{ name: 'File', error: 'Org not found.' }] }
+  if (!orgExists(root)) return { imported: [], errors: [{ name: 'File', error: 'Org not found.' }], notes: [] }
   const read = readOrgDir(root, orgId)
-  if (!read.ok) return { imported: [], errors: read.errors.map((error) => ({ name: 'File', error })) }
+  if (!read.ok) return { imported: [], errors: read.errors.map((error) => ({ name: 'File', error })), notes: [] }
   const existing = read.bundle.seats.map((seat) => ({ slug: seat.slug, title: seat.title }))
   const taken = new Set(existing.map((seat) => seat.slug))
   const errors: { name: string; error: string }[] = []
+  const notes: { name: string; note: string }[] = []
   const ready = rows.filter((row) => {
     if (!row.error) return true
     errors.push({ name: row.name, error: row.error })
@@ -775,9 +791,17 @@ export function importBotsFile(
     if (!item.slug) continue
     const resolved = resolveManager(item.row.reportsTo, item.row.name, existing, batch)
     if (!resolved.ok) {
-      errors.push({ name: item.row.name, error: resolved.error })
-      batch.delete(item.row.name.trim().toLowerCase())
-      batch.delete(item.slug)
+      // A manager from another copy, or one never added here, never costs the bot its seat: it goes under You.
+      const you = resolveManager('You', item.row.name, existing, batch)
+      if (!you.ok) {
+        errors.push({ name: item.row.name, error: resolved.error })
+        batch.delete(item.row.name.trim().toLowerCase())
+        batch.delete(item.slug)
+        continue
+      }
+      const missing = resolved.error.endsWith('is not a seat in this org or in this file.')
+      notes.push({ name: item.row.name, note: missing ? `${item.row.reportsTo.trim()} is not a seat here; placed under You.` : `${resolved.error.replace(/\.$/, '')}; placed under You.` })
+      writes.push({ row: item.row, slug: item.slug, manager: you.slug, managerIsNew: false })
       continue
     }
     writes.push({ row: item.row, slug: item.slug, manager: resolved.slug, managerIsNew: resolved.isNew })
@@ -827,7 +851,27 @@ export function importBotsFile(
     const pointed = retargetSeat(root, item.slug, item.manager)
     if (!pointed.ok) errors.push({ name: item.row.name, error: pointed.errors.join(' ') })
   }
-  return { imported, errors }
+  // Extra managers, once every imported seat exists. A name that is not here is left out; a loop is never written.
+  const titles = new Map([...existing.map((seat) => [seat.title.trim().toLowerCase(), seat.slug] as const), ...imported.map((item) => [item.name.trim().toLowerCase(), item.slug] as const)])
+  for (const item of writes) {
+    const slug = imported.find((entry) => entry.name === item.row.name)?.slug
+    if (!slug || !item.row.alsoReportsTo?.length) continue
+    const also: string[] = []
+    for (const name of item.row.alsoReportsTo) {
+      const target = titles.get(name.trim().toLowerCase())
+      if (!target) notes.push({ name: item.row.name, note: `${name.trim()} is not a seat here; left out of Also reports to.` })
+      else if (target !== slug && target !== item.manager && !also.includes(target)) also.push(target)
+    }
+    if (!also.length) continue
+    const now = readOrgDir(root, orgId)
+    if (now.ok && managerLoop(now.bundle.seats.map((seat) => (seat.slug === slug ? { ...seat, alsoReportsTo: also } : seat)))) {
+      notes.push({ name: item.row.name, note: 'Also reports to was left out: it would make a loop.' })
+      continue
+    }
+    const written = writeAlsoLine(root, slug, also)
+    if (!written.ok) errors.push({ name: item.row.name, error: written.errors.join(' ') })
+  }
+  return { imported, errors, notes }
 }
 
 /**
@@ -875,9 +919,8 @@ export function importOrgFile(root: string, orgId: string, file: OrgFile): { ok:
     const slug = slugs.get(person.name)!
     const department = departmentId(person.department)
     const reportsTo = person.reportsTo ? slugs.get(person.reportsTo) ?? '' : ''
-    const also = person.alsoReportsTo.length ? `Also reports to ${andList(person.alsoReportsTo)}.` : ''
     const details: Omit<OrgPerson, 'id'> = { name: person.name, department }
-    const optional = { title: person.title, email: person.email, phone: person.phone, location: person.location, bio: [person.about, also].filter(Boolean).join(' ') }
+    const optional = { title: person.title, email: person.email, phone: person.phone, location: person.location, bio: person.about }
     for (const [key, value] of Object.entries(optional) as [keyof typeof optional, string][]) {
       if (value) details[key] = value
     }
@@ -911,6 +954,13 @@ export function importOrgFile(root: string, orgId: string, file: OrgFile): { ok:
       })
     }
     imported.push({ name: person.name, slug })
+  }
+  // Extra managers once every seat exists. One that would make a loop is left out.
+  for (const person of people) {
+    const slug = slugs.get(person.name)!
+    const seat = seats.find((item) => item.slug === slug)!
+    const also = [...new Set(person.alsoReportsTo.map((name) => slugs.get(name) ?? '').filter((target) => target && target !== slug && target !== seat.reportsTo))]
+    if (also.length && !managerLoop(seats.map((item) => (item.slug === slug ? { ...item, alsoReportsTo: also } : item)))) seat.alsoReportsTo = also
   }
   const facts = file.organization
   const company = { ...org.company, tagline: facts.description || org.company.tagline, industry: facts.industry || org.company.industry }
@@ -1720,14 +1770,9 @@ export function setSeatManagers(root: string, orgId: string, slug: string, repor
     sent = moved.sent
   }
   if (also.join('\n') === (seat.alsoReportsTo ?? []).join('\n')) return { ok: true, file, sent }
-  const path = seatFile(root, slug)
-  if (!path || !existsSync(path)) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
-  const source = readText(path)
-  const without = source.replace(/^alsoReportsTo:.*\n?/m, '')
-  const nextSource = also.length ? without.replace(/^(reportsTo:.*)$/m, `$1\nalsoReportsTo: ${quote(JSON.stringify(also))}`) : without
-  const checked = parseSeatMarkdown(slug, nextSource)
-  if (!checked.ok) return checked
-  writeFileSync(path, nextSource.endsWith('\n') ? nextSource : `${nextSource}\n`)
+  const written = writeAlsoLine(root, slug, also)
+  if (!written.ok) return written
+  const path = seatFile(root, slug) ?? file
   const names = also.map(title)
   const stamp = new Date().toISOString()
   const current = readRequests(root)

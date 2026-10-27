@@ -51,7 +51,7 @@ export function BotsFileImport({
         body: raw,
       })
       const text = await response.text()
-      const body = text.trimStart().startsWith('{') ? JSON.parse(text) as { imported?: { name: string }[]; errors?: unknown } : {}
+      const body = text.trimStart().startsWith('{') ? JSON.parse(text) as { imported?: { name: string }[]; errors?: unknown; notes?: unknown } : {}
       if (!response.ok) {
         const reasons = Array.isArray(body.errors) ? body.errors.map(String).join(' ') : 'Import failed.'
         setNotice(saveNotice(false, reasons, 'Not imported'))
@@ -74,11 +74,19 @@ export function BotsFileImport({
         setBusy(false)
         return
       }
-      const notes = noteCountFor(imported, ready)
+      const changed = Array.isArray(body.notes)
+        ? body.notes.flatMap((item) => {
+          if (!item || typeof item !== 'object') return []
+          const row = item as { name?: string; note?: string }
+          return row.note ? [`${row.name || 'Bot'}: ${row.note}`] : []
+        })
+        : []
+      const notes = noteCountFor(imported, ready) + changed.length
       if (imported.length > 0) {
         const summary = importedLabel(imported.length, notes)
         const skipped = problems.map((item) => `Skipped ${item.name}: ${item.error}`).join(' ')
-        setNotice(saveNotice(true, skipped ? `${summary}. ${skipped}` : summary))
+        const detail = [...changed, skipped].filter(Boolean).join(' ')
+        setNotice(saveNotice(true, detail ? `${summary}. ${detail}` : summary))
         setRows(null)
         setRaw('')
       } else {
