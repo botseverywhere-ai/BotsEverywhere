@@ -8,8 +8,9 @@ import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
 import { accountRows, grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
 import type { AccountApp, GrokAccount } from '../../server/src/grok-sync.ts'
 import { botApps } from '../org/bot-apps'
+import { AlsoReportsLines } from './AlsoReportsLines'
 import { ChartPngButton } from './ChartPngButton'
-import { legendHasRoom } from './chart-png'
+import { legendFits, legendHasRoom } from './chart-png'
 
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 1.8
@@ -93,6 +94,7 @@ export function OrgChart({
   const legendRef = useRef<HTMLUListElement>(null)
   // Download PNG sits after Retired while it fits before Find seat, else at the end of the Add a seat row.
   const [pngBesideLegend, setPngBesideLegend] = useState(true)
+  const [legendStacked, setLegendStacked] = useState(false)
 
   const forest = useMemo(() => buildForest(seats), [seats])
   const seatNames = useMemo(() => seats.map((seat) => seat.name), [seats])
@@ -100,6 +102,8 @@ export function OrgChart({
   const reports = useMemo(() => childrenOf(seats), [seats])
   const parents = useMemo(() => parentOf(seats), [seats])
   const layoutKey = seats.map((seat) => seat.id).join('|')
+  const names = useMemo(() => new Map(seats.map((seat) => [seat.id, seat.name])), [seats])
+  const hasAlso = seats.some((seat) => (seat.alsoReportsTo ?? []).some((id) => names.has(id)))
 
   /** Zooms to `next`, keeping `anchor` (viewport-relative) still. Without an anchor the viewport center stays still. */
   function applyScale(next: number, anchor?: { x: number; y: number }) {
@@ -331,16 +335,22 @@ export function OrgChart({
     const chart = chartRef.current
     const legend = legendRef.current
     const toolbar = toolbarRef.current
-    if (!png || !chart || !legend || !toolbar) return
+    if (!chart || !legend || !toolbar) return
     let buttonWidth = 0
     const check = () => {
+      const toolbarLeft = toolbar.getBoundingClientRect().left
+      // Item widths and the chart's edge do not change when the legend moves above the chart, so this never flips back and forth.
+      const items = [...legend.children].filter((item) => !item.classList.contains('org-legend-png'))
+      const stacked = !legendFits({ legendLeft: chart.getBoundingClientRect().left + 10, itemWidths: items.map((item) => item.getBoundingClientRect().width), toolbarLeft })
+      setLegendStacked(stacked)
+      if (!png) return
       const button = chart.querySelector<HTMLElement>('.org-legend-png button, .org-actions-png button')
       buttonWidth = button?.getBoundingClientRect().width || buttonWidth
       setPngBesideLegend(legendHasRoom({
-        floating: getComputedStyle(legend).position === 'absolute',
+        floating: !stacked && getComputedStyle(legend).position === 'absolute',
         legendRight: legend.getBoundingClientRect().right,
         buttonWidth,
-        toolbarLeft: toolbar.getBoundingClientRect().left,
+        toolbarLeft,
       }))
     }
     check()
@@ -354,7 +364,7 @@ export function OrgChart({
   const pngInActions = Boolean(png) && !pngBesideLegend
   const solo = seats.length <= 1
   return (
-    <div ref={chartRef} className={solo ? 'org-chart is-solo' : 'org-chart'} data-testid="org-chart" data-highlight={highlightId || undefined}>
+    <div ref={chartRef} className={`${solo ? 'org-chart is-solo' : 'org-chart'}${legendStacked ? ' legend-stacked' : ''}`} data-testid="org-chart" data-highlight={highlightId || undefined}>
       <div
         ref={viewportRef}
         className={panning ? 'org-viewport is-panning' : 'org-viewport'}
@@ -371,6 +381,7 @@ export function OrgChart({
               key={seat.id}
               seat={seat}
               childrenOf={reports}
+              names={names}
               collapsed={shownCollapsed}
               selectedId={selectedId}
               foundId={foundId}
@@ -389,6 +400,7 @@ export function OrgChart({
               grokStates={grokStates}
             />
           ))}
+          <AlsoReportsLines treeRef={treeRef} seats={seats} layoutKey={`${layoutKey}:${[...shownCollapsed].join(',')}:${scale}`} />
         </ul>
       </div>
       <div ref={toolbarRef} className="org-toolbar" role="toolbar" aria-label="Org chart view">
@@ -441,6 +453,7 @@ export function OrgChart({
         {legendItem('human', 'swatch-human', 'Human', counts.human)}
         {legendItem('bot', 'swatch-bot', 'Bot', counts.bot)}
         {legendItem('system', 'swatch-system', 'System', counts.system)}
+        {hasAlso ? <li><i className="swatch swatch-also" /> Also reports to</li> : null}
         {grokStates ? (
           <>
             {legendItem('in-grok', 'swatch-grok', 'In Grok Bot', account ? account.total : counts.inGrok)}
@@ -497,9 +510,12 @@ function OrgBranch({
   live,
   grokStates = false,
   accountApps,
+  names,
 }: {
   seat: Seat
   childrenOf: Map<string, Seat[]>
+  /** Seat names by id, for the extra managers on a card. */
+  names: ReadonlyMap<string, string>
   collapsed: Set<string>
   selectedId: string
   foundId: string
@@ -519,6 +535,7 @@ function OrgBranch({
 }) {
   const empty = emptyIds.includes(seat.id)
   const reports = childrenOf.get(seat.id) ?? []
+  const also = (seat.alsoReportsTo ?? []).flatMap((id) => names.get(id) ?? []).join(', ')
   const isCollapsed = collapsed.has(seat.id)
   const seatLive = live?.get(seat.id)
   const sync = grokStates && seat.type === 'bot' && !empty
@@ -540,7 +557,7 @@ function OrgBranch({
       <div className="org-node">
         {empty ? (
           <div className={`org-card-hit is-empty ${classes}`} data-seat-id={seat.id}>
-            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} accountApps={accountApps} />
+            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} accountApps={accountApps} also={also} />
           </div>
         ) : (
           <button
@@ -551,7 +568,7 @@ function OrgBranch({
             aria-label={orgCardLabel(seat)}
             onClick={() => onSelect(seat.id)}
           >
-            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} accountApps={accountApps} />
+            <OrgCardFace seat={seat} leastUsedId={leastUsedId} sampleUsage={sampleUsage} last={seatLive?.last} sync={sync} accountApps={accountApps} also={also} />
           </button>
         )}
         {empty ? <SeatCardCue hire={allowHire} onHire={() => onHireEmpty?.(seat.id)} /> : null}
@@ -576,6 +593,7 @@ function OrgBranch({
               key={child.id}
               seat={child}
               childrenOf={childrenOf}
+              names={names}
               collapsed={collapsed}
               selectedId={selectedId}
               foundId={foundId}
@@ -607,11 +625,14 @@ function OrgCardFace({
   last = '',
   sync = null,
   accountApps,
+  also = '',
 }: {
   seat: Seat
   leastUsedId?: string
   sampleUsage: boolean
   last?: string
+  /** The names of the seat's extra managers, or ''. */
+  also?: string
   /** Grok Bot state tag for a bot card, when the chart shows those states. */
   sync?: { tag: string; className: string } | null
   accountApps?: AccountApp[]
@@ -639,6 +660,7 @@ function OrgCardFace({
                 ))}
               </span>
             ) : null}
+            {also ? <span className="org-also" title={`Also reports to ${also}`}>{`Also reports to ${also}`}</span> : null}
             {last ? <span className="org-last">{last}</span> : null}
           </>
         ) : (
@@ -647,6 +669,7 @@ function OrgCardFace({
               {seat.role}
               {seat.id === leastUsedId ? ' · Least used' : ''}
             </span>
+            {also ? <span className="org-also" title={`Also reports to ${also}`}>{`Also reports to ${also}`}</span> : null}
             {last ? <span className="org-last">{last}</span> : null}
           </>
         )}

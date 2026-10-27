@@ -18,6 +18,19 @@ export function legendHasRoom({ floating, legendRight, buttonWidth, toolbarLeft 
   return floating && legendRight + LEGEND_GAP + buttonWidth + LEGEND_GAP <= toolbarLeft
 }
 
+/** The legend box: 12px between items, 10px padding and a 1px border on each side. */
+const LEGEND_ITEM_GAP = 12
+const LEGEND_FRAME = 22
+
+/**
+ * Whether the floating legend, at its full width, ends before Find seat. When it does not, it sits above the chart, as
+ * on phones, instead of running under the toolbar.
+ */
+export function legendFits({ legendLeft, itemWidths, toolbarLeft }: { legendLeft: number; itemWidths: number[]; toolbarLeft: number }): boolean {
+  const width = itemWidths.reduce((sum, item) => sum + item, 0) + LEGEND_ITEM_GAP * Math.max(itemWidths.length - 1, 0) + LEGEND_FRAME
+  return legendLeft + width + LEGEND_GAP <= toolbarLeft
+}
+
 /** `<organization> org chart.png`. Characters a file name cannot hold are dropped. */
 export function pngFileName(orgName: string, chart: PngChart): string {
   const name = orgName.replace(/[\\/:*?"<>|\p{Cc}]+/gu, ' ').replace(/\s+/g, ' ').trim() || 'Organization'
