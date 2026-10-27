@@ -106,6 +106,8 @@ export interface SeatDocument {
   title: string
   department: string
   reportsTo: string
+  /** Seats this one also reports to, beside its main manager (`reportsTo`). The chart draws them dotted. */
+  alsoReportsTo?: string[]
   addToGrokBotUrl: string
   status: 'active' | 'retired'
   kind: SeatKind
@@ -249,6 +251,8 @@ export function parseSeatMarkdown(slug: string, source: string): { ok: true; sea
   const title = (data.title ?? data.name ?? '').trim()
   const department = (data.department ?? '').trim() || 'general'
   const reportsTo = data.reportsTo?.trim() ?? ''
+  // A bad line here never makes the seat unreadable: entries that cannot be managers are dropped.
+  const alsoReportsTo = readJsonField(data.alsoReportsTo, cleanSlugs).filter((item) => item !== slug && item !== reportsTo)
   const addToGrokBotUrl = (data.addToGrokBotUrl ?? data.grokShareUrl ?? '').trim()
   const statusRaw = data.status?.trim() || 'active'
   const kindRaw = data.kind?.trim() || 'bot'
@@ -282,6 +286,7 @@ export function parseSeatMarkdown(slug: string, source: string): { ok: true; sea
     title,
     department,
     reportsTo,
+    ...(alsoReportsTo.length ? { alsoReportsTo } : {}),
     addToGrokBotUrl,
     status: statusRaw as 'active' | 'retired',
     kind: kindRaw as SeatKind,
@@ -308,6 +313,7 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
       name: seat.title,
       grokBotUrl: seat.grokBotUrl ?? '',
       reportsTo: seat.reportsTo,
+      alsoReportsTo: seat.alsoReportsTo,
       addToGrokBotUrl: seat.addToGrokBotUrl,
       description: seat.description,
       owns: seat.owns,
@@ -337,6 +343,7 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
     `title: ${quote(seat.title)}`,
     `department: ${quote(seat.department)}`,
     `reportsTo: ${quote(seat.reportsTo)}`,
+    ...alsoLine(seat),
     `addToGrokBotUrl: ${quote(seat.addToGrokBotUrl ?? '')}`,
     `status: ${seat.status}`,
     `kind: ${seat.kind}`,
@@ -371,6 +378,7 @@ export function serializeExistingSeat(seat: {
   name: string
   grokBotUrl: string
   reportsTo: string
+  alsoReportsTo?: string[]
   addToGrokBotUrl?: string
   description?: string
   owns: string[]
@@ -402,6 +410,7 @@ export function serializeExistingSeat(seat: {
     'source: existing',
     `grokBotUrl: ${quote(seat.grokBotUrl ?? '')}`,
     `reportsTo: ${quote(seat.reportsTo)}`,
+    ...alsoLine(seat),
   ]
   if (seat.status === 'retired') lines.push('status: retired', `retiredAt: ${quote(seat.retiredAt ?? '')}`)
   if (seat.addToGrokBotUrl) lines.push(`addToGrokBotUrl: ${quote(seat.addToGrokBotUrl)}`)
@@ -662,6 +671,38 @@ function cardSections(body: string): Pick<SeatDocument, 'owns' | 'may' | 'mustAs
     mustAskBefore: found['Needs approval'] ?? [],
     doneWhen: found['Done when'] ?? [],
   }
+}
+
+/** A seat that reaches itself through any mix of main and also lines, or null. Saving refuses such a change. */
+export function managerLoop(seats: Pick<SeatDocument, 'slug' | 'reportsTo' | 'alsoReportsTo'>[]): string | null {
+  const managers = new Map(seats.map((seat) => [seat.slug, [seat.reportsTo, ...(seat.alsoReportsTo ?? [])].filter(Boolean)]))
+  const done = new Set<string>()
+  const visit = (slug: string, path: Set<string>): string | null => {
+    if (path.has(slug)) return slug
+    if (done.has(slug)) return null
+    path.add(slug)
+    for (const next of managers.get(slug) ?? []) {
+      const found = visit(next, path)
+      if (found) return found
+    }
+    path.delete(slug)
+    done.add(slug)
+    return null
+  }
+  for (const seat of seats) {
+    const found = visit(seat.slug, new Set())
+    if (found) return found
+  }
+  return null
+}
+
+function alsoLine(seat: { alsoReportsTo?: string[] }): string[] {
+  return seat.alsoReportsTo?.length ? [`alsoReportsTo: ${quote(JSON.stringify(seat.alsoReportsTo))}`] : []
+}
+
+function cleanSlugs(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return [...new Set(value.filter((item): item is string => typeof item === 'string' && SEAT_SLUG.test(item.trim())).map((item) => item.trim()))]
 }
 
 function hasCycle(seats: OrgSeatRef[]): boolean {

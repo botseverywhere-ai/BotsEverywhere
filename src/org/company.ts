@@ -15,6 +15,7 @@ export function companyFromBundle(bundle: OrgBundle): CompanySeed {
       ...(seat.description?.trim() ? { description: seat.description.trim() } : {}),
       type: seat.kind,
       reportsTo: seat.reportsTo || undefined,
+      ...(seat.alsoReportsTo?.length ? { alsoReportsTo: seat.alsoReportsTo } : {}),
       grokShareUrl: seat.addToGrokBotUrl || null,
       addToGrokBotUrl: seat.addToGrokBotUrl || null,
       grokBotUrl: seat.grokBotUrl || null,
