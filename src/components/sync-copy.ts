@@ -305,7 +305,7 @@ export function intervalWarning(project: Pick<ProjectInfo, 'syncMinutes' | 'conn
   const saved = project.syncMinutes ?? DEFAULT_SYNC_MINUTES
   const reported = project.connector.syncMinutes
   if (reported === undefined) return 'Grok Bot has not said how often it runs the Connector yet. Paste the prompt from Connect bots into the Connector once.'
-  if (reported !== saved) return `Grok Bot still runs the Connector every ${everyLabel(reported)}, not every ${everyLabel(saved)}. Copy the prompt on Connect bots and paste it into the Connector.`
+  if (reported !== saved) return `Grok Bot still runs the Connector every ${everyLabel(reported)}, not every ${everyLabel(saved)}. The Connector changes its schedule on its next run, from CONNECTOR.md.`
   return ''
 }
 

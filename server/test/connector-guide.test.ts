@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
+import { connectorBootstrapPrompt, connectorGuide } from '../src/connector-prompt.ts'
+
+const WIN = { id: '3s53', orgsFolder: 'C:\\Users\\me\\botseverywhere\\orgs' }
+
+test('the prompt to paste is short, names the rules file, and has nothing a chat could mangle', () => {
+  const prompt = connectorBootstrapPrompt(WIN)
+  assert.match(prompt, /^Create a bot named Connector - BotsEverywhere \(3s53\)\./)
+  assert.ok(prompt.includes('C:\\Users\\me\\botseverywhere\\orgs\\CONNECTOR.md'))
+  assert.match(prompt, /Read C:\\Users\\me\\botseverywhere\\orgs\\CONNECTOR\.md with Shell and do THE RUN in it\./)
+  assert.doesNotMatch(prompt, /`/)
+  assert.ok(prompt.length < 1200, `${prompt.length} characters`)
+  assert.ok(connectorBootstrapPrompt({ id: '3s53', orgsFolder: '/home/me/orgs' }).includes('/home/me/orgs/CONNECTOR.md'))
+})
+
+test('the rules keep the run to files, leave every decision to the app, and give the exact hash command', () => {
+  const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
+  assert.match(guide, /THE RUN \(files only: never message, create, or change a bot, routine, skill, or memory\)/)
+  assert.match(guide, /Never decide what to change in a bot: the app decides, you carry it out\./)
+  assert.ok(guide.includes(`python3 -c "import json,hashlib,sys;print(hashlib.sha256(json.load(open(sys.argv[1]))['description'].encode('utf-8')).hexdigest())" /home/box/agent-data/agents/<botId>/profile.json`))
+  assert.match(guide, /For each item whose key has no result in C:\\Users\\me\\botseverywhere\\orgs\\connector-results\.json/)
+  assert.match(guide, /Never change any text yourself: send exactly what the item says\./)
+  assert.match(guide, /Never write org\.md, seats\/, processes\/, work-chart\.md, requests\.json, snapshot\.json, connector-todo\.json, CONNECTOR\.md, or project\.json/)
+})
+
+test('the schedule follows Runs every, and Windows writing is named only on Windows', () => {
+  assert.match(connectorGuide({ ...WIN, syncMinutes: 15, timeZone: '', windows: true }), /\nSchedule: every 15 minutes\. If your routine's schedule is different/)
+  assert.match(connectorGuide({ ...WIN, syncMinutes: 120, timeZone: '', windows: true }), /\nSchedule: every 2 hours\./)
+  assert.match(connectorGuide({ ...WIN, syncMinutes: 15, timeZone: '', windows: true }), /System\.IO\.File/)
+  assert.doesNotMatch(connectorGuide({ id: '3s53', orgsFolder: '/home/me/orgs', syncMinutes: 15, timeZone: '', windows: false }), /System\.IO\.File/)
+})
+
+test('Connect bots and Docs show the short prompt; a new interval needs no paste', async () => {
+  const connect = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
+  const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
+  assert.match(connect, /connectorBootstrapPrompt\(\{ id: project\?\.id \?\? '', orgsFolder: project\?\.orgsFolder \?\? '' \}\)/)
+  assert.match(docs, /connectorBootstrapPrompt\(\{ id: '<id>', orgsFolder: '<project folder>\/orgs' \}\)/)
+  assert.match(connect, /Saved\. The Connector switches to every \$\{everyLabel\(typed\)\} on its next run\./)
+  const { intervalWarning } = await import('../../src/components/sync-copy.ts')
+  assert.equal(intervalWarning({ syncMinutes: 17, connector: { syncedAt: '', stamp: '1:1', unassigned: [], error: '', syncMinutes: 15 } } as never), 'Grok Bot still runs the Connector every 15 minutes, not every 17 minutes. The Connector changes its schedule on its next run, from CONNECTOR.md.')
+})

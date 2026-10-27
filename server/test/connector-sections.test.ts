@@ -10,5 +10,5 @@ test('the Connector puts each bot it creates in the sidebar section named like i
   assert.match(step1, /If no section matches, create the bot without a section and add "noSection": "<org name>" to the note of your sync line in that organization's log\./)
   assert.match(step1, /Never create a second bot just to move it into a section\./)
   const connect = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
-  assert.match(connect, /The prompt changed: the Connector now puts each bot it creates in the Grok Bot sidebar section named like its organization, so make one section per organization there\. It also reports/, 'the new rule first, the earlier changes kept')
+  assert.match(connect, /The prompt changed: the Connector now reads its rules from CONNECTOR.md in this folder, which the app keeps up to date. It writes each bot's managers, team, skills, and logging rules into a block at the end of its instructions. New bots go in the Grok Bot sidebar section named like their organization, so make one section per organization there. It still leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more./)
 })

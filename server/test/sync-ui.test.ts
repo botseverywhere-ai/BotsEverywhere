@@ -89,7 +89,7 @@ test('the Sync button, drawer, tags, and Reports to select are wired in template
   assert.match(workspace, /void rereadOrg\(\)\.catch\(\(\) => undefined\); void loadSync\(\)/, 'an org change refetches the preview')
   assert.match(workspace, /setSync\(\{ snapshot: null, error: SAVING_OFF, plan: null, lastConfirmed: '', folder: '' \}\)/, 'a writer that is down shows in the drawer')
   const connect = read('../../src/components/ConnectGrok.tsx')
-  assert.ok(connect.includes("connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes, timeZone: project?.timeZone ?? '', windows: project?.windows ?? false })"), 'the Connector prompt takes the folder, time zone, and platform from the running writer, never from the browser')
+  assert.ok(connect.includes("connectorBootstrapPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '' })"), 'the Connector prompt takes the folder, time zone, and platform from the running writer, never from the browser')
   assert.equal(connect.includes('rememberOrgFolder'), false, 'the folder box that copies shared through the browser is gone')
   assert.match(workspace, /if \(next\.folder\) rememberOrgFolder\(bundle\.id, next\.folder\)/, 'the running writer\'s folder always overwrites the browser memory')
   assert.match(workspace, /oxlint-disable-next-line react\/set-state-in-effect -- the sync status is fetched from the writer/)

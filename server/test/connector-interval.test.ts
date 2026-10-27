@@ -150,7 +150,7 @@ test('the Connector reports its interval, and the app warns until it matches wha
 
   const info = (saved: number | undefined, reported: number | undefined) => ({ syncMinutes: saved, connector: { stamp: '1:1', syncedAt: '', error: '', ...(reported ? { syncMinutes: reported } : {}) } })
   assert.equal(intervalWarning(info(17, 17)), '', 'pasted: no warning')
-  assert.equal(intervalWarning(info(17, 15)), 'Grok Bot still runs the Connector every 15 minutes, not every 17 minutes. Copy the prompt on Connect bots and paste it into the Connector.')
+  assert.equal(intervalWarning(info(17, 15)), 'Grok Bot still runs the Connector every 15 minutes, not every 17 minutes. The Connector changes its schedule on its next run, from CONNECTOR.md.')
   assert.match(intervalWarning(info(15, undefined)), /has not said how often it runs/)
   assert.equal(intervalWarning({ syncMinutes: 17, connector: null }), '', 'no Connector yet: nothing to compare')
   assert.equal(runMinutes(info(15, 120)), 120, 'Disconnected waits for the interval Grok Bot really uses')

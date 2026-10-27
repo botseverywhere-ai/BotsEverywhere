@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CodeBlock } from '../components/CodeBlock.tsx'
 import { GROK_BOTS_PROMPT } from '../content/grok-bots-prompt.ts'
-import { CONNECTOR_BOT_NAME, CONNECTOR_LOG_BOT, connectorPrompt } from '../../server/src/connector-prompt.ts'
+import { CONNECTOR_BOT_NAME, CONNECTOR_LOG_BOT, connectorBootstrapPrompt } from '../../server/src/connector-prompt.ts'
 import { HiringGuide } from '../content/HiringGuide.tsx'
 import { GROK_BOT_LIMIT } from '../components/sync-copy.ts'
 import { DESKTOP_MIN_WIDTH } from '../content/screen-notice.ts'
@@ -384,7 +384,7 @@ npm run dev`}</CodeBlock>
         <p>
           The prompt below shows its shape with placeholders. Copy the real one from <strong>Connect bots</strong>, which has your id and folder filled in.
         </p>
-        <CodeBlock label="Connector prompt">{connectorPrompt({ id: '<id>', orgsFolder: '<project folder>/orgs' })}</CodeBlock>
+        <CodeBlock label="Connector prompt">{connectorBootstrapPrompt({ id: '<id>', orgsFolder: '<project folder>/orgs' })}</CodeBlock>
 
         <h2 id="set-up-org">Step 2: Set up your organization</h2>
         <p>

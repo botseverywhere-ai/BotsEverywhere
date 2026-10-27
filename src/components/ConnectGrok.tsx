@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SyncStatus } from '../../server/src/grok-sync.ts'
-import { CONNECTOR_BOT_NAME, connectorPrompt } from '../../server/src/connector-prompt.ts'
+import { CONNECTOR_BOT_NAME, connectorBootstrapPrompt } from '../../server/src/connector-prompt.ts'
 import { DEFAULT_SYNC_MINUTES, everyLabel, joinSyncMinutes, splitSyncMinutes, validSyncMinutes, type SyncUnit } from '../../server/src/connector-timing.ts'
 import { CopyPromptButton } from '../directory/prompt-actions'
 import { Button } from './Button'
@@ -50,7 +50,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
   const typed = editing ? validSyncMinutes(joinSyncMinutes(amount, unit)) : saved
   const minutes = typed ?? saved
   const shown = editing ? { amount, unit } : { ...splitSyncMinutes(saved), amount: String(splitSyncMinutes(saved).amount) }
-  const prompt = connectorPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes, timeZone: project?.timeZone ?? '', windows: project?.windows ?? false })
+  const prompt = connectorBootstrapPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '' })
   const { state, line } = connectorState(status)
   const statusFile = connectorStatusFile(status)
 
@@ -78,7 +78,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
       }
       setEditing(false)
       if (onIntervalSaved) await onIntervalSaved()
-      setNotice(saveNotice(true, `Saved. Copy the prompt and paste it into ${name} in Grok Bot, so it runs every ${everyLabel(typed)}.`))
+      setNotice(saveNotice(true, `Saved. The Connector switches to every ${everyLabel(typed)} on its next run.`))
     } catch {
       setNotice(saveNotice(false, 'Saving is off. Restart npm run dev, then try again.'))
     } finally {
@@ -116,7 +116,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
         <li>Come back here. The status turns green after its first run, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
       </ol>
       <p className="overview-note">
-        The prompt changed: the Connector now puts each bot it creates in the Grok Bot sidebar section named like its organization, so make one section per organization there. It also reports each bot's skills and public link, creates new bots with the skills and routines from their Profile, and still leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
+        The prompt changed: the Connector now reads its rules from CONNECTOR.md in this folder, which the app keeps up to date. It writes each bot's managers, team, skills, and logging rules into a block at the end of its instructions. New bots go in the Grok Bot sidebar section named like their organization, so make one section per organization there. It still leaves deleting bots to you. If your Connector already runs, paste this prompt into it once more.
       </p>
       {editable && ready ? (
         <div className="connect-interval">
