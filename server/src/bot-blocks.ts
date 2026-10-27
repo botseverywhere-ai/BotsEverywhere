@@ -185,6 +185,13 @@ export function withCopyBlocks(description: string, copyId: string, blocks: { or
   return { ok: true, text: rest ? `${rest}${GAP}${added}` : added }
 }
 
+const ANY_BLOCK = /(?:\n\n)?^=== BotsEverywhere ([a-z0-9]+) ([a-z0-9]+(?:-[a-z0-9]+)*) ===\r?$[\s\S]*?^=== end BotsEverywhere \1 \2 ===\r?$/gm
+
+/** What the owner wrote: the description without any BotsEverywhere block, of this copy or another. */
+export function ownerText(description: string): string {
+  return description.replace(ANY_BLOCK, '')
+}
+
 /** Ids of other copies whose blocks this description carries. */
 export function otherCopyIds(description: string, copyId: string): string[] {
   const ids = [...description.matchAll(START)].map((match) => match[1]!).filter((id) => id !== copyId)
