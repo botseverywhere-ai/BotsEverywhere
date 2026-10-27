@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import type { FileActivity } from '../../server/src/org-files.ts'
+import { canDelete } from '../../server/src/grok-requests.ts'
+import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
+import { Button } from './Button'
+import { DeleteInGrokBot } from './RetiredDrawer'
 import { grokDirection, grokDirectionLabel, isGrokEvent, logLabel, parseStats } from './sync-copy'
 
 type LogFilter = 'all' | 'grok' | 'team'
@@ -15,14 +18,19 @@ export function LogPanel({
   waiting,
   stepNames,
   onStep,
+  retired,
 }: {
   events: FileActivity[]
   /** To Grok Bot lines still waiting for the Connector. They pulse like the Sync drawer's waiting list. */
   waiting?: Set<string>
   stepNames: Map<string, { workstream: string; index: number }>
   onStep: (stepId: string) => void
+  /** Your own orgs only: retired seats, so a Retired line can offer Delete in Grok Bot like the Retired list does. */
+  retired?: { seats: SeatDocument[]; activeElsewhere: Record<string, string[]> }
 }) {
   const [filter, setFilter] = useState<LogFilter>('all')
+  // The retired bot whose delete steps are open.
+  const [deleting, setDeleting] = useState<SeatDocument | null>(null)
   const rows = [...events]
     .filter((event) => filter === 'all' || (filter === 'grok') === isGrokEvent(event))
     .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
@@ -48,6 +56,7 @@ export function LogPanel({
           const direction = grokDirection(event)
           // One line per entry: the figures follow the summary in small type; hovering shows all of it.
           const figures = parseStats(event.stats).map(([label, value]) => `${label} ${value}`).join(' · ')
+          const deletable = event.type === 'fire' ? retired?.seats.find((seat) => seat.slug === event.subjectSeatId && canDelete(seat)) : undefined
           return (
             <li key={event.id} className={event.kind ? `is-${event.kind}` : undefined}>
               <div className="be-log-line" title={figures ? `${event.summary}\n${figures}` : event.summary}>
@@ -58,6 +67,7 @@ export function LogPanel({
                   {event.summary}
                   {figures ? <small className="be-log-figures"> · {figures}</small> : null}
                   {waiting?.has(event.id) ? <span className="be-log-syncing be-connecting"><i className="be-pulse" aria-hidden="true" />Syncing with Grok Bot</span> : null}
+                  {deletable ? <Button variant="secondary" type="button" className="be-log-delete" onClick={() => setDeleting(deletable)}>Delete in Grok Bot…</Button> : null}
                 </span>
                 {step && event.stepId ? (
                   <button type="button" className="be-step-chip" onClick={() => onStep(event.stepId!)}>
@@ -69,6 +79,14 @@ export function LogPanel({
           )
         })}
       </ul>
+      {deleting ? (
+        <DeleteInGrokBot
+          deleting={deleting}
+          elsewhere={retired?.activeElsewhere[deleting.slug] ?? []}
+          note="Logs shows Deleted in Grok Bot after the Connector's next run."
+          onClose={() => setDeleting(null)}
+        />
+      ) : null}
     </section>
   )
 }

@@ -1499,6 +1499,7 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .be-log .be-log-line span.be-log-text { overflow: visible; text-overflow: clip; }
 .be-log-figures { color: var(--color-muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
 .be-log-syncing { margin-left: var(--space-3); }
+.be-log-delete { margin-left: var(--space-3); }
 .be-log li.is-connected strong, .be-log li.is-bot-connected strong, .be-log li.is-created strong { color: var(--color-green-700); }
 .be-log li.is-stopped strong, .be-log li.is-bot-disconnected strong { color: var(--color-amber-800); }
 .be-log li.is-connector-error strong { color: var(--color-red-700); }

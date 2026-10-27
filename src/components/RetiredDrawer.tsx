@@ -76,23 +76,40 @@ export function RetiredDrawer({
           </div>
         </footer>
       </aside>
-      {deleting ? (
-        <div className="be-modal" role="dialog" aria-labelledby="delete-grok-title" onClick={(event) => event.stopPropagation()}>
-          <h2 id="delete-grok-title">Delete {deleting.title} in Grok Bot</h2>
-          <p>
-            Grok Bot does not let the Connector, or any app outside Grok Bot, delete a bot. Open the bot in Grok Bot and delete it there:
-            right-click <strong>{deleting.title}</strong> in the sidebar, choose Delete, and confirm. That removes the bot and its chat history.
-          </p>
-          {deletingElsewhere.length ? (
-            <p className="grok-status-warning" role="alert">{deleting.title} is still active in {deletingElsewhere.join(', ')}. Deleting it in Grok Bot stops it there too.</p>
-          ) : null}
-          <p className="overview-note">The row here says Deleted after the Connector&apos;s next run.</p>
-          <Button variant="secondary" type="button" onClick={() => setDeleting(null)}>Cancel</Button>
-          <Button variant="primary" href={(deleting.grokBotUrl ?? '').trim()} target="_blank" rel="noreferrer" onClick={() => setDeleting(null)}>
-            Open {deleting.title} in Grok Bot
-          </Button>
-        </div>
+      {deleting ? <DeleteInGrokBot deleting={deleting} elsewhere={deletingElsewhere} onClose={() => setDeleting(null)} /> : null}
+    </div>
+  )
+}
+
+/** The steps to delete a retired bot in Grok Bot, then a link to it. Opened from this drawer and from a Retired line in Logs. */
+export function DeleteInGrokBot({
+  deleting,
+  elsewhere,
+  note = "The row here says Deleted after the Connector's next run.",
+  onClose,
+}: {
+  deleting: SeatDocument
+  /** Organizations where the same bot is still active. */
+  elsewhere: string[]
+  /** Where the person sees it deleted. */
+  note?: string
+  onClose: () => void
+}) {
+  return (
+    <div className="be-modal" role="dialog" aria-labelledby="delete-grok-title" onClick={(event) => event.stopPropagation()}>
+      <h2 id="delete-grok-title">Delete {deleting.title} in Grok Bot</h2>
+      <p>
+        Grok Bot does not let the Connector, or any app outside Grok Bot, delete a bot. Open the bot in Grok Bot and delete it there:
+        right-click <strong>{deleting.title}</strong> in the sidebar, choose Delete, and confirm. That removes the bot and its chat history.
+      </p>
+      {elsewhere.length ? (
+        <p className="grok-status-warning" role="alert">{deleting.title} is still active in {elsewhere.join(', ')}. Deleting it in Grok Bot stops it there too.</p>
       ) : null}
+      <p className="overview-note">{note}</p>
+      <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
+      <Button variant="primary" href={(deleting.grokBotUrl ?? '').trim()} target="_blank" rel="noreferrer" onClick={onClose}>
+        Open {deleting.title} in Grok Bot
+      </Button>
     </div>
   )
 }

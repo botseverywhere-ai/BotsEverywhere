@@ -189,3 +189,86 @@ test('Retired in the legend opens the list; Delete in Grok Bot explains why and 
   assert.doesNotMatch(sync, /deleted|delete in Grok Bot|deletes/i, 'the Sync drawer has no delete section')
   assert.doesNotMatch(workspace, /grok\/deletes/)
 })
+
+function retiredBot(slug: string, title: string, extra: string): ReturnType<typeof parseSeatMarkdown> {
+  return parseSeatMarkdown(slug, `---
+title: ${title}
+department: general
+reportsTo: you
+addToGrokBotUrl: ""
+status: retired
+kind: bot
+role: Bot
+personId: ""
+hiredAt: ""
+retiredAt: "2026-10-27T14:09:16.615Z"
+directoryId: ""
+${extra}---
+
+## Owns
+
+## May
+
+## Needs approval
+
+## Done when
+`)
+}
+
+function logEvent(type: FileActivity['type'], slug: string, summary: string): FileActivity {
+  return { id: `${type}-${slug}`, orgId: 'org-test', type, actorSeatId: 'you', actorType: 'human', timestamp: '2026-10-27T14:09:16.615Z', summary, subjectSeatId: slug }
+}
+
+/** tsx compiles JSX in src/ with the classic runtime here (the root tsconfig sets no jsx), so React must be a global. */
+async function render(component: unknown, props: Record<string, unknown>): Promise<string> {
+  const React = await import('react')
+  Object.assign(globalThis, { React })
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  return renderToStaticMarkup(React.createElement(component as Parameters<typeof React.createElement>[0], props))
+}
+
+test('a Retired line in Logs offers Delete in Grok Bot… only for a bot still in Grok Bot, and only on your own org', async () => {
+  const { LogPanel } = await import('../../src/components/LogPanel.tsx')
+  const seats = [
+    retiredBot('automations-bot', 'Automations Bot', `grokBotUrl: "${INBOX}"\n`),
+    retiredBot('gone-bot', 'Gone Bot', `grokBotUrl: "${INBOX}-2"\ngrokDeletedAt: "2026-10-27T15:00:00.000Z"\n`),
+    retiredBot('unlinked-bot', 'Unlinked Bot', ''),
+  ].map((parsed) => {
+    assert.ok(parsed.ok, 'fixture seat parses')
+    return parsed.seat
+  })
+  const events = [
+    logEvent('fire', 'automations-bot', 'Retired Automations Bot'),
+    logEvent('hire', 'automations-bot', 'Hired Automations Bot'),
+    logEvent('fire', 'gone-bot', 'Retired Gone Bot'),
+    logEvent('fire', 'unlinked-bot', 'Retired Unlinked Bot'),
+  ]
+  const base = { events, stepNames: new Map(), onStep: () => undefined }
+  const own = await render(LogPanel, { ...base, retired: { seats, activeElsewhere: {} } })
+  const withButton = own.split('<li').filter((item) => item.includes('Delete in Grok Bot…'))
+  assert.equal(withButton.length, 1, 'one line offers it')
+  assert.match(withButton[0]!, /Retired Automations Bot/, 'on the Retired line of the bot still in Grok Bot')
+  assert.match(withButton[0]!, /<span class="be-log-text">Retired Automations Bot<button [^>]*>Delete in Grok Bot…<\/button><\/span>/, 'right next to the text, not at the end of the line')
+  const readOnly = await render(LogPanel, base)
+  assert.doesNotMatch(readOnly, /Delete in Grok Bot/, 'templates and samples never offer it')
+})
+
+test('Delete in Grok Bot from Logs opens the same steps, links to the bot, and says where Deleted will show', async () => {
+  const { DeleteInGrokBot } = await import('../../src/components/RetiredDrawer.tsx')
+  const parsed = retiredBot('automations-bot', 'Automations Bot', `grokBotUrl: "${INBOX}"\n`)
+  assert.ok(parsed.ok)
+  const html = await render(DeleteInGrokBot, {
+    deleting: parsed.seat,
+    elsewhere: ['Ledger'],
+    note: 'Logs shows Deleted in Grok Bot after the Connector’s next run.',
+    onClose: () => undefined,
+  })
+  assert.match(html, /Delete Automations Bot in Grok Bot/)
+  assert.match(html, /right-click <strong>Automations Bot<\/strong> in the sidebar, choose Delete, and confirm/)
+  const link = /<a [^>]*>Open Automations Bot in Grok Bot<\/a>/.exec(html)?.[0] ?? ''
+  assert.match(link, /href="grokbot:\/\/app\/v1\/agent\?id=inbox"/, 'links to that bot')
+  assert.match(link, /target="_blank"/)
+  assert.match(html, /Automations Bot is still active in Ledger\. Deleting it in Grok Bot stops it there too\./)
+  assert.match(html, /Logs shows Deleted in Grok Bot after the Connector’s next run\./)
+  assert.doesNotMatch(html, /The row here says Deleted/, 'the drawer’s own note is not shown in Logs')
+})

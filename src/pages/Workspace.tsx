@@ -1004,7 +1004,7 @@ export function Workspace({
               }}
             />
           ) : null}
-          {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} /> : null}
+          {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} retired={editable ? { seats: retired, activeElsewhere: sync?.retiredElsewhere ?? {} } : undefined} /> : null}
         </main>
         {(view === 'org' || view === 'work') && chartSeat ? (
         <SeatDrawer
