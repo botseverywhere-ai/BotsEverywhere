@@ -77,7 +77,8 @@ export function parseGrokData(text: string): { ok: true; data: GrokData } | { ok
       id,
       name,
       grokBotUrl: str(item.grokBotUrl) || `grokbot://app/v1/agent?id=${id}`,
-      description: normalizeText(item.description),
+      // Exactly as Grok Bot holds it, CRs included: the Connector checks the hash of this text before it changes anything.
+      description: item.description,
       ...(str(item.section) ? { section: str(item.section) } : {}),
       ...(date(item.createdAt) ? { createdAt: date(item.createdAt) } : {}),
       ...(date(item.lastActive) ? { lastActive: date(item.lastActive) } : {}),
@@ -120,13 +121,22 @@ export function seatForBot(bot: Pick<GrokDataBot, 'id' | 'name' | 'grokBotUrl'>,
     ?? seats.find((seat) => seat.kind !== 'human' && (norm(seat.title) === norm(bot.name) || norm(`${seat.title} · ${orgName}`) === norm(bot.name)))
 }
 
-/** The bot a seat is: by the id in its link first, else by its title or "Title · Organization name". */
-export function botForSeat(seat: SeatDocument, data: GrokData, orgName: string): GrokDataBot | undefined {
+/** Ids of the bots a seat of this copy links to, in any organization. */
+export function linkedBotIds(bundles: OrgBundle[]): Set<string> {
+  return new Set(bundles.flatMap((bundle) => bundle.seats.map((seat) => linkId(seat.grokBotUrl?.trim() ?? '')).filter(Boolean)))
+}
+
+/**
+ * The bot a seat is: by the id in its link. A seat whose link names a bot never falls back to its title. A seat without
+ * one is "Title · Organization name", else its title, among bots no seat of this copy links (`taken`).
+ */
+export function botForSeat(seat: SeatDocument, data: GrokData, orgName: string, taken: Set<string> = new Set()): GrokDataBot | undefined {
   const link = seat.grokBotUrl?.trim() ?? ''
   const id = link ? linkId(link) : ''
   const linked = link ? data.bots.find((bot) => (id && bot.id === id) || bot.grokBotUrl === link) : undefined
-  if (linked || seat.kind === 'human') return linked
-  return data.bots.find((bot) => norm(bot.name) === norm(seat.title) || norm(bot.name) === norm(`${seat.title} · ${orgName}`))
+  if (linked || id || seat.kind === 'human') return linked
+  const free = data.bots.filter((bot) => !taken.has(bot.id))
+  return free.find((bot) => norm(bot.name) === norm(`${seat.title} · ${orgName}`)) ?? free.find((bot) => norm(bot.name) === norm(seat.title))
 }
 
 /** Bots that belong to one organization: a seat there, or a create request from there (`created`, by name). */
@@ -166,13 +176,17 @@ function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[];
     ...(bot.tasksDone30d !== undefined ? { tasksDone30d: bot.tasksDone30d } : {}),
     routines,
     skills: data.skills.filter((skill) => mentions(own, skill.name)).map((skill) => ({ name: skill.name, ...(skill.description ? { description: skill.description } : {}) })),
-    // Unknown account apps never clear a seat's apps.
-    apps: args.apps ? args.apps.filter((app) => mentions(own, app.name) || mentions(routineText, app.name)).map((app) => app.name) : args.seat?.apps ?? [],
+    // Unknown account apps never clear a seat's apps, and neither do routines Grok Bot does not show.
+    apps: args.apps ? appsFor(args.apps.filter((app) => mentions(own, app.name) || mentions(routineText, app.name)).map((app) => app.name), bot.routinesVisible ? [] : args.seat?.apps ?? []) : args.seat?.apps ?? [],
     publicUrl: bot.publicUrl ?? '',
     botStatus: '',
     note: '',
     error: '',
   }
+}
+
+function appsFor(found: string[], kept: string[]): string[] {
+  return [...found, ...kept.filter((name) => !found.some((app) => norm(app) === norm(name)))]
 }
 
 function triggerFor(routine: BotRoutine): ProcessTrigger {

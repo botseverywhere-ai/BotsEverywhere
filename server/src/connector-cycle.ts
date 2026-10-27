@@ -2,10 +2,11 @@ import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { BACKUPS_DIR, GUIDE_FILE, RESULTS_FILE, TODO_FILE, UNASSIGNED_FILE, readTextFile, writeFileAtomic } from './connector-files.ts'
 import { SNAPSHOT_PATH, connectorGuide } from './connector-prompt.ts'
-import { computeTodo, orgBlocksFromData, parseResults, updatedFor, type TodoFile } from './connector-todo.ts'
-import { botJson, readGrokData, snapshotFromData, snapshotJson, unassignedFromData } from './grok-data.ts'
+import { computeTodo, orgBlocksFromData, parseResults, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
+import { botJson, linkedBotIds, readGrokData, snapshotFromData, snapshotJson, unassignedFromData } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
 import type { ConnectorState } from './grok-sync.ts'
+import { normalizeText } from './normalize-text.ts'
 import type { OrgBundle } from './org-files.ts'
 import { readConnector, readRemoveCopies, readSyncMinutes } from './project.ts'
 import { listOrgSlugs, readOrgDir, readRequests } from './template-server.ts'
@@ -54,7 +55,10 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
   const { data } = dump
   const orgsFolder = resolve(orgsDir)
   const zone = timeZone()
-  const results = parseResults(readTextFile(resolve(orgsDir, RESULTS_FILE)) ?? '')
+  // An unreadable results file could hide what was already sent: change nothing until it reads again.
+  const read = readResults(orgsDir)
+  if (!read.ok) return { ok: false, error: read.error, missing: false }
+  const { results } = read
   const apps = readConnector(orgsDir)?.apps
   const orgs: { id: string; bundle: OrgBundle; requests: GrokRequest[] }[] = []
   const keepOrgs: string[] = []
@@ -67,27 +71,55 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
     }
     orgs.push({ id: slug, bundle: read.bundle, requests: readRequests(root).requests })
   }
+  const taken = linkedBotIds(orgs.map((org) => org.bundle))
   for (const org of orgs) {
     const orgName = org.bundle.org.company.name
     const created = org.requests.filter((request) => request.kind !== 'update').map((request) => request.name)
     const snapshot = snapshotFromData(data, org.bundle, orgName, copyId, apps, created)
-    const blocks = orgBlocksFromData({ copyId, orgsFolder, timeZone: zone, org, data })
+    const blocks = orgBlocksFromData({ copyId, orgsFolder, timeZone: zone, org, data, taken })
     const updated = updatedFor(org.id, org.requests, data, results, blocks)
     writeIfChanged(resolve(orgsDir, org.id, SNAPSHOT_PATH), snapshotJson({ ...snapshot, ...(updated.length ? { updated } : {}) }))
   }
   const unassigned = unassignedFromData(data, orgs.map((org) => ({ bundle: org.bundle, orgName: org.bundle.org.company.name, created: org.requests.filter((request) => request.kind !== 'update').map((request) => request.name) })))
   writeIfChanged(resolve(orgsDir, UNASSIGNED_FILE), `${JSON.stringify({ syncedAt: data.dumpedAt, unassigned: unassigned.map(botJson) }, null, 2)}\n`)
-  const todo = computeTodo({ copyId, orgsFolder, timeZone: zone, data, orgs, keepOrgs, results, removeCopies: readRemoveCopies(orgsDir), now })
+  const previous = readTodo(orgsDir)
+  const todo = computeTodo({ copyId, orgsFolder, timeZone: zone, data, orgs, keepOrgs, results, removeCopies: readRemoveCopies(orgsDir), now, previous })
   backUp(orgsDir, todo, now)
-  writeIfChanged(resolve(orgsDir, TODO_FILE), `${JSON.stringify(withRuns(todo, readTodo(orgsDir)), null, 2)}\n`)
+  writeIfChanged(resolve(orgsDir, TODO_FILE), `${JSON.stringify(withRuns(todo, previous), null, 2)}\n`)
   return { ok: true, dumpedAt: data.dumpedAt }
 }
 
+/** connector-results.json. No file is no results; a file that is not a JSON object cannot be read. */
+function readResults(orgsDir: string): { ok: true; results: ResultsFile } | { ok: false; error: string } {
+  const text = readTextFile(resolve(orgsDir, RESULTS_FILE))
+  if (text === null || !text.trim()) return { ok: true, results: { results: [], confirmations: [] } }
+  try {
+    const data = JSON.parse(normalizeText(text)) as unknown
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return { ok: false, error: 'connector-results.json could not be read: it is not a JSON object.' }
+  } catch {
+    return { ok: false, error: 'connector-results.json could not be read: it is not JSON.' }
+  }
+  return { ok: true, results: parseResults(text) }
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+const isString = (value: unknown): value is string => typeof value === 'string'
+
+/** The to-do list the app wrote last. Entries that are not what the app writes are left out, so a hand-edited file never breaks a cycle or the drawer. */
 function readTodo(orgsDir: string): TodoFile | null {
   try {
     const text = readTextFile(resolve(orgsDir, TODO_FILE))
-    const data = text ? JSON.parse(text) as TodoFile : null
-    return data && Array.isArray(data.items) ? data : null
+    const data = text ? JSON.parse(normalizeText(text)) as unknown : null
+    if (!isObject(data) || !Array.isArray(data.items)) return null
+    const list = (value: unknown) => (Array.isArray(value) ? value.filter(isObject) : [])
+    return {
+      basedOn: isString(data.basedOn) ? data.basedOn : '',
+      items: list(data.items).filter((item) => isString(item.key) && isString(item.kind) && isString(item.bot) && isString(item.org)) as unknown as TodoItem[],
+      stuck: list(data.stuck).filter((item) => isString(item.bot) && isString(item.org) && isString(item.why)) as unknown as TodoFile['stuck'],
+      otherCopies: list(data.otherCopies).filter((item) => isString(item.copy) && Array.isArray(item.bots) && item.bots.every(isString)) as unknown as TodoFile['otherCopies'],
+      verify: list(data.verify).filter((item) => ['key', 'botId', 'bot', 'org', 'ownerSha', 'descriptionSha', 'doneAt'].every((field) => isString(item[field]))) as unknown as VerifyEntry[],
+      ledger: parseResults(JSON.stringify({ results: list(data.ledger) })).results,
+    }
   } catch {
     return null
   }
@@ -113,9 +145,10 @@ function withRuns(todo: TodoFile, previous: TodoFile | null): TodoFile {
  */
 export function connectorState(orgsDir: string, orgId: string): ConnectorState {
   const dump = readGrokData(orgsDir)
-  const dumpError = !dump.ok && !dump.missing ? dump.error : ''
+  const read = readResults(orgsDir)
+  const dumpError = !dump.ok && !dump.missing ? dump.error : read.ok ? '' : read.error
   const todo = readTodo(orgsDir)
-  const results = parseResults(readTextFile(resolve(orgsDir, RESULTS_FILE)) ?? '')
+  const results = read.ok ? read.results : { results: [], confirmations: [] }
   const removing = readRemoveCopies(orgsDir)
   const here = (org: string) => org === orgId || org === ''
   const items = (todo?.items ?? []).filter((item) => here(item.org))
