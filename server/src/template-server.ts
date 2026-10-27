@@ -26,6 +26,8 @@ import {
   cardUnchanged,
   validateBundle,
   managerLoop,
+  ROUTINE_STARTS,
+  type BotRoutine,
   type FileActivity,
   type GrokSyncState,
   type OrgBundle,
@@ -1126,11 +1128,22 @@ export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPl
       if (!seat || !canRequest(seat)) done.add(item.seat)
     }
   }
-  const next = dropRequests(current.requests, done)
-  if (next.length === current.requests.length) return
-  writeRequests(root, next)
-  const owner = read.ok ? managerSeat(read.bundle.seats) : undefined
+  const kept = dropRequests(current.requests, done)
+  if (kept.length === current.requests.length) return
   const at = new Date().toISOString()
+  // CreateAgent cannot add skills or routines: a created bot that came with them is asked for them as an update.
+  const followUps: GrokRequest[] = creates.filter((item) => found.has(item.seat) && (item.skills?.length || item.routines?.length)).map((item) => ({
+    seat: item.seat,
+    name: item.name,
+    seatFile: item.seatFile,
+    prompt: '',
+    kind: 'update',
+    ...(item.skills?.length ? { skills: item.skills } : {}),
+    ...(item.routines?.length ? { routines: item.routines } : {}),
+    requestedAt: at,
+  }))
+  writeRequests(root, [...kept, ...followUps])
+  const owner = read.ok ? managerSeat(read.bundle.seats) : undefined
   for (const item of creates) {
     if (!found.has(item.seat)) continue
     const title = (read.ok ? read.bundle.seats.find((entry) => entry.slug === item.seat)?.title : '') || item.name
@@ -1621,6 +1634,60 @@ function reserveSeatSlug(root: string, base: string, taken: Set<string>): string
     return slug
   }
   return null
+}
+
+/** The routine a process asks its first-step bot for: a schedule, or an event Grok Bot can start a routine on. Else none. */
+function processRoutine(process: ProcessFile): BotRoutine | null {
+  const description = process.trigger.description.trim()
+  if (process.trigger.type === 'schedule' && process.trigger.schedule.trim()) {
+    return { name: process.name, schedule: process.trigger.schedule.trim(), trigger: 'schedule', ...(description ? { description } : {}), enabled: true }
+  }
+  const source = process.trigger.source
+  if (process.trigger.type === 'event' && source && (ROUTINE_STARTS as readonly string[]).includes(source)) {
+    return { name: process.name, schedule: '', trigger: source as BotRoutine['trigger'], ...(description ? { event: description } : {}), enabled: true }
+  }
+  return null
+}
+
+/** Whether a saved process changed what its routine should be. */
+function routineChanged(before: ProcessFile, after: ProcessFile): boolean {
+  const key = (process: ProcessFile) => JSON.stringify([process.name, process.trigger.type, process.trigger.schedule, process.trigger.source, process.trigger.description, process.steps[0]?.seat ?? ''])
+  return key(before) !== key(after)
+}
+
+/**
+ * A new or changed process asks the bot on its first step for that routine, on the bot's one waiting update, as the
+ * Connector used to do on its own. A routine named again replaces the older one: the newest request wins.
+ */
+export function requestProcessRoutine(root: string, orgId: string, process: ProcessFile): boolean {
+  const first = process.steps[0]?.seat
+  const routine = processRoutine(process)
+  if (!first || !routine) return false
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return false
+  const seat = read.bundle.seats.find((item) => item.slug === first)
+  const path = seatFile(root, first)
+  const current = readRequests(root)
+  if (!seat || !canUpdate(seat) || !path || current.error) return false
+  if (current.requests.some((item) => item.seat === first && item.kind !== 'update')) return false
+  const same = (name: string) => name.replace(/\s+/g, ' ').trim().toLowerCase() === routine.name.replace(/\s+/g, ' ').trim().toLowerCase()
+  const stamp = new Date().toISOString()
+  const waiting = current.requests.find((item) => item.seat === first && item.kind === 'update')
+  const base: GrokRequest = waiting ?? { seat: first, name: seat.title, seatFile: path, prompt: '', kind: 'update', ...(seat.grokBotUrl?.trim() ? { grokBotUrl: seat.grokBotUrl.trim() } : {}), requestedAt: stamp }
+  writeRequests(root, [...current.requests.filter((item) => item.seat !== first), { ...base, routines: [...(base.routines ?? []).filter((item) => !same(item.name)), routine], requestedAt: stamp }])
+  appendActivity(root, {
+    id: `grok-request-routine-${first}-${stamp}`,
+    orgId,
+    type: 'edit',
+    actorSeatId: managerSeat(read.bundle.seats)?.slug || 'you',
+    actorType: 'human',
+    timestamp: stamp,
+    summary: `Asked ${seat.title} for the routine ${process.name}`,
+    subjectSeatId: first,
+    grok: 'out',
+    stats: requestStats({ routines: [routine] }).join('|'),
+  })
+  return true
 }
 
 /**
@@ -2315,7 +2382,13 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
       const read = readOrgDir(root, slug)
       if (!read.ok) return send(res, 422, { errors: read.errors })
-      send(res, 200, importProcessRows(root, parsed.rows, read.bundle.seats.map((seat) => ({ slug: seat.slug, title: seat.title }))))
+      const imported = importProcessRows(root, parsed.rows, read.bundle.seats.map((seat) => ({ slug: seat.slug, title: seat.title })))
+      const saved = readProcessDir(root).processes
+      for (const item of imported.imported) {
+        const process = saved.find((entry) => entry.slug === item.slug)
+        if (process) requestProcessRoutine(root, slug, process)
+      }
+      send(res, 200, imported)
       return
     }
     const processMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/processes\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(url.pathname)
@@ -2333,8 +2406,12 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const body = await readBody(req)
       if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
       const draft = JSON.parse(body) as ProcessFile
-      const written = writeProcessFile(root, { ...draft, slug: processSlug }, draft.slug && draft.slug !== processSlug ? draft.slug : '')
+      const previousSlug = draft.slug && draft.slug !== processSlug ? draft.slug : ''
+      const previous = readProcessDir(root).processes.find((entry) => entry.slug === (previousSlug || processSlug))
+      const written = writeProcessFile(root, { ...draft, slug: processSlug }, previousSlug)
       if (!written.ok) return send(res, 422, { errors: written.errors })
+      const saved = readProcessDir(root).processes.find((entry) => entry.slug === processSlug)
+      if (saved && (!previous || routineChanged(previous, saved))) requestProcessRoutine(root, slug, saved)
       send(res, 200, written)
       return
     }
