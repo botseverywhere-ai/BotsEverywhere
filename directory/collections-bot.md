@@ -3,7 +3,7 @@ name: Payment Reminder Bot
 slug: collections-bot
 category: Finance
 summary: Drafts a payment reminder for invoices the ledger already marks overdue.
-addToGrokBotUrl: https://x.ai/bot/NF4qkBUzYarUDzHCHzgCQ
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: Weekdays 09:00

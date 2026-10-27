@@ -3,7 +3,7 @@ name: Inbox Bot
 slug: inbox-bot
 category: Executive/Admin
 summary: Sorts messages into reply, decide, or FYI, and drafts a reply only where the thread already has the answer.
-addToGrokBotUrl: https://x.ai/bot/ZL8ptFUtOeRHVd3EXdNBP
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: Hourly

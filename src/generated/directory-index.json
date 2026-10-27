@@ -229,7 +229,7 @@
     "category": "Executive/Admin",
     "summary": "Prepares a daily brief of decisions waiting on the principal, and leaves everything else as FYI.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/y8nNE3shBrsRsPC84HEya"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "decision-bot",
@@ -245,7 +245,7 @@
     "category": "Executive/Admin",
     "summary": "Sorts messages into reply, decide, or FYI, and drafts a reply only where the thread already has the answer.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/ZL8ptFUtOeRHVd3EXdNBP"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "meeting-prep-bot",
@@ -277,7 +277,7 @@
     "category": "Finance",
     "summary": "Categorizes receipts against the team's categories and flags the ones missing a required field.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/KmHQj6zuZ6lhHMvFrEHdE"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "budget-bot",
@@ -317,7 +317,7 @@
     "category": "Finance",
     "summary": "Drafts a payment reminder for invoices the ledger already marks overdue.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/NF4qkBUzYarUDzHCHzgCQ"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "subscription-bot",
@@ -373,7 +373,7 @@
     "category": "HR",
     "summary": "Builds a first-week checklist for a new hire from the role and the tasks the team already uses.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/xUs-Agw8UFYUkVWB0IZIT"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "policy-bot",
@@ -661,7 +661,7 @@
     "category": "Ops",
     "summary": "Classifies a new request against the service list and names the owner that list already gives.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/vo0M33aqIR7cjE6BPujOA"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "schedule-bot",
@@ -901,7 +901,7 @@
     "category": "Sales",
     "summary": "Checks each new lead against the ideal-customer points the team already wrote, without contacting anyone.",
     "core": true,
-    "addToGrokBotUrl": "https://x.ai/bot/54Kkr4q9qwZmmy9-XdbZV"
+    "addToGrokBotUrl": null
   },
   {
     "slug": "stale-deal-bot",

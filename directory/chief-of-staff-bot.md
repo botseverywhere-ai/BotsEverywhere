@@ -4,7 +4,7 @@ slug: chief-of-staff-bot
 category: Executive/Admin
 summary: Prepares a daily brief of decisions waiting on the principal, and leaves everything else as FYI.
 featured: true
-addToGrokBotUrl: https://x.ai/bot/y8nNE3shBrsRsPC84HEya
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: Weekdays 08:00

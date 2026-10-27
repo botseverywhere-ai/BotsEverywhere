@@ -3,7 +3,7 @@ name: Bookkeeping Bot
 slug: expense-bot
 category: Finance
 summary: Categorizes receipts against the team's categories and flags the ones missing a required field.
-addToGrokBotUrl: https://x.ai/bot/KmHQj6zuZ6lhHMvFrEHdE
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: Receipt added

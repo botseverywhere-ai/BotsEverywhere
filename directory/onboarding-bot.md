@@ -3,7 +3,7 @@ name: Onboarding Bot
 slug: onboarding-bot
 category: HR
 summary: Builds a first-week checklist for a new hire from the role and the tasks the team already uses.
-addToGrokBotUrl: https://x.ai/bot/xUs-Agw8UFYUkVWB0IZIT
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: When a start date is set

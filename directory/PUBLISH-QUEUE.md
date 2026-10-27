@@ -11,6 +11,9 @@ Bots whose `addToGrokBotUrl` is still null. Featured bots are first. Remove a ro
 - `role-card-bot` — Role Card Bot
 - `meetup-bot` — Meetup Bot
 - `backup-plan-bot` — Backup Plan Bot
+- `chief-of-staff-bot` — Chief of Staff Bot
+- `request-bot` — Request Bot
+- `sales-follow-up-bot` — Sales Follow-up Bot
 
 ## Team management
 
@@ -39,6 +42,8 @@ Bots whose `addToGrokBotUrl` is still null. Featured bots are first. Remove a ro
 - `month-end-bot` — Month-end Bot
 - `expense-review-bot` — Expense Review Bot
 - `subscription-bot` — Subscription Bot
+- `collections-bot` — Payment Reminder Bot
+- `expense-bot` — Bookkeeping Bot
 
 ## HR
 
@@ -49,6 +54,7 @@ Bots whose `addToGrokBotUrl` is still null. Featured bots are first. Remove a ro
 - `offboarding-bot` — Offboarding Bot
 - `policy-bot` — Policy Bot
 - `time-off-bot` — Time-off Bot
+- `onboarding-bot` — Onboarding Bot
 
 ## Ops
 
@@ -135,6 +141,7 @@ Bots whose `addToGrokBotUrl` is still null. Featured bots are first. Remove a ro
 - `meeting-prep-bot` — Meeting Prep Bot
 - `scheduling-bot` — Scheduling Bot
 - `weekly-review-bot` — Weekly Review Bot
+- `inbox-bot` — Inbox Bot
 
 ## Product
 

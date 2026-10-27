@@ -4,7 +4,7 @@ slug: sales-follow-up-bot
 category: Sales
 summary: Checks each new lead against the ideal-customer points the team already wrote, without contacting anyone.
 featured: true
-addToGrokBotUrl: https://x.ai/bot/54Kkr4q9qwZmmy9-XdbZV
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: New lead

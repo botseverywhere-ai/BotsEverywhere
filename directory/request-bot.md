@@ -4,7 +4,7 @@ slug: request-bot
 category: Ops
 summary: Classifies a new request against the service list and names the owner that list already gives.
 featured: true
-addToGrokBotUrl: https://x.ai/bot/vo0M33aqIR7cjE6BPujOA
+addToGrokBotUrl: null
 core: true
 group: Everyday
 trigger: New request

@@ -116,15 +116,8 @@ describe('bot directory', () => {
     const linked = bots.filter((bot) => bot.addToGrokBotUrl !== null)
     assert.deepEqual(
       linked.map((bot) => [bot.slug, bot.addToGrokBotUrl]),
-      [
-        ['chief-of-staff-bot', 'https://x.ai/bot/y8nNE3shBrsRsPC84HEya'],
-        ['collections-bot', 'https://x.ai/bot/NF4qkBUzYarUDzHCHzgCQ'],
-        ['expense-bot', 'https://x.ai/bot/KmHQj6zuZ6lhHMvFrEHdE'],
-        ['inbox-bot', 'https://x.ai/bot/ZL8ptFUtOeRHVd3EXdNBP'],
-        ['onboarding-bot', 'https://x.ai/bot/xUs-Agw8UFYUkVWB0IZIT'],
-        ['request-bot', 'https://x.ai/bot/vo0M33aqIR7cjE6BPujOA'],
-        ['sales-follow-up-bot', 'https://x.ai/bot/54Kkr4q9qwZmmy9-XdbZV'],
-      ],
+      [],
+      'no directory bot has an Add to Grok Bot link until new bots are published',
     )
   })
 
