@@ -1,6 +1,6 @@
 # BotsEverywhere
 
-BotsEverywhere is an open source team management tool for bots.
+BotsEverywhere is an open source team management tool for bots and humans.
 
 Organizations copy it to map their team of people and bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
 
