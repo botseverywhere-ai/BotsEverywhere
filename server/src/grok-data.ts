@@ -120,6 +120,15 @@ export function seatForBot(bot: Pick<GrokDataBot, 'id' | 'name' | 'grokBotUrl'>,
     ?? seats.find((seat) => seat.kind !== 'human' && (norm(seat.title) === norm(bot.name) || norm(`${seat.title} · ${orgName}`) === norm(bot.name)))
 }
 
+/** The bot a seat is: by the id in its link first, else by its title or "Title · Organization name". */
+export function botForSeat(seat: SeatDocument, data: GrokData, orgName: string): GrokDataBot | undefined {
+  const link = seat.grokBotUrl?.trim() ?? ''
+  const id = link ? linkId(link) : ''
+  const linked = link ? data.bots.find((bot) => (id && bot.id === id) || bot.grokBotUrl === link) : undefined
+  if (linked || seat.kind === 'human') return linked
+  return data.bots.find((bot) => norm(bot.name) === norm(seat.title) || norm(bot.name) === norm(`${seat.title} · ${orgName}`))
+}
+
 /** Bots that belong to one organization: a seat there, or a create request from there (`created`, by name). */
 export function orgBots(data: GrokData, bundle: OrgBundle, orgName: string, created: string[]): GrokDataBot[] {
   const asked = new Set(created.map(norm))
