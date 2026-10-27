@@ -79,7 +79,7 @@ export function LinkCompany({
           <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
             <BotsFileImport slug={slug} mode="grok" onImported={onImported} />
           </Panel>
-          <Panel id="import-from-template" option={2} title="Import from a template .json (build an organization from an interview with an LLM)" open={open === 'template'} onPick={(event) => pick('template', event)}>
+          <Panel id="import-from-template" option={2} title="Import from a template .json" badge="build an organization from an interview with an LLM" open={open === 'template'} onPick={(event) => pick('template', event)}>
             <BotsFileImport slug={slug} mode="template" onImported={onImported} />
           </Panel>
           <Panel id="add-manually" option={3} title="Add your organization manually" open={open === 'manual'} onPick={(event) => pick('manual', event)}>
@@ -90,7 +90,7 @@ export function LinkCompany({
               <Button variant="secondary" type="button" onClick={onCompanyFields}>Organization fields</Button>
             </div>
           </Panel>
-          <Panel id="import-existing-org" option={4} title="Import an existing organization .json (describe your organization to an LLM)" open={open === 'existing'} onPick={(event) => pick('existing', event)}>
+          <Panel id="import-existing-org" option={4} title="Import an existing organization .json" badge="describe your organization to an LLM" open={open === 'existing'} onPick={(event) => pick('existing', event)}>
             <OrgFileImport slug={slug} seats={seats} onImported={onImported} />
           </Panel>
         </>
@@ -103,6 +103,7 @@ function Panel({
   id,
   option,
   title,
+  badge,
   open,
   onPick,
   children,
@@ -110,6 +111,8 @@ function Panel({
   id: string
   option: number
   title: string
+  /** How this way in works, shown as a badge after the title. */
+  badge?: string
   open: boolean
   onPick: (event: MouseEvent<HTMLElement>) => void
   children: ReactNode
@@ -117,7 +120,7 @@ function Panel({
   return (
     <details className="link-panel" id={id} open={open}>
       <summary onClick={onPick}>
-        <span><span className="link-panel-option">Option {option}</span>{title}</span>
+        <span><span className="link-panel-option">Option {option}</span>{title}{badge ? <span className="dir-pill link-panel-badge">{badge}</span> : null}</span>
         <span className="grok-chevron" aria-hidden="true" />
       </summary>
       <div className="link-panel-body">{children}</div>

@@ -35,10 +35,10 @@ test('Company Overview previews the bots file and confirms before writing', () =
   assert.match(docsPage, /GROK_BOTS_PROMPT/)
   assert.match(link, /How to link your organization to BotsEverywhere/)
   assert.match(link, /Import from your Grok Bot/)
-  assert.match(link, /Import from a template \.json \(build an organization from an interview with an LLM\)/)
+  assert.match(link, /title="Import from a template \.json" badge="build an organization from an interview with an LLM"/)
   assert.match(link, /Add your organization manually/)
   assert.match(link, /option=\{1\} title="Import from your Grok Bot"/, 'each way in is numbered before its title')
-  assert.match(link, /option=\{2\} title="Import from a template \.json \(build an organization from an interview with an LLM\)"/)
+  assert.match(link, /option=\{2\} title="Import from a template \.json"/)
   assert.match(link, /option=\{3\} title="Add your organization manually"/)
   assert.match(link, /<span className="link-panel-option">Option \{option\}<\/span>\{title\}/)
   assert.match(link, /current === id \? null : id/)
@@ -707,4 +707,25 @@ test('a list item with a semicolon stays one line; a single string is still spli
   if (!parsed.ok) return
   assert.deepEqual(parsed.rows[0]!.owns, ['Crear una línea base en la primera ejecución; en ejecuciones posteriores identificar anuncios nuevos.'])
   assert.deepEqual(parsed.rows[0]!.may, ['Read the inbox', 'flag a mismatch'])
+})
+
+test('Step 2 shows the LLM ways in as a badge after the title, not in parentheses', async () => {
+  // tsx compiles JSX in src/ with the classic runtime here (the root tsconfig sets no jsx), so React must be a global.
+  const React = await import('react')
+  Object.assign(globalThis, { React })
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { LinkCompany } = await import('../../src/components/LinkCompany.tsx')
+  const html = renderToStaticMarkup(React.createElement(LinkCompany, {
+    slug: 'org-test',
+    seats: [],
+    onImported: async () => undefined,
+    onAddSeat: () => undefined,
+    onAddExisting: () => undefined,
+    onCompanyFields: () => undefined,
+  }))
+  const summary = (id: string) => new RegExp(String.raw`<details[^>]*id="${id}"[^>]*><summary>([\s\S]*?)</summary>`).exec(html)?.[1] ?? ''
+  assert.match(summary('import-from-template'), /Option 2<\/span>Import from a template \.json<span class="dir-pill link-panel-badge">build an organization from an interview with an LLM<\/span>/)
+  assert.match(summary('import-existing-org'), /Option 4<\/span>Import an existing organization \.json<span class="dir-pill link-panel-badge">describe your organization to an LLM<\/span>/)
+  for (const id of ['import-from-template', 'import-existing-org']) assert.doesNotMatch(summary(id), /[()]/, `${id} has no parentheses`)
+  for (const id of ['import-from-grok', 'add-manually']) assert.doesNotMatch(summary(id), /link-panel-badge/, `${id} has no empty badge`)
 })

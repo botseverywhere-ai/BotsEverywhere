@@ -219,7 +219,7 @@ test('the organization file template carries the whole prompt and imports clean'
 
 test('Option 4 sits on Connect bots with the prompt, a template download, and an import that posts to the writer', () => {
   const link = readFileSync(fileURLToPath(new URL('../../src/components/LinkCompany.tsx', import.meta.url)), 'utf8')
-  assert.match(link, /option=\{4\} title="Import an existing organization \.json \(describe your organization to an LLM\)"/)
+  assert.match(link, /option=\{4\} title="Import an existing organization \.json" badge="describe your organization to an LLM"/)
   assert.match(link, /<OrgFileImport /)
   const panel = readFileSync(fileURLToPath(new URL('../../src/components/OrgFileImport.tsx', import.meta.url)), 'utf8')
   assert.match(panel, /prompt=\{ORG_FILE_PROMPT\}/)
