@@ -200,6 +200,44 @@ export function snapshotFromData(data: GrokData, bundle: OrgBundle, orgName: str
   }
 }
 
+/** A bot row in the bots-file format, which snapshots and the unassigned list are read back with. */
+export function botJson(row: BotsFileRow): Record<string, unknown> {
+  return {
+    name: row.name,
+    ...(row.grokBotUrl ? { grokBotUrl: row.grokBotUrl } : {}),
+    reportsTo: row.reportsTo,
+    owns: row.owns,
+    may: row.may,
+    needsApproval: row.needsApproval,
+    doneWhen: row.doneWhen.join(' '),
+    ...(row.createdAt ? { createdAt: row.createdAt } : {}),
+    ...(row.lastActive ? { lastActive: row.lastActive } : {}),
+    ...(row.runs30d !== undefined ? { runs30d: row.runs30d } : {}),
+    ...(row.tasksDone30d !== undefined ? { tasksDone30d: row.tasksDone30d } : {}),
+    routines: row.routines,
+    skills: row.skills,
+    apps: row.apps,
+    ...(row.publicUrl ? { publicUrl: row.publicUrl } : {}),
+    ...(row.botStatus ? { status: row.botStatus } : {}),
+  }
+}
+
+/** The snapshot file the app writes from the dump, in the format `parseSnapshot` reads. */
+export function snapshotJson(snapshot: Snapshot): string {
+  return `${JSON.stringify({
+    syncedAt: snapshot.syncedAt,
+    bots: snapshot.bots.map(botJson),
+    processes: snapshot.processes.map((process) => ({
+      name: process.name,
+      trigger: { type: process.trigger.type, schedule: process.trigger.schedule, ...(process.trigger.source ? { source: process.trigger.source } : {}), description: process.trigger.description },
+      steps: process.steps,
+      doneWhen: process.doneWhen,
+      ...(process.next ? { next: process.next } : {}),
+    })),
+    ...(snapshot.updated?.length ? { updated: snapshot.updated } : {}),
+  }, null, 2)}\n`
+}
+
 /** Bots in no organization of this copy. */
 export function unassignedFromData(data: GrokData, orgs: { bundle: OrgBundle; orgName: string; created: string[] }[]): BotsFileRow[] {
   const placed = new Set(orgs.flatMap((org) => orgBots(data, org.bundle, org.orgName, org.created).map((bot) => bot.id)))

@@ -97,7 +97,7 @@ export function orgChange(orgsDir: string, filename: string): { slug: string; ki
   const base = orgsDir.replace(/\\/g, '/').replace(/\/$/, '')
   const cut = rel.startsWith(`${base}/`) ? rel.slice(base.length + 1) : rel.replace(/^\//, '')
   // The project Connector's files sit beside the org folders and concern every org.
-  if (cut === 'connector.json' || cut === 'project.json') return { slug: '*', kind: 'grok' }
+  if (cut === 'connector.json' || cut === 'project.json' || cut === 'grok-data.json' || cut === 'connector-results.json') return { slug: '*', kind: 'grok' }
   const match = /^([^/]+)\/(log|processes|grok)\//.exec(cut)
   if (match?.[1] && match[2]) return { slug: match[1], kind: match[2] === 'processes' ? 'processes' : match[2] === 'grok' ? 'grok' : 'log' }
   const seat = /^([^/]+)\/seats\/[^/]+\.md$/.exec(cut)

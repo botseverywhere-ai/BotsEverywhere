@@ -8,6 +8,8 @@ export const TODO_FILE = 'connector-todo.json'
 export const RESULTS_FILE = 'connector-results.json'
 export const GUIDE_FILE = 'CONNECTOR.md'
 export const BACKUPS_DIR = 'connector-backups'
+/** Bots in no organization, worked out by the app from the dump. Replaces the list an older Connector wrote in connector.json. */
+export const UNASSIGNED_FILE = 'grok-unassigned.json'
 
 /** Writes the whole file at once: a temporary file beside it, then a rename, so a reader never sees half of it. */
 export function writeFileAtomic(path: string, text: string): void {

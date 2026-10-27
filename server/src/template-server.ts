@@ -49,6 +49,7 @@ import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-pr
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
+import { runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
 import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
@@ -2041,16 +2042,41 @@ export function startTemplateServer(options?: { port?: number; orgsDir?: string;
       console.error(`Could not clear the updates Grok Bot finished in ${slug}: ${error instanceof Error ? error.message : 'unknown error'}`)
     }
   }
+  // Connector v2: snapshots, the unassigned list, backups, and the to-do list from the latest dump and the org files.
+  let cycleTimer: ReturnType<typeof setTimeout> | undefined
+  const cycle = () => {
+    try {
+      runConnectorCycle(orgsDir, projectId)
+    } catch (error) {
+      console.error(`Could not work out the Connector's to-do list: ${error instanceof Error ? error.message : 'unknown error'}`)
+    }
+  }
+  const scheduleCycle = () => {
+    if (cycleTimer) clearTimeout(cycleTimer)
+    cycleTimer = setTimeout(cycle, 2000)
+  }
   const hub = createLiveHub(orgsDir, (change) => {
     if (change.slug !== '*') {
+      // Seats, org.md, processes, and requests change what Grok Bot should get; run log lines do not.
+      if (change.kind !== 'log') scheduleCycle()
       if (change.kind !== 'grok') return
       clearTimeout(updateTimers.get(change.slug))
       updateTimers.set(change.slug, setTimeout(() => clearUpdates(change.slug), 2000))
       return
     }
     if (runTimer) clearTimeout(runTimer)
-    runTimer = setTimeout(logRun, 2000)
+    runTimer = setTimeout(() => {
+      cycle()
+      logRun()
+    }, 2000)
   })
+  try {
+    writeConnectorGuide(orgsDir, projectId)
+  } catch (error) {
+    console.error(`Could not write CONNECTOR.md: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
+  // A dump that arrived while the writer was off.
+  cycle()
   // A run that happened while the writer was off, then a check every minute for a Connector that stopped.
   logRun()
   // A snapshot that changed while the writer was off.
@@ -2094,6 +2120,7 @@ export function startTemplateServer(options?: { port?: number; orgsDir?: string;
             clearInterval(stopCheck)
             if (runTimer) clearTimeout(runTimer)
             for (const timer of updateTimers.values()) clearTimeout(timer)
+            if (cycleTimer) clearTimeout(cycleTimer)
             hub.close()
             server.close(() => done())
           }),
@@ -2153,6 +2180,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       }
       const saved = writeSyncMinutes(orgsDir, typeof minutes === 'number' ? minutes : NaN)
       if (!saved.ok) return send(res, 422, { error: saved.error })
+      // The Connector reads its schedule from CONNECTOR.md, so a new interval needs no paste.
+      writeConnectorGuide(orgsDir, ensureProjectId(orgsDir))
       send(res, 200, { minutes: saved.minutes, processes: syncConnectorProcesses(orgsDir, saved.minutes) })
       return
     }

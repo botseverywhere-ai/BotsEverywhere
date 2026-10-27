@@ -116,6 +116,16 @@ export function updatedFor(orgId: string, requests: GrokRequest[], data: GrokDat
   }).map((request) => ({ seat: request.seat, requestedAt: request.requestedAt }))
 }
 
+/** One organization's blocks by seat, naming each seat's bot as the dump shows it. */
+export function orgBlocksFromData(args: { copyId: string; orgsFolder: string; timeZone: string; org: { id: string; bundle: OrgBundle }; data: GrokData }): Map<string, string> {
+  const orgName = args.org.bundle.org.company.name
+  const found = new Map(args.org.bundle.seats.map((seat) => [seat.slug, botForSeat(seat, args.data, orgName)]))
+  return orgBlocks({ copyId: args.copyId, orgsFolder: args.orgsFolder, timeZone: args.timeZone, orgId: args.org.id, bundle: args.org.bundle, botFor: (slug) => {
+    const bot = found.get(slug)
+    return bot ? { name: bot.name, id: bot.id } : null
+  } })
+}
+
 function cardPrompt(seat: { title: string; owns: string[]; may: string[]; mustAskBefore: string[]; doneWhen: string[] }): string {
   const list = (items: string[]) => (items.length ? items.join('; ') : 'not set')
   return [`You are ${seat.title}.`, `Owns: ${list(seat.owns)}`, `May: ${list(seat.may)}`, `Needs approval: ${list(seat.mustAskBefore)}`, `Done when: ${list(seat.doneWhen)}`].join('\n')
@@ -160,15 +170,11 @@ export function computeTodo(input: {
   const wanted = new Map<string, { org: string; text: string }[]>()
   const blocksByOrg = new Map<string, Map<string, string>>()
   for (const org of input.orgs) {
-    const orgName = org.bundle.org.company.name
-    const found = new Map(org.bundle.seats.map((seat) => [seat.slug, botForSeat(seat, data, orgName)]))
-    const blocks = orgBlocks({ copyId, orgsFolder: input.orgsFolder, timeZone: input.timeZone, orgId: org.id, bundle: org.bundle, botFor: (slug) => {
-      const bot = found.get(slug)
-      return bot ? { name: bot.name, id: bot.id } : null
-    } })
+    const blocks = orgBlocksFromData({ copyId, orgsFolder: input.orgsFolder, timeZone: input.timeZone, org, data })
     blocksByOrg.set(org.id, blocks)
+    const orgName = org.bundle.org.company.name
     for (const [slug, text] of blocks) {
-      const bot = found.get(slug)
+      const bot = botForSeat(org.bundle.seats.find((seat) => seat.slug === slug)!, data, orgName)
       if (!bot || isConnector(bot.name)) continue
       wanted.set(bot.id, [...(wanted.get(bot.id) ?? []), { org: org.id, text }])
     }

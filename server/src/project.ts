@@ -4,6 +4,7 @@ import type { BotsFileRow } from './bots-file.ts'
 import { parseSnapshot, type AccountApp } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import { DEFAULT_SYNC_MINUTES, validSyncMinutes } from './connector-timing.ts'
+import { UNASSIGNED_FILE } from './connector-files.ts'
 
 /** The app writes this once per copy of BotsEverywhere. The Connector only reads it. */
 export const PROJECT_FILE = 'project.json'
@@ -94,6 +95,28 @@ export interface ConnectorFile {
   apps?: AccountApp[]
 }
 
+/** The unassigned list the app wrote from the dump, as bot rows, or null when there is none. */
+function readAppUnassigned(orgsDir: string): unknown[] | null {
+  try {
+    const path = resolve(orgsDir, UNASSIGNED_FILE)
+    if (!existsSync(path)) return null
+    const data = JSON.parse(normalizeText(readFileSync(path, 'utf8'))) as { unassigned?: unknown }
+    return Array.isArray(data?.unassigned) ? data.unassigned : null
+  } catch {
+    return null
+  }
+}
+
+/** Copies whose blocks the owner asked to remove from every bot, from project.json. */
+export function readRemoveCopies(orgsDir: string): string[] {
+  try {
+    const data = JSON.parse(readProjectText(orgsDir) || '{}') as { removeCopies?: unknown }
+    return Array.isArray(data?.removeCopies) ? data.removeCopies.filter((id): id is string => typeof id === 'string' && ID.test(id)) : []
+  } catch {
+    return []
+  }
+}
+
 /** Reads orgs/connector.json. Null when the project Connector never wrote it. Never throws. */
 export function readConnector(orgsDir: string): ConnectorFile | null {
   const path = resolve(orgsDir, CONNECTOR_FILE)
@@ -113,7 +136,9 @@ export function readConnector(orgsDir: string): ConnectorFile | null {
   } catch {
     return { stamp, syncedAt: '', unassigned: [], error: 'connector.json is not JSON.' }
   }
-  const bots = Array.isArray(data?.unassigned) ? data.unassigned : []
+  // Once the app works the list out from the Connector's dump, that list wins over the one an older Connector wrote.
+  const fromApp = readAppUnassigned(orgsDir)
+  const bots = fromApp ?? (Array.isArray(data?.unassigned) ? data.unassigned : [])
   // Same bot rules as a snapshot, so a bad row is skipped the same way.
   const parsed = parseSnapshot(JSON.stringify({ syncedAt: data?.syncedAt, bots }), fallback)
   if (!parsed.ok) return { stamp, syncedAt: '', unassigned: [], error: parsed.error }
