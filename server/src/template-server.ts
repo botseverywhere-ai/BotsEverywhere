@@ -25,6 +25,7 @@ import {
   activeBotCardErrors,
   cardUnchanged,
   validateBundle,
+  managerLoop,
   type FileActivity,
   type GrokSyncState,
   type OrgBundle,
@@ -48,7 +49,7 @@ import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-pr
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
-import { REQUESTS_PATH, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
+import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
 export const DEFAULT_ORG_SLUG = 'your-company'
@@ -1621,6 +1622,67 @@ function reserveSeatSlug(root: string, base: string, taken: Set<string>): string
   return null
 }
 
+/**
+ * The main manager and the extra managers of one seat. Without `alsoReportsTo` it is `setSeatManager`. Extra managers
+ * must be other seats here, never the seat or its main manager, and no line may loop back. A bot in Grok Bot gets them
+ * on its one waiting update.
+ */
+export function setSeatManagers(root: string, orgId: string, slug: string, reportsTo: string, alsoReportsTo?: string[]): { ok: true; file: string; sent: boolean } | { ok: false; errors: string[] } {
+  if (alsoReportsTo === undefined) return setSeatManager(root, orgId, slug, reportsTo)
+  if (unsafePath(slug) || !SEAT_SLUG.test(slug)) return { ok: false, errors: ['Seat slug must be a lowercase slug.'] }
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  const seat = read.bundle.seats.find((item) => item.slug === slug)
+  if (!seat) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
+  const main = reportsTo.trim() || seat.reportsTo
+  const also = [...new Set(alsoReportsTo.map((item) => item.trim()).filter(Boolean))]
+  const title = (target: string) => read.bundle.seats.find((item) => item.slug === target)?.title ?? target
+  for (const target of also) {
+    if (unsafePath(target) || !SEAT_SLUG.test(target) || !read.bundle.seats.some((item) => item.slug === target)) return { ok: false, errors: [`${target} is not a seat in this org.`] }
+    if (target === slug) return { ok: false, errors: [`${seat.title} cannot report to itself.`] }
+    if (target === main) return { ok: false, errors: [`${title(target)} is already the main manager.`] }
+  }
+  const loop = managerLoop(read.bundle.seats.map((item) => (item.slug === slug ? { slug, reportsTo: main, alsoReportsTo: also } : item)))
+  if (loop) return { ok: false, errors: [`That makes a loop: ${title(loop)} would end up reporting to itself. Pick another manager.`] }
+  const file = `orgs/${orgId}/seats/${slug}.md`
+  let sent = false
+  if (main !== seat.reportsTo) {
+    const moved = setSeatManager(root, orgId, slug, main)
+    if (!moved.ok) return moved
+    sent = moved.sent
+  }
+  if (also.join('\n') === (seat.alsoReportsTo ?? []).join('\n')) return { ok: true, file, sent }
+  const path = seatFile(root, slug)
+  if (!path || !existsSync(path)) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
+  const source = readText(path)
+  const without = source.replace(/^alsoReportsTo:.*\n?/m, '')
+  const nextSource = also.length ? without.replace(/^(reportsTo:.*)$/m, `$1\nalsoReportsTo: ${quote(JSON.stringify(also))}`) : without
+  const checked = parseSeatMarkdown(slug, nextSource)
+  if (!checked.ok) return checked
+  writeFileSync(path, nextSource.endsWith('\n') ? nextSource : `${nextSource}\n`)
+  const names = also.map(title)
+  const stamp = new Date().toISOString()
+  const current = readRequests(root)
+  if (canUpdate(seat) && !current.error) {
+    const next = addAlsoChange(current.requests, { seat: slug, name: seat.title, seatFile: path, prompt: '', kind: 'update', ...(seat.grokBotUrl?.trim() ? { grokBotUrl: seat.grokBotUrl.trim() } : {}), alsoReportsTo: names, requestedAt: stamp })
+    if (next !== current.requests) writeRequests(root, next)
+    sent = sent || next.some((item) => item.seat === slug && item.kind === 'update' && Boolean(item.alsoReportsTo))
+  }
+  appendActivity(root, {
+    id: `also-${slug}-${stamp}`,
+    orgId,
+    type: 'edit',
+    actorSeatId: managerSeat(read.bundle.seats)?.slug || 'you',
+    actorType: 'human',
+    timestamp: stamp,
+    summary: names.length ? `${seat.title} also reports to ${andList(names)}` : `${seat.title} reports only to ${title(main)}`,
+    subjectSeatId: slug,
+    ...(sent ? { grok: 'out' as const } : {}),
+    stats: requestStats({ alsoReportsTo: names }).join('|'),
+  })
+  return { ok: true, file, sent }
+}
+
 function retargetSeat(root: string, slug: string, reportsTo: string): { ok: true } | { ok: false; errors: string[] } {
   const path = seatFile(root, slug)
   if (!path || !existsSync(path)) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
@@ -2412,8 +2474,9 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
       const body = await readBody(req)
       if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
-      const parsed = JSON.parse(body) as { reportsTo?: string }
-      const moved = setSeatManager(root, slug, seatSlug, parsed.reportsTo || '')
+      const parsed = JSON.parse(body) as { reportsTo?: string; alsoReportsTo?: unknown }
+      const also = Array.isArray(parsed.alsoReportsTo) ? parsed.alsoReportsTo.filter((item): item is string => typeof item === 'string') : undefined
+      const moved = setSeatManagers(root, slug, seatSlug, parsed.reportsTo || '', also)
       if (!moved.ok) return send(res, 422, { errors: moved.errors })
       send(res, 200, { ok: true, file: moved.file, sent: moved.sent })
       return

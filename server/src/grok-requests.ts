@@ -26,6 +26,8 @@ export interface GrokRequest {
   reportsTo?: string
   /** For an update: the manager Grok Bot knew before, so Sync and the logs say what changed. */
   previousReportsTo?: string
+  /** For an update: the names of the bot's extra managers, set in the app. Empty when they were all taken away. */
+  alsoReportsTo?: string[]
   requestedAt: string
 }
 
@@ -50,7 +52,8 @@ export function parseRequests(source: string): { ok: true; requests: GrokRequest
     if (!SEAT_SLUG.test(seat)) return []
     const skills = cleanSkills(row.skills)
     const routines = cleanRoutines(row.routines)
-    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), ...(row.kind === 'update' ? { kind: 'update' as const } : {}), ...(text(row.grokBotUrl) ? { grokBotUrl: text(row.grokBotUrl) } : {}), ...(text(row.reportsTo) ? { reportsTo: text(row.reportsTo) } : {}), ...(text(row.previousReportsTo) ? { previousReportsTo: text(row.previousReportsTo) } : {}), requestedAt: text(row.requestedAt) }]
+    const also = Array.isArray(row.alsoReportsTo) ? row.alsoReportsTo.map(text).filter(Boolean) : null
+    return [{ seat, name: text(row.name) || seat, seatFile: text(row.seatFile), prompt: typeof row.prompt === 'string' ? row.prompt.trim() : '', ...(skills.length ? { skills } : {}), ...(routines.length ? { routines } : {}), ...(row.kind === 'update' ? { kind: 'update' as const } : {}), ...(text(row.grokBotUrl) ? { grokBotUrl: text(row.grokBotUrl) } : {}), ...(text(row.reportsTo) ? { reportsTo: text(row.reportsTo) } : {}), ...(text(row.previousReportsTo) ? { previousReportsTo: text(row.previousReportsTo) } : {}), ...(also ? { alsoReportsTo: also } : {}), requestedAt: text(row.requestedAt) }]
   })
   return { ok: true, requests }
 }
@@ -75,20 +78,29 @@ export function addManagerChange(requests: GrokRequest[], change: GrokRequest & 
   const { reportsTo: _sent, previousReportsTo: _known, ...base } = waiting ?? change
   const others = requests.filter((item) => item.seat !== change.seat)
   if (change.reportsTo === known) {
-    // Back to the manager Grok Bot has. Skills or routines still waiting still go.
-    return base.skills?.length || base.routines?.length ? [...others, { ...base, requestedAt: change.requestedAt }] : others
+    // Back to the manager Grok Bot has. Skills, routines, or extra managers still waiting still go.
+    return base.skills?.length || base.routines?.length || base.alsoReportsTo ? [...others, { ...base, requestedAt: change.requestedAt }] : others
   }
   return [...others, { ...base, reportsTo: change.reportsTo, ...(known ? { previousReportsTo: known } : {}), requestedAt: change.requestedAt }]
 }
 
+/** New extra managers for a bot already in Grok Bot, joined to the update waiting for that bot. A bot waiting to be created is left alone. */
+export function addAlsoChange(requests: GrokRequest[], change: GrokRequest & { alsoReportsTo: string[] }): GrokRequest[] {
+  if (requests.some((item) => item.seat === change.seat && item.kind !== 'update')) return requests
+  const waiting = requests.find((item) => item.seat === change.seat && item.kind === 'update')
+  const others = requests.filter((item) => item.seat !== change.seat)
+  return [...others, { ...(waiting ?? change), alsoReportsTo: change.alsoReportsTo, requestedAt: change.requestedAt }]
+}
+
 /** What a request sends, as log figures: its skills and routines by name, and the new manager. */
-export function requestStats(request: Pick<GrokRequest, 'skills' | 'routines' | 'reportsTo' | 'previousReportsTo'>): string[] {
+export function requestStats(request: Pick<GrokRequest, 'skills' | 'routines' | 'reportsTo' | 'previousReportsTo' | 'alsoReportsTo'>): string[] {
   const clean = (value: string) => value.replace(/\|/g, '/')
   const named = (items: { name: string }[] | undefined) => (items?.length ? `${items.length}: ${items.map((item) => clean(item.name)).join(', ')}` : '0')
   const stats: string[] = []
-  if (request.skills?.length || request.routines?.length || !request.reportsTo) stats.push(`Skills=${named(request.skills)}`, `Routines=${named(request.routines)}`)
+  if (request.skills?.length || request.routines?.length || (!request.reportsTo && !request.alsoReportsTo)) stats.push(`Skills=${named(request.skills)}`, `Routines=${named(request.routines)}`)
   if (request.reportsTo) stats.push(`Reports to=${clean(request.reportsTo)}`)
   if (request.reportsTo && request.previousReportsTo) stats.push(`Was=${clean(request.previousReportsTo)}`)
+  if (request.alsoReportsTo) stats.push(`Also reports to=${request.alsoReportsTo.length ? request.alsoReportsTo.map(clean).join(', ') : 'none'}`)
   return stats
 }
 

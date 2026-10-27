@@ -104,3 +104,90 @@ test('managerLoop finds a loop through any mix of main and also lines, and nothi
   assert.ok(['security', 'outer-loop'].includes(managerLoop(looped) ?? ''), 'security → outer-loop (also) → security')
   assert.equal(managerLoop([{ slug: 'a', reportsTo: 'b' }, { slug: 'b', reportsTo: 'a' }]) !== null, true, 'main lines alone still count')
 })
+
+/** You, then Grok Bot, then Inner Loop and Outer Loop under Grok Bot, then Security under Inner Loop. Every bot is in Grok Bot. */
+async function team() {
+  const { mkdirSync, mkdtempSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { createExistingBot, createOrgFiles } = await import('../src/template-server.ts')
+  const dir = mkdtempSync(join(tmpdir(), 'be-also-'))
+  const orgs = join(dir, 'orgs')
+  mkdirSync(orgs)
+  const made = createOrgFiles(orgs, 'Desk', 'You')
+  assert.ok(made.ok)
+  const root = join(orgs, made.slug)
+  const add = (name: string, id: string, reportsTo: string) => {
+    const bot = createExistingBot(root, made.slug, { name, grokBotUrl: `grokbot://app/v1/agent?id=${id}`, reportsTo, allowEmptyCard: true, grokSync: 'synced', grokSyncedAt: '2026-10-27T10:00:00.000Z' })
+    assert.ok(bot.ok, bot.ok ? '' : bot.errors.join(' '))
+    return bot.slug
+  }
+  const grok = add('Grok Bot', 'grok', 'you')
+  const inner = add('Inner Loop', 'inner', grok)
+  const outer = add('Outer Loop', 'outer', grok)
+  const security = add('Security', 'security', inner)
+  return { orgs, root, org: made.slug, grok, inner, outer, security, done: () => rmSync(dir, { recursive: true, force: true }) }
+}
+
+test('saving extra managers writes them to the seat and puts their names on one update request', async () => {
+  const { readOrgDir, readRequests, setSeatManagers } = await import('../src/template-server.ts')
+  const t = await team()
+  try {
+    const saved = setSeatManagers(t.root, t.org, t.security, t.inner, [t.outer])
+    assert.ok(saved.ok, saved.ok ? '' : saved.errors.join(' '))
+    assert.equal(saved.sent, true)
+    const read = readOrgDir(t.root, t.org)
+    assert.ok(read.ok)
+    const seat = read.bundle.seats.find((item) => item.slug === t.security)
+    assert.equal(seat?.reportsTo, t.inner)
+    assert.deepEqual(seat?.alsoReportsTo, [t.outer])
+    const waiting = readRequests(t.root).requests
+    assert.equal(waiting.length, 1)
+    assert.equal(waiting[0]!.kind, 'update')
+    assert.deepEqual(waiting[0]!.alsoReportsTo, ['Outer Loop'])
+  } finally {
+    t.done()
+  }
+})
+
+test('saving the same managers again changes nothing and asks nothing', async () => {
+  const { readRequests, setSeatManagers } = await import('../src/template-server.ts')
+  const t = await team()
+  try {
+    assert.ok(setSeatManagers(t.root, t.org, t.security, t.inner, [t.outer]).ok)
+    const first = readRequests(t.root).requests[0]!.requestedAt
+    const again = setSeatManagers(t.root, t.org, t.security, t.inner, [t.outer])
+    assert.ok(again.ok)
+    assert.equal(again.sent, false)
+    assert.equal(readRequests(t.root).requests[0]!.requestedAt, first)
+  } finally {
+    t.done()
+  }
+})
+
+test('an extra manager that is not a seat, or that makes a loop, is refused and nothing is written', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { readRequests, seatFile, setSeatManagers, startTemplateServer } = await import('../src/template-server.ts')
+  const t = await team()
+  const started = await startTemplateServer({ port: 0, orgsDir: t.orgs, host: '127.0.0.1' })
+  try {
+    const unknown = setSeatManagers(t.root, t.org, t.security, t.inner, ['nobody'])
+    assert.equal(unknown.ok, false)
+    assert.ok(setSeatManagers(t.root, t.org, t.security, t.inner, [t.outer]).ok)
+    const before = readFileSync(seatFile(t.root, t.outer)!, 'utf8')
+    const requests = readRequests(t.root).requests.length
+    const response = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/seats/${t.outer}/manager`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ reportsTo: t.grok, alsoReportsTo: [t.security] }),
+    })
+    assert.equal(response.status, 422)
+    const body = (await response.json()) as { errors: string[] }
+    assert.match(body.errors.join(' '), /loop/i)
+    assert.equal(readFileSync(seatFile(t.root, t.outer)!, 'utf8'), before)
+    assert.equal(readRequests(t.root).requests.length, requests)
+  } finally {
+    await started.close()
+    t.done()
+  }
+})
