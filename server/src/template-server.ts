@@ -1967,13 +1967,32 @@ export function startTemplateServer(options?: { port?: number; orgsDir?: string;
       console.error(`Could not log the Connector run: ${error instanceof Error ? error.message : 'unknown error'}`)
     }
   }
+  // An update the snapshot reports done clears as soon as the snapshot lands, whichever file the Connector wrote last.
+  const updateTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  const clearUpdates = (slug: string) => {
+    updateTimers.delete(slug)
+    const root = orgRoot(orgsDir, slug)
+    if (!root || !orgExists(root)) return
+    try {
+      clearHandledUpdates(root, slug)
+    } catch (error) {
+      console.error(`Could not clear the updates Grok Bot finished in ${slug}: ${error instanceof Error ? error.message : 'unknown error'}`)
+    }
+  }
   const hub = createLiveHub(orgsDir, (change) => {
-    if (change.slug !== '*') return
+    if (change.slug !== '*') {
+      if (change.kind !== 'grok') return
+      clearTimeout(updateTimers.get(change.slug))
+      updateTimers.set(change.slug, setTimeout(() => clearUpdates(change.slug), 2000))
+      return
+    }
     if (runTimer) clearTimeout(runTimer)
     runTimer = setTimeout(logRun, 2000)
   })
   // A run that happened while the writer was off, then a check every minute for a Connector that stopped.
   logRun()
+  // A snapshot that changed while the writer was off.
+  for (const slug of listOrgSlugs(orgsDir)) clearUpdates(slug)
   const stopCheck = setInterval(() => {
     try {
       checkConnectorStopped(orgsDir)
@@ -2012,6 +2031,7 @@ export function startTemplateServer(options?: { port?: number; orgsDir?: string;
           close: () => new Promise((done) => {
             clearInterval(stopCheck)
             if (runTimer) clearTimeout(runTimer)
+            for (const timer of updateTimers.values()) clearTimeout(timer)
             hub.close()
             server.close(() => done())
           }),

@@ -39,7 +39,7 @@ export const SNAPSHOT_FORMAT = `{
       "next": "name of the routine this hands off to, or leave it out"
     }
   ],
-  "updated": [{ "seat": "the seat of an update request you carried out on this run", "requestedAt": "copied exactly from that request" }]
+  "updated": [{ "seat": "the seat of an update request you have carried out that is still in requests.json", "requestedAt": "copied exactly from that request" }]
 }
 
 The values above show the shape only. Never copy an example value, including the 0s, true, and "active", into a file.
@@ -54,7 +54,7 @@ Rules:
 - apps lists only connected apps the bot's own description or routines name or clearly use, using the names from "apps" in connector.json. Never list every app on every bot; leave the list out when the bot uses none.
 - A routine's description is one line on what it does, never its instructions. enabled is false when the routine is paused. An event rule never holds tokens or private links.
 - Include publicUrl only for a bot that has a public link in Grok Bot, exactly as Grok Bot shows it. Never make one.
-- updated lists each "kind": "update" request you carried out on this run, with its seat and requestedAt copied exactly. Leave it out when you carried out none.
+- updated lists every "kind": "update" request still in the organization's grok/requests.json that you have carried out, on this run or an earlier one, with its seat and requestedAt copied exactly. Keep listing it on every run until it is gone from requests.json: BotsEverywhere takes it out once it reads your report. Leave updated out when there is none.
 - trigger.type is schedule, event, or manual. For event, set source to email, slack, github, webhook, or form.
 - Do not add fields that are not in this object.`
 
@@ -103,7 +103,7 @@ A seat file counts as changed only when its title, reportsTo, or its Owns, May, 
 
 On each run, for every organization:
 1. If <org>/${REQUESTS_FILE} exists, read it. For each entry in "requests" that Grok Bot does not have yet, create that bot in Grok Bot named exactly as "name". Never create a second bot with a name you already run; use the one you have. Never create yourself. When "prompt" is set, use it as the bot's prompt. Otherwise build the prompt from the Owns, May, Needs approval, and Done when sections of the file in "seatFile". When "skills" is set, add each one to the bot as a skill, with its name and description. When "routines" is set, create each one for the bot, with its name, its start (a schedule with its time zone, or an event), its description, and paused when "enabled" is false. That bot belongs to this organization.
-   An entry with "kind": "update" is a bot you already run: find it by "grokBotUrl", or by "name" when there is no link. Never create a second bot for an update. For an update, save each skill in "skills" to the Grok Bot skill library with its name and description, adding it or changing the one with that name, and tell that bot to use those skills. Then message that bot and ask it to create each routine in "routines", or change its routine with that name, with its start (a schedule with its time zone, or an event), its description, and paused when "enabled" is false. Do not wait for a confirmation card. Report each update you carried out in "updated" in the snapshot.
+   An entry with "kind": "update" is a bot you already run: find it by "grokBotUrl", or by "name" when there is no link. Never create a second bot for an update. For an update, save each skill in "skills" to the Grok Bot skill library with its name and description, adding it or changing the one with that name, and tell that bot to use those skills. Then message that bot and ask it to create each routine in "routines", or change its routine with that name, with its start (a schedule with its time zone, or an event), its description, and paused when "enabled" is false. Do not wait for a confirmation card. Report each update you carried out in "updated" in the snapshot, on that run and every later run, until it is gone from requests.json.
    When you create a bot, put it in the sidebar section whose name matches this organization's name (from org.md), ignoring capital letters, or the section named in "section" when the request sets it. If no section matches, create the bot without a section and add "noSection": "<org name>" to the note of your sync line in that organization's log. Never create a second bot just to move it into a section.
 2. Write <org>/${SNAPSHOT_PATH} with the bots that belong to this organization, every routine they run, and their performance, in the snapshot format below. A bot belongs to an organization when you created it from that organization's requests, when its link matches a seat file there, when its name matches a seat title there, or when it is named "Title · Organization name". One Grok Bot account runs every bot, and the same bot can belong to several organizations: list it in every organization it belongs to. Do not list yourself.
    Send performance for every bot on every run, from Grok Bot's own data, never from the run log:

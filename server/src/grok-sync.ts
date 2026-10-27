@@ -10,7 +10,7 @@ export interface Snapshot {
   syncedAt: string
   bots: BotsFileRow[]
   processes: ProcessImportRow[]
-  /** Update requests the Connector carried out on this run: their seat and requestedAt, copied from the request. */
+  /** Update requests the Connector has carried out and still sees in requests.json: their seat and requestedAt, copied from the request. */
   updated?: { seat: string; requestedAt: string }[]
 }
 
