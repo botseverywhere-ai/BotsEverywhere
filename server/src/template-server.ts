@@ -49,9 +49,9 @@ import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
-import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeSyncMinutes } from './project.js'
+import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeRemoveCopy, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
-import { runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
+import { connectorState, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
 import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
@@ -1372,13 +1372,14 @@ export function syncStatus(root: string, orgId: string, orgsDir = ''): { ok: tru
   const readOrg = orgsDir ? orgReader(orgsDir, resolve(orgsDir, orgId) === folder ? { [orgId]: read } : {}) : undefined
   const project = orgsDir ? projectInfo(orgsDir, orgId, readOrg) : undefined
   const retiredElsewhere = orgsDir ? retiredActiveElsewhere(orgsDir, read.bundle.seats, readOrg) : {}
+  const connector = orgsDir ? { connector: connectorState(orgsDir, orgId) } : {}
   const snap = readSnapshot(root)
   if (!snap.ok) {
-    if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, retiredElsewhere, project } }
-    return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, retiredElsewhere, project } }
+    if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
+    return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
   }
   const plan = planSync(snap.snapshot, read.bundle.seats, read.bundle.processes ?? [], read.bundle.org.company.name, orgsDir ? accountBots(orgsDir, orgId) : [])
-  return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, retiredElsewhere, project } }
+  return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
 }
 
 /** Bots the Grok Bot account runs outside this org's snapshot: unassigned ones, other orgs' snapshots, and the Connector. A bad snapshot is skipped. */
@@ -2297,6 +2298,26 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       // The Connector reads its schedule from CONNECTOR.md, so a new interval needs no paste.
       writeConnectorGuide(orgsDir, ensureProjectId(orgsDir))
       send(res, 200, { minutes: saved.minutes, processes: syncConnectorProcesses(orgsDir, saved.minutes) })
+      return
+    }
+    if (url.pathname === '/api/connector/remove-copy' && req.method === 'POST') {
+      // Rewrites bots in Grok Bot, so only this computer may reach it.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may remove blocks.' })
+      if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { error: 'Send JSON.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      let copy: unknown
+      try {
+        copy = (JSON.parse(body) as { copy?: unknown }).copy
+      } catch {
+        return send(res, 422, { error: 'That body is not JSON.' })
+      }
+      const saved = writeRemoveCopy(orgsDir, typeof copy === 'string' ? copy : '')
+      if (!saved.ok) return send(res, 422, { error: saved.error })
+      // The next to-do list removes those blocks; the Connector sends it on its next run.
+      runConnectorCycle(orgsDir, ensureProjectId(orgsDir))
+      send(res, 200, { removeCopies: saved.removeCopies })
       return
     }
     if (url.pathname === '/api/orgs' && req.method === 'POST') {

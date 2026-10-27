@@ -5,6 +5,7 @@ import { SNAPSHOT_PATH, connectorGuide } from './connector-prompt.ts'
 import { computeTodo, orgBlocksFromData, parseResults, updatedFor, type TodoFile } from './connector-todo.ts'
 import { botJson, readGrokData, snapshotFromData, snapshotJson, unassignedFromData } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
+import type { ConnectorState } from './grok-sync.ts'
 import type { OrgBundle } from './org-files.ts'
 import { readConnector, readRemoveCopies, readSyncMinutes } from './project.ts'
 import { listOrgSlugs, readOrgDir, readRequests } from './template-server.ts'
@@ -78,6 +79,59 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
   writeIfChanged(resolve(orgsDir, UNASSIGNED_FILE), `${JSON.stringify({ syncedAt: data.dumpedAt, unassigned: unassigned.map(botJson) }, null, 2)}\n`)
   const todo = computeTodo({ copyId, orgsFolder, timeZone: zone, data, orgs, keepOrgs, results, removeCopies: readRemoveCopies(orgsDir), now })
   backUp(orgsDir, todo, now)
-  writeIfChanged(resolve(orgsDir, TODO_FILE), `${JSON.stringify(todo, null, 2)}\n`)
+  writeIfChanged(resolve(orgsDir, TODO_FILE), `${JSON.stringify(withRuns(todo, readTodo(orgsDir)), null, 2)}\n`)
   return { ok: true, dumpedAt: data.dumpedAt }
+}
+
+function readTodo(orgsDir: string): TodoFile | null {
+  try {
+    const text = readTextFile(resolve(orgsDir, TODO_FILE))
+    const data = text ? JSON.parse(text) as TodoFile : null
+    return data && Array.isArray(data.items) ? data : null
+  } catch {
+    return null
+  }
+}
+
+/** Each item keeps the dump it was first listed after; its count goes up once per newer dump it is still listed after. */
+function withRuns(todo: TodoFile, previous: TodoFile | null): TodoFile {
+  const before = new Map((previous?.items ?? []).map((item) => [item.key, item]))
+  const newer = previous?.basedOn !== todo.basedOn
+  return {
+    ...todo,
+    items: todo.items.map((item) => {
+      const last = before.get(item.key)
+      const runs = last && typeof last.runs === 'number' ? last.runs + (newer ? 1 : 0) : 1
+      return { ...item, since: typeof last?.since === 'string' ? last.since : todo.basedOn, runs }
+    }),
+  }
+}
+
+/**
+ * What the Connector could not do, for one organization's Sync drawer: stuck items with their reason, items on their
+ * second try, items listed after more than two dumps, a dump that could not be read, and other copies' blocks.
+ */
+export function connectorState(orgsDir: string, orgId: string): ConnectorState {
+  const dump = readGrokData(orgsDir)
+  const dumpError = !dump.ok && !dump.missing ? dump.error : ''
+  const todo = readTodo(orgsDir)
+  const results = parseResults(readTextFile(resolve(orgsDir, RESULTS_FILE)) ?? '')
+  const removing = readRemoveCopies(orgsDir)
+  const here = (org: string) => org === orgId || org === ''
+  const items = (todo?.items ?? []).filter((item) => here(item.org))
+  const failed = items.flatMap((item) => {
+    const attempt = Number(/#(\d+)$/.exec(item.key)?.[1] ?? 1)
+    if (attempt < 2) return []
+    const last = results.results.filter((result) => result.key === item.key.replace(/#\d+$/, `#${attempt - 1}`)).at(-1)
+    return [{ bot: item.bot, why: last?.status === 'done' ? 'reported done, but Grok Bot does not show it' : last?.why || 'no reason given' }]
+  })
+  const late = items.filter((item) => (item.runs ?? 0) > 2)
+  return {
+    stuck: (todo?.stuck ?? []).filter((item) => here(item.org)).map((item) => ({ bot: item.bot, why: item.why })),
+    failed,
+    pending: late.length,
+    pendingSince: late.map((item) => item.since ?? '').filter(Boolean).sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? '',
+    dumpError,
+    otherCopies: (todo?.otherCopies ?? []).map((item) => ({ copy: item.copy, bots: item.bots, removing: removing.includes(item.copy) })),
+  }
 }

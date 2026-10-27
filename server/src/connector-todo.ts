@@ -26,6 +26,9 @@ export interface TodoItem {
   skill?: { name: string; description: string }
   message?: string
   section?: string
+  /** The dump this item was first listed after, and how many dumps it has been listed after. The app sets both. */
+  since?: string
+  runs?: number
 }
 
 export interface TodoFile {

@@ -49,9 +49,9 @@ function readProjectText(orgsDir: string): string {
   }
 }
 
-function writeProjectFile(orgsDir: string, id: string, syncMinutes: number): boolean {
+function writeProjectFile(orgsDir: string, id: string, syncMinutes: number, removeCopies = readRemoveCopies(orgsDir)): boolean {
   // The default interval is not written, so a copy that never changed it keeps the file it had.
-  const data = syncMinutes === DEFAULT_SYNC_MINUTES ? { id } : { id, syncMinutes }
+  const data = { id, ...(syncMinutes === DEFAULT_SYNC_MINUTES ? {} : { syncMinutes }), ...(removeCopies.length ? { removeCopies } : {}) }
   try {
     writeFileSync(resolve(orgsDir, PROJECT_FILE), `${JSON.stringify(data, null, 2)}\n`, 'utf8')
     return true
@@ -115,6 +115,16 @@ export function readRemoveCopies(orgsDir: string): string[] {
   } catch {
     return []
   }
+}
+
+/** The owner asked to remove another copy's blocks from every bot. This copy's own blocks are never removed this way. */
+export function writeRemoveCopy(orgsDir: string, copy: string): { ok: true; removeCopies: string[] } | { ok: false; error: string } {
+  if (!ID.test(copy)) return { ok: false, error: 'That is not a copy id.' }
+  const id = ensureProjectId(orgsDir)
+  if (copy === id) return { ok: false, error: 'This is this copy. Its blocks stay.' }
+  const current = readRemoveCopies(orgsDir)
+  const removeCopies = current.includes(copy) ? current : [...current, copy]
+  return writeProjectFile(orgsDir, id, readSyncMinutes(orgsDir), removeCopies) ? { ok: true, removeCopies } : { ok: false, error: 'Could not write project.json.' }
 }
 
 /** Reads orgs/connector.json. Null when the project Connector never wrote it. Never throws. */

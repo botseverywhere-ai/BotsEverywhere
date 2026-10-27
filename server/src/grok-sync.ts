@@ -78,6 +78,22 @@ export interface SyncStatus {
   retiredElsewhere?: Record<string, string[]>
   /** The copy of BotsEverywhere this org lives in. One Connector serves every org in it. */
   project?: ProjectInfo
+  /** What the Connector could not do. Absent when the writer did not say. */
+  connector?: ConnectorState
+}
+
+export interface ConnectorState {
+  /** Not sent again until something changes, each with the reason. */
+  stuck: { bot: string; why: string }[]
+  /** Failed once; sent again on the Connector's next run. */
+  failed: { bot: string; why: string }[]
+  /** Items listed after more than two dumps with no result, and the first of those dumps. */
+  pending: number
+  pendingSince: string
+  /** Why the Connector's data could not be read, or ''. */
+  dumpError: string
+  /** Blocks other copies of BotsEverywhere left in bots. removing: the owner asked to remove them. */
+  otherCopies: { copy: string; bots: string[]; removing: boolean }[]
 }
 
 export interface ProjectInfo {

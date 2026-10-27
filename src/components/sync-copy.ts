@@ -316,12 +316,12 @@ export interface ConnectorFileRow {
   holds: string
 }
 
-export const CONNECTOR_FILES_NOTE = 'The Connector is the bot in Grok Bot, and the prompt above is its instructions. No file on this computer holds it.'
+export const CONNECTOR_FILES_NOTE = 'The Connector is the bot in Grok Bot. The prompt above starts it once; its rules are in CONNECTOR.md, which this app keeps up to date.'
 
 /**
  * The files the Connector reads and writes, by their real path on this computer: the orgs folder and this
  * organization's folder, with the separator those paths already use. Relative paths until the writer answers.
- * The project file names match CONNECTOR_FILE, PROJECT_FILE, and CONNECTOR_LOG_FILE, which live beside Node code.
+ * The project file names match CONNECTOR_FILE, PROJECT_FILE, CONNECTOR_LOG_FILE, and connector-files.ts, beside Node code.
  */
 export function connectorFiles(orgsFolder: string, orgFolder: string, id: string): ConnectorFileRow[] {
   const sep = orgsFolder.includes('\\') ? '\\' : '/'
@@ -329,11 +329,16 @@ export function connectorFiles(orgsFolder: string, orgFolder: string, id: string
   const org = orgFolder.trim() || `${orgs}${sep}<org>`
   const at = (base: string, path: string) => `${base}${sep}${path.split('/').join(sep)}`
   return [
-    { path: at(orgs, 'connector.json'), writer: 'The Connector, last on every run', holds: 'When it last ran, how often it runs, and bots in Grok Bot that belong to no organization. The status above comes from this file.' },
-    { path: at(org, SNAPSHOT_PATH), writer: 'The Connector, every run', holds: 'The bots and routines it found in Grok Bot for this organization.' },
-    { path: `${at(org, 'log')}${sep}`, writer: 'The Connector and your bots', holds: `The run log, one file per day. The Connector's lines say ${CONNECTOR_LOG_BOT}.` },
+    { path: at(orgs, 'CONNECTOR.md'), writer: 'This app', holds: 'The Connector\'s rules: what it reads, what it writes, and what it sends to Grok Bot. It reads them on every run.' },
+    { path: at(orgs, 'grok-data.json'), writer: 'The Connector, every run', holds: 'What it sees in Grok Bot: every bot with its instructions and numbers, the routines it can see, and the skills.' },
+    { path: at(orgs, 'connector.json'), writer: 'The Connector, last on every run', holds: 'When it last ran, how often it runs, and the apps connected to Grok Bot. The status above comes from this file.' },
+    { path: at(orgs, 'connector-todo.json'), writer: 'This app', holds: 'What the Connector still has to do in Grok Bot, with the exact text to send.' },
+    { path: at(orgs, 'connector-results.json'), writer: 'The Connector', holds: 'What it did with each item on the to-do list: done, failed, or changed.' },
+    { path: at(org, SNAPSHOT_PATH), writer: 'This app, from grok-data.json', holds: 'The bots and routines in Grok Bot for this organization.' },
+    { path: `${at(org, 'log')}${sep}`, writer: 'Your bots, and this app for each Connector run', holds: `The run log, one file per day. The Connector's lines say ${CONNECTOR_LOG_BOT}.` },
     { path: at(orgs, 'project.json'), writer: 'This app', holds: id ? `This copy's id, ${id}, which is in the Connector's name, and how often the Connector runs.` : "This copy's id, which is in the Connector's name, and how often the Connector runs." },
-    { path: at(org, REQUESTS_FILE), writer: 'This app', holds: 'Bots you asked it to create. The Connector reads it.' },
+    { path: at(org, REQUESTS_FILE), writer: 'This app', holds: 'Bots you asked it to create, and changes to send to bots. The to-do list is made from it.' },
+    { path: `${at(orgs, 'connector-backups')}${sep}`, writer: 'This app', holds: "Each bot's instructions as they were before the Connector changed them." },
     { path: at(orgs, 'connector-log.json'), writer: 'This app', holds: 'What the app already logged about each Connector run.' },
   ]
 }
