@@ -8,6 +8,8 @@ import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
 import { accountRows, grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
 import type { AccountApp, GrokAccount } from '../../server/src/grok-sync.ts'
 import { botApps } from '../org/bot-apps'
+import { ChartPngButton } from './ChartPngButton'
+import { legendHasRoom } from './chart-png'
 
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 1.8
@@ -39,6 +41,7 @@ export function OrgChart({
   focusId = '',
   account = null,
   accountApps,
+  png,
 }: {
   seats: Seat[]
   selectedId: string
@@ -67,6 +70,8 @@ export function OrgChart({
   account?: GrokAccount | null
   /** Apps connected to the Grok Bot account, so a bot card can mark an app that needs sign-in. */
   accountApps?: AccountApp[]
+  /** Your own orgs only: Download PNG after Retired on the legend. */
+  png?: { orgName: string }
 }) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLUListElement>(null)
@@ -83,6 +88,11 @@ export function OrgChart({
   const [foundId, setFoundId] = useState('')
   const [listed, setListed] = useState<LegendGroup | null>(null)
   const focusedRef = useRef('')
+  const chartRef = useRef<HTMLDivElement>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const legendRef = useRef<HTMLUListElement>(null)
+  // Download PNG sits after Retired while it fits before Find seat, else at the end of the Add a seat row.
+  const [pngBesideLegend, setPngBesideLegend] = useState(true)
 
   const forest = useMemo(() => buildForest(seats), [seats])
   const seatNames = useMemo(() => seats.map((seat) => seat.name), [seats])
@@ -316,9 +326,35 @@ export function OrgChart({
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [focusId, seats])
 
+  // Measured before paint, again when the chart narrows (a smaller window, the seat panel) or the legend grows.
+  useLayoutEffect(() => {
+    const chart = chartRef.current
+    const legend = legendRef.current
+    const toolbar = toolbarRef.current
+    if (!png || !chart || !legend || !toolbar) return
+    let buttonWidth = 0
+    const check = () => {
+      const button = chart.querySelector<HTMLElement>('.org-legend-png button, .org-actions-png button')
+      buttonWidth = button?.getBoundingClientRect().width || buttonWidth
+      setPngBesideLegend(legendHasRoom({
+        floating: getComputedStyle(legend).position === 'absolute',
+        legendRight: legend.getBoundingClientRect().right,
+        buttonWidth,
+        toolbarLeft: toolbar.getBoundingClientRect().left,
+      }))
+    }
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(chart)
+    observer.observe(legend)
+    return () => observer.disconnect()
+  }, [png])
+
+  const pngButton = png ? <ChartPngButton chart="org" orgName={png.orgName} target={() => treeRef.current} /> : null
+  const pngInActions = Boolean(png) && !pngBesideLegend
   const solo = seats.length <= 1
   return (
-    <div className={solo ? 'org-chart is-solo' : 'org-chart'} data-testid="org-chart" data-highlight={highlightId || undefined}>
+    <div ref={chartRef} className={solo ? 'org-chart is-solo' : 'org-chart'} data-testid="org-chart" data-highlight={highlightId || undefined}>
       <div
         ref={viewportRef}
         className={panning ? 'org-viewport is-panning' : 'org-viewport'}
@@ -355,7 +391,7 @@ export function OrgChart({
           ))}
         </ul>
       </div>
-      <div className="org-toolbar" role="toolbar" aria-label="Org chart view">
+      <div ref={toolbarRef} className="org-toolbar" role="toolbar" aria-label="Org chart view">
         <form
           className="org-find"
           onSubmit={(event) => {
@@ -395,8 +431,13 @@ export function OrgChart({
           </Button>
         </div>
       </div>
-      {actions ? <div className="org-actions">{actions}</div> : null}
-      <ul className="org-legend">
+      {actions || pngInActions ? (
+        <div className="org-actions">
+          {actions}
+          {pngInActions ? <span className="org-actions-png">{pngButton}</span> : null}
+        </div>
+      ) : null}
+      <ul ref={legendRef} className="org-legend">
         {legendItem('human', 'swatch-human', 'Human', counts.human)}
         {legendItem('bot', 'swatch-bot', 'Bot', counts.bot)}
         {legendItem('system', 'swatch-system', 'System', counts.system)}
@@ -413,6 +454,7 @@ export function OrgChart({
             </Button>
           </li>
         ) : null}
+        {png && pngBesideLegend ? <li className="org-legend-png">{pngButton}</li> : null}
       </ul>
       {listed ? (
         <SeatListDrawer

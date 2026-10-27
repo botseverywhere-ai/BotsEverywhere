@@ -843,6 +843,16 @@ button.seat.empty svg { opacity: 0.72; }
 }
 .org-legend li { display: inline-flex; align-items: center; gap: 6px; }
 .legend-count { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+/* Download PNG sits just outside the legend box, after Retired. */
+.org-legend .org-legend-png { position: absolute; left: calc(100% + var(--space-3)); top: 50%; transform: translateY(-50%); }
+.chart-png-error { margin-left: var(--space-2); color: var(--color-red-700); font-size: var(--text-sm); font-weight: var(--weight-regular); white-space: nowrap; }
+/* Download PNG lays this sheet out off screen and saves it as one image: logo, organization name, chart name, chart. */
+.chart-png-sheet { position: fixed; left: -100000px; top: 0; width: max-content; padding: var(--space-6); background: var(--color-white); color: var(--color-ink); }
+.chart-png-logo { display: block; height: 32px; width: auto; }
+.chart-png-org { margin: var(--space-5) 0 0; font-size: var(--text-2xl); font-weight: var(--weight-semibold); }
+.chart-png-kind { margin: var(--space-1) 0 var(--space-5); color: var(--color-muted); font-size: var(--text-base); }
+/* The image measures text a hair wider than the page; a schedule chip at its edge wrapped. */
+.chart-png-sheet .process-chip { white-space: nowrap; }
 .swatch { width: 10px; height: 10px; border-radius: var(--control-radius); display: inline-block; }
 .swatch-human { background: var(--color-stone); }
 .swatch-bot { background: var(--color-ink); }
@@ -2201,6 +2211,7 @@ a.site-nav-cta:focus {
 .process-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 .process-head h1 { margin: 0; }
 .process-fallback, .process-focus, .process-idle p { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
+.process-title { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
 .process-lanes { list-style: none; display: grid; gap: var(--space-4); margin: 0; padding: 0; }
 .process-lane { display: grid; gap: var(--space-3); padding: var(--space-4); border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); }
 .process-lane-main { display: grid; grid-template-columns: minmax(140px, 180px) minmax(0, 1fr); gap: var(--space-4); align-items: start; min-width: 0; }

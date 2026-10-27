@@ -945,6 +945,7 @@ export function Workspace({
               runLines={runLines}
               onSeat={setSelected}
               onReload={rereadOrg}
+              png={editable ? { orgName: company.org.name } : undefined}
             />
           ) : null}
           {view === 'org' ? (
@@ -974,6 +975,7 @@ export function Workspace({
                 accountApps={accountApps}
                 retired={editable ? { count: retiredGroups(retired).length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
                 actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
+                png={editable ? { orgName: company.org.name } : undefined}
               />
               {editable && soloYou ? <p className="be-caption">No bots yet. Import them from <a href={hrefFor(bundle.id, sample, 'connect')}>Connect bots</a>.</p> : null}
               {editable && soloYou ? <div className="be-solo"><p>Your org has one seat: you.</p></div> : null}

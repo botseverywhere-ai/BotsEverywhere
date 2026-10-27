@@ -80,7 +80,7 @@ test('the Sync button, drawer, tags, and Reports to select are wired in template
   assert.match(workspace, /syncButtonLabel\(sync\?\.plan\?\.writes \?\? 0, outgoing\(sync\?\.plan \?\? null, sync\?\.requests \?\? \[\], seats\)\.ready\.length\)/, 'the count includes bots never synced')
   assert.match(workspace, /<SyncDrawer\s+orgSlug=\{bundle\.id\}\s+status=\{sync\}\s+seats=\{seats\}/, 'the drawer sees every seat, not only the snapshot')
   assert.match(workspace, /actions=\{editable \? <SeatActions /, 'Add a seat shows in the chart toolbar on every editable org, not only a one-seat org')
-  assert.match(read('../../src/components/OrgChart.tsx'), /<\/div>\s*\{actions \? <div className="org-actions">\{actions\}<\/div> : null\}\s*<ul className="org-legend">/, 'the seat buttons get their own row under the chart toolbar')
+  assert.match(read('../../src/components/OrgChart.tsx'), /<\/div>\s*\{actions \|\| pngInActions \? \(\s*<div className="org-actions">\s*\{actions\}[\s\S]*?<\/div>\s*\) : null\}\s*<ul [^>]*className="org-legend"/, 'the seat buttons get their own row under the chart toolbar')
   assert.match(workspace, /\/api\/orgs\/\$\{bundle\.id\}\/sync`/)
   assert.match(workspace, /response\.status === 404[\s\S]{0,300}The file writer needs a restart\. Stop npm run dev and start it again\./)
   assert.match(workspace, /\/seats\/\$\{slug\}\/manager`/)

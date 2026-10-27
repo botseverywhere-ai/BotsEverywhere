@@ -17,6 +17,7 @@ import { activitySentence, latestStepStatus, newestFirst, waitingLines, type Run
 import { CopyPromptButton } from '../directory/prompt-actions'
 import { FOLDER_EVENT, orgFolder } from '../org/folder-path'
 import { Button } from './Button'
+import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 
@@ -32,6 +33,7 @@ export function ProcessChart({
   runLines = [],
   onSeat,
   onReload,
+  png,
 }: {
   orgId: string
   editable: boolean
@@ -42,7 +44,10 @@ export function ProcessChart({
   runLines?: RunLine[]
   onSeat: (slug: string) => void
   onReload: () => Promise<void>
+  /** Your own orgs only: Download PNG on the line under the heading. */
+  png?: { orgName: string }
 }) {
+  const lanesRef = useRef<HTMLUListElement>(null)
   const [drawer, setDrawer] = useState<ProcessFile | 'new' | null>(null)
   const [removing, setRemoving] = useState<ProcessFile | null>(null)
   const [notice, setNotice] = useState<SaveNotice | null>(null)
@@ -183,7 +188,10 @@ export function ProcessChart({
     <div className="process-board" data-testid="work-chart">
       <div className="process-head">
         <div>
-          <h1>Work Chart</h1>
+          <div className="process-title">
+            <h1>Work Chart</h1>
+            {png && processes.length ? <ChartPngButton chart="work" orgName={png.orgName} target={() => lanesRef.current} /> : null}
+          </div>
           <p className="process-fallback">Unmatched work uses {fallbackProcess}, owned by You.</p>
         </div>
         {editable ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
@@ -191,7 +199,7 @@ export function ProcessChart({
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
       {processes.length === 0 ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
-      <ul className="process-lanes">
+      <ul className="process-lanes" ref={lanesRef}>
         {processes.map((process) => (
           <ProcessLane
             key={process.slug}
