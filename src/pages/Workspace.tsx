@@ -23,7 +23,7 @@ import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
-import { defaultManager, managerChoices } from '../org/manager-choices'
+import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import { botApps } from '../org/bot-apps'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
@@ -678,6 +678,27 @@ export function Workspace({
     }
   }
 
+  async function setAlsoManagers(slug: string, reportsTo: string, alsoReportsTo: string[]) {
+    setBotNotice(null)
+    try {
+      const response = await fetch(`/api/orgs/${bundle.id}/seats/${slug}/manager`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reportsTo, alsoReportsTo }),
+      })
+      const body = (await response.json()) as { errors?: string[]; error?: string; sent?: boolean }
+      if (!response.ok) {
+        tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not save who this seat also reports to.'))
+        return
+      }
+      await rereadOrg()
+      tell(saveNotice(true, body.sent ? "Saved. Grok Bot gets the change on the Connector's next run." : 'Saved'), orgChartLink)
+    } catch {
+      setWriter('down')
+      tell(saveNotice(false, SAVING_OFF))
+    }
+  }
+
   async function saveProfile(slug: string, changes: ProfileChanges) {
     try {
       const response = await fetch(`/api/orgs/${bundle.id}/seats/${slug}/profile`, {
@@ -1027,6 +1048,8 @@ export function Workspace({
           onCardCommit={editable ? () => { void flushCardSave() } : undefined}
           managers={editable ? managerChoices(seats, chartSeat.id) : undefined}
           onReportsTo={editable ? (slug) => { void moveSeat(chartSeat.id, slug) } : undefined}
+          alsoManagers={editable ? alsoChoices(seats, chartSeat.id) : undefined}
+          onAlsoReportsTo={editable && chartSeat.reportsTo ? (slugs) => { void setAlsoManagers(chartSeat.id, chartSeat.reportsTo!, slugs) } : undefined}
           grokRequestedAt={createRequests.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
           grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate) : []}

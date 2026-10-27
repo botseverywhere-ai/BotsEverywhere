@@ -1774,6 +1774,10 @@ a.site-nav-cta:focus {
 .org-connection.is-broken .org-connection-dot { background: var(--color-red-700); }
 .org-sync { margin-left: var(--space-2); }
 .panel label.reports { margin-top: var(--space-3); }
+.also-reports { display: grid; gap: var(--space-1); margin: var(--space-3) 0 0; padding: 0; border: 0; min-width: 0; }
+.also-reports .field-label { margin-bottom: var(--space-1); padding: 0; }
+.also-choice { display: flex; align-items: center; gap: var(--space-2); font-size: 13px; color: var(--ink); }
+.also-choice:has(input:disabled) { color: var(--muted); }
 .grok-create { display: grid; gap: var(--space-2); margin: var(--space-4) 0; padding: var(--space-3); border: var(--border-dashed); }
 .grok-create-state { margin: 0; }
 .grok-create .auth-note { margin: 0; }

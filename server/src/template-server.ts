@@ -1901,6 +1901,8 @@ export function setSeatManager(root: string, orgId: string, slug: string, report
     seen.add(cursor)
     cursor = parent.get(cursor) || ''
   }
+  const loop = managerLoop(read.bundle.seats.map((item) => (item.slug === slug ? { ...item, reportsTo: target } : item)))
+  if (loop) return { ok: false, errors: [`That makes a loop: ${manager.title} already reports to ${seat.title} on a dotted line. Pick another manager.`] }
   const file = `orgs/${orgId}/seats/${slug}.md`
   if (seat.reportsTo === target) return { ok: true, file, sent: false }
   const pointed = retargetSeat(root, slug, target)

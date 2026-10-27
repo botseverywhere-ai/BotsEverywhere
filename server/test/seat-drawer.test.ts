@@ -41,3 +41,31 @@ test('seat drawer tabs switch the panel content', () => {
   assert.match(css, /\.org-blurb/)
   assert.match(css, /-webkit-line-clamp: 2/)
 })
+
+test('Also reports to lists active seats other than itself and its main manager; one that would make a loop is disabled with why', async () => {
+  const { alsoChoices, managerChoices } = await import('../../src/org/manager-choices.ts')
+  const seats = [
+    { slug: 'you', title: 'You', reportsTo: '', status: 'active' },
+    { slug: 'inner', title: 'Inner Loop', reportsTo: 'you', status: 'active' },
+    { slug: 'outer', title: 'Outer Loop', reportsTo: 'you', status: 'active' },
+    { slug: 'security', title: 'Security', reportsTo: 'inner', status: 'active' },
+    { slug: 'scan', title: 'Scanner', reportsTo: 'outer', alsoReportsTo: ['security'], status: 'active' },
+    { slug: 'old', title: 'Old', reportsTo: 'you', status: 'retired' },
+  ]
+  assert.deepEqual(alsoChoices(seats, 'security'), [
+    { slug: 'you', title: 'You' },
+    { slug: 'outer', title: 'Outer Loop' },
+    { slug: 'scan', title: 'Scanner', disabled: 'Scanner already reports to Security, so this would make a loop.' },
+  ])
+  assert.deepEqual(alsoChoices([...seats.slice(0, 3), { ...seats[3]!, alsoReportsTo: ['old'] }, seats[5]!], 'security').at(-1), { slug: 'old', title: 'Old (retired)' }, 'a retired extra manager stays listed so it can be unticked')
+  assert.equal(managerChoices(seats, 'security').some((item) => item.slug === 'scan'), false, 'a dotted-line report is not offered as the main manager either')
+
+  const drawer = readFileSync(path.join(root, 'src/components/SeatDrawer.tsx'), 'utf8')
+  assert.match(drawer, /<legend className="field-label">Also reports to<\/legend>/)
+  assert.match(drawer, /type="checkbox"/)
+  assert.match(drawer, /title=\{item\.disabled\}/)
+  assert.match(drawer, /disabled=\{Boolean\(item\.disabled\)\}/)
+  const workspace = readFileSync(path.join(root, 'src/pages/Workspace.tsx'), 'utf8')
+  assert.match(workspace, /alsoManagers=\{editable \? alsoChoices\(seats, chartSeat\.id\) : undefined\}/)
+  assert.match(workspace, /body: JSON\.stringify\(\{ reportsTo, alsoReportsTo \}\)/)
+})

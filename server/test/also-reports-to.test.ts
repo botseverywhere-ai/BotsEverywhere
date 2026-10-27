@@ -191,3 +191,19 @@ test('an extra manager that is not a seat, or that makes a loop, is refused and 
     t.done()
   }
 })
+
+test('moving the main manager under a dotted-line report is refused as a loop', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { seatFile, setSeatManager, setSeatManagers } = await import('../src/template-server.ts')
+  const t = await team()
+  try {
+    assert.ok(setSeatManagers(t.root, t.org, t.security, t.inner, [t.outer]).ok)
+    const before = readFileSync(seatFile(t.root, t.outer)!, 'utf8')
+    const moved = setSeatManager(t.root, t.org, t.outer, t.security)
+    assert.equal(moved.ok, false)
+    assert.match(moved.ok ? '' : moved.errors.join(' '), /loop/i)
+    assert.equal(readFileSync(seatFile(t.root, t.outer)!, 'utf8'), before)
+  } finally {
+    t.done()
+  }
+})

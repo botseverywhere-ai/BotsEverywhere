@@ -31,6 +31,8 @@ export function SeatDrawer({
   onCardCommit,
   managers,
   onReportsTo,
+  alsoManagers,
+  onAlsoReportsTo,
   onTab,
   onClose,
   onRetire,
@@ -51,6 +53,9 @@ export function SeatDrawer({
   /** Seats this one may report to. With onReportsTo, the manager line becomes a select. */
   managers?: { slug: string; title: string }[]
   onReportsTo?: (slug: string) => void
+  /** Seats this one may also report to, on a dotted line. One that would make a loop carries why it is disabled. */
+  alsoManagers?: { slug: string; title: string; disabled?: string }[]
+  onAlsoReportsTo?: (slugs: string[]) => void
   tab: SeatDrawerTab
   least: boolean
   fading: boolean
@@ -113,6 +118,26 @@ export function SeatDrawer({
       ) : (
         <p className="reports">{reportsTo ? `Reports to ${reportsTo}` : 'Top of the chart'}</p>
       )}
+      {alsoManagers && onAlsoReportsTo && seat.reportsTo && alsoManagers.length ? (
+        <fieldset className="also-reports">
+          <legend className="field-label">Also reports to</legend>
+          {alsoManagers.map((item) => {
+            const also = seat.alsoReportsTo ?? []
+            const checked = also.includes(item.slug)
+            return (
+              <label key={item.slug} className="also-choice" title={item.disabled}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={Boolean(item.disabled)}
+                  onChange={() => onAlsoReportsTo(checked ? also.filter((slug) => slug !== item.slug) : [...also, item.slug])}
+                />
+                {item.title}
+              </label>
+            )
+          })}
+        </fieldset>
+      ) : null}
       {onCreateInGrok && seat.type === 'bot' && grokSyncClass(seat) !== 'is-in-grok' ? (
         <section className="grok-create" aria-label="Grok Bot">
           <p className="grok-create-state"><strong>{grokSyncTag(seat)}</strong>{grokSyncLine(seat).toLowerCase() === grokSyncTag(seat).toLowerCase() ? null : <> · {grokSyncLine(seat)}</>}</p>
