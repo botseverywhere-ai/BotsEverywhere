@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SyncStatus } from '../../server/src/grok-sync.ts'
-import { CONNECTOR_BOT_NAME, connectorBootstrapPrompt, connectorGuide } from '../../server/src/connector-prompt.ts'
+import { CONNECTOR_BOT_NAME, connectorBootstrapPrompt } from '../../server/src/connector-prompt.ts'
 import { DEFAULT_SYNC_MINUTES, everyLabel, joinSyncMinutes, splitSyncMinutes, validSyncMinutes, type SyncUnit } from '../../server/src/connector-timing.ts'
 import { CopyPromptButton } from '../directory/prompt-actions'
 import { Button } from './Button'
@@ -177,18 +177,6 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
           <pre className="dir-prompt">{prompt}</pre>
         </div>
       </details>
-      {project?.orgsFolder ? (
-        <details className="link-panel">
-          <summary>
-            <span className="connect-prompt-summary">Show the Connector&apos;s rules (CONNECTOR.md)</span>
-            <span className="grok-chevron" aria-hidden="true" />
-          </summary>
-          <div className="link-panel-body">
-            <p className="overview-note">The app writes this file and keeps it up to date. The Connector reads it on every run, so a change here needs no new paste.</p>
-            <pre className="dir-prompt">{connectorGuide({ id: project.id, orgsFolder: project.orgsFolder, syncMinutes: project.syncMinutes, timeZone: project.timeZone, windows: project.windows })}</pre>
-          </div>
-        </details>
-      ) : null}
       <details className="link-panel">
         <summary>
           <span className="connect-prompt-summary">Files the Connector uses</span>

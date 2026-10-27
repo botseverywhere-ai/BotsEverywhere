@@ -150,22 +150,11 @@ test('the drawer shows each of these under Going to Grok Bot', async () => {
   assert.match(going, /Blocks from copy k7m2 in 1 bot: Grok Bot · removing on the Connector&#x27;s next run/)
 })
 
-test('Connect bots can show CONNECTOR.md, built from the same facts the writer writes it from', async () => {
-  const { writeConnectorGuide } = await import('../src/connector-cycle.ts')
-  const { connectorGuide } = await import('../src/connector-prompt.ts')
-  const { projectInfo } = await import('../src/template-server.ts')
-  const { GUIDE_FILE } = await import('../src/connector-files.ts')
-  const t = team()
-  try {
-    assert.ok(writeSyncMinutes(t.orgs, 120).ok)
-    writeConnectorGuide(t.orgs, t.copy)
-    const project = projectInfo(t.orgs, t.org)
-    const shown = connectorGuide({ id: project.id, orgsFolder: project.orgsFolder, syncMinutes: project.syncMinutes, timeZone: project.timeZone, windows: project.windows })
-    assert.equal(shown, readFileSync(join(t.orgs, GUIDE_FILE), 'utf8'))
-  } finally {
-    t.done()
-  }
+test('Connect bots shows only the prompt to paste; CONNECTOR.md stays a file the app keeps, listed under Files the Connector uses', () => {
   const step = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
-  assert.match(step, /Show the Connector&apos;s rules \(CONNECTOR\.md\)/)
-  assert.match(step, /connectorGuide\(\{ id: project\.id, orgsFolder: project\.orgsFolder, syncMinutes: project\.syncMinutes, timeZone: project\.timeZone, windows: project\.windows \}\)/)
+  assert.doesNotMatch(step, /Show the Connector&apos;s rules/)
+  assert.doesNotMatch(step, /connectorGuide\(/)
+  assert.match(step, /Show the prompt/)
+  const copy = readFileSync(new URL('../../src/components/sync-copy.ts', import.meta.url), 'utf8')
+  assert.match(copy, /at\(orgs, 'CONNECTOR\.md'\)/)
 })
