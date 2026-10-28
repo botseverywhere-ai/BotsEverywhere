@@ -136,12 +136,12 @@ test("a bot's skills are the ones it reported in Grok Bot and the ones added her
   assert.equal(skillCount(undefined, [{ name: 'Invoices' }]), 1)
 })
 
-test('a Work Chart with no flows shows only the import from Grok Bot, open; routines off the chart point to that import', () => {
+test('a Work Chart with no flows explains itself: the intro, its empty boxes, and the import from Grok Bot, open', () => {
   const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
   assert.match(chart, /const empty = processes\.length === 0/)
   assert.match(chart, /\{empty \? null : <p className="process-fallback">/, 'no fallback line before there is work')
   assert.match(chart, /\{editable && !empty \? <Button variant="primary" type="button" onClick=\{\(\) => setDrawer\('new'\)\}>\+ New process<\/Button> : null\}/)
-  assert.match(chart, /\{empty && !editable \? <p className="be-empty">No processes yet\./, 'only a template with no flows says so')
+  assert.equal(chart.includes('be-empty'), false, 'the empty boxes say it instead')
   assert.match(chart, /\{empty \? null : \(\n\s+<section className="process-idle"/, 'no list of idle seats before there is work')
   assert.match(chart, /<details className="link-panel" open=\{empty\}>/)
   assert.match(chart, /\{editable && empty \? \(\n\s+<div className="process-intro">/, 'an empty Work Chart explains itself under the title')
@@ -167,11 +167,16 @@ test('the Work Chart shows routines, handoffs, and routines not on it yet as seg
     '<option value="off">Not on the Work Chart yet ({offChart.length})</option>',
   ]) assert.ok(chart.includes(option), option)
   for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}']) assert.ok(chart.includes(`<p className="process-segment-hint">${hint}</p>`), hint)
-  assert.match(chart, /const showOff = offChart\.length > 0 && \(empty \|\| show === 'all' \|\| show === 'off'\)/, 'routines not on the chart show on an empty chart too')
+  assert.match(chart, /\{show === 'all' \|\| show === 'routines' \? \(/, 'the Routines box shows even with no flows, so the chart explains itself')
+  assert.match(chart, /\{show === 'all' \|\| show === 'handoffs' \? \(/)
+  assert.match(chart, /\{show === 'all' \|\| show === 'off' \? \(/)
+  for (const line of ['No routines on the Work Chart yet.', 'No handoffs on the Work Chart yet.', 'None. Every routine your bots run is on the Work Chart.']) assert.ok(chart.includes(line), line)
+  assert.match(chart, /<h2 id="segment-routines">Routines <span className="process-count">\{routineFlows\.length\}<\/span><\/h2>/)
+  assert.equal(chart.includes('{empty ? null : (\n        <label className="process-show">'), false, 'the selector shows on an empty chart too')
   assert.match(chart, /const noRoutine = laneNoRoutine\(process, live\)/)
   assert.match(chart, /\{noRoutine \? <p>\{noRoutine\}<\/p> : null\}/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
-  assert.match(css, /\.process-segment \{/)
+  assert.match(css, /\.process-segment \{ min-width: 0; padding: var\(--space-4\); border: 1px solid var\(--color-line\); border-radius: var\(--control-radius\); \}/, 'each segment is a box with square corners')
   assert.equal(css.includes('.process-off-chart'), false)
 })
 

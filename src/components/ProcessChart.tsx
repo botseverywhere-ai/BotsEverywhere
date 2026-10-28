@@ -196,9 +196,8 @@ export function ProcessChart({
     }
   }
 
-  // With no flows yet, the page is only the import from Grok Bot: the rest has nothing to show.
+  // With no flows yet, the page explains itself and opens the import from Grok Bot; the boxes show what will go where.
   const empty = processes.length === 0
-  const showOff = offChart.length > 0 && (empty || show === 'all' || show === 'off')
   const lane = (process: ProcessFile) => (
     <ProcessLane
       key={process.slug}
@@ -242,47 +241,46 @@ export function ProcessChart({
         {editable && !empty ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
-      {empty && !editable ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
-      {empty ? null : (
-        <label className="process-show">
-          Show
-          <select className="text-input" aria-label="Show" value={show} onChange={(event) => setShow(event.target.value as Show)}>
-            <option value="all">All ({processes.length + offChart.length})</option>
-            <option value="routines">Routines ({routineFlows.length})</option>
-            <option value="handoffs">Handoffs ({handoffFlows.length})</option>
-            <option value="off">Not on the Work Chart yet ({offChart.length})</option>
-          </select>
-        </label>
-      )}
+      <label className="process-show">
+        Show
+        <select className="text-input" aria-label="Show" value={show} onChange={(event) => setShow(event.target.value as Show)}>
+          <option value="all">All ({processes.length + offChart.length})</option>
+          <option value="routines">Routines ({routineFlows.length})</option>
+          <option value="handoffs">Handoffs ({handoffFlows.length})</option>
+          <option value="off">Not on the Work Chart yet ({offChart.length})</option>
+        </select>
+      </label>
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
       <div className="process-segments" ref={lanesRef}>
-        {!empty && (show === 'all' || show === 'routines') ? (
+        {show === 'all' || show === 'routines' ? (
           <section className="process-segment" aria-labelledby="segment-routines">
-            <h2 id="segment-routines">Routines</h2>
+            <h2 id="segment-routines">Routines <span className="process-count">{routineFlows.length}</span></h2>
             <p className="process-segment-hint">{ROUTINES_HINT}</p>
-            {routineFlows.length ? <ul className="process-lanes">{routineFlows.map(lane)}</ul> : <p className="process-segment-empty">No routines on the Work Chart.</p>}
+            {routineFlows.length ? <ul className="process-lanes">{routineFlows.map(lane)}</ul> : <p className="process-segment-empty">No routines on the Work Chart yet.</p>}
           </section>
         ) : null}
-        {!empty && (show === 'all' || show === 'handoffs') ? (
+        {show === 'all' || show === 'handoffs' ? (
           <section className="process-segment" aria-labelledby="segment-handoffs">
-            <h2 id="segment-handoffs">Handoffs</h2>
+            <h2 id="segment-handoffs">Handoffs <span className="process-count">{handoffFlows.length}</span></h2>
             <p className="process-segment-hint">{HANDOFFS_HINT}</p>
-            {handoffFlows.length ? <ul className="process-lanes">{handoffFlows.map(lane)}</ul> : <p className="process-segment-empty">No handoffs on the Work Chart.</p>}
+            {handoffFlows.length ? <ul className="process-lanes">{handoffFlows.map(lane)}</ul> : <p className="process-segment-empty">No handoffs on the Work Chart yet.</p>}
           </section>
         ) : null}
-        {showOff ? (
+        {show === 'all' || show === 'off' ? (
           <section className="process-segment" aria-labelledby="segment-off">
-            <h2 id="segment-off">Not on the Work Chart yet</h2>
+            <h2 id="segment-off">Not on the Work Chart yet <span className="process-count">{offChart.length}</span></h2>
             <p className="process-segment-hint">{OFF_CHART_HINT}</p>
-            <ul className="process-off-list">
-              {offChart.map((routine) => (
-                <li key={`${routine.bot}|${routine.name}`}>
-                  <strong>{routine.name}</strong>
-                  <span>{routine.bot} · {routine.schedule}</span>
-                  {routine.paused ? <span className="routine-state is-paused">Paused</span> : null}
-                </li>
-              ))}
-            </ul>
+            {offChart.length ? (
+              <ul className="process-off-list">
+                {offChart.map((routine) => (
+                  <li key={`${routine.bot}|${routine.name}`}>
+                    <strong>{routine.name}</strong>
+                    <span>{routine.bot} · {routine.schedule}</span>
+                    {routine.paused ? <span className="routine-state is-paused">Paused</span> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="process-segment-empty">None. Every routine your bots run is on the Work Chart.</p>}
           </section>
         ) : null}
       </div>
