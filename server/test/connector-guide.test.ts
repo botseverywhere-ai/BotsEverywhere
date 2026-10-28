@@ -24,6 +24,15 @@ test('the prompt to paste names the interval, leaves later changes to CONNECTOR.
   assert.ok(connectorBootstrapPrompt({ ...WIN, syncMinutes: 10080 }).length < 1200)
 })
 
+test('after acting on the to-do list, the Connector reports in its chat what it did, and stays quiet when it did nothing', () => {
+  const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
+  assert.match(guide, /\n5\. Then reply in this chat with a short report of what you just did, so the owner can see it in Grok Bot:\n   BotsEverywhere sync at HH:MM\n/)
+  for (const line of ['Updated instructions: <bot names>', 'Created: <bot names>', 'Saved skills: <skill names>', 'Asked for a routine: <bot names>', 'Sent the one-time note: <bot names>', 'Routine confirmed: <bot names>', 'Skipped, changed in Grok Bot: <bot names>', 'Failed: <bot name>: <why>']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
+  assert.match(guide, /Leave out a line with nothing in it\. If you carried out no item and added no confirmation, write nothing\./)
+  assert.match(guide, /\n6\. When several run messages arrive together, do this once, with one report\./)
+  assert.match(guide, /Never ask the owner to confirm anything\./, 'a report tells; it never asks')
+})
+
 test('the rules keep the run to files, leave every decision to the app, and give the exact hash command', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
   assert.match(guide, /THE RUN \(files only: never message, create, or change a bot, routine, skill, or memory\)/)

@@ -130,7 +130,18 @@ YOU (after each run, and when a bot sends you a line starting "BotsEverywhere ro
    - cleanup: SendToAgent to botId with exactly the item's message, without priority.
 3. Write one result per item into connector-results.json: key, status (done, failed, or changed), at, why for failed, and botId for create.
 4. When a bot sends you a line starting "BotsEverywhere routine saved:", add it to confirmations in connector-results.json: line exactly, from (the bot's name), and at.
-5. When several run messages arrive together, do this once.
+5. Then reply in this chat with a short report of what you just did, so the owner can see it in Grok Bot:
+   BotsEverywhere sync at HH:MM
+   - Updated instructions: <bot names>
+   - Created: <bot names>
+   - Saved skills: <skill names>
+   - Asked for a routine: <bot names>
+   - Sent the one-time note: <bot names>
+   - Routine confirmed: <bot names>
+   - Skipped, changed in Grok Bot: <bot names>
+   - Failed: <bot name>: <why>
+   Leave out a line with nothing in it. If you carried out no item and added no confirmation, write nothing.
+6. When several run messages arrive together, do this once, with one report.
 Never change any text yourself: send exactly what the item says. Never remove anything from connector-results.json.
 
 FILES
