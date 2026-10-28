@@ -1,6 +1,6 @@
 import { normalizeText } from './normalize-text.ts'
 import type { BotRoutine, BotSkill } from './org-files.ts'
-import type { Handoff } from './routine-board-types.ts'
+import type { AppUse, Handoff } from './routine-board-types.ts'
 
 /**
  * A bot's own profile: its routines, the private skills turned on for it, and the work it regularly hands on or gets.
@@ -20,6 +20,8 @@ export function profileForm(orgId: string, seat: string): string[] {
     '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>',
     'Skills:',
     '- <private skill turned on for you, not a built-in one> | <what it does, in one line>',
+    'Apps used:',
+    '- <app connected to the account that you use> | <what you use it for>',
     'Sends:',
     '- <bot or person you hand work to> | <what you send> | <when>',
     'Receives:',
@@ -36,11 +38,12 @@ export interface ProfileReport {
   routines: BotRoutine[]
   /** Absent when the bot did not report this heading: unknown, not none. */
   skills?: BotSkill[]
+  apps?: AppUse[]
   sends?: Handoff[]
   receives?: Handoff[]
 }
 
-type Section = 'routines' | 'skills' | 'sends' | 'receives'
+type Section = 'routines' | 'skills' | 'apps' | 'sends' | 'receives'
 
 const CRON = /^[\d*/,-]+(?: [\d*/,-]+){4}$/
 const collapse = (value: string) => value.replace(/\s+/g, ' ').trim()
@@ -77,10 +80,12 @@ export function parseProfileReport(text: string, at = '', from = ''): ProfileRep
   // The earlier form had no headings: every line in it is a routine.
   let section: Section | null = older ? 'routines' : null
   for (const line of lines.slice(start + 1).map((item) => item.trim())) {
-    const heading = older ? null : /^(routines|skills|sends|receives):?$/i.exec(line)?.[1]?.toLowerCase() as Section | undefined
+    const named = older ? undefined : /^(routines|skills|apps used|sends|receives):?$/i.exec(line)?.[1]?.toLowerCase()
+    const heading = (named === 'apps used' ? 'apps' : named) as Section | undefined
     if (heading) {
       section = heading
       if (heading === 'skills') report.skills = report.skills ?? []
+      else if (heading === 'apps') report.apps = report.apps ?? []
       else if (heading !== 'routines') report[heading] = report[heading] ?? []
       continue
     }
@@ -92,6 +97,8 @@ export function parseProfileReport(text: string, at = '', from = ''): ProfileRep
       if (routine) report.routines.push(routine)
     } else if (section === 'skills') {
       if (parts[0] && parts.length <= 2) report.skills!.push({ name: parts[0], ...(parts[1] ? { description: parts[1] } : {}) })
+    } else if (section === 'apps') {
+      if (parts[0] && parts.length <= 2) report.apps!.push({ name: parts[0], ...(parts[1] ? { use: parts[1] } : {}) })
     } else {
       const handoff = handoffFrom(parts)
       if (handoff) report[section]!.push(handoff)

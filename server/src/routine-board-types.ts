@@ -1,5 +1,11 @@
 import type { BotRoutine, BotSkill } from './org-files.ts'
 
+/** An app connected to the account that a bot says it uses, and what for. */
+export interface AppUse {
+  name: string
+  use?: string
+}
+
 /** Work a bot regularly hands to someone, or gets from someone, as the bot itself reports it. */
 export interface Handoff {
   /** The bot or person on the other end. */
@@ -25,6 +31,7 @@ export interface BoardBot {
   routines: BoardRoutine[]
   /** From the bot's own profile. Absent when it has not reported them. */
   skills?: BotSkill[]
+  apps?: AppUse[]
   sends?: Handoff[]
   receives?: Handoff[]
 }

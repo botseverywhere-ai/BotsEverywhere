@@ -2,13 +2,15 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { latestProfileReports, parseProfileReport, profileForm } from '../src/profile-reports.ts'
 
-test('the profile a bot fills in names its organization and seat, then its routines, private skills, and handoffs', () => {
+test('the profile a bot fills in names its organization and seat, then its routines, private skills, apps used, and handoffs', () => {
   assert.deepEqual(profileForm('org-a', 'x-com'), [
     'BotsEverywhere profile: org-a | x-com',
     'Routines:',
     '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>',
     'Skills:',
     '- <private skill turned on for you, not a built-in one> | <what it does, in one line>',
+    'Apps used:',
+    '- <app connected to the account that you use> | <what you use it for>',
     'Sends:',
     '- <bot or person you hand work to> | <what you send> | <when>',
     'Receives:',
@@ -29,6 +31,10 @@ test("a bot's profile reads its routines, skills, and handoffs, inside whatever 
     'Skills:',
     '- graph-skill | Export the Grok Bot team as a Grok Bot Graph JSON file',
     '- the-court-one-pager',
+    'Apps used:',
+    '- X | Reading his own account data; it can\'t publish posts',
+    '- Buffer | Standalone X posts only after Miguel approves the exact text',
+    '- Gmail',
     'Sends:',
     '- Miguel | Milestone and side post drafts for approval | After each routine run with news',
     '- Inner Loop - botseverywhere | Ask what changed in the latest stable build',
@@ -47,6 +53,11 @@ test("a bot's profile reads its routines, skills, and handoffs, inside whatever 
       { name: 'Tuesday wall', schedule: '0 9 * * 2', trigger: 'schedule', timeZone: 'Europe/Madrid', enabled: false },
     ],
     skills: [{ name: 'graph-skill', description: 'Export the Grok Bot team as a Grok Bot Graph JSON file' }, { name: 'the-court-one-pager' }],
+    apps: [
+      { name: 'X', use: "Reading his own account data; it can't publish posts" },
+      { name: 'Buffer', use: 'Standalone X posts only after Miguel approves the exact text' },
+      { name: 'Gmail' },
+    ],
     sends: [
       { who: 'Miguel', what: 'Milestone and side post drafts for approval', when: 'After each routine run with news' },
       { who: 'Inner Loop - botseverywhere', what: 'Ask what changed in the latest stable build' },

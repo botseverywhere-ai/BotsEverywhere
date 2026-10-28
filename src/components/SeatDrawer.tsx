@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { Seat } from '../data/mock-companies'
 import type { AccountApp } from '../../server/src/grok-sync.ts'
+import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { isGrokBotUrl, isSeatGrokLink, type BotSkill } from '../../server/src/org-files.ts'
 import { displayCardText } from '../preview/card-text'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
@@ -47,6 +48,7 @@ export function SeatDrawer({
   onUpdateInGrok,
   accountApps,
   reportedSkills,
+  reportedApps,
   children,
 }: {
   seat: Seat
@@ -82,6 +84,8 @@ export function SeatDrawer({
   accountApps?: AccountApp[]
   /** Skills turned on for this bot in Grok Bot, as the bot itself reported them. Absent until it does. */
   reportedSkills?: BotSkill[]
+  /** Apps this bot says it uses, from its own profile. Absent until it reports them. */
+  reportedApps?: AppUse[]
   /** Writes a request the Connector reads on its next run. */
   onCreateInGrok?: () => void
   /** Saves Profile on an organization of your own: the prompt or instructions, skills, and routines. */
@@ -182,7 +186,7 @@ export function SeatDrawer({
         )
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && onProfile ? (
-        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} grokUpdateItems={grokUpdateItems} accountApps={accountApps} reportedSkills={reportedSkills} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
+        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} grokUpdateItems={grokUpdateItems} accountApps={accountApps} reportedSkills={reportedSkills} reportedApps={reportedApps} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && !onProfile ? (
         <>

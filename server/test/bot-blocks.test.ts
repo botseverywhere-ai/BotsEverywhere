@@ -15,12 +15,14 @@ Processes: none
 Take work only from your managers above. Send each result to the manager who gave you the work. When that is not your main manager, also send your main manager one line on what you did.
 When a manager is a person, keep the result in your chat for them.
 Before each run of a routine, read your seat file and your process files.
-Whenever your routines, the private skills turned on for you, or the work you regularly hand on or get change, send Connector - BotsEverywhere (3s53) your full profile with SendToAgent, priority true, exactly in this form:
+Whenever your routines, the private skills turned on for you, the apps you use, or the work you regularly hand on or get change, send Connector - BotsEverywhere (3s53) your full profile with SendToAgent, priority true, exactly in this form:
 BotsEverywhere profile: org-test | security
 Routines:
 - <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>
 Skills:
 - <private skill turned on for you, not a built-in one> | <what it does, in one line>
+Apps used:
+- <app connected to the account that you use> | <what you use it for>
 Sends:
 - <bot or person you hand work to> | <what you send> | <when>
 Receives:

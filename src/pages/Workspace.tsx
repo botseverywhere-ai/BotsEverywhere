@@ -27,7 +27,8 @@ import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
-import { connectedApps } from '../org/bot-apps'
+import type { AppUse } from '../../server/src/routine-board-types.ts'
+import { botApps, connectedApps } from '../org/bot-apps'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -1020,7 +1021,7 @@ export function Workspace({
           ) : null}
           {view === 'performance' ? (
             <PerformanceTable
-              bots={bots.map((seat) => ({ ...seat, shown: metricsById.get(seat.id) }))}
+              bots={bots.map((seat) => ({ ...seat, shown: metricsById.get(seat.id), appsUsed: routineBoard?.bots.find((item) => item.slug === seat.id)?.apps }))}
               leastId={least?.id}
               requests={createRequests}
               accountApps={accountApps}
@@ -1059,6 +1060,7 @@ export function Workspace({
           grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate) : []}
           accountApps={accountApps}
           reportedSkills={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.skills}
+          reportedApps={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.apps}
           onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}
@@ -1157,7 +1159,7 @@ function PerformanceTable({
   canRetire,
   onRetire,
 }: {
-  bots: { id: string; name: string; apps?: string[]; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
+  bots: { id: string; name: string; apps?: string[]; appsUsed?: AppUse[]; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
   /** Bots the app asked the Connector to create. Their row says Connecting until the Connector reports them. */
   requests?: { seat: string; requestedAt: string }[]
@@ -1170,9 +1172,14 @@ function PerformanceTable({
   if (!rows.length) return <p className="be-empty">No bots hired yet.</p>
   return (
     <>
+      {accountApps?.length ? (
+        <p className="be-performance-apps"><strong>Connected to your Grok Bot account:</strong> {connectedApps(accountApps).map((app, index) => (
+          <span key={app.name} className={app.status === 'needsAuth' ? 'app-needs-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
+        ))}</p>
+      ) : null}
       <table className="be-performance">
         <thead>
-          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Connected</th><th>Action</th></tr>
+          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Apps used</th><th>Action</th></tr>
         </thead>
         <tbody>
           {rows.map((seat) => {
@@ -1190,7 +1197,7 @@ function PerformanceTable({
                     <td>{formatShortDate(seat.shown?.lastActive || '')}</td>
                   </>
                 )}
-                <td>{connectedApps(accountApps).length ? connectedApps(accountApps).map((app, index) => (
+                <td>{seat.appsUsed?.length ? botApps(seat.appsUsed.map((app) => app.name), accountApps).map((app, index) => (
                   <span key={app.name} className={app.status === 'needsAuth' ? 'app-needs-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
                 )) : '—'}</td>
                 <td>{canRetire ? <Button variant="secondary" type="button" onClick={() => onRetire(seat.id)}>Retire…</Button> : null}</td>

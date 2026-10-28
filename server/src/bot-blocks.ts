@@ -59,7 +59,7 @@ export function blockText(input: BlockInput): string {
   lines.push(
     'When a manager is a person, keep the result in your chat for them.',
     'Before each run of a routine, read your seat file and your process files.',
-    `Whenever your routines, the private skills turned on for you, or the work you regularly hand on or get change, send Connector - BotsEverywhere (${input.copyId}) your full profile with SendToAgent, priority true, exactly in this form:`,
+    `Whenever your routines, the private skills turned on for you, the apps you use, or the work you regularly hand on or get change, send Connector - BotsEverywhere (${input.copyId}) your full profile with SendToAgent, priority true, exactly in this form:`,
     ...profileForm(input.orgId, input.seat),
     `Run log: ${orgPath(input.orgsFolder, input.orgId, 'log', 'YYYY-MM-DD.md')}, in local time for ${input.timeZone}. If the file is missing, start it with "# Run log YYYY-MM-DD".`,
     'After each step of a routine, append exactly one line:',

@@ -53,7 +53,7 @@ test("every bot is connected to the account's apps: connected first, then the on
   assert.deepEqual(connectedApps(undefined), [])
 })
 
-test('the Work Chart shows routines and handoffs on your own organizations; Performance and Profile say Connected; Profile shows the skills a bot reports', () => {
+test('the Work Chart shows routines and handoffs on your own organizations; Performance and Profile show the account\'s apps once and the apps each bot uses; Profile shows the skills a bot reports', () => {
   const hook = readFileSync(new URL('../../src/live/use-routine-board.ts', import.meta.url), 'utf8')
   assert.match(hook, /export function useRoutineBoard\(orgId: string, refresh: unknown, enabled: boolean\)/)
   assert.match(hook, /fetch\(`\/api\/orgs\/\$\{orgId\}\/routines`\)/)
@@ -68,12 +68,17 @@ test('the Work Chart shows routines and handoffs on your own organizations; Perf
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(workspace, /const routineBoard = useRoutineBoard\(bundle\.id, sync, editable\)/)
   assert.match(workspace, /routines=\{editable && routineBoard \? <RoutineBoard board=\{routineBoard\} \/> : undefined\}/)
-  assert.match(workspace, /<th>Connected<\/th>/)
+  assert.match(workspace, /<th>Apps used<\/th>/)
+  assert.equal(workspace.includes('<th>Connected</th>'), false, 'no column repeating the same account list on every row')
+  assert.match(workspace, /<strong>Connected to your Grok Bot account:<\/strong>/)
+  assert.match(workspace, /appsUsed: routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps/)
+  assert.match(workspace, /reportedApps=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.apps\}/)
   assert.equal(workspace.includes('<th>Apps</th>'), false)
   assert.match(workspace, /connectedApps\(accountApps\)/)
   assert.match(workspace, /reportedSkills=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.skills\}/)
   const profile = readFileSync(new URL('../../src/components/BotProfile.tsx', import.meta.url), 'utf8')
-  assert.match(profile, /<h3 className="card-label">Connected<\/h3>/)
+  assert.match(profile, /<h3 className="card-label">Apps used<\/h3>/)
+  assert.match(profile, /<strong>Connected to your Grok Bot account:<\/strong>/)
   assert.match(profile, /<h3 className="card-label">Turned on in Grok Bot<\/h3>/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.routine-card\.is-paused \{/)

@@ -50,6 +50,7 @@ export function routineBoard(input: {
         reportedAt: report.at,
         routines: report.routines.map(withNext),
         ...(report.skills ? { skills: report.skills } : {}),
+        ...(report.apps ? { apps: report.apps } : {}),
         ...(report.sends ? { sends: report.sends } : {}),
         ...(report.receives ? { receives: report.receives } : {}),
       })
