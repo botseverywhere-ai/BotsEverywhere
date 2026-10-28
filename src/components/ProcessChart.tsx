@@ -681,9 +681,10 @@ function TriggerIcon({ type }: { type: TriggerType }) {
       </svg>
     )
   }
+  // Manual: a raised hand, someone hands the work on.
   return (
     <svg className="process-icon" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M6.5 7.5V4.2a1.2 1.2 0 0 1 2.4 0V8l1.7-1a1.1 1.1 0 0 1 1.5.4 1.1 1.1 0 0 1-.3 1.5L8.8 11.2a3 3 0 0 1-1.6.4H6.2A2.2 2.2 0 0 1 4 9.4V8.2a1.2 1.2 0 0 1 2.4 0v.3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.75 4.5v6c0 2.1 1.55 3.75 3.5 3.75s3.25-1.65 3.25-3.75v-5M7 7.5V3M9.25 7.5V3.5M4.75 10 3 8.25" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

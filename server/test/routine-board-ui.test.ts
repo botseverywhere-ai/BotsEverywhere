@@ -174,6 +174,7 @@ test('the Work Chart shows routines, handoffs, routines without a flow, and bots
   for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}', '{IDLE_HINT}']) assert.ok(chart.includes(`<SegmentHint>${hint}</SegmentHint>`), hint)
   assert.match(chart, /function SegmentHint\(\{ children \}: \{ children: string \}\) \{\n\s+return <p className="process-segment-hint"><InfoIcon \/><span>\{children\}<\/span><\/p>/, 'every box explanation starts with an (i)')
   assert.match(chart, /function InfoIcon\(\) \{/)
+  assert.match(chart, /\/\/ Manual: a raised hand, someone hands the work on\.\n\s+return \(\n\s+<svg className="process-icon" viewBox="0 0 16 16" aria-hidden="true">\n\s+<path d="M4\.75 4\.5v6c0 2\.1 1\.55 3\.75 3\.5 3\.75s3\.25-1\.65 3\.25-3\.75v-5M7 7\.5V3M9\.25 7\.5V3\.5M4\.75 10 3 8\.25"/, 'the Manual trigger shows a hand: palm, fingers, and thumb')
   assert.match(chart, /\{show === 'all' \|\| show === 'routines' \? \(/, 'the Routines box shows even with no flows, so the chart explains itself')
   assert.match(chart, /\{show === 'all' \|\| show === 'handoffs' \? \(/)
   assert.match(chart, /\{show === 'all' \|\| show === 'off' \? \(/)
