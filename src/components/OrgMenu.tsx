@@ -28,12 +28,12 @@ export function OrgMenu({ slug, name }: { slug: string; name: string }) {
         body: JSON.stringify({ confirm: typed }),
       })
       const body = (await response.json().catch(() => ({}))) as { next?: string; error?: string }
-      if (!response.ok || !body.next) {
+      if (!response.ok) {
         setError(body.error || 'Could not delete the organization.')
         setBusy(false)
         return
       }
-      window.location.hash = `#/org/${body.next}/overview`
+      window.location.hash = body.next ? `#/org/${body.next}/overview` : '#/orgs'
       window.location.reload()
     } catch {
       setError('Saving is off. Restart npm run dev, then try again.')

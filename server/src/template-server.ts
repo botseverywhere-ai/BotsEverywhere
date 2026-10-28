@@ -2045,7 +2045,6 @@ export function deleteOrg(orgsDir: string, slug: string, confirm: string): { ok:
   const name = read.ok ? read.bundle.org.company.name.trim() : slug
   if (confirm.trim() !== name) return { ok: false, status: 422, error: `Type ${name} to delete this organization.` }
   const others = listOrgSlugs(orgsDir).filter((other) => other !== slug)
-  if (!others.length) return { ok: false, status: 409, error: 'This is your only organization. Create another one first.' }
   const bin = resolve(orgsDir, DELETED_DIR)
   mkdirSync(bin, { recursive: true })
   const target = resolve(bin, `${slug}-${new Date().toISOString().replace(/[:.]/g, '-')}`)
@@ -2060,7 +2059,8 @@ export function deleteOrg(orgsDir: string, slug: string, confirm: string): { ok:
       if (existsSync(resolve(root, 'org.md'))) return { ok: false, status: 409, error: `A copy is in orgs/${DELETED_DIR}/, but the folder is in use. Close any program that has it open, then try again.` }
     }
   }
-  return { ok: true, next: others[0]! }
+  // The last organization leaves no next one: the page opens Your orgs, as on a fresh copy.
+  return { ok: true, next: others[0] ?? '' }
 }
 
 /** Where an org's files sit and how many there are, for Your files on Organization Overview. Null when the org is not there. Never throws. */

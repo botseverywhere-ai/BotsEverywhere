@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { DELETED_DIR, createOrgFiles, deleteOrg, listOrgSlugs } from '../src/template-server.ts'
 
-test('deleting an organization needs its exact name, keeps the last one, and moves the folder aside', () => {
+test('deleting an organization needs its exact name, moves the folder aside, and can remove the last one', () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-delete-'))
   const orgs = join(dir, 'orgs')
   mkdirSync(orgs)
@@ -13,9 +13,6 @@ test('deleting an organization needs its exact name, keeps the last one, and mov
     const north = createOrgFiles(orgs, 'North office', 'Ada')
     assert.equal(north.ok, true)
     if (!north.ok) return
-    const alone = deleteOrg(orgs, north.slug, 'North office')
-    assert.equal(alone.ok, false, 'the only organization stays')
-    assert.equal(!alone.ok && alone.status, 409)
 
     const south = createOrgFiles(orgs, 'South office', 'Ada')
     assert.equal(south.ok, true)
@@ -33,8 +30,19 @@ test('deleting an organization needs its exact name, keeps the last one, and mov
     assert.ok(kept[0]!.startsWith(`${north.slug}-`))
     assert.equal(existsSync(join(orgs, DELETED_DIR, kept[0]!, 'org.md')), true, 'the files can be moved back')
 
+    const last = deleteOrg(orgs, south.slug, 'South office')
+    assert.deepEqual(last, { ok: true, next: '' }, 'the only organization can go too, with no next one to open')
+    assert.deepEqual(listOrgSlugs(orgs), [], 'the copy starts from zero')
+    assert.equal(readdirSync(join(orgs, DELETED_DIR)).length, 2, 'both can be moved back')
+
     assert.equal(!deleteOrg(orgs, 'missing-org', 'x').ok, true)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+})
+
+test('after deleting the last organization the page opens Your orgs, like a fresh copy', () => {
+  const menu = readFileSync(new URL('../../src/components/OrgMenu.tsx', import.meta.url), 'utf8')
+  assert.match(menu, /window\.location\.hash = body\.next \? `#\/org\/\$\{body\.next\}\/overview` : '#\/orgs'/)
+  assert.doesNotMatch(menu, /!body\.next/, 'an empty next is not an error')
 })
