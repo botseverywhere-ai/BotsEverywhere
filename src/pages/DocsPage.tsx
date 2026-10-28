@@ -516,7 +516,7 @@ doneWhen: The invoice is matched and payment is approved or sent back.
 Plain notes for the people reading the file.`}</CodeBlock>
         <ul>
           <li><strong>Import processes from Grok Bot</strong> reads the routines and handoffs Grok Bot runs from a JSON file and writes one file per flow. Importing again replaces each flow with Grok Bot&apos;s latest version. An unknown seat name is reported and kept as written.</li>
-          <li><strong>Delete</strong> removes a flow Grok Bot no longer runs. It asks first.</li>
+          <li><strong>Delete</strong> removes a flow from this Work Chart only and never changes Grok Bot. It asks first.</li>
         </ul>
         <p>
           While bots run, each step shows its latest status, with an activity feed and a <strong>Needs your approval</strong> list. Click a step to open its seat card.

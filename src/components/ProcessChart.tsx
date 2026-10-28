@@ -17,7 +17,7 @@ import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
@@ -237,7 +237,7 @@ export function ProcessChart({
       {removing ? (
         <div className="be-modal" role="dialog" aria-labelledby="delete-process-title">
           <h2 id="delete-process-title">Delete {removing.name}?</h2>
-          <p>This removes the process file. Seats on the org chart stay.</p>
+          <p>{deleteFlowText(removing)}</p>
           <div className="be-modal-actions">
             <Button variant="secondary" type="button" onClick={() => setRemoving(null)}>Cancel</Button>
             <Button variant="primary" type="button" onClick={() => void remove(removing)} disabled={busy}>Delete</Button>

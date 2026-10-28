@@ -23,6 +23,14 @@ export const HANDOFFS_HINT = "Flows whose trigger is someone handing work on, or
 export const OFF_CHART_HINT = "These routines run in Grok Bot, but this Work Chart doesn't show their steps yet. Import processes from Grok Bot and each one becomes a flow with all its steps."
 export const IDLE_HINT = 'Bots that do no step in any flow on this Work Chart yet.'
 
+/** What Delete does, before it does it: it removes a flow here only. A routine keeps running in Grok Bot. */
+export function deleteFlowText(process: Pick<ProcessFile, 'trigger'>): string {
+  const grok = flowSegment(process) === 'routines'
+    ? "Grok Bot doesn't change: the routine keeps running there and moves to Routines without a flow."
+    : "Grok Bot doesn't change."
+  return `This removes the flow from this Work Chart only. ${grok} Importing processes from Grok Bot again brings the flow back.`
+}
+
 /** What an import of Grok Bot's processes file did: flows new here, and flows it updated to Grok Bot's version. */
 export function importSummary(imported: { replaced: boolean }[]): string {
   const updated = imported.filter((item) => item.replaced).length

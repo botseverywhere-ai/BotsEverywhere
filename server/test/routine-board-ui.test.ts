@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
@@ -152,7 +152,14 @@ test('the Work Chart only shows what Grok Bot runs: no New process, Edit, Copy f
   const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
   for (const gone of ['+ New process', 'Copy for Grok Bot', 'Simulate a run', 'or when the action contains send, pay, post']) assert.equal(docs.includes(gone), false, gone)
   assert.ok(docs.includes('Importing again replaces each flow with Grok Bot&apos;s latest version.'))
-  assert.ok(docs.includes('<strong>Delete</strong> removes a flow Grok Bot no longer runs. It asks first.'))
+  assert.ok(docs.includes('<strong>Delete</strong> removes a flow from this Work Chart only and never changes Grok Bot. It asks first.'))
+  assert.match(chart, /<p>\{deleteFlowText\(removing\)\}<\/p>/)
+})
+
+test('deleting a flow says it changes only this Work Chart, never Grok Bot, and where a routine goes', () => {
+  const at = (type: 'schedule' | 'manual') => ({ trigger: { type, schedule: '', source: '', description: '' } })
+  assert.equal(deleteFlowText(at('schedule')), "This removes the flow from this Work Chart only. Grok Bot doesn't change: the routine keeps running there and moves to Routines without a flow. Importing processes from Grok Bot again brings the flow back.")
+  assert.equal(deleteFlowText(at('manual')), "This removes the flow from this Work Chart only. Grok Bot doesn't change. Importing processes from Grok Bot again brings the flow back.")
 })
 
 test('the import says how many flows are new and how many it updated', () => {
