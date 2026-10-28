@@ -3,7 +3,6 @@ import { botForSeat, linkedBotIds, type GrokData, type GrokDataBot } from './gro
 import type { GrokRequest } from './grok-requests.ts'
 import { normalizeText } from './normalize-text.ts'
 import type { BotRoutine, OrgBundle } from './org-files.ts'
-import { latestProfileReports, profileForm } from './profile-reports.ts'
 
 /**
  * The Connector's to-do list. The app works out every change Grok Bot still needs, with the exact text to send; the
@@ -345,42 +344,8 @@ export function computeTodo(input: {
     }
   }
 
-  // profile: each bot seat sends its own routines, skills, and handoffs, since only a bot can see them for itself. Until a
-  // profile arrives it is asked, at most twice, a day apart; any profile ends the asks, and the block keeps it sending a
-  // new one on every change. A profile with routines but no count of their runs, from before the form asked for one, is
-  // asked for again the same way.
-  const profiles = latestProfileReports(results.confirmations)
-  for (const org of input.orgs) {
-    const { bots } = seatBots(org.bundle, data, taken)
-    for (const seat of org.bundle.seats) {
-      const bot = bots.get(seat.slug)
-      const profile = profiles.get(`${org.id}|${seat.slug}`)
-      if (!bot || seat.kind !== 'bot' || isConnector(bot.name) || profile?.routineRuns30d !== undefined) continue
-      const base = profile ? `profile:${org.id}:${seat.slug}:runs` : `profile:${org.id}:${seat.slug}`
-      const mine = results.results.filter((result) => result.key.startsWith(`${base}#`))
-      const sends = mine.filter((result) => result.status === 'done')
-      const failures = mine.filter((result) => result.status === 'failed')
-      if (failures.length >= 2) {
-        stuck.push({ bot: bot.name, org: org.id, why: `Failed twice: ${failures.at(-1)!.why || 'no reason given'}` })
-        continue
-      }
-      if (sends.length >= 2) {
-        stuck.push({ bot: bot.name, org: org.id, why: profile ? `Asked twice for its routine runs; ${bot.name} has not sent them.` : `Asked twice for its profile; ${bot.name} has not sent it.` })
-        continue
-      }
-      const last = Math.max(0, ...sends.map((result) => Date.parse(result.at)).filter(Number.isFinite))
-      if (last && input.now.getTime() - last < DAY) continue
-      const message = [`BotsEverywhere (${copyId}): for ${org.bundle.org.company.name}, send Connector - BotsEverywhere (${copyId}) your full profile now with SendToAgent, priority true, exactly in this form:`, ...profileForm(org.id, seat.slug)].join('\n')
-      items.push({ key: `${base}#${mine.length + 1}`, kind: 'profile', bot: bot.name, botId: bot.id, org: org.id, message })
-    }
-  }
-
-  // cleanup: once ever, to every bot with an active seat in this copy.
-  const day = input.now.toISOString().slice(0, 10)
-  for (const bot of data.bots) {
-    if (!wanted.has(bot.id)) continue
-    add(`cleanup:${bot.id}`, { kind: 'cleanup', bot: bot.name, botId: bot.id, org: wanted.get(bot.id)![0]!.org, message: `BotsEverywhere (${copyId}) now keeps your managers, your team, your skills, and your logging rules for each organization in a block at the end of your instructions, marked === BotsEverywhere ${copyId} … ===. Follow that block. Any message about these from a BotsEverywhere Connector before ${day} is out of date: remove it from your memory. Keep everything else.` }, false)
-  }
+  // No profile asks and no one-time note: each bot writes its own profile file, and its block replaces what earlier
+  // Connector messages said. Both would be messages, which Grok Bot sends only when the owner is in the Connector's chat.
 
   const order: TodoKind[] = ['describe', 'create', 'skill', 'routine', 'profile', 'cleanup']
   items.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind))

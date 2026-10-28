@@ -80,6 +80,7 @@ test('the watcher maps the snapshot file to a grok event', () => {
   assert.deepEqual(orgChange('C:/x/orgs', 'your-company/grok/snapshot.json'), { slug: 'your-company', kind: 'grok' })
   assert.deepEqual(orgChange('/x/orgs', '/x/orgs/your-company/grok/snapshot.json'), { slug: 'your-company', kind: 'grok' })
   assert.deepEqual(orgChange('/x/orgs', 'your-company/seats/you.md'), { slug: 'your-company', kind: 'org' })
+  assert.deepEqual(orgChange('C:/x/orgs', 'C:\\x\\orgs\\your-company\\profiles\\x-com.md'), { slug: 'your-company', kind: 'grok' }, "a bot's own profile refreshes what Grok Bot shows")
 })
 
 test('the Connector prompt writes the snapshot, runs on a schedule, and never edits app files', () => {

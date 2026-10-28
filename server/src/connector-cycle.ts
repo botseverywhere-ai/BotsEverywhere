@@ -8,6 +8,7 @@ import type { GrokRequest } from './grok-requests.ts'
 import type { ConnectorState } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import type { OrgBundle } from './org-files.ts'
+import { profileFileLines } from './profile-files.ts'
 import { latestProfileReports, type ProfileReport } from './profile-reports.ts'
 import { readConnector, readRemoveCopies, readSyncMinutes } from './project.ts'
 import { listOrgSlugs, readOrgDir, readRequests } from './template-server.ts'
@@ -73,7 +74,7 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
     orgs.push({ id: slug, bundle: read.bundle, requests: readRequests(root).requests })
   }
   const taken = linkedBotIds(orgs.map((org) => org.bundle))
-  const profiles = latestProfileReports(results.confirmations)
+  const profiles = latestProfileReports([...results.confirmations, ...profileFileLines(orgsDir, orgs.map((org) => org.id))])
   for (const org of orgs) {
     const orgName = org.bundle.org.company.name
     const created = org.requests.filter((request) => request.kind !== 'update').map((request) => request.name)

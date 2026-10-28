@@ -80,7 +80,7 @@ test('sync status lists stuck items with reasons, a first failure, a dump error,
     assert.deepEqual(connector.failed, [{ bot: 'Inner Loop', why: 'UpdateAgent timed out' }])
     assert.equal(connector.pending, 1, 'Grok Bot\'s block has waited through three dumps; Inner Loop is on its second attempt')
     assert.equal(connector.pendingSince, '2026-10-28T10:00:00+01:00')
-    assert.deepEqual(connector.waiting, { routines: 0, profiles: 4, notes: 4 }, 'messages to bots wait for the owner, not for a run')
+    assert.deepEqual(connector.waiting, { routines: 0, profiles: 0, notes: 0 }, 'bots write their own profiles, and no one-time note goes out: nothing waits for the owner')
     assert.deepEqual(connector.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: false }])
     assert.equal(connector.dumpError, '')
 

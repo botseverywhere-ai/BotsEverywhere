@@ -148,13 +148,10 @@ function project() {
 
 const todoOf = (orgs: string) => JSON.parse(readFileSync(join(orgs, TODO_FILE), 'utf8')) as TodoFile
 
-test('an unreadable results file stops the cycle and says so, and a cleanup sent once is never sent again even if the results file loses it', () => {
+test('an unreadable results file stops the cycle and says so, and leaves the to-do list as it was', () => {
   const t = project()
   try {
     writeFileSync(join(t.orgs, GROK_DATA_FILE), JSON.stringify(data([bot('lead', 'Lead', 'Leads.')])))
-    assert.ok(runConnectorCycle(t.orgs, t.copy).ok)
-    const cleanup = todoOf(t.orgs).items.find((entry) => entry.kind === 'cleanup')!
-    writeFileSync(join(t.orgs, RESULTS_FILE), JSON.stringify({ results: [{ key: cleanup.key, status: 'done', at: '2026-10-28T09:05:00.000Z' }], confirmations: [] }))
     assert.ok(runConnectorCycle(t.orgs, t.copy).ok)
     const before = readFileSync(join(t.orgs, TODO_FILE), 'utf8')
     writeFileSync(join(t.orgs, RESULTS_FILE), '{"results": [')
@@ -165,7 +162,6 @@ test('an unreadable results file stops the cycle and says so, and a cleanup sent
     assert.match(connectorState(t.orgs, t.org).dumpError, /connector-results\.json/)
     writeFileSync(join(t.orgs, RESULTS_FILE), JSON.stringify({ results: [], confirmations: [] }))
     assert.ok(runConnectorCycle(t.orgs, t.copy).ok)
-    assert.equal(todoOf(t.orgs).items.some((entry) => entry.kind === 'cleanup'), false, 'the app remembers the cleanup was sent')
   } finally {
     t.done()
   }

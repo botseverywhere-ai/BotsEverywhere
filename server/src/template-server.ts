@@ -39,6 +39,7 @@ import {
 } from './org-files.js'
 import { logFileName, parseLogMarkdown, parseOrgMarkdown, parseWorkMarkdown, serializeLogMarkdown, serializeOrgMarkdown, serializeWorkMarkdown } from './org-markdown.js'
 import { deleteProcessFile, importProcessRows, readProcessDir, writeProcessFile } from './process-files.js'
+import { profileFileLines } from './profile-files.js'
 import { parseProcessesFile, parseProcessMarkdown, serializeProcess, type ProcessFile } from './processes.js'
 import { createLiveHub, type LiveKind } from './live-hub.js'
 import { isRunLogName, planRun } from './run-log.js'
@@ -2084,7 +2085,7 @@ export function readRoutineBoard(orgsDir: string, slug: string, now = new Date()
       orgId: slug,
       bundle: read.bundle,
       data: dump.ok ? dump.data : null,
-      confirmations: results ? parseResults(results).confirmations : [],
+      confirmations: [...(results ? parseResults(results).confirmations : []), ...profileFileLines(orgsDir, [slug])],
       connector: connector && ranAt > 0 ? { lastRun: new Date(ranAt).toISOString(), syncMinutes: connector.syncMinutes ?? readSyncMinutes(orgsDir) } : null,
       timeZone: localTimeZone(),
       now,

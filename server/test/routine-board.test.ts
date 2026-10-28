@@ -93,6 +93,11 @@ test('GET /api/orgs/<slug>/routines serves each bot\'s routines from its report,
     const body = await response.json() as { bots: { slug: string; source: string; routines: { name: string; enabled: boolean }[] }[] }
     assert.deepEqual(body.bots.map((item) => [item.slug, item.source, item.routines.map((routine) => `${routine.name}:${routine.enabled}`)]), [['x-com', 'bot', ['Check:false']]])
     assert.equal((await fetch(`http://127.0.0.1:${started.port}/api/orgs/no-such-org/routines`)).status, 404)
+    // The profile the bot wrote to its file, later than the one it sent, wins.
+    mkdirSync(join(orgs, slug, 'profiles'))
+    writeFileSync(join(orgs, slug, 'profiles', 'x-com.md'), `BotsEverywhere profile: ${slug} | x-com\nRoutines:\n- Check | 0 9,21 * * * | Europe/Madrid | active | never | 12`)
+    const fromFile = await (await fetch(`http://127.0.0.1:${started.port}/api/orgs/${slug}/routines`)).json() as { bots: { routineRuns30d?: number; routines: { enabled: boolean }[] }[] }
+    assert.deepEqual([fromFile.bots[0]!.routines[0]!.enabled, fromFile.bots[0]!.routineRuns30d], [true, 12])
   } finally {
     await started.close()
     rmSync(dir, { recursive: true, force: true })

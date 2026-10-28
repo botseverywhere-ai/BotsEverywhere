@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { OrgBundle, SeatDocument } from './org-files.ts'
+import { PROFILES_DIR } from './profile-files.ts'
 import { profileForm } from './profile-reports.ts'
 
 /**
@@ -19,7 +20,7 @@ export interface BlockInput {
   timeZone: string
   /** The bot's own name, as its log lines carry it. */
   botName: string
-  /** The seat's slug, which names it in the profile the bot sends. */
+  /** The seat's slug, which names the bot's profile file and the seat in it. */
   seat: string
   seatFile: string
   main: Party
@@ -59,7 +60,8 @@ export function blockText(input: BlockInput): string {
   lines.push(
     'When a manager is a person, keep the result in your chat for them.',
     'Before each run of a routine, read your seat file and your process files.',
-    `Whenever your routines, the private skills turned on for you, the apps you use, or the work you regularly hand on or get change, send Connector - BotsEverywhere (${input.copyId}) your full profile with SendToAgent, priority true, exactly in this form:`,
+    // A file, not a message: a bot writes it on its own runs, so nothing waits for the owner to tell the Connector's chat.
+    `Profile file: ${orgPath(input.orgsFolder, input.orgId, PROFILES_DIR, `${input.seat}.md`)}. Each time you are active, in a chat, on a message, or when one of your routines finishes, check it. If it is missing, more than a day old, or no longer matches your routines, the private skills turned on for you, the apps you use, or the work you regularly hand on or get, write it with Shell, exactly in this form and nothing else:`,
     ...profileForm(input.orgId, input.seat),
     `Run log: ${orgPath(input.orgsFolder, input.orgId, 'log', 'YYYY-MM-DD.md')}, in local time for ${input.timeZone}. If the file is missing, start it with "# Run log YYYY-MM-DD".`,
     'After each step of a routine, append exactly one line:',

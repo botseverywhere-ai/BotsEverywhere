@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { orgBlocks, sha256 } from '../src/bot-blocks.ts'
 import { computeTodo, parseResults, routineConfirmed, updatedFor, type ResultsFile } from '../src/connector-todo.ts'
-import { profileForm } from '../src/profile-reports.ts'
 import type { GrokData, GrokDataBot } from '../src/grok-data.ts'
 import type { GrokRequest } from '../src/grok-requests.ts'
 import { bundleFromState, parseSeatMarkdown, type OrgBundle, type SeatDocument } from '../src/org-files.ts'
@@ -131,15 +130,11 @@ test('a failed item comes back as a new attempt, and after two failures it is st
   assert.match(stuck.stuck[0]!.why, /read-back differed/)
 })
 
-test('the cleanup message goes once to each bot with an active seat, with the agreed text', () => {
+test('no one-time note goes to any bot: the block itself replaces what earlier Connector messages said', () => {
   const desk = org('org-a', 'Desk', [you, lead])
   const dump = data([bot('lead', 'Lead', 'Leads.'), bot('stray', 'Stray', 'Nobody.')])
   const todo = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: NO_RESULTS })
-  const cleanups = todo.items.filter((entry) => entry.kind === 'cleanup')
-  assert.deepEqual(cleanups.map((entry) => entry.botId), ['lead'])
-  assert.equal(cleanups[0]!.message, 'BotsEverywhere (3s53) now keeps your managers, your team, your skills, and your logging rules for each organization in a block at the end of your instructions, marked === BotsEverywhere 3s53 … ===. Follow that block. Any message about these from a BotsEverywhere Connector before 2026-10-28 is out of date: remove it from your memory. Keep everything else.')
-  const sent = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: { results: [{ key: cleanups[0]!.key, status: 'done', at: '2026-10-28T10:01:00.000Z' }], confirmations: [] } })
-  assert.equal(sent.items.some((entry) => entry.kind === 'cleanup'), false)
+  assert.equal(todo.items.some((entry) => entry.kind === 'cleanup'), false)
 })
 
 test("another copy's blocks are listed, and removed only when the owner asked", () => {
@@ -185,43 +180,13 @@ test('a change reported done that a newer dump still does not show comes back as
   assert.equal(afterDump.items.some((entry) => entry.kind === 'describe'), false, 'done after this dump: wait for the next one')
 })
 
-test('a bot whose profile gives no count of its routine runs is asked once more, then stuck; one with counts or no routines is not', () => {
+test('no bot is asked for its profile: each bot writes its own profile file, so nothing waits for the owner', () => {
   const desk = org('org-a', 'Desk', [you, lead])
   const dump = data([bot('lead', 'Lead', 'Leads.')])
-  const run = (results: ResultsFile, now = NOW) => computeTodo({ ...BASE, now, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results })
-  const asks = (results: ResultsFile, now = NOW) => run(results, now).items.filter((item) => item.kind === 'profile')
-  const profile = (routines: string) => ({ line: `BotsEverywhere profile: org-a | lead\nRoutines:\n${routines}`, from: 'Lead', at: '2026-10-28T10:40:00+01:00' })
-  const uncounted: ResultsFile = { results: [{ key: 'profile:org-a:lead#1', status: 'done', at: '2026-10-28T10:30:00+01:00' }], confirmations: [profile('- Weekly | 0 9 * * 1 | Europe/Madrid | active | never')] }
-  const again = asks(uncounted)
-  assert.equal(again[0]?.key, 'profile:org-a:lead:runs#1')
-  assert.equal(again[0]?.message, ['BotsEverywhere (3s53): for Desk, send Connector - BotsEverywhere (3s53) your full profile now with SendToAgent, priority true, exactly in this form:', ...profileForm('org-a', 'lead')].join('\n'))
-  assert.equal(asks({ ...uncounted, confirmations: [profile('- Weekly | 0 9 * * 1 | Europe/Madrid | active | never | 4')] }).length, 0)
-  assert.equal(asks({ ...uncounted, confirmations: [profile('- none')] }).length, 0)
-  const twice: ResultsFile = { ...uncounted, results: [...uncounted.results, { key: 'profile:org-a:lead:runs#1', status: 'done', at: '2026-10-28T11:00:00+01:00' }, { key: 'profile:org-a:lead:runs#2', status: 'done', at: '2026-10-29T12:00:00+01:00' }] }
-  const later = run(twice, new Date('2026-10-31T10:00:00.000Z'))
-  assert.equal(later.items.some((item) => item.kind === 'profile'), false)
-  assert.ok(later.stuck.some((item) => item.why === 'Asked twice for its routine runs; Lead has not sent them.'), JSON.stringify(later.stuck))
-})
-
-test('each bot seat is asked once for its profile, with the form to fill in, until it sends one; a second ask a day later, then stuck', () => {
-  const desk = org('org-a', 'Desk', [you, lead])
-  const dump = data([bot('lead', 'Lead', 'Leads.'), bot('conn', 'Connector - BotsEverywhere (3s53)', 'Syncs.')])
-  const run = (results: ResultsFile, now = NOW) => computeTodo({ ...BASE, now, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results })
-  const asks = (results: ResultsFile, now = NOW) => run(results, now).items.filter((item) => item.kind === 'profile')
-  const first = asks(NO_RESULTS)
-  assert.equal(first.length, 1, 'one ask, for the bot seat; none for a person or the Connector')
-  assert.equal(first[0]!.key, 'profile:org-a:lead#1')
-  assert.equal(first[0]!.botId, 'lead')
-  assert.equal(first[0]!.message, ['BotsEverywhere (3s53): for Desk, send Connector - BotsEverywhere (3s53) your full profile now with SendToAgent, priority true, exactly in this form:', ...profileForm('org-a', 'lead')].join('\n'))
-  const sent: ResultsFile = { results: [{ key: 'profile:org-a:lead#1', status: 'done', at: '2026-10-28T10:30:00+01:00' }], confirmations: [] }
-  assert.equal(asks(sent).length, 0, 'sent once: wait a day for the profile')
-  assert.equal(asks(sent, new Date('2026-10-29T10:31:00.000Z'))[0]?.key, 'profile:org-a:lead#2', 'no profile after a day: ask once more')
-  const twice: ResultsFile = { results: [...sent.results, { key: 'profile:org-a:lead#2', status: 'done', at: '2026-10-29T11:31:00+01:00' }], confirmations: [] }
-  const later = run(twice, new Date('2026-10-31T10:00:00.000Z'))
-  assert.equal(later.items.some((item) => item.kind === 'profile'), false)
-  assert.ok(later.stuck.some((item) => item.why === 'Asked twice for its profile; Lead has not sent it.'), JSON.stringify(later.stuck))
-  const listed: ResultsFile = { results: [], confirmations: [{ line: 'BotsEverywhere profile: org-a | lead\nRoutines:\n- none', from: 'Lead', at: '2026-10-28T10:40:00+01:00' }] }
-  assert.equal(asks(listed).length, 0, 'a profile, even an empty one, ends the asks')
-  const older: ResultsFile = { results: [], confirmations: [{ line: 'BotsEverywhere routines: org-a | lead\n- none', from: 'Lead', at: '2026-10-28T10:40:00+01:00' }] }
-  assert.equal(asks(older).length, 0, 'a routines-only list from the earlier form counts too')
+  const uncounted: ResultsFile = { results: [], confirmations: [{ line: 'BotsEverywhere profile: org-a | lead\nRoutines:\n- Weekly | 0 9 * * 1 | Europe/Madrid | active | never', from: 'Lead', at: '2026-10-28T10:40:00+01:00' }] }
+  for (const results of [NO_RESULTS, uncounted]) {
+    const todo = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results })
+    assert.equal(todo.items.some((item) => item.kind === 'profile'), false)
+    assert.equal(todo.stuck.length, 0)
+  }
 })
