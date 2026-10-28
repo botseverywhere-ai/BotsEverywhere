@@ -29,6 +29,8 @@ export interface BoardBot {
   /** When the bot sent the profile shown, for a bot's own report. */
   reportedAt: string
   routines: BoardRoutine[]
+  /** Times its routines ran in the 30 days before reportedAt, as the bot counted them. Absent when it gave no count. */
+  routineRuns30d?: number
   /** From the bot's own profile. Absent when it has not reported them. */
   skills?: BotSkill[]
   apps?: AppUse[]

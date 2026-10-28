@@ -6,6 +6,7 @@ import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
 import { lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
+import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
 const bot = (slug: string, source: BoardBot['source'], routines: BoardBot['routines'] = []): BoardBot => ({ slug, title: slug.toUpperCase(), source, reportedAt: '', routines })
 const flow = (name: string, seat: string, description = ''): Pick<ProcessFile, 'name' | 'steps' | 'trigger'> => ({ name, steps: [{ seat, action: 'Do it' }], trigger: { type: 'schedule', schedule: '49 8 * * 1', source: '', description } })
@@ -91,6 +92,17 @@ test("every bot is connected to the account's apps: connected first, then the on
   assert.deepEqual(connectedApps(undefined), [])
 })
 
+test("a bot's skills are the ones it reported in Grok Bot and the ones added here, each once by name; unknown until either is there", () => {
+  const reported = [{ name: 'graph-skill', description: 'Exports the team' }, { name: 'Court one-pager' }]
+  const added = [{ name: 'court one-pager', description: 'Saved from here' }, { name: 'Invoices' }, { name: ' ' }]
+  assert.deepEqual(skillsInGrok(reported, added), [{ name: 'graph-skill', description: 'Exports the team' }], 'one on both lists shows once, as added here')
+  assert.deepEqual(skillsInGrok(undefined, added), [])
+  assert.equal(skillCount(reported, added), 3, 'graph-skill, Court one-pager and Invoices; a blank row is not a skill')
+  assert.equal(skillCount([], []), 0, 'the bot reported none')
+  assert.equal(skillCount(undefined, []), null, 'not reported and none added: unknown')
+  assert.equal(skillCount(undefined, [{ name: 'Invoices' }]), 1)
+})
+
 test("the Work Chart's flows carry the live routine; Performance and Profile show the account's apps once and the apps each bot uses", () => {
   const hook = readFileSync(new URL('../../src/live/use-routine-board.ts', import.meta.url), 'utf8')
   assert.match(hook, /export function useRoutineBoard\(orgId: string, refresh: unknown, enabled: boolean\)/)
@@ -126,7 +138,14 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   const profile = readFileSync(new URL('../../src/components/BotProfile.tsx', import.meta.url), 'utf8')
   assert.match(profile, /<h3 className="card-label">Apps used<\/h3>/)
   assert.match(profile, /<AccountApps apps=\{account\} \/>/, 'the same badges as Performance')
-  assert.match(profile, /<h3 className="card-label">Turned on in Grok Bot<\/h3>/)
+  assert.equal(profile.includes('Turned on in Grok Bot</h3>'), false, 'one Skills section, not a second one further down')
+  assert.match(profile, /<SkillEditor initial=\{seat\.skills \?\? \[\]\} inGrok=\{reportedSkills\}/)
+  assert.match(profile, /<ProfileLists seat=\{seat\} inGrok=\{reportedSkills\} \/>/)
+  assert.match(profile, /const shown = skillsInGrok\(inGrok, skills\)/, "the bot's skills, less the ones on the list added here")
+  assert.match(profile, /\{skills\.length === 0 && !shown\.length \? <p className="auth-note">No skills yet\.<\/p> : null\}/, 'No skills yet only when the bot has none')
+  assert.match(workspace, /<th>Skills<\/th>/)
+  assert.match(workspace, /skills: skillCount\(routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.skills, seats\.find\(\(item\) => item\.slug === seat\.id\)\?\.skills\)/)
+  assert.match(workspace, /tasksDone30d: board\?\.routineRuns30d \?\? seat\.tasksDone30d,\n\s+tasksReportedAt: board\?\.routineRuns30d === undefined \? undefined : board\.reportedAt,/, "the bot's own count of routine runs first")
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.process-lane\.is-paused \{/)
   assert.match(css, /\.routine-state\.is-problem \{ background: var\(--color-amber-50\); color: var\(--color-amber-800\); border-color: var\(--color-amber-200\); \}/)

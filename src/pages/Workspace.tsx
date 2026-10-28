@@ -29,6 +29,7 @@ import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choi
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { botApps } from '../org/bot-apps'
+import { skillCount } from '../org/bot-skills'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -235,23 +236,27 @@ export function Workspace({
     () => liveSeats(runLines, seats.map((seat) => ({ slug: seat.slug, title: seat.title, reportsTo: seat.reportsTo || '' }))),
     [runLines, seats],
   )
+  const routineBoard = useRoutineBoard(bundle.id, sync, editable)
   const metricsById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof shownBotMetrics>>()
     for (const seat of seats) {
       if (seat.kind !== 'bot') continue
+      // The bot's own count of its routine runs, from its Run history, comes before Grok Bot's files.
+      const board = routineBoard?.bots.find((item) => item.slug === seat.slug)
       map.set(seat.slug, withConnectorRuns(seat.title, shownBotMetrics({
         title: seat.title,
         slug: seat.slug,
         createdAt: seat.createdAt,
         lastActive: seat.lastActive,
         runs30d: seat.runs30d,
-        tasksDone30d: seat.tasksDone30d,
+        tasksDone30d: board?.routineRuns30d ?? seat.tasksDone30d,
+        tasksReportedAt: board?.routineRuns30d === undefined ? undefined : board.reportedAt,
         reportedAt: seat.grokSyncedAt,
         log: runLines,
       }), activity))
     }
     return map
-  }, [runLines, seats, activity])
+  }, [runLines, seats, activity, routineBoard])
   const chartSeats = [...active.map((seat) => (seat.type === 'bot' ? { ...seat, shown: metricsById.get(seat.id) } : seat)), ...openSeats]
   const least = leastUsed(bots.map((seat) => ({
     id: seat.id,
@@ -263,7 +268,6 @@ export function Workspace({
   const waitingUpdate = chartSeat ? sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update') : undefined
   // Apps connected to the Grok Bot account, from the Connector's last report: one list for every organization.
   const accountApps = editable ? sync?.project?.connector?.apps ?? connection?.project?.connector?.apps : undefined
-  const routineBoard = useRoutineBoard(bundle.id, sync, editable)
 
   const applyLoaded = useCallback((loaded: OrgBundle): OrgBundle => {
     const canonical = bundleFromState(bundle.id, loaded.org, loaded.seats, loaded.work, loaded.activity ?? [])
@@ -1021,7 +1025,12 @@ export function Workspace({
           ) : null}
           {view === 'performance' ? (
             <PerformanceTable
-              bots={bots.map((seat) => ({ ...seat, shown: metricsById.get(seat.id), appsUsed: routineBoard?.bots.find((item) => item.slug === seat.id)?.apps }))}
+              bots={bots.map((seat) => ({
+                ...seat,
+                shown: metricsById.get(seat.id),
+                appsUsed: routineBoard?.bots.find((item) => item.slug === seat.id)?.apps,
+                skills: skillCount(routineBoard?.bots.find((item) => item.slug === seat.id)?.skills, seats.find((item) => item.slug === seat.id)?.skills),
+              }))}
               leastId={least?.id}
               requests={createRequests}
               accountApps={accountApps}
@@ -1159,7 +1168,7 @@ function PerformanceTable({
   canRetire,
   onRetire,
 }: {
-  bots: { id: string; name: string; apps?: string[]; appsUsed?: AppUse[]; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
+  bots: { id: string; name: string; apps?: string[]; appsUsed?: AppUse[]; skills?: number | null; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
   /** Bots the app asked the Connector to create. Their row says Connecting until the Connector reports them. */
   requests?: { seat: string; requestedAt: string }[]
@@ -1175,7 +1184,7 @@ function PerformanceTable({
       <AccountApps apps={accountApps} />
       <table className="be-performance">
         <thead>
-          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Apps used</th><th>Action</th></tr>
+          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Skills</th><th>Apps used</th><th>Action</th></tr>
         </thead>
         <tbody>
           {rows.map((seat) => {
@@ -1193,6 +1202,7 @@ function PerformanceTable({
                     <td>{formatShortDate(seat.shown?.lastActive || '')}</td>
                   </>
                 )}
+                <td>{seat.skills === undefined || seat.skills === null ? '—' : seat.skills}</td>
                 <td>{seat.appsUsed?.length ? botApps(seat.appsUsed.map((app) => app.name), accountApps).map((app, index) => (
                   <span key={app.name} className={app.status === 'needsAuth' ? 'app-needs-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
                 )) : '—'}</td>
@@ -1203,8 +1213,9 @@ function PerformanceTable({
         </tbody>
       </table>
       <p className="be-performance-note">
-        Times used counts each time the Connector saw a bot become active, or the chats the bot logged itself. Automated tasks done counts each routine run the Connector saw,
-        or the routine steps the bot logged as done. All of it is in the run log. The Connector&apos;s own row counts its runs, from Connector runs today in Logs. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
+        Times used counts each time the Connector saw a bot become active, or the chats the bot logged itself. Automated tasks done counts the routine runs the bot
+        counted from its Run history when it last sent its profile, plus each run it logged after that, once per run however many steps it logged. Skills counts the
+        skills turned on for the bot in Grok Bot and the ones added on its profile here. All of it is in the run log. The Connector&apos;s own row counts its runs, from Connector runs today in Logs. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
       </p>
     </>
   )

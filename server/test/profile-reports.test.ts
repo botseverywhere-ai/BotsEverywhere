@@ -6,7 +6,7 @@ test('the profile a bot fills in names its organization and seat, then its routi
   assert.deepEqual(profileForm('org-a', 'x-com'), [
     'BotsEverywhere profile: org-a | x-com',
     'Routines:',
-    '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>',
+    '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never> | <times it ran in the last 30 days, from its Run history>',
     'Skills:',
     '- <private skill turned on for you, not a built-in one> | <what it does, in one line>',
     'Apps used:',
@@ -76,6 +76,17 @@ test('a heading the bot left out is unknown, not empty; a routines-only list fro
   assert.equal(older.skills, undefined)
   assert.equal(parseProfileReport('BotsEverywhere routine saved: org-a | lead | Weekly | 0 9 * * 1 | - | active'), null)
   assert.equal(parseProfileReport('BotsEverywhere profile: org-a'), null)
+})
+
+test("a profile adds up the times its routines ran in the last 30 days; the total is unknown unless every routine gives a count", () => {
+  const head = 'BotsEverywhere profile: org-a | x-com\nRoutines:\n'
+  const counted = parseProfileReport(`${head}- Milestone check | 0 9,21 * * * | Europe/Madrid | active | 2026-10-28T09:09:57+01:00 | 60\n- Health | 49 8 * * 1 | Europe/Madrid | active | never | 4`)!
+  assert.equal(counted.routineRuns30d, 64)
+  assert.deepEqual(counted.routines.map((item) => item.name), ['Milestone check', 'Health'], 'the count is not part of the routine')
+  assert.equal(parseProfileReport(`${head}- Milestone check | 0 9,21 * * * | Europe/Madrid | active | never | 60\n- Health | 49 8 * * 1 | Europe/Madrid | active | never`)!.routineRuns30d, undefined, 'a routine from the earlier form has no count')
+  assert.equal(parseProfileReport(`${head}- Health | 49 8 * * 1 | Europe/Madrid | active | never | about 4`)!.routineRuns30d, undefined, 'only a whole number counts')
+  assert.equal(parseProfileReport(`${head}- none`)!.routineRuns30d, 0, 'no routines ran no times')
+  assert.equal(parseProfileReport('BotsEverywhere profile: org-a | x-com\nSkills:\n- none')!.routineRuns30d, undefined, 'no Routines heading: unknown')
 })
 
 test('the newest profile for each seat wins', () => {

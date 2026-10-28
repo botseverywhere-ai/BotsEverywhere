@@ -25,16 +25,20 @@ export interface ShownBotMetrics {
   lastActive: string
   /** Times used: chats the bot logged. null when Grok Bot did not report it and the log adds nothing. */
   usage: number | null
-  /** Automated tasks done: routine steps the bot logged as done. */
+  /** Automated tasks done: routine runs, as the bot counted them, plus the runs it logged after that. */
   tasks: number | null
 }
+
+/** A routine's lines less than this far apart belong to one run. */
+const RUN_GAP_MS = 60 * 60 * 1000
 
 /**
  * Times used and automated tasks done in the last 30 days, from the run log, plus any count Grok Bot reported.
  * A chat (process `chat`) is one use, counted once per day and step however many times it was logged, unless it only
- * says running. A `grok-activity` line, written when the Connector saw the bot become active, is one use. A done line
- * of any other process is one automated task. When Grok Bot reported counts, only lines after its report add to them;
- * otherwise every line counts.
+ * says running. A `grok-activity` line, written when the Connector saw the bot become active, is one use. Any other
+ * process is a routine: its lines less than an hour apart are one run, and a run with a done line is one automated
+ * task. When a count was reported, only lines after its report add to it; otherwise every line counts. A task count
+ * reported more than 30 days ago is out of the window, so only the log counts.
  * A hire event is not a last-active time; this function never reads one.
  */
 export function shownBotMetrics(input: {
@@ -46,6 +50,8 @@ export function shownBotMetrics(input: {
   tasksDone30d?: number
   /** When the counts above were reported (the snapshot's syncedAt). Lines after it are not in them yet. */
   reportedAt?: string
+  /** When tasksDone30d was counted, when that was not reportedAt: the bot's own profile. */
+  tasksReportedAt?: string
   log: MetricLogLine[]
   now?: number
 }): ShownBotMetrics {
@@ -66,7 +72,9 @@ export function shownBotMetrics(input: {
   const cut = Number.isNaN(reportedAt) ? watermark : reportedAt
   const afterReport = Number.isNaN(cut) ? inWindow : inWindow.filter((item) => item.at > cut)
   const usageLines = input.runs30d === undefined ? inWindow : afterReport
-  const taskLines = input.tasksDone30d === undefined ? inWindow : afterReport
+  const tasksAt = input.tasksReportedAt ? Date.parse(input.tasksReportedAt) : cut
+  const tasksDone30d = Number.isNaN(tasksAt) || tasksAt >= windowStart ? input.tasksDone30d : undefined
+  const taskLines = tasksDone30d === undefined || Number.isNaN(tasksAt) ? inWindow : inWindow.filter((item) => item.at > tasksAt)
   const process = (item: { line: MetricLogLine }) => (item.line.process ?? '').trim().toLowerCase()
   const chats = new Set(
     usageLines
@@ -74,13 +82,27 @@ export function shownBotMetrics(input: {
       .map((item) => `${item.line.date}|${(item.line.step ?? '').trim().toLowerCase() || item.line.time}`),
   )
   const seen = usageLines.filter((item) => process(item) === GROK_ACTIVITY_PROCESS).length
-  const done = taskLines.filter((item) => process(item) !== CHAT_PROCESS && process(item) !== GROK_ACTIVITY_PROCESS && item.line.status === 'done').length
+  const routineLines = taskLines.filter((item) => process(item) !== CHAT_PROCESS && process(item) !== GROK_ACTIVITY_PROCESS)
   return {
     createdAt: input.createdAt || '',
     lastActive: last ? new Date(last).toISOString() : '',
     usage: combine(input.runs30d, chats.size + seen),
-    tasks: combine(input.tasksDone30d, done),
+    tasks: combine(tasksDone30d, doneRuns(routineLines, process)),
   }
+}
+
+/** Runs with a done line: each routine's lines, in time order, start a new run after a gap of an hour or more. */
+function doneRuns<T extends { line: MetricLogLine; at: number }>(lines: T[], process: (item: T) => string): number {
+  const runs: { process: string; last: number; done: boolean }[] = []
+  for (const item of [...lines].sort((a, b) => a.at - b.at)) {
+    const name = process(item)
+    const open = runs.findLast((run) => run.process === name)
+    const run = open && item.at - open.last < RUN_GAP_MS ? open : { process: name, last: item.at, done: false }
+    if (run !== open) runs.push(run)
+    run.last = item.at
+    run.done ||= item.line.status === 'done'
+  }
+  return runs.filter((run) => run.done).length
 }
 
 /**

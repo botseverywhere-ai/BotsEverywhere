@@ -49,6 +49,7 @@ export function routineBoard(input: {
         source: 'bot',
         reportedAt: report.at,
         routines: report.routines.map(withNext),
+        ...(report.routineRuns30d !== undefined ? { routineRuns30d: report.routineRuns30d } : {}),
         ...(report.skills ? { skills: report.skills } : {}),
         ...(report.apps ? { apps: report.apps } : {}),
         ...(report.sends ? { sends: report.sends } : {}),

@@ -185,6 +185,24 @@ test('a change reported done that a newer dump still does not show comes back as
   assert.equal(afterDump.items.some((entry) => entry.kind === 'describe'), false, 'done after this dump: wait for the next one')
 })
 
+test('a bot whose profile gives no count of its routine runs is asked once more, then stuck; one with counts or no routines is not', () => {
+  const desk = org('org-a', 'Desk', [you, lead])
+  const dump = data([bot('lead', 'Lead', 'Leads.')])
+  const run = (results: ResultsFile, now = NOW) => computeTodo({ ...BASE, now, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results })
+  const asks = (results: ResultsFile, now = NOW) => run(results, now).items.filter((item) => item.kind === 'profile')
+  const profile = (routines: string) => ({ line: `BotsEverywhere profile: org-a | lead\nRoutines:\n${routines}`, from: 'Lead', at: '2026-10-28T10:40:00+01:00' })
+  const uncounted: ResultsFile = { results: [{ key: 'profile:org-a:lead#1', status: 'done', at: '2026-10-28T10:30:00+01:00' }], confirmations: [profile('- Weekly | 0 9 * * 1 | Europe/Madrid | active | never')] }
+  const again = asks(uncounted)
+  assert.equal(again[0]?.key, 'profile:org-a:lead:runs#1')
+  assert.equal(again[0]?.message, ['BotsEverywhere (3s53): for Desk, send Connector - BotsEverywhere (3s53) your full profile now with SendToAgent, priority true, exactly in this form:', ...profileForm('org-a', 'lead')].join('\n'))
+  assert.equal(asks({ ...uncounted, confirmations: [profile('- Weekly | 0 9 * * 1 | Europe/Madrid | active | never | 4')] }).length, 0)
+  assert.equal(asks({ ...uncounted, confirmations: [profile('- none')] }).length, 0)
+  const twice: ResultsFile = { ...uncounted, results: [...uncounted.results, { key: 'profile:org-a:lead:runs#1', status: 'done', at: '2026-10-28T11:00:00+01:00' }, { key: 'profile:org-a:lead:runs#2', status: 'done', at: '2026-10-29T12:00:00+01:00' }] }
+  const later = run(twice, new Date('2026-10-31T10:00:00.000Z'))
+  assert.equal(later.items.some((item) => item.kind === 'profile'), false)
+  assert.ok(later.stuck.some((item) => item.why === 'Asked twice for its routine runs; Lead has not sent them.'), JSON.stringify(later.stuck))
+})
+
 test('each bot seat is asked once for its profile, with the form to fill in, until it sends one; a second ask a day later, then stuck', () => {
   const desk = org('org-a', 'Desk', [you, lead])
   const dump = data([bot('lead', 'Lead', 'Leads.'), bot('conn', 'Connector - BotsEverywhere (3s53)', 'Syncs.')])

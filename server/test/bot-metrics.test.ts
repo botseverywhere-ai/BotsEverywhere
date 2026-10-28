@@ -54,6 +54,43 @@ test('last active uses the import or a newer log line, and counts add after that
   assert.match(drawer, /routines\.length/)
 })
 
+test('automated tasks count routine runs, not steps: a routine\'s lines less than an hour apart are one run, done when any line is done', () => {
+  const line = (time: string, process: string, status: string, step = 'Step') => ({ date: '2026-10-17', time, bot: 'Grok Bot', process, step, status })
+  const shown = shownBotMetrics({
+    title: 'Grok Bot',
+    slug: 'grok-bot',
+    now: local(23, 0).getTime(),
+    log: [
+      line('09:00', 'Milestone check', 'done', 'Ask'),
+      line('09:03', 'Milestone check', 'done', 'Draft'),
+      line('18:21', 'Daily summary', 'done', 'Check'),
+      line('18:22', 'Daily summary', 'done', 'Send'),
+      line('19:00', 'Wall refresh', 'failed'),
+      line('21:00', 'Milestone check', 'running', 'Ask'),
+      line('21:05', 'Milestone check', 'done', 'Draft'),
+      line('21:10', 'chat', 'done', 'a question'),
+    ],
+  })
+  assert.equal(shown.tasks, 3, 'two milestone checks and one daily summary; the failed run and the chat are not tasks')
+})
+
+test("a bot's own count of its routine runs is where tasks start; runs it logs after the count add on, and a count more than 30 days old no longer counts", () => {
+  const input = {
+    title: 'Grok Bot',
+    slug: 'grok-bot',
+    tasksDone30d: 20,
+    tasksReportedAt: local(12, 0).toISOString(),
+    reportedAt: local(19, 0).toISOString(),
+    now,
+    log: [
+      { date: '2026-10-17', time: '11:00', bot: 'Grok Bot', process: 'Daily summary', status: 'done' },
+      { date: '2026-10-17', time: '18:21', bot: 'Grok Bot', process: 'Daily summary', status: 'done' },
+    ],
+  }
+  assert.equal(shownBotMetrics(input).tasks, 21, "the bot's 20 plus the run after its count, cut at the bot's report, not the Connector's")
+  assert.equal(shownBotMetrics({ ...input, now: new Date(2026, 10, 17, 12, 30).getTime() }).tasks, null, 'a month later the count is out of the window, and so are the runs')
+})
+
 test('a run-log line stamped this evening in local time counts today', () => {
   const shown = shownBotMetrics({
     title: 'aurafarming.world orchestrator',

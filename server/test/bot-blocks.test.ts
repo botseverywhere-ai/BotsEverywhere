@@ -18,7 +18,7 @@ Before each run of a routine, read your seat file and your process files.
 Whenever your routines, the private skills turned on for you, the apps you use, or the work you regularly hand on or get change, send Connector - BotsEverywhere (3s53) your full profile with SendToAgent, priority true, exactly in this form:
 BotsEverywhere profile: org-test | security
 Routines:
-- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>
+- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never> | <times it ran in the last 30 days, from its Run history>
 Skills:
 - <private skill turned on for you, not a built-in one> | <what it does, in one line>
 Apps used:

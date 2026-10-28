@@ -17,7 +17,7 @@ export function profileForm(orgId: string, seat: string): string[] {
   return [
     `${PROFILE_HEADER} ${orgId} | ${seat}`,
     'Routines:',
-    '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>',
+    '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never> | <times it ran in the last 30 days, from its Run history>',
     'Skills:',
     '- <private skill turned on for you, not a built-in one> | <what it does, in one line>',
     'Apps used:',
@@ -36,6 +36,8 @@ export interface ProfileReport {
   at: string
   from: string
   routines: BotRoutine[]
+  /** Times its routines ran in the last 30 days, from its Run history when it reported. Absent unless every routine gave a count. */
+  routineRuns30d?: number
   /** Absent when the bot did not report this heading: unknown, not none. */
   skills?: BotSkill[]
   apps?: AppUse[]
@@ -49,7 +51,8 @@ const CRON = /^[\d*/,-]+(?: [\d*/,-]+){4}$/
 const collapse = (value: string) => value.replace(/\s+/g, ' ').trim()
 
 function routineFrom(parts: string[]): BotRoutine | null {
-  if (parts.length !== 5 || !parts[0] || !parts[1] || !/^(active|paused)$/i.test(parts[3]!)) return null
+  // A sixth part is the run count, read apart; the earlier form had five.
+  if ((parts.length !== 5 && parts.length !== 6) || !parts[0] || !parts[1] || !/^(active|paused)$/i.test(parts[3]!)) return null
   const [name, starts, zone, state, last] = parts as [string, string, string, string, string]
   return {
     name,
@@ -79,11 +82,15 @@ export function parseProfileReport(text: string, at = '', from = ''): ProfileRep
   const report: ProfileReport = { org: head[0], seat: head[1], at, from, routines: [] }
   // The earlier form had no headings: every line in it is a routine.
   let section: Section | null = older ? 'routines' : null
+  let listed = older
+  let ran = 0
+  let uncounted = false
   for (const line of lines.slice(start + 1).map((item) => item.trim())) {
     const named = older ? undefined : /^(routines|skills|apps used|sends|receives):?$/i.exec(line)?.[1]?.toLowerCase()
     const heading = (named === 'apps used' ? 'apps' : named) as Section | undefined
     if (heading) {
       section = heading
+      if (heading === 'routines') listed = true
       if (heading === 'skills') report.skills = report.skills ?? []
       else if (heading === 'apps') report.apps = report.apps ?? []
       else if (heading !== 'routines') report[heading] = report[heading] ?? []
@@ -94,7 +101,11 @@ export function parseProfileReport(text: string, at = '', from = ''): ProfileRep
     if (parts.length === 1 && /^none$/i.test(parts[0]!)) continue
     if (section === 'routines') {
       const routine = routineFrom(parts)
-      if (routine) report.routines.push(routine)
+      if (routine) {
+        report.routines.push(routine)
+        if (/^\d+$/.test(parts[5] ?? '')) ran += Number(parts[5])
+        else uncounted = true
+      }
     } else if (section === 'skills') {
       if (parts[0] && parts.length <= 2) report.skills!.push({ name: parts[0], ...(parts[1] ? { description: parts[1] } : {}) })
     } else if (section === 'apps') {
@@ -104,6 +115,7 @@ export function parseProfileReport(text: string, at = '', from = ''): ProfileRep
       if (handoff) report[section]!.push(handoff)
     }
   }
+  if (listed && !uncounted) report.routineRuns30d = ran
   return report
 }
 

@@ -5,6 +5,7 @@ import { ROUTINE_STARTS, type BotRoutine, type BotSkill, type RoutineStart } fro
 import type { AccountApp } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { connectedApps, NEEDS_SIGN_IN } from '../org/bot-apps'
+import { skillsInGrok } from '../org/bot-skills'
 import { AccountApps } from './AccountApps'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
@@ -80,9 +81,8 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdat
       ) : null}
       {parts.listsEditable ? (
         <>
-          <SkillEditor initial={seat.skills ?? []} onSave={(skills) => onProfile({ skills: draftRows(skills) })} />
+          <SkillEditor initial={seat.skills ?? []} inGrok={reportedSkills} onSave={(skills) => onProfile({ skills: draftRows(skills) })} />
           <RoutineEditor initial={seat.routines ?? []} onSave={(routines) => onProfile({ routines: draftRoutines(routines) })} />
-          <TurnedOnSkills skills={reportedSkills} />
           <AppList account={accountApps} used={reportedApps} />
           {!parts.addToGrok && onUpdateInGrok ? (
             <section className="profile-update">
@@ -100,8 +100,7 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdat
         </>
       ) : (
         <>
-          <ProfileLists seat={seat} />
-          <TurnedOnSkills skills={reportedSkills} />
+          <ProfileLists seat={seat} inGrok={reportedSkills} />
           <AppList account={accountApps} used={reportedApps} />
         </>
       )}
@@ -148,39 +147,28 @@ export function AppList({ account, used }: { account?: AccountApp[]; used?: AppU
   )
 }
 
-/** The private skills turned on for the bot in Grok Bot, as the bot itself reported them. Read only, and apart from the skills its seat says to use. */
-function TurnedOnSkills({ skills }: { skills?: BotSkill[] }) {
-  if (!skills) return null
+/** Skills, read only: each one's name and what it does. */
+function SkillItems({ skills }: { skills: BotSkill[] }) {
   return (
-    <section className="profile-list">
-      <h3 className="card-label">Turned on in Grok Bot</h3>
-      {skills.length ? (
-        <ul>
-          {skills.map((skill) => (
-            <li key={skill.name}>
-              <strong>{skill.name}</strong>
-              {skill.description ? <span className="profile-line">{skill.description}</span> : null}
-            </li>
-          ))}
-        </ul>
-      ) : <p className="auth-note">The bot reports no private skills turned on.</p>}
-    </section>
+    <ul>
+      {skills.map((skill) => (
+        <li key={skill.name}><strong>{skill.name}</strong>{skill.description ? <span className="profile-line">{skill.description}</span> : null}</li>
+      ))}
+    </ul>
   )
 }
 
-/** Skills and routines, read only: an imported bot's, and every bot's on a template. */
-export function ProfileLists({ seat }: { seat: Pick<Seat, 'skills' | 'routines'> }) {
+/**
+ * Skills and routines, read only: an imported bot's, and every bot's on a template. The skills include the ones the bot
+ * reported turned on in Grok Bot.
+ */
+export function ProfileLists({ seat, inGrok }: { seat: Pick<Seat, 'skills' | 'routines'>; inGrok?: BotSkill[] }) {
+  const skills = [...(seat.skills ?? []), ...skillsInGrok(inGrok, seat.skills)]
   return (
     <>
       <section className="profile-list">
         <h3 className="card-label">Skills</h3>
-        {seat.skills?.length ? (
-          <ul>
-            {seat.skills.map((skill) => (
-              <li key={skill.name}><strong>{skill.name}</strong>{skill.description ? <span className="profile-line">{skill.description}</span> : null}</li>
-            ))}
-          </ul>
-        ) : <p className="auth-note">No skills yet.</p>}
+        {skills.length ? <SkillItems skills={skills} /> : <p className="auth-note">No skills yet.</p>}
       </section>
       <section className="profile-list">
         <h3 className="card-label">Routines</h3>
@@ -202,14 +190,24 @@ export function ProfileLists({ seat }: { seat: Pick<Seat, 'skills' | 'routines'>
   )
 }
 
-/** Skills as the Grok Bot Graph panel edits them: a name, what it does, and a remove button. */
-function SkillEditor({ initial, onSave }: { initial: Skill[]; onSave: (skills: Skill[]) => void }) {
+/**
+ * Skills as the Grok Bot Graph panel edits them: a name, what it does, and a remove button. Above them, read only, the
+ * skills the bot reported turned on in Grok Bot that are not on this list.
+ */
+function SkillEditor({ initial, inGrok, onSave }: { initial: Skill[]; inGrok?: BotSkill[]; onSave: (skills: Skill[]) => void }) {
   const [skills, setSkills] = useState<Skill[]>(initial)
   const update = (index: number, change: Partial<Skill>) => setSkills(skills.map((skill, at) => (at === index ? { ...skill, ...change } : skill)))
+  const shown = skillsInGrok(inGrok, skills)
   return (
     <section className="profile-list">
       <h3 className="card-label">Skills</h3>
-      {skills.length === 0 ? <p className="auth-note">No skills yet.</p> : null}
+      {shown.length ? (
+        <>
+          <p className="field-hint">Turned on in Grok Bot, as the bot reported them.</p>
+          <SkillItems skills={shown} />
+        </>
+      ) : null}
+      {skills.length === 0 && !shown.length ? <p className="auth-note">No skills yet.</p> : null}
       {skills.map((skill, index) => (
         <div className="skill-row" key={index}>
           <div className="skill-fields">

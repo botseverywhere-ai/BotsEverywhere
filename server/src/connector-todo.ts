@@ -347,14 +347,16 @@ export function computeTodo(input: {
 
   // profile: each bot seat sends its own routines, skills, and handoffs, since only a bot can see them for itself. Until a
   // profile arrives it is asked, at most twice, a day apart; any profile ends the asks, and the block keeps it sending a
-  // new one on every change.
+  // new one on every change. A profile with routines but no count of their runs, from before the form asked for one, is
+  // asked for again the same way.
   const profiles = latestProfileReports(results.confirmations)
   for (const org of input.orgs) {
     const { bots } = seatBots(org.bundle, data, taken)
     for (const seat of org.bundle.seats) {
       const bot = bots.get(seat.slug)
-      if (!bot || seat.kind !== 'bot' || isConnector(bot.name) || profiles.has(`${org.id}|${seat.slug}`)) continue
-      const base = `profile:${org.id}:${seat.slug}`
+      const profile = profiles.get(`${org.id}|${seat.slug}`)
+      if (!bot || seat.kind !== 'bot' || isConnector(bot.name) || profile?.routineRuns30d !== undefined) continue
+      const base = profile ? `profile:${org.id}:${seat.slug}:runs` : `profile:${org.id}:${seat.slug}`
       const mine = results.results.filter((result) => result.key.startsWith(`${base}#`))
       const sends = mine.filter((result) => result.status === 'done')
       const failures = mine.filter((result) => result.status === 'failed')
@@ -363,7 +365,7 @@ export function computeTodo(input: {
         continue
       }
       if (sends.length >= 2) {
-        stuck.push({ bot: bot.name, org: org.id, why: `Asked twice for its profile; ${bot.name} has not sent it.` })
+        stuck.push({ bot: bot.name, org: org.id, why: profile ? `Asked twice for its routine runs; ${bot.name} has not sent them.` : `Asked twice for its profile; ${bot.name} has not sent it.` })
         continue
       }
       const last = Math.max(0, ...sends.map((result) => Date.parse(result.at)).filter(Number.isFinite))
