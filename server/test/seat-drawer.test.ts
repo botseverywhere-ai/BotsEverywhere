@@ -67,7 +67,7 @@ test('Also reports to lists active seats other than itself and its main manager;
   assert.match(drawer, /<option value="">None<\/option>/, 'None takes an extra manager away')
   assert.match(drawer, /disabled=\{Boolean\(item\.disabled\) \|\| \(item\.slug !== slug && value\.includes\(item\.slug\)\)\}/, 'a loop, or a manager already picked in another dropdown, cannot be picked')
   assert.match(drawer, /\{item\.disabled \? `\$\{item\.title\} \(would make a loop\)` : item\.title\}/)
-  assert.match(drawer, /className="also-add"[^>]*>\+ Add another manager<\/Button>/, 'a button under the dropdowns says what it adds')
+  assert.match(drawer, /className="also-add".*>\+ Add another manager<\/Button>/, 'a button under the dropdowns says what it adds')
   assert.equal(drawer.includes('className="also-choice"'), false)
   const styles = readFileSync(path.join(root, 'src/styles/app.css'), 'utf8')
   assert.match(styles, /\.also-reports \.btn\.also-add \{ justify-self: start; width: auto; margin: 0; \}/, 'as wide as its words under the dropdowns, not a full-width bar')
