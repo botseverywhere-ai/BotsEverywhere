@@ -1788,7 +1788,6 @@ a.site-nav-cta:focus {
   pointer-events: none;
 }
 .work-locked { display: grid; justify-items: start; gap: var(--space-3); padding: var(--space-6) 0; }
-.link-company > .connect-badge { width: fit-content; }
 .org-menu { position: relative; }
 .org-menu summary { list-style: none; cursor: pointer; padding: var(--space-2) var(--space-3); border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); color: var(--color-ink); font-size: var(--btn-font-size); }
 .org-menu summary::-webkit-details-marker { display: none; }

@@ -1,7 +1,7 @@
 import { importLocked } from '../../server/src/bots-file.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 
-/** Why the Work Chart is closed: on the tab's hover, on the page, and as the badge on Step 2 of Connect bots. */
+/** Why the Work Chart is closed: on the tab's hover and on the page. */
 export const WORK_CHART_LOCKED = 'Connect bots to open the Work Chart'
 
 /**

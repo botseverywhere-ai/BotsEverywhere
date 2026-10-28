@@ -35,12 +35,12 @@ test('a locked Work Chart tab is greyed out, says why on hover, and links nowher
   assert.match(css, /\.org-tabs \.is-locked:hover::after/)
 })
 
-test('the Work Chart page itself is blocked while locked, and Step 2 of Connect bots carries the same line as a badge', () => {
+test('the Work Chart page itself is blocked while locked; Step 2 of Connect bots has no badge for it, the tab says it', () => {
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(workspace, /const chartLocked = workChartLocked\(seats, sample\)/)
   assert.match(workspace, /<OrgTabs slug=\{bundle\.id\} current=\{tabForView\(view\)\} template=\{sample\} workChartLocked=\{chartLocked\} \/>/)
   assert.match(workspace, /\{view === 'work' && chartLocked \? \(/)
   assert.match(workspace, /\{view === 'work' && !chartLocked \? \(/)
   const step = readFileSync(new URL('../../src/components/LinkCompany.tsx', import.meta.url), 'utf8')
-  assert.match(step, /\{locked \? null : <span className="connect-badge"><i aria-hidden="true" \/>\{WORK_CHART_LOCKED\}<\/span>\}/)
+  assert.equal(step.includes('WORK_CHART_LOCKED'), false)
 })
