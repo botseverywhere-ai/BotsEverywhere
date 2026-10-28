@@ -176,7 +176,7 @@ test('process import replaces a flow the sync made from a routine and nobody cha
   assert.deepEqual(flows.find((item) => item.slug === 'wall')?.steps.map((step) => step.action), ['Ask for posts'])
 })
 
-test("the Work Chart tags a step as waiting for you only when Grok Bot marks it or you do it yourself; the copied routine still asks before risky steps", () => {
+test("the Work Chart tags a step as waiting for you only when Grok Bot marks it 'Needs approval:', never from words or who does it; the copied routine still asks before risky steps", () => {
   const steps = deriveSteps(
     [
       { seat: 'grok', action: 'Send you the summary' },
@@ -192,7 +192,7 @@ test("the Work Chart tags a step as waiting for you only when Grok Bot marks it 
       { slug: 'x', title: 'x.com', kind: 'bot', mustAskBefore: [] },
     ],
   )
-  assert.deepEqual(steps.map((step) => waitsForYou(step)), [false, false, false, true, true])
+  assert.deepEqual(steps.map((step) => waitsForYou(step)), [false, false, false, true, false])
   assert.deepEqual(steps.map((step) => step.checkpoint), [true, true, true, true, true], 'the copied routine keeps every safety ask')
 })
 

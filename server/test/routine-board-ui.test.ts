@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { HANDOFFS_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
@@ -22,15 +22,47 @@ test("a flow shows the routine of the same name owned by the bot on its first st
   assert.equal(laneRoutine(flow('Inner Loop milestone check', 'aura'), board), null, "another bot's routine is not this flow's")
   assert.equal(laneRoutine(flow('Anything', 'eggbot'), board), null)
   assert.equal(laneRoutine(flow('Anything', 'x-com'), null), null)
+  assert.equal(laneRoutine(flow('BotsEverywhere Connector run', 'connector'), board)?.routine.name, 'BotsEverywhere sync', "the Connector has one routine, whatever Grok Bot's file calls its flow")
+  assert.equal(lanePaused(flow('BotsEverywhere Connector run', 'connector'), laneRoutine(flow('BotsEverywhere Connector run', 'connector'), board)), false, 'so it shows Active')
 })
 
-test("a routine flow is Active unless the bot's own report or the (paused) mark says paused; a manual flow is not a routine and has no state", () => {
+test("a routine flow's badge comes only from the bot's own report or the (paused) mark, never a guess; a handoff has none", () => {
   assert.equal(lanePaused(flow('Inner Loop milestone check', 'x-com', 'Daily (paused)'), laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), false, "the bot's report wins over an old mark")
   assert.equal(lanePaused(flow('transcript-healthcheck', 'eggbot', 'Weekdays at 08:44, Europe/Madrid (paused)'), null), true)
   assert.equal(lanePaused(flow('Aura production health', 'aura', 'Weekdays (paused)'), laneRoutine(flow('Aura production health', 'aura'), board)), true, "the mark wins over Grok Bot's stale files")
-  assert.equal(lanePaused(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), false, 'nothing marks it paused, so it is Active')
-  assert.equal(lanePaused(flow('Weekly brief', 'eggbot'), null), false)
+  assert.equal(lanePaused(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), null, "Grok Bot's files alone give no badge")
+  assert.equal(lanePaused(flow('Weekly brief', 'eggbot'), null), null, 'no routine reported: no badge')
+  assert.equal(lanePaused({ ...flow('Inner Loop milestone check', 'x-com'), trigger: { type: 'event', schedule: '', source: 'email', description: '' } }, laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), null, 'an event flow is a handoff: no badge')
   assert.equal(lanePaused({ ...flow('Build handoff', 'eggbot'), trigger: { type: 'manual', schedule: '', source: '', description: 'Outer Loop has a change' } }, null), null, 'a manual flow shows no state')
+})
+
+test('routines and handoffs are different segments: a scheduled flow is a routine a bot starts on its own; a manual or event flow is a handoff', () => {
+  const at = (type: 'schedule' | 'event' | 'manual') => ({ trigger: { type, schedule: '', source: '', description: '' } })
+  assert.equal(flowSegment(at('schedule')), 'routines')
+  assert.equal(flowSegment(at('manual')), 'handoffs')
+  assert.equal(flowSegment(at('event')), 'handoffs')
+  assert.equal(ROUTINES_HINT, 'Flows a bot starts on its own, on a schedule. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.')
+  assert.equal(HANDOFFS_HINT, "Flows that start when someone hands work on, or when something happens, like an email. Nothing runs on a timer, so there's no badge.")
+  assert.equal(OFF_CHART_HINT, 'Routines your bots run in Grok Bot that no flow describes yet. Import processes from Grok Bot to add them with all their steps.')
+})
+
+test('a routine flow with no badge says why; one with a badge, a handoff, or a stale file match says nothing more', () => {
+  assert.equal(laneNoRoutine(flow('Weekly brief', 'eggbot'), null), "No badge yet: the bot hasn't reported a routine with this name.")
+  assert.equal(laneNoRoutine(flow('Inner Loop milestone check', 'x-com'), laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), '')
+  assert.equal(laneNoRoutine(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), '', 'the last-run line already says the bot has not confirmed it')
+  assert.equal(laneNoRoutine(flow('transcript-healthcheck', 'eggbot', 'Weekdays (paused)'), null), '')
+  assert.equal(laneNoRoutine({ ...flow('Build handoff', 'eggbot'), trigger: { type: 'manual', schedule: '', source: '', description: '' } }, null), '')
+})
+
+test('a routine not on the Work Chart shows Paused only when its bot says so, and an event routine shows its event', () => {
+  const own = { bots: [bot('lead', 'bot', [
+    { name: 'Weekly', schedule: '0 9 * * 1', trigger: 'schedule' as const, timeZone: 'Europe/Madrid', enabled: false },
+    { name: 'Inbox watch', schedule: '', trigger: 'email' as const, event: 'A supplier invoice lands', enabled: true },
+  ])] }
+  assert.deepEqual(routinesOffChart(own, []), [
+    { bot: 'LEAD', name: 'Weekly', schedule: scheduleWords('0 9 * * 1', 'Europe/Madrid'), paused: true },
+    { bot: 'LEAD', name: 'Inbox watch', schedule: 'A supplier invoice lands', paused: false },
+  ])
 })
 
 test('a flow names what needs your attention: a step whose seat is gone or retired, a last run that failed, a schedule faster than hourly', () => {
@@ -79,7 +111,8 @@ test("a flow's runs come from the bot's report; from Grok Bot's files only the l
 })
 
 test("routines a bot reports that have no flow yet are named once; the Connector's own run is not one of them", () => {
-  assert.deepEqual(routinesOffChart(board, [{ name: 'Inner Loop milestone check' }, { name: 'aura production health' }]), ['AURA: Old routine'])
+  assert.deepEqual(routinesOffChart(board, [{ name: 'Inner Loop milestone check' }, { name: 'aura production health' }]), [{ bot: 'AURA', name: 'Old routine', schedule: scheduleWords('0 9 * * 1'), paused: false }], "Grok Bot's files never say paused")
+  assert.deepEqual(routinesOffChart(board, []).map((item) => [item.name, item.paused]), [['Inner Loop milestone check', false], ['Aura production health', false], ['Old routine', false]])
   assert.deepEqual(routinesOffChart(null, []), [])
 })
 
@@ -118,8 +151,28 @@ test('a Work Chart with no flows shows only the import from Grok Bot, open; rout
     'Grok Bot sends you a file named <code>botseverywhere-processes.json</code>. Save it.',
     'Click <strong>Import processes file</strong> and pick that file.',
   ]) assert.ok(chart.includes(line), line)
-  assert.match(chart, /Import processes from Grok Bot below to add them as flows\./)
   assert.equal(chart.includes('Sync with Grok Bot adds them as flows'), false)
+  assert.equal(chart.includes('process-off-chart'), false, 'routines off the chart are their own segment, not a note')
+})
+
+test('the Work Chart shows routines, handoffs, and routines not on it yet as segments, with a selector to show all or one', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /const routineFlows = processes\.filter\(\(process\) => flowSegment\(process\) === 'routines'\)/)
+  assert.match(chart, /const handoffFlows = processes\.filter\(\(process\) => flowSegment\(process\) === 'handoffs'\)/)
+  assert.match(chart, /<select className="text-input" aria-label="Show" value=\{show\} onChange=\{\(event\) => setShow\(event\.target\.value as Show\)\}>/, 'a native select')
+  for (const option of [
+    '<option value="all">All ({processes.length + offChart.length})</option>',
+    '<option value="routines">Routines ({routineFlows.length})</option>',
+    '<option value="handoffs">Handoffs ({handoffFlows.length})</option>',
+    '<option value="off">Not on the Work Chart yet ({offChart.length})</option>',
+  ]) assert.ok(chart.includes(option), option)
+  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}']) assert.ok(chart.includes(`<p className="process-segment-hint">${hint}</p>`), hint)
+  assert.match(chart, /const showOff = offChart\.length > 0 && \(empty \|\| show === 'all' \|\| show === 'off'\)/, 'routines not on the chart show on an empty chart too')
+  assert.match(chart, /const noRoutine = laneNoRoutine\(process, live\)/)
+  assert.match(chart, /\{noRoutine \? <p>\{noRoutine\}<\/p> : null\}/)
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.process-segment \{/)
+  assert.equal(css.includes('.process-off-chart'), false)
 })
 
 test("the Work Chart's flows carry the live routine; Performance and Profile show the account's apps once and the apps each bot uses", () => {

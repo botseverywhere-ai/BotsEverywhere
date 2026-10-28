@@ -22,9 +22,12 @@ import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { HANDOFFS_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
+
+/** Which segments the Work Chart shows: all of them, or one. */
+type Show = 'all' | 'routines' | 'handoffs' | 'off'
 
 export function ProcessChart({
   orgId,
@@ -53,7 +56,8 @@ export function ProcessChart({
   /** Your own orgs only: what each bot reports it runs in Grok Bot, shown in the flow it belongs to. */
   board?: RoutineBoard | null
 }) {
-  const lanesRef = useRef<HTMLUListElement>(null)
+  const lanesRef = useRef<HTMLDivElement>(null)
+  const [show, setShow] = useState<Show>('all')
   const [drawer, setDrawer] = useState<ProcessFile | 'new' | null>(null)
   const [removing, setRemoving] = useState<ProcessFile | null>(null)
   const [notice, setNotice] = useState<SaveNotice | null>(null)
@@ -71,6 +75,8 @@ export function ProcessChart({
   const approvals = useMemo(() => waitingLines(runLines, processes), [processes, runLines])
   const feed = useMemo(() => newestFirst(runLines), [runLines])
   const offChart = useMemo(() => routinesOffChart(board, processes), [board, processes])
+  const routineFlows = processes.filter((process) => flowSegment(process) === 'routines')
+  const handoffFlows = processes.filter((process) => flowSegment(process) === 'handoffs')
   const seatRefs = useMemo(() => seats.map((seat) => ({ slug: seat.slug, title: seat.title, kind: seat.kind, mustAskBefore: seat.mustAskBefore })), [seats])
   const processesPrompt = useMemo(() => grokProcessesPrompt(seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired').map((seat) => seat.title)), [seats])
   const used = useMemo(() => new Set(processes.flatMap((process) => process.steps.map((step) => step.seat))), [processes])
@@ -192,6 +198,26 @@ export function ProcessChart({
 
   // With no flows yet, the page is only the import from Grok Bot: the rest has nothing to show.
   const empty = processes.length === 0
+  const showOff = offChart.length > 0 && (empty || show === 'all' || show === 'off')
+  const lane = (process: ProcessFile) => (
+    <ProcessLane
+      key={process.slug}
+      process={process}
+      processes={processes}
+      live={laneRoutine(process, board)}
+      allSeats={seats}
+      seats={seatRefs}
+      focusSeat={focusSeat}
+      editable={editable}
+      folder={folder}
+      runLines={runLines}
+      onSeat={onSeat}
+      onEdit={() => setDrawer(process)}
+      onDelete={() => setRemoving(process)}
+      onSimulate={() => void simulate(process.slug)}
+      onCopied={(message) => setNotice(saveNotice(true, message))}
+    />
+  )
   return (
     <div className="process-layout">
     <div className="process-board" data-testid="work-chart">
@@ -217,29 +243,49 @@ export function ProcessChart({
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
       {empty && !editable ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
-      {offChart.length && !empty ? <p className="process-off-chart">{offChart.length} {offChart.length === 1 ? "routine in Grok Bot isn't" : "routines in Grok Bot aren't"} on the Work Chart yet: {offChart.join('; ')}. Import processes from Grok Bot below to add them as flows.</p> : null}
+      {empty ? null : (
+        <label className="process-show">
+          Show
+          <select className="text-input" aria-label="Show" value={show} onChange={(event) => setShow(event.target.value as Show)}>
+            <option value="all">All ({processes.length + offChart.length})</option>
+            <option value="routines">Routines ({routineFlows.length})</option>
+            <option value="handoffs">Handoffs ({handoffFlows.length})</option>
+            <option value="off">Not on the Work Chart yet ({offChart.length})</option>
+          </select>
+        </label>
+      )}
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
-      <ul className="process-lanes" ref={lanesRef}>
-        {processes.map((process) => (
-          <ProcessLane
-            key={process.slug}
-            process={process}
-            processes={processes}
-            live={laneRoutine(process, board)}
-            allSeats={seats}
-            seats={seatRefs}
-            focusSeat={focusSeat}
-            editable={editable}
-            folder={folder}
-            runLines={runLines}
-            onSeat={onSeat}
-            onEdit={() => setDrawer(process)}
-            onDelete={() => setRemoving(process)}
-            onSimulate={() => void simulate(process.slug)}
-            onCopied={(message) => setNotice(saveNotice(true, message))}
-          />
-        ))}
-      </ul>
+      <div className="process-segments" ref={lanesRef}>
+        {!empty && (show === 'all' || show === 'routines') ? (
+          <section className="process-segment" aria-labelledby="segment-routines">
+            <h2 id="segment-routines">Routines</h2>
+            <p className="process-segment-hint">{ROUTINES_HINT}</p>
+            {routineFlows.length ? <ul className="process-lanes">{routineFlows.map(lane)}</ul> : <p className="process-segment-empty">No routines on the Work Chart.</p>}
+          </section>
+        ) : null}
+        {!empty && (show === 'all' || show === 'handoffs') ? (
+          <section className="process-segment" aria-labelledby="segment-handoffs">
+            <h2 id="segment-handoffs">Handoffs</h2>
+            <p className="process-segment-hint">{HANDOFFS_HINT}</p>
+            {handoffFlows.length ? <ul className="process-lanes">{handoffFlows.map(lane)}</ul> : <p className="process-segment-empty">No handoffs on the Work Chart.</p>}
+          </section>
+        ) : null}
+        {showOff ? (
+          <section className="process-segment" aria-labelledby="segment-off">
+            <h2 id="segment-off">Not on the Work Chart yet</h2>
+            <p className="process-segment-hint">{OFF_CHART_HINT}</p>
+            <ul className="process-off-list">
+              {offChart.map((routine) => (
+                <li key={`${routine.bot}|${routine.name}`}>
+                  <strong>{routine.name}</strong>
+                  <span>{routine.bot} · {routine.schedule}</span>
+                  {routine.paused ? <span className="routine-state is-paused">Paused</span> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+      </div>
       {empty ? null : (
         <section className="process-idle" aria-labelledby="no-work-yet">
           <h2 id="no-work-yet">No work yet</h2>
@@ -355,6 +401,7 @@ function ProcessLane({
   const [owner, setOwner] = useState(process.steps[0]?.seat || '')
   const derived = deriveSteps(process.steps, seats)
   const paused = lanePaused(process, live)
+  const noRoutine = laneNoRoutine(process, live)
   const problems = laneProblems(process, allSeats, runLines)
   const prompt = routinePrompt(process, seats, owner, folder)
   const statuses = latestStepStatus(runLines, process.name, process.steps)
@@ -372,6 +419,7 @@ function ProcessLane({
             {problems.length ? <span className="routine-state is-problem">Needs attention</span> : null}
           </div>
           {live ? <p>{laneWhen(live)}</p> : null}
+          {noRoutine ? <p>{noRoutine}</p> : null}
           {process.trigger.description ? <p>{process.trigger.description}</p> : null}
           {problems.length ? <ul className="process-problems">{problems.map((problem) => <li key={problem}>{problem}</li>)}</ul> : null}
         </div>

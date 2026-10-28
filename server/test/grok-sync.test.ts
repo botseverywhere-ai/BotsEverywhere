@@ -98,6 +98,29 @@ test('the Connector prompt writes the snapshot, runs on a schedule, and never ed
   assert.match(prompt, /Never estimate or invent numbers\./)
 })
 
+test('an imported flow keeps every step through any number of syncs, even when its routine comes back with one step', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'be-sync-keep-'))
+  try {
+    const created = createOrgFiles(dir, 'Desk', 'Ada')
+    assert.equal(created.ok, true)
+    if (!created.ok) return
+    const root = join(dir, created.slug)
+    const imported = importProcessRows(root, [{ name: 'Daily brief', trigger: { type: 'schedule', schedule: '0 9 * * 1-5', source: '', description: '' }, steps: [{ seat: 'You', action: 'Gather' }, { seat: 'You', action: 'Draft' }, { seat: 'You', action: 'Needs approval: send it' }], doneWhen: 'Sent', next: '', notes: [], error: '' }], [{ slug: 'you', title: 'You' }])
+    assert.equal(imported.imported.length, 1)
+    const before = readFileSync(join(root, 'processes', 'daily-brief.md'), 'utf8')
+    for (const syncedAt of ['2026-10-28T10:00:00Z', '2026-10-28T10:20:00Z', '2026-10-28T10:40:00Z']) {
+      writeSnapshot(root, { syncedAt, bots: [], processes: [{ name: 'Daily brief', trigger: { type: 'schedule', schedule: '0 9 * * 1-5' }, steps: [{ seat: 'You', action: 'Daily brief' }] }] })
+      const status = syncStatus(root, created.slug)
+      assert.equal(status.ok, true)
+      if (!status.ok || !status.status.plan) return
+      assert.ok(applySync(root, created.slug, status.status.plan).ok)
+    }
+    assert.equal(readFileSync(join(root, 'processes', 'daily-brief.md'), 'utf8'), before, 'the three steps and Done when stay exactly as imported')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('a bot created by a sync arrives without a flow for its routine; flows come from the Work Chart import', () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-sync-fresh-'))
   try {
@@ -400,6 +423,7 @@ test('patchSeatSource rewrites a Grok-written seat without a BOM, with LF, keepi
 
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { applySync, readSnapshot, startTemplateServer, syncStatus } from '../src/template-server.ts'
+import { importProcessRows } from '../src/process-files.ts'
 
 function writeSnapshot(root: string, body: unknown, options: { bom?: boolean } = {}) {
   mkdirSync(join(root, 'grok'), { recursive: true })

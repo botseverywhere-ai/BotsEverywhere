@@ -102,11 +102,12 @@ export function deriveSteps(steps: ProcessStep[], seats: SeatRef[]): DerivedStep
 }
 
 /**
- * Whether a step waits for you today: Grok Bot marked it "Needs approval:", or you do it yourself. The Work Chart tags
- * these. A checkpoint is wider, the asks a copied routine adds for safety, and those stay out of the tag.
+ * Whether a step waits for you today: only when Grok Bot marked it "Needs approval:", never guessed from its words or
+ * who does it. The Work Chart tags these. A checkpoint is wider, the asks a copied routine adds for safety, and those
+ * stay out of the tag.
  */
 export function waitsForYou(step: DerivedStep): boolean {
-  return NEEDS_APPROVAL.test(step.action) || step.seat === step.approver
+  return NEEDS_APPROVAL.test(step.action)
 }
 
 /** True when a schedule can fire more than once in an hour. */

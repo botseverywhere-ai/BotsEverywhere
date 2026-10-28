@@ -7,22 +7,42 @@ import { cronText } from './bot-profile-copy'
 
 const norm = (value: string) => value.replace(/\s+/g, ' ').trim().toLowerCase()
 
-/** The routine a flow runs in Grok Bot: the one with the flow's name, owned by the bot on its first step. */
+/**
+ * The routine a flow runs in Grok Bot: the one with the flow's name, owned by the bot on its first step. The Connector
+ * has exactly one routine, which the app names itself, so its flow matches that one whatever the flow is called.
+ */
 export function laneRoutine(process: Pick<ProcessFile, 'name' | 'steps'>, board: RoutineBoard | null | undefined): { routine: BoardRoutine; source: RoutineSource } | null {
   const bot = board?.bots.find((item) => item.slug === process.steps[0]?.seat)
-  const routine = bot?.routines.find((item) => norm(item.name) === norm(process.name))
+  const routine = bot?.source === 'app' && bot.routines.length === 1 ? bot.routines[0] : bot?.routines.find((item) => norm(item.name) === norm(process.name))
   return bot && routine ? { routine, source: bot.source } : null
 }
 
+/** The Work Chart's segments, and what each means, in the words the page shows. */
+export const ROUTINES_HINT = 'Flows a bot starts on its own, on a schedule. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.'
+export const HANDOFFS_HINT = "Flows that start when someone hands work on, or when something happens, like an email. Nothing runs on a timer, so there's no badge."
+export const OFF_CHART_HINT = 'Routines your bots run in Grok Bot that no flow describes yet. Import processes from Grok Bot to add them with all their steps.'
+
+/** A scheduled flow is a routine a bot starts on its own; a manual or event flow is a handoff. */
+export function flowSegment(process: Pick<ProcessFile, 'trigger'>): 'routines' | 'handoffs' {
+  return process.trigger.type === 'schedule' ? 'routines' : 'handoffs'
+}
+
 /**
- * Whether a flow is paused. The bot's own report decides; without one, the "(paused)" mark Grok Bot's import writes at
- * the end of a trigger's description; without that, a routine is active. Grok Bot's files never decide: they still said
- * active for routines paused weeks earlier. A manual flow is not a routine, so it has no state: null.
+ * Whether a routine flow is paused, or null for no badge. The bot's own report decides; without one, only the "(paused)"
+ * mark Grok Bot's import writes at the end of a trigger's description. Nothing is guessed: Grok Bot's files still said
+ * active for routines paused weeks earlier. A handoff runs on no timer, so it has no state.
  */
 export function lanePaused(process: Pick<ProcessFile, 'trigger'>, live: ReturnType<typeof laneRoutine>): boolean | null {
+  if (flowSegment(process) !== 'routines') return null
   if (live && (live.source === 'bot' || live.source === 'app')) return live.routine.enabled === false
   if (/\(paused\)\s*$/i.test(process.trigger.description)) return true
-  return process.trigger.type === 'manual' ? null : false
+  return null
+}
+
+/** Why a routine flow has no badge, when nothing else on it says so. */
+export function laneNoRoutine(process: Pick<ProcessFile, 'trigger'>, live: ReturnType<typeof laneRoutine>): string {
+  if (lanePaused(process, live) !== null || flowSegment(process) !== 'routines' || live) return ''
+  return "No badge yet: the bot hasn't reported a routine with this name."
 }
 
 /** A flow's runs: from the bot's own report, last and next; from Grok Bot's files only the last run, marked unconfirmed. */
@@ -65,10 +85,18 @@ export function laneProblems(process: ProcessFile, seats: { slug: string; title:
   return [...new Set(problems)]
 }
 
-/** Routines bots report that have no flow on the Work Chart yet, as "Bot: routine". The Connector's own run is not one. */
-export function routinesOffChart(board: RoutineBoard | null | undefined, processes: Pick<ProcessFile, 'name'>[]): string[] {
+/**
+ * Routines this organization's bots run in Grok Bot that no flow describes yet: the routine, its bot, and its schedule in
+ * words or the event that starts it. Paused only when the bot says so. The Connector's own run is not one.
+ */
+export function routinesOffChart(board: RoutineBoard | null | undefined, processes: Pick<ProcessFile, 'name'>[]): { bot: string; name: string; schedule: string; paused: boolean }[] {
   const names = new Set(processes.map((process) => norm(process.name)))
   return (board?.bots ?? [])
     .filter((bot) => bot.source === 'bot' || bot.source === 'files')
-    .flatMap((bot) => bot.routines.filter((routine) => !names.has(norm(routine.name))).map((routine) => `${bot.title}: ${routine.name}`))
+    .flatMap((bot) => bot.routines.filter((routine) => !names.has(norm(routine.name))).map((routine) => ({
+      bot: bot.title,
+      name: routine.name,
+      schedule: routine.trigger === 'schedule' ? scheduleWords(routine.schedule, routine.timeZone) : routine.event || routine.schedule,
+      paused: bot.source === 'bot' && routine.enabled === false,
+    })))
 }
