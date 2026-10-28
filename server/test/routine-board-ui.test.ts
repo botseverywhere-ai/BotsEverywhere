@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { HANDOFFS_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
@@ -43,7 +43,8 @@ test('routines and handoffs are different segments: a scheduled flow is a routin
   assert.equal(flowSegment(at('event')), 'handoffs')
   assert.equal(ROUTINES_HINT, 'Flows whose trigger is a schedule: a bot starts them on its own. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.')
   assert.equal(HANDOFFS_HINT, "Flows whose trigger is someone handing work on, or an event like an email. Nothing runs on a timer, so there's no badge.")
-  assert.equal(OFF_CHART_HINT, 'Routines your bots run in Grok Bot that no flow describes yet, each with its trigger. Import processes from Grok Bot to add them with all their steps.')
+  assert.equal(OFF_CHART_HINT, "These routines run in Grok Bot, but this Work Chart doesn't show their steps yet. Import processes from Grok Bot and each one becomes a flow with all its steps.")
+  assert.equal(IDLE_HINT, 'Bots that do no step in any flow on this Work Chart yet. Some still run routines in Grok Bot, listed under Routines without a flow.')
 })
 
 test('a routine flow with no badge says why; one with a badge, a handoff, or a stale file match says nothing more', () => {
@@ -142,7 +143,7 @@ test('a Work Chart with no flows explains itself: the intro, its empty boxes, an
   assert.match(chart, /\{empty \? null : <p className="process-fallback">/, 'no fallback line before there is work')
   assert.match(chart, /\{editable && !empty \? <Button variant="primary" type="button" onClick=\{\(\) => setDrawer\('new'\)\}>\+ New process<\/Button> : null\}/)
   assert.equal(chart.includes('be-empty'), false, 'the empty boxes say it instead')
-  assert.match(chart, /\{empty \? null : \(\n\s+<section className="process-idle"/, 'no list of idle seats before there is work')
+  assert.equal(chart.includes('process-idle'), false, 'bots without work are a box like the others')
   assert.match(chart, /<details className="link-panel" open=\{empty\}>/)
   assert.match(chart, /\{editable && empty \? \(\n\s+<div className="process-intro">/, 'an empty Work Chart explains itself under the title')
   for (const line of [
@@ -155,24 +156,31 @@ test('a Work Chart with no flows explains itself: the intro, its empty boxes, an
   assert.equal(chart.includes('process-off-chart'), false, 'routines off the chart are their own segment, not a note')
 })
 
-test('the Work Chart shows routines, handoffs, and routines not on it yet as segments, with a selector to show all or one', () => {
+test('the Work Chart shows routines, handoffs, routines without a flow, and bots without work as boxes, with segmented buttons to show all or one', () => {
   const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
   assert.match(chart, /const routineFlows = processes\.filter\(\(process\) => flowSegment\(process\) === 'routines'\)/)
   assert.match(chart, /const handoffFlows = processes\.filter\(\(process\) => flowSegment\(process\) === 'handoffs'\)/)
-  assert.match(chart, /<select className="text-input" aria-label="Show" value=\{show\} onChange=\{\(event\) => setShow\(event\.target\.value as Show\)\}>/, 'a native select')
+  assert.match(chart, /const idleBots = seats\.filter\(\(seat\) => seat\.kind === 'bot' && seat\.status !== 'retired' && !used\.has\(seat\.slug\)\)/)
+  assert.match(chart, /<div className="process-show" role="group" aria-label="Show">/, 'one row of buttons, not a dropdown')
+  assert.match(chart, /<Button key=\{item\.value\} variant=\{show === item\.value \? 'primary' : 'secondary'\} type="button" aria-pressed=\{show === item\.value\} onClick=\{\(\) => setShow\(item\.value\)\}>/)
+  assert.equal(chart.includes('aria-label="Show" value={show}'), false)
   for (const option of [
-    '<option value="all">All ({processes.length + offChart.length})</option>',
-    '<option value="routines">Routines ({routineFlows.length})</option>',
-    '<option value="handoffs">Handoffs ({handoffFlows.length})</option>',
-    '<option value="off">Not on the Work Chart yet ({offChart.length})</option>',
+    "{ value: 'all', label: 'All' }",
+    "{ value: 'routines', label: 'Routines', count: routineFlows.length }",
+    "{ value: 'handoffs', label: 'Handoffs', count: handoffFlows.length }",
+    "{ value: 'off', label: 'Routines without a flow', count: offChart.length }",
+    "{ value: 'idle', label: 'Bots without work', count: idleBots.length }",
   ]) assert.ok(chart.includes(option), option)
-  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}']) assert.ok(chart.includes(`<p className="process-segment-hint">${hint}</p>`), hint)
+  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}', '{IDLE_HINT}']) assert.ok(chart.includes(`<p className="process-segment-hint">${hint}</p>`), hint)
   assert.match(chart, /\{show === 'all' \|\| show === 'routines' \? \(/, 'the Routines box shows even with no flows, so the chart explains itself')
   assert.match(chart, /\{show === 'all' \|\| show === 'handoffs' \? \(/)
   assert.match(chart, /\{show === 'all' \|\| show === 'off' \? \(/)
-  for (const line of ['No routines on the Work Chart yet.', 'No handoffs on the Work Chart yet.', 'None. Every routine your bots run is on the Work Chart.']) assert.ok(chart.includes(line), line)
+  assert.match(chart, /\{show === 'all' \|\| show === 'idle' \? \(/)
+  for (const line of ['No routines on the Work Chart yet.', 'No handoffs on the Work Chart yet.', 'None. Every routine your bots run has a flow.', 'None. Every bot does a step in a flow.']) assert.ok(chart.includes(line), line)
   assert.match(chart, /<h2 id="segment-routines">Routines <span className="process-count">\{routineFlows\.length\}<\/span><\/h2>/)
-  assert.equal(chart.includes('{empty ? null : (\n        <label className="process-show">'), false, 'the selector shows on an empty chart too')
+  assert.match(chart, /<h2 id="segment-off">Routines without a flow <span className="process-count">\{offChart\.length\}<\/span><\/h2>/)
+  assert.match(chart, /<h2 id="segment-idle">Bots without work <span className="process-count">\{idleBots\.length\}<\/span><\/h2>/)
+  assert.equal(chart.includes('Not on the Work Chart yet'), false)
   assert.match(chart, /<span className="process-kicker">Trigger<\/span>\n\s+<span className="process-chip">/, 'every flow reads Trigger, then its steps, then Done when')
   assert.match(chart, /<span>\{routine\.bot\} · Trigger: \{routine\.schedule\}<\/span>/)
   assert.match(chart, /const noRoutine = laneNoRoutine\(process, live\)/)
@@ -180,6 +188,8 @@ test('the Work Chart shows routines, handoffs, and routines not on it yet as seg
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.process-segment \{ min-width: 0; padding: var\(--space-4\); border: 1px solid var\(--color-line\); border-radius: var\(--control-radius\); \}/, 'each segment is a box with square corners')
   assert.equal(css.includes('.process-off-chart'), false)
+  assert.equal(css.includes('.process-idle'), false)
+  assert.match(css, /\.process-show \.btn \+ \.btn \{ margin-left: -1px; \}/, 'the buttons join into one segmented row')
 })
 
 test("the Work Chart's flows carry the live routine; Performance and Profile show the account's apps once and the apps each bot uses", () => {

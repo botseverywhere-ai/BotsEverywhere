@@ -22,12 +22,12 @@ import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { HANDOFFS_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
 /** Which segments the Work Chart shows: all of them, or one. */
-type Show = 'all' | 'routines' | 'handoffs' | 'off'
+type Show = 'all' | 'routines' | 'handoffs' | 'off' | 'idle'
 
 export function ProcessChart({
   orgId,
@@ -80,7 +80,7 @@ export function ProcessChart({
   const seatRefs = useMemo(() => seats.map((seat) => ({ slug: seat.slug, title: seat.title, kind: seat.kind, mustAskBefore: seat.mustAskBefore })), [seats])
   const processesPrompt = useMemo(() => grokProcessesPrompt(seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired').map((seat) => seat.title)), [seats])
   const used = useMemo(() => new Set(processes.flatMap((process) => process.steps.map((step) => step.seat))), [processes])
-  const idle = seats.filter((seat) => seat.status !== 'retired' && !used.has(seat.slug))
+  const idleBots = seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !used.has(seat.slug))
   const focusName = seats.find((seat) => seat.slug === focusSeat)?.title || focusSeat
 
   async function save(draft: Draft) {
@@ -198,6 +198,13 @@ export function ProcessChart({
 
   // With no flows yet, the page explains itself and opens the import from Grok Bot; the boxes show what will go where.
   const empty = processes.length === 0
+  const shows: { value: Show; label: string; count?: number }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'routines', label: 'Routines', count: routineFlows.length },
+    { value: 'handoffs', label: 'Handoffs', count: handoffFlows.length },
+    { value: 'off', label: 'Routines without a flow', count: offChart.length },
+    { value: 'idle', label: 'Bots without work', count: idleBots.length },
+  ]
   const lane = (process: ProcessFile) => (
     <ProcessLane
       key={process.slug}
@@ -241,15 +248,13 @@ export function ProcessChart({
         {editable && !empty ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
-      <label className="process-show">
-        Show
-        <select className="text-input" aria-label="Show" value={show} onChange={(event) => setShow(event.target.value as Show)}>
-          <option value="all">All ({processes.length + offChart.length})</option>
-          <option value="routines">Routines ({routineFlows.length})</option>
-          <option value="handoffs">Handoffs ({handoffFlows.length})</option>
-          <option value="off">Not on the Work Chart yet ({offChart.length})</option>
-        </select>
-      </label>
+      <div className="process-show" role="group" aria-label="Show">
+        {shows.map((item) => (
+          <Button key={item.value} variant={show === item.value ? 'primary' : 'secondary'} type="button" aria-pressed={show === item.value} onClick={() => setShow(item.value)}>
+            {item.label}{item.count === undefined ? null : <span className="process-show-count">{item.count}</span>}
+          </Button>
+        ))}
+      </div>
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
       <div className="process-segments" ref={lanesRef}>
         {show === 'all' || show === 'routines' ? (
@@ -268,7 +273,7 @@ export function ProcessChart({
         ) : null}
         {show === 'all' || show === 'off' ? (
           <section className="process-segment" aria-labelledby="segment-off">
-            <h2 id="segment-off">Not on the Work Chart yet <span className="process-count">{offChart.length}</span></h2>
+            <h2 id="segment-off">Routines without a flow <span className="process-count">{offChart.length}</span></h2>
             <p className="process-segment-hint">{OFF_CHART_HINT}</p>
             {offChart.length ? (
               <ul className="process-off-list">
@@ -280,20 +285,21 @@ export function ProcessChart({
                   </li>
                 ))}
               </ul>
-            ) : <p className="process-segment-empty">None. Every routine your bots run is on the Work Chart.</p>}
+            ) : <p className="process-segment-empty">None. Every routine your bots run has a flow.</p>}
+          </section>
+        ) : null}
+        {show === 'all' || show === 'idle' ? (
+          <section className="process-segment" aria-labelledby="segment-idle">
+            <h2 id="segment-idle">Bots without work <span className="process-count">{idleBots.length}</span></h2>
+            <p className="process-segment-hint">{IDLE_HINT}</p>
+            {idleBots.length ? (
+              <ul className="process-bot-list">
+                {idleBots.map((seat) => <li key={seat.slug}>{seat.title}</li>)}
+              </ul>
+            ) : <p className="process-segment-empty">None. Every bot does a step in a flow.</p>}
           </section>
         ) : null}
       </div>
-      {empty ? null : (
-        <section className="process-idle" aria-labelledby="no-work-yet">
-          <h2 id="no-work-yet">No work yet</h2>
-          {idle.length ? (
-            <ul>
-              {idle.map((seat) => <li key={seat.slug}>{seat.title}</li>)}
-            </ul>
-          ) : <p>Every seat owns a step.</p>}
-        </section>
-      )}
       {editable ? (
         <details className="link-panel" open={empty}>
           <summary>
