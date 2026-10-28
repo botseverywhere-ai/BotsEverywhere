@@ -52,6 +52,10 @@ import { everyLabel, scheduleFor } from './connector-timing.js'
 import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeRemoveCopy, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { connectorState, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
+import { RESULTS_FILE, readTextFile } from './connector-files.js'
+import { parseResults } from './connector-todo.js'
+import { readGrokData } from './grok-data.js'
+import { routineBoard, type RoutineBoard } from './routine-board.js'
 import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
@@ -2063,6 +2067,31 @@ export function deleteOrg(orgsDir: string, slug: string, confirm: string): { ok:
   return { ok: true, next: others[0] ?? '' }
 }
 
+/** The routines each bot runs in Grok Bot, for the Work Chart. Null when the org is not there or cannot be read. Reads only; never throws. */
+export function readRoutineBoard(orgsDir: string, slug: string, now = new Date()): RoutineBoard | null {
+  try {
+    const root = orgRoot(orgsDir, slug)
+    if (!root || !orgExists(root)) return null
+    const read = readOrgDir(root, slug)
+    if (!read.ok) return null
+    const dump = readGrokData(orgsDir)
+    const results = readTextFile(resolve(orgsDir, RESULTS_FILE))
+    const connector = readConnector(orgsDir)
+    const ranAt = Number(connector?.stamp.split(':')[0])
+    return routineBoard({
+      orgId: slug,
+      bundle: read.bundle,
+      data: dump.ok ? dump.data : null,
+      confirmations: results ? parseResults(results).confirmations : [],
+      connector: connector && ranAt > 0 ? { lastRun: new Date(ranAt).toISOString(), syncMinutes: connector.syncMinutes ?? readSyncMinutes(orgsDir) } : null,
+      timeZone: localTimeZone(),
+      now,
+    })
+  } catch {
+    return null
+  }
+}
+
 /** Where an org's files sit and how many there are, for Your files on Organization Overview. Null when the org is not there. Never throws. */
 export function readFileGuide(orgsDir: string, slug: string): FileGuide | null {
   const folder = orgRoot(orgsDir, slug)
@@ -2402,6 +2431,13 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const guide = readFileGuide(orgsDir, filesMatch[1]!)
       if (!guide) return send(res, 404, { error: 'Org not found.' })
       send(res, 200, guide)
+      return
+    }
+    const routinesMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/routines$/.exec(url.pathname)
+    if (routinesMatch && req.method === 'GET') {
+      const board = readRoutineBoard(orgsDir, routinesMatch[1]!)
+      if (!board) return send(res, 404, { error: 'Org not found.' })
+      send(res, 200, board)
       return
     }
     const runLogMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/run-log$/.exec(url.pathname)
