@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode, type MouseEvent } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import { IMPORT_LOCKED, importLocked } from '../../server/src/bots-file.ts'
+import { WORK_CHART_LOCKED } from '../org/work-chart-lock'
 import { FOLDER_EVENT, orgFolder, seatsFolder } from '../org/folder-path'
 import { Button } from './Button'
 import { BotsFileImport, downloadBotsFile } from './BotsFileImport'
@@ -50,6 +51,7 @@ export function LinkCompany({
   return (
     <section className="link-company connect-grok" aria-labelledby="link-company-title">
       <h2 id="link-company-title"><span className="step-label">Step 2</span>How to link your organization to BotsEverywhere</h2>
+      {locked ? null : <span className="connect-badge"><i aria-hidden="true" />{WORK_CHART_LOCKED}</span>}
       {locked ? (
         <>
           <p>{IMPORT_LOCKED}</p>

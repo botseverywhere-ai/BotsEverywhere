@@ -30,6 +30,7 @@ import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '.
 import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { botApps } from '../org/bot-apps'
 import { skillCount } from '../org/bot-skills'
+import { WORK_CHART_LOCKED, workChartLocked } from '../org/work-chart-lock'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -262,6 +263,8 @@ export function Workspace({
     id: seat.id,
     stats: { usageCount30d: metricsById.get(seat.id)?.usage ?? 0 },
   })))
+  // The Work Chart stays closed until the organization has bots: before that it has nothing to show.
+  const chartLocked = workChartLocked(seats, sample)
   // Only a bot being created is connecting; an update goes to a bot Grok Bot already has.
   const createRequests = (sync?.requests ?? []).filter((item) => item.kind !== 'update')
   // The update waiting for the open bot: a move, skills and routines, or both.
@@ -873,7 +876,7 @@ export function Workspace({
             {editable ? <ConnectionBar slug={bundle.id} status={connection} /> : null}
             {APP_MODE === 'template' && !sample ? <OrgSwitcher slug={bundle.id} name={company.org.name} tab={tabForView(view)} /> : null}
             {editable ? <Button variant="secondary" type="button" className="org-sync" onClick={() => { setSyncOpen(true); void loadSync() }}><SyncIcon />{syncButtonLabel(sync?.plan?.writes ?? 0, outgoing(sync?.plan ?? null, sync?.requests ?? [], seats).ready.length)}</Button> : null}
-            <OrgTabs slug={bundle.id} current={tabForView(view)} template={sample} />
+            <OrgTabs slug={bundle.id} current={tabForView(view)} template={sample} workChartLocked={chartLocked} />
             {editable && !sample ? <OrgMenu slug={bundle.id} name={company.org.name} /> : null}
           </div>
         ) : null}
@@ -963,7 +966,13 @@ export function Workspace({
               chartHref={hrefFor(bundle.id, sample, 'org')}
             />
           ) : null}
-          {view === 'work' ? (
+          {view === 'work' && chartLocked ? (
+            <section className="work-locked" aria-label="Work Chart">
+              <p>{WORK_CHART_LOCKED}.</p>
+              <Button variant="primary" href={`#/org/${bundle.id}/connect-bots`}>Connect bots</Button>
+            </section>
+          ) : null}
+          {view === 'work' && !chartLocked ? (
             <ProcessChart
               orgId={bundle.id}
               editable={editable}
