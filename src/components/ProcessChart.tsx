@@ -202,6 +202,16 @@ export function ProcessChart({
             {png && !empty ? <ChartPngButton chart="work" orgName={png.orgName} target={() => lanesRef.current} /> : null}
           </div>
           {empty ? null : <p className="process-fallback">Unmatched work uses {fallbackProcess}, owned by You.</p>}
+          {editable && empty ? (
+            <div className="process-intro">
+              <p>The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with what starts it, each step in order, and who does it.</p>
+              <ol>
+                <li>Click <strong>Copy prompt</strong> below and paste it into Grok Bot.</li>
+                <li>Grok Bot sends you a file named <code>botseverywhere-processes.json</code>. Save it.</li>
+                <li>Click <strong>Import processes file</strong> and pick that file.</li>
+              </ol>
+            </div>
+          ) : null}
         </div>
         {editable && !empty ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>

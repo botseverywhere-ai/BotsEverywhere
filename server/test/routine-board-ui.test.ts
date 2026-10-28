@@ -111,6 +111,13 @@ test('a Work Chart with no flows shows only the import from Grok Bot, open; rout
   assert.match(chart, /\{empty && !editable \? <p className="be-empty">No processes yet\./, 'only a template with no flows says so')
   assert.match(chart, /\{empty \? null : \(\n\s+<section className="process-idle"/, 'no list of idle seats before there is work')
   assert.match(chart, /<details className="link-panel" open=\{empty\}>/)
+  assert.match(chart, /\{editable && empty \? \(\n\s+<div className="process-intro">/, 'an empty Work Chart explains itself under the title')
+  for (const line of [
+    'The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with what starts it, each step in order, and who does it.',
+    'Click <strong>Copy prompt</strong> below and paste it into Grok Bot.',
+    'Grok Bot sends you a file named <code>botseverywhere-processes.json</code>. Save it.',
+    'Click <strong>Import processes file</strong> and pick that file.',
+  ]) assert.ok(chart.includes(line), line)
   assert.match(chart, /Import processes from Grok Bot below to add them as flows\./)
   assert.equal(chart.includes('Sync with Grok Bot adds them as flows'), false)
 })
