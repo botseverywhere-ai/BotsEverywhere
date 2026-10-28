@@ -18,9 +18,9 @@ export function laneRoutine(process: Pick<ProcessFile, 'name' | 'steps'>, board:
 }
 
 /** The Work Chart's segments, and what each means, in the words the page shows. */
-export const ROUTINES_HINT = 'Flows a bot starts on its own, on a schedule. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.'
-export const HANDOFFS_HINT = "Flows that start when someone hands work on, or when something happens, like an email. Nothing runs on a timer, so there's no badge."
-export const OFF_CHART_HINT = 'Routines your bots run in Grok Bot that no flow describes yet. Import processes from Grok Bot to add them with all their steps.'
+export const ROUTINES_HINT = 'Flows whose trigger is a schedule: a bot starts them on its own. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.'
+export const HANDOFFS_HINT = "Flows whose trigger is someone handing work on, or an event like an email. Nothing runs on a timer, so there's no badge."
+export const OFF_CHART_HINT = 'Routines your bots run in Grok Bot that no flow describes yet, each with its trigger. Import processes from Grok Bot to add them with all their steps.'
 
 /** A scheduled flow is a routine a bot starts on its own; a manual or event flow is a handoff. */
 export function flowSegment(process: Pick<ProcessFile, 'trigger'>): 'routines' | 'handoffs' {

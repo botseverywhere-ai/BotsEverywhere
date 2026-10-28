@@ -229,7 +229,7 @@ export function ProcessChart({
           {empty ? null : <p className="process-fallback">Unmatched work uses {fallbackProcess}, owned by You.</p>}
           {editable && empty ? (
             <div className="process-intro">
-              <p>The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with what starts it, each step in order, and who does it.</p>
+              <p>The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with its trigger (what starts it), each step in order, and who does it.</p>
               <ol>
                 <li>Click <strong>Copy prompt</strong> below and paste it into Grok Bot.</li>
                 <li>Grok Bot sends you a file named <code>botseverywhere-processes.json</code>. Save it.</li>
@@ -275,7 +275,7 @@ export function ProcessChart({
                 {offChart.map((routine) => (
                   <li key={`${routine.bot}|${routine.name}`}>
                     <strong>{routine.name}</strong>
-                    <span>{routine.bot} · {routine.schedule}</span>
+                    <span>{routine.bot} · Trigger: {routine.schedule}</span>
                     {routine.paused ? <span className="routine-state is-paused">Paused</span> : null}
                   </li>
                 ))}
@@ -408,6 +408,7 @@ function ProcessLane({
       <div className="process-lane-main">
         <div className="process-trigger">
           <h2>{process.name}</h2>
+          <span className="process-kicker">Trigger</span>
           <span className="process-chip">
             <TriggerIcon type={process.trigger.type} />
             {process.trigger.type === 'schedule' ? scheduleWords(process.trigger.schedule, live?.routine.timeZone) : triggerLabel(process.trigger)}

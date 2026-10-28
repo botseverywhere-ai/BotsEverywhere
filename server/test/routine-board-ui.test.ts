@@ -41,9 +41,9 @@ test('routines and handoffs are different segments: a scheduled flow is a routin
   assert.equal(flowSegment(at('schedule')), 'routines')
   assert.equal(flowSegment(at('manual')), 'handoffs')
   assert.equal(flowSegment(at('event')), 'handoffs')
-  assert.equal(ROUTINES_HINT, 'Flows a bot starts on its own, on a schedule. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.')
-  assert.equal(HANDOFFS_HINT, "Flows that start when someone hands work on, or when something happens, like an email. Nothing runs on a timer, so there's no badge.")
-  assert.equal(OFF_CHART_HINT, 'Routines your bots run in Grok Bot that no flow describes yet. Import processes from Grok Bot to add them with all their steps.')
+  assert.equal(ROUTINES_HINT, 'Flows whose trigger is a schedule: a bot starts them on its own. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.')
+  assert.equal(HANDOFFS_HINT, "Flows whose trigger is someone handing work on, or an event like an email. Nothing runs on a timer, so there's no badge.")
+  assert.equal(OFF_CHART_HINT, 'Routines your bots run in Grok Bot that no flow describes yet, each with its trigger. Import processes from Grok Bot to add them with all their steps.')
 })
 
 test('a routine flow with no badge says why; one with a badge, a handoff, or a stale file match says nothing more', () => {
@@ -146,7 +146,7 @@ test('a Work Chart with no flows explains itself: the intro, its empty boxes, an
   assert.match(chart, /<details className="link-panel" open=\{empty\}>/)
   assert.match(chart, /\{editable && empty \? \(\n\s+<div className="process-intro">/, 'an empty Work Chart explains itself under the title')
   for (const line of [
-    'The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with what starts it, each step in order, and who does it.',
+    'The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with its trigger (what starts it), each step in order, and who does it.',
     'Click <strong>Copy prompt</strong> below and paste it into Grok Bot.',
     'Grok Bot sends you a file named <code>botseverywhere-processes.json</code>. Save it.',
     'Click <strong>Import processes file</strong> and pick that file.',
@@ -173,6 +173,8 @@ test('the Work Chart shows routines, handoffs, and routines not on it yet as seg
   for (const line of ['No routines on the Work Chart yet.', 'No handoffs on the Work Chart yet.', 'None. Every routine your bots run is on the Work Chart.']) assert.ok(chart.includes(line), line)
   assert.match(chart, /<h2 id="segment-routines">Routines <span className="process-count">\{routineFlows\.length\}<\/span><\/h2>/)
   assert.equal(chart.includes('{empty ? null : (\n        <label className="process-show">'), false, 'the selector shows on an empty chart too')
+  assert.match(chart, /<span className="process-kicker">Trigger<\/span>\n\s+<span className="process-chip">/, 'every flow reads Trigger, then its steps, then Done when')
+  assert.match(chart, /<span>\{routine\.bot\} · Trigger: \{routine\.schedule\}<\/span>/)
   assert.match(chart, /const noRoutine = laneNoRoutine\(process, live\)/)
   assert.match(chart, /\{noRoutine \? <p>\{noRoutine\}<\/p> : null\}/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
