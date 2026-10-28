@@ -98,7 +98,7 @@ test('the Connector prompt writes the snapshot, runs on a schedule, and never ed
   assert.match(prompt, /Never estimate or invent numbers\./)
 })
 
-test('a routine owned by a bot created in the same sync lands on that bot', () => {
+test('a bot created by a sync arrives without a flow for its routine; flows come from the Work Chart import', () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-sync-fresh-'))
   try {
     const created = createOrgFiles(dir, 'Desk', 'Ada')
@@ -117,9 +117,8 @@ test('a routine owned by a bot created in the same sync lands on that bot', () =
     assert.equal(applied.ok, true)
     if (!applied.ok) return
     assert.deepEqual(applied.errors, [])
-    assert.equal(applied.notes.some((note) => /Unknown seat/.test(note)), false, applied.notes.join(' '))
-    const process = readFileSync(join(root, 'processes', 'fresh-routine.md'), 'utf8')
-    assert.match(process, /^- fresh-bot \| Do it$/m)
+    assert.equal(existsSync(join(root, 'seats', 'fresh-bot.md')), true)
+    assert.equal(existsSync(join(root, 'processes', 'fresh-routine.md')), false)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -338,7 +337,7 @@ test('planSync lists a duplicated snapshot bot once as updated and once as new',
   assert.deepEqual(plan.rows.map((row) => row.kind).sort(), ['new', 'updated'])
 })
 
-test('planSync adds unknown routines as processes and warns on a schedule mismatch', () => {
+test('planSync never turns a routine into a flow; it warns on a schedule mismatch with an existing one', () => {
   const existing: ProcessFile = {
     slug: 'daily-brief',
     name: 'Daily brief',
@@ -358,15 +357,15 @@ test('planSync adds unknown routines as processes and warns on a schedule mismat
   if (!parsed.ok) return
   const plan = planSync(parsed.snapshot, [you], [existing])
   const kinds = plan.rows.map((row) => `${row.kind}:${row.name}`)
-  assert.deepEqual(kinds, ['new:Daily Bot', 'schedule:Daily brief', 'new-process:Invoice arrives', 'skipped:Process'])
+  assert.deepEqual(kinds, ['new:Daily Bot', 'schedule:Daily brief', 'skipped:Process'], 'Invoice arrives has no flow and stays only a routine: flows come from the Work Chart import')
   const warning = plan.rows[0]
   if (warning?.kind === 'schedule') {
     assert.equal(warning.process, 'weekdays 08:00')
     assert.equal(warning.routine, '0 9 * * 1-5')
   }
-  assert.equal(plan.counts.processes, 1)
+  assert.equal(plan.counts.processes, 0)
   assert.equal(plan.counts.warnings, 1)
-  assert.equal(plan.writes, 2)
+  assert.equal(plan.writes, 1)
 })
 
 test('patchSeatSource rewrites a Grok-written seat without a BOM, with LF, keeping the card', () => {
@@ -450,13 +449,13 @@ test('syncStatus reads the snapshot, applySync writes the merge once, and nothin
     const status = syncStatus(root, created.slug)
     assert.equal(status.ok, true)
     if (!status.ok || !status.status.plan) return
-    assert.deepEqual(status.status.plan.counts, { new: 1, missing: 1, updated: 1, processes: 1, warnings: 0, unchanged: 0 })
+    assert.deepEqual(status.status.plan.counts, { new: 1, missing: 1, updated: 1, processes: 0, warnings: 0, unchanged: 0 })
 
     const applied = applySync(root, created.slug, status.status.plan)
     assert.equal(applied.ok, true)
     if (!applied.ok) return
     assert.deepEqual(applied.errors, [])
-    assert.equal(applied.summary, '1 new, 1 missing, 1 updated, 1 new process')
+    assert.equal(applied.summary, '1 new, 1 missing, 1 updated')
     const seatNames = readdirSync(join(root, 'seats')).sort()
     assert.deepEqual(seatNames, ['brand-new-bot.md', 'gone-bot.md', 'invoice-bot.md', 'you.md'], 'nothing deleted, one seat added')
     const invoice = readFileSync(join(root, 'seats', 'invoice-bot.md'), 'utf8')
@@ -470,8 +469,8 @@ test('syncStatus reads the snapshot, applySync writes the merge once, and nothin
     const fresh = readFileSync(join(root, 'seats', 'brand-new-bot.md'), 'utf8')
     assert.match(fresh, /^reportsTo: invoice-bot$/m)
     assert.match(fresh, /^grokSync: new$/m)
-    assert.equal(existsSync(join(root, 'processes', 'invoice-arrives.md')), true)
-    for (const name of [...seatNames.map((item) => join('seats', item)), join('processes', 'invoice-arrives.md')]) {
+    assert.equal(existsSync(join(root, 'processes', 'invoice-arrives.md')), false, 'a routine never becomes a flow by itself')
+    for (const name of seatNames.map((item) => join('seats', item))) {
       const text = readFileSync(join(root, name), 'utf8')
       assert.equal(text.charCodeAt(0) === 0xfeff, false, `${name} has no BOM`)
       assert.equal(text.includes('\r'), false, `${name} uses LF`)
@@ -481,7 +480,7 @@ test('syncStatus reads the snapshot, applySync writes the merge once, and nothin
     if (!after.ok) return
     const syncEvents = after.bundle.activity.filter((event) => event.id.startsWith('sync-'))
     assert.equal(syncEvents.length, 1)
-    assert.match(syncEvents[0]!.summary, /^Synced with Grok Bot: 1 new, 1 missing, 1 updated, 1 new process$/)
+    assert.match(syncEvents[0]!.summary, /^Synced with Grok Bot: 1 new, 1 missing, 1 updated$/)
 
     const second = syncStatus(root, created.slug)
     assert.equal(second.ok, true)

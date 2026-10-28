@@ -190,6 +190,8 @@ export function ProcessChart({
     }
   }
 
+  // With no flows yet, the page is only the import from Grok Bot: the rest has nothing to show.
+  const empty = processes.length === 0
   return (
     <div className="process-layout">
     <div className="process-board" data-testid="work-chart">
@@ -197,16 +199,16 @@ export function ProcessChart({
         <div>
           <div className="process-title">
             <h1>Work Chart</h1>
-            {png && processes.length ? <ChartPngButton chart="work" orgName={png.orgName} target={() => lanesRef.current} /> : null}
+            {png && !empty ? <ChartPngButton chart="work" orgName={png.orgName} target={() => lanesRef.current} /> : null}
           </div>
-          <p className="process-fallback">Unmatched work uses {fallbackProcess}, owned by You.</p>
+          {empty ? null : <p className="process-fallback">Unmatched work uses {fallbackProcess}, owned by You.</p>}
         </div>
-        {editable ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
+        {editable && !empty ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
-      {offChart.length ? <p className="process-off-chart">{offChart.length} {offChart.length === 1 ? "routine in Grok Bot isn't" : "routines in Grok Bot aren't"} on the Work Chart yet: {offChart.join('; ')}. Sync with Grok Bot adds them as flows.</p> : null}
+      {empty && !editable ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
+      {offChart.length && !empty ? <p className="process-off-chart">{offChart.length} {offChart.length === 1 ? "routine in Grok Bot isn't" : "routines in Grok Bot aren't"} on the Work Chart yet: {offChart.join('; ')}. Import processes from Grok Bot below to add them as flows.</p> : null}
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
-      {processes.length === 0 ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
       <ul className="process-lanes" ref={lanesRef}>
         {processes.map((process) => (
           <ProcessLane
@@ -228,16 +230,18 @@ export function ProcessChart({
           />
         ))}
       </ul>
-      <section className="process-idle" aria-labelledby="no-work-yet">
-        <h2 id="no-work-yet">No work yet</h2>
-        {idle.length ? (
-          <ul>
-            {idle.map((seat) => <li key={seat.slug}>{seat.title}</li>)}
-          </ul>
-        ) : <p>Every seat owns a step.</p>}
-      </section>
+      {empty ? null : (
+        <section className="process-idle" aria-labelledby="no-work-yet">
+          <h2 id="no-work-yet">No work yet</h2>
+          {idle.length ? (
+            <ul>
+              {idle.map((seat) => <li key={seat.slug}>{seat.title}</li>)}
+            </ul>
+          ) : <p>Every seat owns a step.</p>}
+        </section>
+      )}
       {editable ? (
-        <details className="link-panel">
+        <details className="link-panel" open={empty}>
           <summary>
             <span>Import processes from Grok Bot</span>
             <span className="grok-chevron" aria-hidden="true" />

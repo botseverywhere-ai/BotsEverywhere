@@ -276,10 +276,9 @@ export function planSync(snapshot: Snapshot, seats: SeatDocument[], processes: P
     if (!slug || seen.has(slug)) continue
     seen.add(slug)
     const current = bySlug.get(slug) ?? processes.find((process) => process.name.trim().toLowerCase() === row.name.trim().toLowerCase())
-    if (!current) {
-      rows.push({ kind: 'new-process', name: row.name, row })
-      continue
-    }
+    // A routine with no flow stays a routine. Flows come only from the Work Chart import or the owner: a one-step flow
+    // made from a routine's name says nothing about the work, and it filled a new organization's Work Chart on its own.
+    if (!current) continue
     const routine = row.trigger.schedule.trim()
     const process = current.trigger.schedule.trim()
     if (row.trigger.type === 'schedule' && current.trigger.type === 'schedule' && routine && routine !== process) {

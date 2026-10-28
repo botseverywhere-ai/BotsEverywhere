@@ -103,6 +103,18 @@ test("a bot's skills are the ones it reported in Grok Bot and the ones added her
   assert.equal(skillCount(undefined, [{ name: 'Invoices' }]), 1)
 })
 
+test('a Work Chart with no flows shows only the import from Grok Bot, open; routines off the chart point to that import', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /const empty = processes\.length === 0/)
+  assert.match(chart, /\{empty \? null : <p className="process-fallback">/, 'no fallback line before there is work')
+  assert.match(chart, /\{editable && !empty \? <Button variant="primary" type="button" onClick=\{\(\) => setDrawer\('new'\)\}>\+ New process<\/Button> : null\}/)
+  assert.match(chart, /\{empty && !editable \? <p className="be-empty">No processes yet\./, 'only a template with no flows says so')
+  assert.match(chart, /\{empty \? null : \(\n\s+<section className="process-idle"/, 'no list of idle seats before there is work')
+  assert.match(chart, /<details className="link-panel" open=\{empty\}>/)
+  assert.match(chart, /Import processes from Grok Bot below to add them as flows\./)
+  assert.equal(chart.includes('Sync with Grok Bot adds them as flows'), false)
+})
+
 test("the Work Chart's flows carry the live routine; Performance and Profile show the account's apps once and the apps each bot uses", () => {
   const hook = readFileSync(new URL('../../src/live/use-routine-board.ts', import.meta.url), 'utf8')
   assert.match(hook, /export function useRoutineBoard\(orgId: string, refresh: unknown, enabled: boolean\)/)
