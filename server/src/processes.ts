@@ -82,11 +82,22 @@ export function approverSlug(seats: SeatRef[]): string {
   return you?.slug || 'you'
 }
 
+/** How Grok Bot marks a step that must ask the owner first, at the start of its action. */
+const NEEDS_APPROVAL = /^\s*needs approval:\s*/i
+
+/** A step's action as people read it: without Grok Bot's "Needs approval:" mark, which shows as a checkpoint instead. */
+export function stepText(action: string): string {
+  return action.replace(NEEDS_APPROVAL, '')
+}
+
 export function deriveSteps(steps: ProcessStep[], seats: SeatRef[]): DerivedStep[] {
   const approver = approverSlug(seats)
+  // A process that uses Grok Bot's mark says exactly which steps ask first, so only those are checkpoints. Without the
+  // mark, a step's words and its seat's Needs approval list decide.
+  const marked = steps.some((step) => NEEDS_APPROVAL.test(step.action))
   return steps.map((step) => {
     const seat = seats.find((item) => item.slug === step.seat)
-    const because = checkpointBecause(step.action, seat?.mustAskBefore ?? [])
+    const because = marked ? (NEEDS_APPROVAL.test(step.action) ? 'Needs approval' : '') : checkpointBecause(step.action, seat?.mustAskBefore ?? [])
     return { ...step, checkpoint: Boolean(because), because, approver }
   })
 }
@@ -367,8 +378,8 @@ export function routinePrompt(process: Pick<ProcessFile, 'name' | 'slug' | 'trig
   ]
   derived.forEach((step, index) => {
     const seat = seats.find((item) => item.slug === step.seat)
-    lines.push(`${index + 1}. ${seat?.title || step.seat || 'Unassigned'}: ${step.action}`)
-    if (step.checkpoint) lines.push(`Ask me before ${step.action || step.because}.`)
+    lines.push(`${index + 1}. ${seat?.title || step.seat || 'Unassigned'}: ${stepText(step.action)}`)
+    if (step.checkpoint) lines.push(`Ask me before ${stepText(step.action) || step.because}.`)
   })
   lines.push('', `Done when: ${process.doneWhen.trim() || 'Say what finished.'}`, '')
   const seatFile = owner ? `seats/${owner.slug}.md` : 'seats/<seat>.md'

@@ -12,6 +12,7 @@ import {
   routinePrompt,
   scheduleFasterThanHourly,
   serializeProcess,
+  stepText,
   type ProcessFile,
 } from '../src/processes.ts'
 import { importProcessRows, readProcessDir, writeProcessFile } from '../src/process-files.ts'
@@ -171,4 +172,27 @@ Rules:
 - Send me the file to download. If you can't, reply with only the JSON so I can save it myself.`
   assert.equal(grokProcessesPrompt(['Inner Loop - botseverywhere', 'x.com - botseverywhere', 'x.com - botseverywhere']), `List the routines and handoffs that these bots already run: Inner Loop - botseverywhere, x.com - botseverywhere. Leave out every other bot. Save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.\n\n${rules}`)
   assert.equal(grokProcessesPrompt(), `List the routines and handoffs your bots already run for this organization. Save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.\n\n${rules}`)
+})
+
+test("a process that uses Grok Bot's Needs approval: mark is trusted: only the marked steps are checkpoints, and steps read without the mark", () => {
+  const seats = [
+    { slug: 'you', title: 'Miguel', kind: 'human', mustAskBefore: [] },
+    { slug: 'inner', title: 'Inner Loop', kind: 'bot', mustAskBefore: ['Running a prompt through Cursor'] },
+    { slug: 'x', title: 'x.com', kind: 'bot', mustAskBefore: [] },
+  ]
+  const steps = deriveSteps([
+    { seat: 'inner', action: 'Reply with short bullets on what changed and what is merged' },
+    { seat: 'inner', action: 'Run the prompt through Cursor until tests pass' },
+    { seat: 'x', action: 'Draft the X post' },
+    { seat: 'x', action: 'Needs approval: send you the exact post text' },
+    { seat: 'you', action: 'Post it from your own account' },
+  ], seats)
+  assert.deepEqual(steps.map((step) => step.checkpoint), [false, false, false, true, false], 'merged, post, a seat word, and your own step no longer guess a checkpoint')
+  assert.equal(steps[3]!.because, 'Needs approval')
+  assert.equal(stepText('Needs approval: send you the exact post text'), 'send you the exact post text')
+  assert.equal(stepText('  needs approval:merge to main'), 'merge to main')
+  assert.equal(stepText('Gather context'), 'Gather context')
+  const prompt = routinePrompt({ name: 'Milestone', slug: 'milestone', trigger: { type: 'manual', schedule: '', source: '', description: '' }, steps: [{ seat: 'x', action: 'Needs approval: send you the exact post text' }], doneWhen: '' }, seats)
+  assert.match(prompt, /\n1\. x\.com: send you the exact post text\nAsk me before send you the exact post text\./)
+  assert.doesNotMatch(prompt, /Needs approval:/)
 })

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import {
   EVENT_SOURCES,
@@ -7,6 +7,7 @@ import {
   processSlug,
   routinePrompt,
   scheduleFasterThanHourly,
+  stepText,
   triggerLabel,
   type EventSource,
   type ProcessFile,
@@ -20,6 +21,8 @@ import { Button } from './Button'
 import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
+import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
+import { lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
@@ -34,7 +37,7 @@ export function ProcessChart({
   onSeat,
   onReload,
   png,
-  routines,
+  board,
 }: {
   orgId: string
   editable: boolean
@@ -47,8 +50,8 @@ export function ProcessChart({
   onReload: () => Promise<void>
   /** Your own orgs only: Download PNG on the line under the heading. */
   png?: { orgName: string }
-  /** Your own orgs only: the routines each bot runs in Grok Bot, under the heading. */
-  routines?: ReactNode
+  /** Your own orgs only: what each bot reports it runs in Grok Bot, shown in the flow it belongs to. */
+  board?: RoutineBoard | null
 }) {
   const lanesRef = useRef<HTMLUListElement>(null)
   const [drawer, setDrawer] = useState<ProcessFile | 'new' | null>(null)
@@ -67,6 +70,7 @@ export function ProcessChart({
   }, [orgId])
   const approvals = useMemo(() => waitingLines(runLines, processes), [processes, runLines])
   const feed = useMemo(() => newestFirst(runLines), [runLines])
+  const offChart = useMemo(() => routinesOffChart(board, processes), [board, processes])
   const seatRefs = useMemo(() => seats.map((seat) => ({ slug: seat.slug, title: seat.title, kind: seat.kind, mustAskBefore: seat.mustAskBefore })), [seats])
   const processesPrompt = useMemo(() => grokProcessesPrompt(seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired').map((seat) => seat.title)), [seats])
   const used = useMemo(() => new Set(processes.flatMap((process) => process.steps.map((step) => step.seat))), [processes])
@@ -200,7 +204,7 @@ export function ProcessChart({
         {editable ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
-      {routines}
+      {offChart.length ? <p className="process-off-chart">{offChart.length} {offChart.length === 1 ? "routine in Grok Bot isn't" : "routines in Grok Bot aren't"} on the Work Chart yet: {offChart.join('; ')}. Sync with Grok Bot adds them as flows.</p> : null}
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
       {processes.length === 0 ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
       <ul className="process-lanes" ref={lanesRef}>
@@ -209,6 +213,7 @@ export function ProcessChart({
             key={process.slug}
             process={process}
             processes={processes}
+            live={laneRoutine(process, board)}
             seats={seatRefs}
             focusSeat={focusSeat}
             editable={editable}
@@ -302,6 +307,7 @@ export function ProcessChart({
 function ProcessLane({
   process,
   processes,
+  live,
   seats,
   focusSeat,
   editable,
@@ -315,6 +321,8 @@ function ProcessLane({
 }: {
   process: ProcessFile
   processes: ProcessFile[]
+  /** The routine this flow runs in Grok Bot, when a bot reports it. */
+  live: ReturnType<typeof laneRoutine>
   seats: { slug: string; title: string; kind?: string; mustAskBefore?: string[] }[]
   focusSeat: string
   editable: boolean
@@ -329,17 +337,20 @@ function ProcessLane({
   const [owner, setOwner] = useState(process.steps[0]?.seat || '')
   const derived = deriveSteps(process.steps, seats)
   const fast = process.trigger.type === 'schedule' && scheduleFasterThanHourly(process.trigger.schedule)
+  const paused = lanePaused(process, live)
   const prompt = routinePrompt(process, seats, owner, folder)
   const statuses = latestStepStatus(runLines, process.name, process.steps)
   return (
-    <li className="process-lane" id={`process-${process.slug}`}>
+    <li className={paused ? 'process-lane is-paused' : 'process-lane'} id={`process-${process.slug}`}>
       <div className="process-lane-main">
         <div className="process-trigger">
           <h2>{process.name}</h2>
           <span className="process-chip">
             <TriggerIcon type={process.trigger.type} />
-            {triggerLabel(process.trigger)}
+            {process.trigger.type === 'schedule' ? scheduleWords(process.trigger.schedule, live?.routine.timeZone) : triggerLabel(process.trigger)}
           </span>
+          {paused === null ? null : <span className={paused ? 'routine-state is-paused' : 'routine-state is-active'}>{paused ? 'Paused' : 'Active'}</span>}
+          {live ? <p>{laneWhen(live)}</p> : null}
           {process.trigger.description ? <p>{process.trigger.description}</p> : null}
           {fast ? <p className="process-warn">Runs more than once an hour.</p> : null}
         </div>
@@ -368,7 +379,7 @@ function ProcessLane({
                   onClick={() => step.seat && onSeat(step.seat)}
                 >
                   <strong>{seat?.title || step.seat || 'Unassigned'}</strong>
-                  <span>{step.action}</span>
+                  <span>{stepText(step.action)}</span>
                   {status?.status === 'done' ? <em className="process-check is-done"><CheckMark /> Done</em> : null}
                   {status?.status === 'failed' ? <em className="process-check is-failed">Failed</em> : null}
                   {status?.status === 'running' ? <em className="process-live-label">Running</em> : null}

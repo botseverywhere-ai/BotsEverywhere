@@ -8,7 +8,6 @@ import { CompanyOverview } from './CompanyOverview'
 import { OrgChart } from '../components/OrgChart'
 import { AccountApps } from '../components/AccountApps'
 import { ProcessChart } from '../components/ProcessChart'
-import { RoutineBoard } from '../components/RoutineBoard'
 import { useRoutineBoard } from '../live/use-routine-board'
 import { formatShortDate, shownBotMetrics, withConnectorRuns } from '../../server/src/bot-metrics.ts'
 import { liveSeats } from '../../server/src/run-log.ts'
@@ -972,7 +971,7 @@ export function Workspace({
               onSeat={setSelected}
               onReload={rereadOrg}
               png={editable ? { orgName: company.org.name } : undefined}
-              routines={editable && routineBoard ? <RoutineBoard board={routineBoard} /> : undefined}
+              board={editable ? routineBoard : null}
             />
           ) : null}
           {view === 'org' ? (
