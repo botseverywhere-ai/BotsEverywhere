@@ -17,7 +17,7 @@ const TEAMS = [
   { name: 'Marketing', category: 'Marketing', blurb: 'Campaign drafts, posts, and launch checklists.' },
   { name: 'Support', category: 'Support', blurb: 'Ticket replies, refunds, and known issues.' },
   { name: 'Security', category: 'Security', blurb: 'Phishing reports, secrets, and dependency advisories.' },
-  { name: 'HR', category: 'HR', blurb: 'Hiring, onboarding, time off, and policy answers.' },
+  { name: 'People', category: 'HR', blurb: 'Hiring, onboarding, time off, and policy answers.' },
 ] as const
 /** The perspective behind the work chart. Quoted word for word; the app is not affiliated with its authors. */
 const ARTICLE = 'https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/articles/role-fusion-organizational-delayering.html'
@@ -26,7 +26,7 @@ const BLUEPRINT = [
   { step: 'Map the work', app: 'Work chart', text: 'Every process starts from a trigger and moves step by step to an outcome. Handoffs, waits, and steps with no one assigned are in plain view, and so is who decides at each step.' },
   { step: 'Instrument governance', app: 'Run log', text: 'Every step leaves one line in a plain text log, so status comes from the work itself instead of a weekly meeting.' },
   { step: 'Fuse roles selectively', app: 'Seat cards', text: 'Every seat has a written card: what it owns, what it may do, what needs approval, and when its work is done. Give one seat a workflow end to end by editing its card.' },
-  { step: 'Add guardrails', app: 'Checkpoints', text: 'A step that sends, pays, posts, books, merges, publishes, or deletes waits at a checkpoint on the work chart. Bots draft. Nothing goes out until it is approved.' },
+  { step: 'Add guardrails', app: 'Checkpoints', text: 'A step that sends, pays, posts, books, merges, publishes, or deletes waits for a named human. Bots draft. People approve.' },
 ] as const
 /** Each one is true of the app as it ships, and stated the same way in Docs. */
 const LOCAL = [
@@ -66,7 +66,7 @@ export function Landing() {
             </div>
             <div>
               <p>
-                Organizations copy it to map their bots in one place: an org chart, a work chart of who
+                Founders copy it to map their bots in one place: an org chart, a work chart of who
                 does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on
                 their own computer.
               </p>
@@ -95,10 +95,10 @@ export function Landing() {
             <p className="ld-label">Why a work chart</p>
             <div className="ld-idea">
               <div>
-                <h2 id="why-work-chart-title">Map the work chart, not just the org chart.</h2>
+                <h2 id="why-work-chart-title">Map the work, not just the people.</h2>
                 <p>
                   An org chart shows who reports to whom. It does not show how an invoice becomes a payment, who checks it, or where it waits.
-                  Once bots take over the routing, the summaries, and the first drafts, that second map, the work chart, is the one that runs the organization.
+                  Once bots take over the routing, the summaries, and the first drafts, that second map is the one humans manage.
                 </p>
               </div>
               <figure className="ld-quote">
@@ -108,7 +108,7 @@ export function Landing() {
                 <figcaption>
                   Kulkarni, Bodan, and Kilgour, Deloitte, <a href={ARTICLE} target="_blank" rel="noreferrer"><cite>The work chart vs. org chart</cite></a>, June 2026
                 </figcaption>
-                <p className="ld-quote-turn">Bots move the work. The work chart shows how.</p>
+                <p className="ld-quote-turn">Bots move the work. Humans manage it.</p>
               </figure>
             </div>
             <ol className="ld-steps">
@@ -128,7 +128,7 @@ export function Landing() {
           <section className="ld-sec">
             <div className="ld-sh">
               <h2>See the work move.</h2>
-              <p>Three views of one organization, from the app itself. No stock photos.</p>
+              <p>Three views of one team, from the app itself. No stock photos.</p>
             </div>
             <div className="ld-tiles">
               <a href={orgHref}><img src="/tile-work.webp" alt="" loading="lazy" /><span>Work chart<small>Steps, checkpoints, steps with no one assigned</small></span></a>
@@ -139,7 +139,7 @@ export function Landing() {
           <section id="samples" className="ld-sec" aria-labelledby="sample-companies">
             <div className="ld-sh">
               <h2 id="sample-companies">Sample organizations</h2>
-              <p>Ten fictional organizations run by bots. Open one to read the org chart, the work chart, and the seat cards.</p>
+              <p>Ten fictional organizations, each one person and their bots. Open one to read the org, the work, and the seats.</p>
             </div>
             <ul className="ld-samples">
               {sampleCards.map((sample) => (
@@ -158,14 +158,14 @@ export function Landing() {
       <section className="ld-black">
         <div className="ld-wrap">
           <p className="ld-label">Work chart</p>
-          <h2>Bots do the steps. Checkpoints hold the decisions.</h2>
-          <p>Every workstream starts from a trigger. Every checkpoint names its approver.</p>
+          <h2>Bots do the steps. Humans approve.</h2>
+          <p>Every workstream starts from a trigger. Every checkpoint names a human.</p>
           <div className="ld-flow" aria-hidden="true">
             <div className="ld-sys">⚡ Invoice received</div>
             <span>→</span>
             <div><em>BOT</em>Match the invoice<small>Invoice Bot</small></div>
             <span className="ld-dia" />
-            <div><em>CHECKPOINT</em>Approve payment<small>Needs approval</small></div>
+            <div><em>HUMAN</em>Approve payment<small>Needs approval</small></div>
             <span>→</span>
             <div className="ld-dash"><em>No one assigned</em>File the receipt<small>Add a bot from the directory</small></div>
           </div>
@@ -175,8 +175,8 @@ export function Landing() {
         <div className="ld-wrap">
           <h2>One tool. Four parts.</h2>
           <div className="ld-parts">
-            <div><h3>Org chart</h3><p>Every bot in one tree. Who owns what, who reports to whom.</p></div>
-            <div><h3>Work chart</h3><p>How work moves from a trigger to an outcome, with checkpoints where the work waits for approval.</p></div>
+            <div><h3>Org chart</h3><p>One person and their bots in one tree. Who owns what, who reports to whom.</p></div>
+            <div><h3>Work chart</h3><p>How work moves from a trigger to an outcome, with human checkpoints.</p></div>
             <div><h3>Bot directory</h3><p>Ready-made bots with seat cards. No card, no hire.</p></div>
             <div><h3>Stored on your computer</h3><p>Each org is plain files in <code>orgs/&lt;slug&gt;/</code>. Commit them with git.</p></div>
           </div>
@@ -227,7 +227,7 @@ export function Landing() {
       </div>
       <section className="ld-closing">
         <div className="ld-wrap ld-final">
-          <h2>Draw the org chart. Map the work chart.</h2>
+          <h2>Map your team. Staff the seats.</h2>
           <p>Open source. Runs on your computer.</p>
           <div className="ld-actions">
             <Button variant="primary"  href={primaryHref}>{primary}</Button>
