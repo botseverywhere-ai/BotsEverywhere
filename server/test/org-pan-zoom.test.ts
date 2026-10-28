@@ -43,7 +43,7 @@ test('the viewport keeps its own height so zooming cannot grow it and trigger Fi
   // Every zoom then resized it, the resize observer called fit(), and the zoom snapped back.
   assert.match(rule, /flex: 0 0 auto;/, 'the viewport is not a growing flex item')
   assert.doesNotMatch(rule, /flex: 1;/)
-  assert.match(rule, /height: calc\(100vh - 250px\);/)
+  assert.match(rule, /min-height: 720px;\s*height: calc\(100vh - 140px\);/, 'a tall canvas: the page scrolls past it, not the panel beside it')
   assert.match(rule, /overflow: auto;/)
   const chart = readFileSync(path.join(root, 'src/components/OrgChart.tsx'), 'utf8')
   // Scrollbars appearing or vanishing change the content box by their width; that must not count as a resize.

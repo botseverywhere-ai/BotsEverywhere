@@ -585,8 +585,8 @@ button.seat.empty svg { opacity: 0.72; }
   position: relative;
   /* Not a growing flex item: with flex: 1 in this auto-height column the viewport took the height of the zoomed tree, and every zoom re-fit itself. */
   flex: 0 0 auto;
-  min-height: 560px;
-  height: calc(100vh - 250px);
+  min-height: 720px;
+  height: calc(100vh - 140px);
   overflow: auto;
   scrollbar-width: auto;
   scrollbar-color: var(--color-slate-500) var(--color-gray-200);
