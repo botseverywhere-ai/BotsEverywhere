@@ -23,7 +23,7 @@ export const FILE_NAMES: Record<FileGuideKey, string> = {
 
 export const FILE_WHAT: Record<FileGuideKey, string> = {
   org: 'Name, purpose, and who reports to whom',
-  seats: 'One file per person or bot: what it owns, may do, and must ask before doing',
+  seats: 'One file per seat: what it owns, may do, and must ask before doing',
   processes: 'The work: what starts it and each step',
   log: 'What each bot did, one file per day, and events like hires, syncs, and Connector runs',
   grok: "What Grok Bot showed on the Connector's last run, and the bots and changes waiting to go to Grok Bot",

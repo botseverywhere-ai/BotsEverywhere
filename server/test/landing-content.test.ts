@@ -22,6 +22,17 @@ test('the homepage quotes the work chart article word for word, credits it, and 
   assert.match(landing, /<a href=\{ARTICLE\} target="_blank" rel="noreferrer">Read the article<\/a>/)
 })
 
+test('the homepage speaks to one person running bots, not a team of people', () => {
+  const demo = read('../../src/pages/DemoHome.tsx')
+  for (const page of [landing, demo]) {
+    assert.ok(page.includes('Founders copy it to map their bots in one place'), 'the hero names who it is for')
+    assert.equal(page.includes('team of people and bots'), false)
+  }
+  for (const line of ['Every seat has a written card', 'Ten fictional organizations, each one person and their bots.', 'One person and their bots in one tree.', 'one card per seat']) assert.ok(landing.includes(line), line)
+  for (const gone of ['person or bot', 'Ten fictional teams', 'People and bots in one tree']) assert.equal(landing.includes(gone), false, gone)
+  assert.ok(read('../../src/components/file-guide-copy.ts').includes("seats: 'One file per seat:"))
+})
+
 test('every homepage claim about the app matches the app', () => {
   assert.equal(TEMPLATE_HOST, '127.0.0.1')
   assert.ok(landing.includes('listen on 127.0.0.1'))

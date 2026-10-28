@@ -25,7 +25,7 @@ const ARTICLE = 'https://www.deloitte.com/us/en/what-we-do/capabilities/applied-
 const BLUEPRINT = [
   { step: 'Map the work', app: 'Work chart', text: 'Every process starts from a trigger and moves step by step to an outcome. Handoffs, waits, and steps with no one assigned are in plain view, and so is who decides at each step.' },
   { step: 'Instrument governance', app: 'Run log', text: 'Every step leaves one line in a plain text log, so status comes from the work itself instead of a weekly meeting.' },
-  { step: 'Fuse roles selectively', app: 'Seat cards', text: 'Every seat, person or bot, has a written card: what it owns, what it may do, what needs approval, and when its work is done. Give one seat a workflow end to end by editing its card.' },
+  { step: 'Fuse roles selectively', app: 'Seat cards', text: 'Every seat has a written card: what it owns, what it may do, what needs approval, and when its work is done. Give one seat a workflow end to end by editing its card.' },
   { step: 'Add guardrails', app: 'Checkpoints', text: 'A step that sends, pays, posts, books, merges, publishes, or deletes waits for a named human. Bots draft. People approve.' },
 ] as const
 /** Each one is true of the app as it ships, and stated the same way in Docs. */
@@ -66,7 +66,7 @@ export function Landing() {
             </div>
             <div>
               <p>
-                Organizations copy it to map their team of people and bots in one place: an org chart, a work chart of who
+                Founders copy it to map their bots in one place: an org chart, a work chart of who
                 does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on
                 their own computer.
               </p>
@@ -139,7 +139,7 @@ export function Landing() {
           <section id="samples" className="ld-sec" aria-labelledby="sample-companies">
             <div className="ld-sh">
               <h2 id="sample-companies">Sample organizations</h2>
-              <p>Ten fictional teams. Open one to read the org, the work, and the seats.</p>
+              <p>Ten fictional organizations, each one person and their bots. Open one to read the org, the work, and the seats.</p>
             </div>
             <ul className="ld-samples">
               {sampleCards.map((sample) => (
@@ -175,7 +175,7 @@ export function Landing() {
         <div className="ld-wrap">
           <h2>One tool. Four parts.</h2>
           <div className="ld-parts">
-            <div><h3>Org chart</h3><p>People and bots in one tree. Who owns what, who reports to whom.</p></div>
+            <div><h3>Org chart</h3><p>One person and their bots in one tree. Who owns what, who reports to whom.</p></div>
             <div><h3>Work chart</h3><p>How work moves from a trigger to an outcome, with human checkpoints.</p></div>
             <div><h3>Bot directory</h3><p>Ready-made bots with seat cards. No card, no hire.</p></div>
             <div><h3>Stored on your computer</h3><p>Each org is plain files in <code>orgs/&lt;slug&gt;/</code>. Commit them with git.</p></div>
@@ -217,7 +217,7 @@ export function Landing() {
               <figcaption>One organization, as it sits on your disk</figcaption>
               <pre>{`orgs/your-organization/
 ├── org.md        the organization and its chart
-├── seats/        one card per person or bot
+├── seats/        one card per seat
 ├── processes/    one file per workflow
 └── log/          one line per step, one file per day`}</pre>
               <span className="ld-tree-clone">{clone}</span>
