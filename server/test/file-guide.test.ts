@@ -112,6 +112,12 @@ test('the file guide groups the files by who writes them, in plain words', () =>
   }
 })
 
+test('the file guide is one list whose columns line up across groups', () => {
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.file-guide-row \{ display: grid; grid-template-columns: 8rem minmax\(0, 1fr\) 12rem;/, 'fixed name and fact columns, so every group wraps the same')
+  assert.match(css, /\.file-guide-group \{ padding-top: var\(--space-3\); border-top: var\(--hairline\); \}/, 'groups are parts of one list, not boxes of their own')
+})
+
 test('each row says what is in it now', () => {
   const now = Date.parse('2026-10-21T13:30:00.000Z')
   const at = '2026-10-21T12:56:00.000Z'
