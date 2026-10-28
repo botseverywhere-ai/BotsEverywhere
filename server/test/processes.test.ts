@@ -13,6 +13,7 @@ import {
   scheduleFasterThanHourly,
   serializeProcess,
   stepText,
+  waitsForYou,
   type ProcessFile,
 } from '../src/processes.ts'
 import { importProcessRows, readProcessDir, writeProcessFile } from '../src/process-files.ts'
@@ -152,6 +153,47 @@ test('process import skips a process that already exists instead of writing a -2
   assert.equal(again.imported.length, 0)
   assert.equal(again.errors.length, 2)
   assert.deepEqual(readdirSync(join(dir, 'processes')).sort(), ['invoice-arrives.md'])
+})
+
+test('process import replaces a flow the sync made from a routine and nobody changed, and keeps every other', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'be-process-import-'))
+  const seats = [{ slug: 'aura', title: 'Aura' }, { slug: 'prod', title: 'Prod' }]
+  const trigger = { type: 'schedule' as const, schedule: '0 9 * * 1', source: '', description: '' }
+  // What the sync writes for a routine: one step that repeats the routine's name.
+  writeProcessFile(dir, { slug: 'clip-brief', name: 'Clip brief', trigger, steps: [{ seat: 'aura', action: 'Clip brief' }], doneWhen: '', next: '', notes: '' })
+  writeProcessFile(dir, { slug: 'health', name: 'Health', trigger, steps: [{ seat: 'prod', action: 'Health' }], doneWhen: 'The site is up', next: '', notes: '' })
+  writeProcessFile(dir, { slug: 'wall', name: 'Wall', trigger, steps: [{ seat: 'prod', action: 'Ask for posts' }], doneWhen: '', next: '', notes: '' })
+  const full = (name: string) => ({ name, trigger: { type: 'schedule', schedule: '0 9 * * 1' }, steps: [{ seat: 'Aura', action: 'Find stories' }, { seat: 'Prod', action: 'Redeploy' }] })
+  const parsed = parseProcessesFile(JSON.stringify({ processes: [full('Clip brief'), full('Clip brief'), full('Health'), full('Wall')] }))
+  assert.equal(parsed.ok, true)
+  if (!parsed.ok) return
+  const result = importProcessRows(dir, parsed.rows, seats)
+  assert.deepEqual(result.imported.map((item) => item.slug), ['clip-brief'])
+  assert.deepEqual(result.errors.map((item) => item.name), ['Clip brief', 'Health', 'Wall'], 'a second row with the same name, an edited Done when, and a step that is not the name are kept')
+  const flows = readProcessDir(dir).processes
+  assert.deepEqual(flows.find((item) => item.slug === 'clip-brief')?.steps.map((step) => step.action), ['Find stories', 'Redeploy'])
+  assert.deepEqual(flows.find((item) => item.slug === 'health')?.steps.map((step) => step.action), ['Health'])
+  assert.deepEqual(flows.find((item) => item.slug === 'wall')?.steps.map((step) => step.action), ['Ask for posts'])
+})
+
+test("the Work Chart tags a step as waiting for you only when Grok Bot marks it or you do it yourself; the copied routine still asks before risky steps", () => {
+  const steps = deriveSteps(
+    [
+      { seat: 'grok', action: 'Send you the summary' },
+      { seat: 'inner', action: 'Run the prompt through Cursor' },
+      { seat: 'inner', action: 'Reply with what changed and what is merged' },
+      { seat: 'x', action: 'Needs approval: send you the drafts' },
+      { seat: 'you', action: 'Post it from your own account' },
+    ],
+    [
+      { slug: 'you', title: 'You', kind: 'human', mustAskBefore: [] },
+      { slug: 'grok', title: 'Grok Bot', kind: 'bot', mustAskBefore: [] },
+      { slug: 'inner', title: 'Inner Loop', kind: 'bot', mustAskBefore: ['Large refactors outside the prompt scope'] },
+      { slug: 'x', title: 'x.com', kind: 'bot', mustAskBefore: [] },
+    ],
+  )
+  assert.deepEqual(steps.map((step) => waitsForYou(step)), [false, false, false, true, true])
+  assert.deepEqual(steps.map((step) => step.checkpoint), [true, true, true, true, true], 'the copied routine keeps every safety ask')
 })
 
 test('the Work Chart import prompt is the one Grok Bot recommended, word for word, with this organization\'s bots', async () => {

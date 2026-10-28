@@ -8,6 +8,7 @@ import {
   routinePrompt,
   stepText,
   triggerLabel,
+  waitsForYou,
   type EventSource,
   type ProcessFile,
   type ProcessStep,
@@ -390,7 +391,7 @@ function ProcessLane({
                   {status?.status === 'failed' ? <em className="process-check is-failed">Failed</em> : null}
                   {status?.status === 'running' ? <em className="process-live-label">Running</em> : null}
                   {status?.status === 'skipped' ? <em className="process-live-label">Skipped</em> : null}
-                  {status?.status === 'waiting' || (!status && step.checkpoint) ? <em className="process-check">Needs your approval</em> : null}
+                  {status?.status === 'waiting' || (!status && waitsForYou(step)) ? <em className="process-check">Needs your approval</em> : null}
                 </button>
               </li>
             )

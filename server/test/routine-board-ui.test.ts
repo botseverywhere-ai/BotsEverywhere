@@ -101,6 +101,7 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   assert.match(chart, /className=\{paused \? 'process-lane is-paused' : 'process-lane'\}/)
   assert.match(chart, /\{paused === null \? null : <span className=\{paused \? 'routine-state is-paused' : 'routine-state is-active'\}>\{paused \? 'Paused' : 'Active'\}<\/span>\}/)
   assert.match(chart, /<span>\{stepText\(step\.action\)\}<\/span>/, "steps read without Grok Bot's Needs approval: mark")
+  assert.match(chart, /\{status\?\.status === 'waiting' \|\| \(!status && waitsForYou\(step\)\) \? <em className="process-check">Needs your approval<\/em> : null\}/, 'the tag shows what waits for you today, not the safety asks a copied routine adds')
   assert.match(chart, /const problems = laneProblems\(process, allSeats, runLines\)/)
   assert.match(chart, /\{problems\.length \? <span className="routine-state is-problem">Needs attention<\/span> : null\}/)
   assert.match(chart, /\{problems\.length \? <ul className="process-problems">\{problems\.map\(\(problem\) => <li key=\{problem\}>\{problem\}<\/li>\)\}<\/ul> : null\}/)

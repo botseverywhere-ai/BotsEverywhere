@@ -55,6 +55,13 @@ export function deleteProcessFile(dir: string, slug: string): { ok: true } | { o
   return { ok: true }
 }
 
+/** The shape the sync writes for a routine: one step that only repeats the routine's name, and nothing else filled in. */
+function syncMade(process: ProcessFile): boolean {
+  const norm = (value: string) => value.replace(/\s+/g, ' ').trim().toLowerCase()
+  return process.steps.length === 1 && norm(process.steps[0]!.action) === norm(process.name)
+    && !process.doneWhen.trim() && !process.next.trim() && !process.notes.trim()
+}
+
 export function importProcessRows(
   dir: string,
   rows: ProcessImportRow[],
@@ -63,7 +70,10 @@ export function importProcessRows(
   const errors: { name: string; error: string }[] = []
   const notes: string[] = []
   const imported: { name: string; slug: string; file: string }[] = []
-  const taken = new Set(readProcessDir(dir).processes.map((process) => process.slug))
+  const existing = readProcessDir(dir).processes
+  const taken = new Set(existing.map((process) => process.slug))
+  // A flow the sync made from a routine and nobody changed holds no work of yours, so a full version replaces it, once.
+  const replaceable = new Set(existing.filter(syncMade).map((process) => process.slug))
   for (const row of rows) {
     if (row.error) {
       errors.push({ name: row.name || 'Process', error: row.error })
@@ -75,10 +85,11 @@ export function importProcessRows(
       errors.push({ name: row.name, error: 'Could not pick a free file name for that process.' })
       continue
     }
-    if (taken.has(slug)) {
+    if (taken.has(slug) && !replaceable.has(slug)) {
       errors.push({ name: row.name, error: 'Already in this organization. The existing process was kept.' })
       continue
     }
+    replaceable.delete(slug)
     const written = writeProcessFile(dir, {
       slug,
       name: row.name,
