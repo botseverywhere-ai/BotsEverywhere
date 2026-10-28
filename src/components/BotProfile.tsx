@@ -5,6 +5,7 @@ import { ROUTINE_STARTS, type BotRoutine, type BotSkill, type RoutineStart } fro
 import type { AccountApp } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { connectedApps, NEEDS_SIGN_IN } from '../org/bot-apps'
+import { AccountApps } from './AccountApps'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
 import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, UPDATE_HINT, UPDATE_LABEL, updateWaitingLine, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
@@ -142,9 +143,7 @@ export function AppList({ account, used }: { account?: AccountApp[]; used?: AppU
           ))}
         </ul>
       ) : <p className="auth-note">{used ? 'The bot says it uses none of the connected apps.' : 'Not reported yet. The bot lists the apps it uses when it sends its profile.'}</p>}
-      {connected.length ? (
-        <p className="auth-note"><strong>Connected to your Grok Bot account:</strong> {connected.map((app) => `${app.name}${app.status === 'needsAuth' ? ' (needs sign-in)' : ''}`).join(', ')}</p>
-      ) : null}
+      <AccountApps apps={account} />
     </section>
   )
 }

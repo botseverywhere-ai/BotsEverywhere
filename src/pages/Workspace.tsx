@@ -6,6 +6,7 @@ import { OrgSwitcher } from '../components/OrgSwitcher'
 import { SiteNav } from '../components/SiteNav'
 import { CompanyOverview } from './CompanyOverview'
 import { OrgChart } from '../components/OrgChart'
+import { AccountApps } from '../components/AccountApps'
 import { ProcessChart } from '../components/ProcessChart'
 import { RoutineBoard } from '../components/RoutineBoard'
 import { useRoutineBoard } from '../live/use-routine-board'
@@ -28,7 +29,7 @@ import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, 
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
-import { botApps, connectedApps } from '../org/bot-apps'
+import { botApps } from '../org/bot-apps'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -1172,11 +1173,7 @@ function PerformanceTable({
   if (!rows.length) return <p className="be-empty">No bots hired yet.</p>
   return (
     <>
-      {accountApps?.length ? (
-        <p className="be-performance-apps"><strong>Connected to your Grok Bot account:</strong> {connectedApps(accountApps).map((app, index) => (
-          <span key={app.name} className={app.status === 'needsAuth' ? 'app-needs-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
-        ))}</p>
-      ) : null}
+      <AccountApps apps={accountApps} />
       <table className="be-performance">
         <thead>
           <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Apps used</th><th>Action</th></tr>
