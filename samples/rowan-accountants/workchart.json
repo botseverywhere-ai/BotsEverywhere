@@ -12,7 +12,7 @@
       "id": "rowan-accountants-main",
       "triggerId": "rowan-accountants-trigger",
       "outcome": "The binder is tied out, exceptions are listed, and a partner signs the review.",
-      "ownerSeatId": "rowan-accountants-david",
+      "ownerSeatId": "rowan-accountants-owner",
       "kind": "main",
       "stepIds": [
         "rowan-accountants-step-extract",
@@ -27,7 +27,7 @@
       "id": "rowan-accountants-exception",
       "triggerId": "rowan-accountants-trigger",
       "outcome": "The difference is explained or booked.",
-      "ownerSeatId": "rowan-accountants-david",
+      "ownerSeatId": "rowan-accountants-owner",
       "kind": "contingency",
       "stepIds": [
         "rowan-accountants-step-query",
@@ -80,7 +80,7 @@
       "workstreamId": "rowan-accountants-main",
       "name": "Partner review",
       "level": 3,
-      "executorSeatId": "rowan-accountants-david",
+      "executorSeatId": "rowan-accountants-owner",
       "inputs": [
         "Piedmont Mills source document"
       ],
@@ -133,7 +133,7 @@
       "workstreamId": "rowan-accountants-exception",
       "name": "Approve the question",
       "level": 3,
-      "executorSeatId": "rowan-accountants-david",
+      "executorSeatId": "rowan-accountants-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -192,14 +192,14 @@
       "id": "rowan-accountants-cp-approve",
       "stepId": "rowan-accountants-step-approve",
       "rule": "Any adjustment, or a disclosure the client will file.",
-      "approverSeatId": "rowan-accountants-david",
+      "approverSeatId": "rowan-accountants-owner",
       "required": true
     },
     {
       "id": "rowan-accountants-cp-msg",
       "stepId": "rowan-accountants-step-msg",
       "rule": "Any question that leaves the firm.",
-      "approverSeatId": "rowan-accountants-david",
+      "approverSeatId": "rowan-accountants-owner",
       "required": true
     }
   ]

@@ -12,36 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "vice-president-of-operations",
-      "name": "Vice President of Operations"
-    },
-    {
-      "id": "chief-estimator",
-      "name": "Chief Estimator"
-    },
-    {
-      "id": "project-executive",
-      "name": "Project Executive"
-    },
-    {
-      "id": "superintendent",
-      "name": "Superintendent"
-    },
-    {
-      "id": "project-engineer",
-      "name": "Project Engineer"
-    },
-    {
-      "id": "safety-manager",
-      "name": "Safety Manager"
-    },
-    {
-      "id": "document-control-clerk",
-      "name": "Document Control Clerk"
-    },
-    {
       "id": "operations",
       "name": "Operations"
+    },
+    {
+      "id": "estimating",
+      "name": "Estimating"
+    },
+    {
+      "id": "projects",
+      "name": "Projects"
+    },
+    {
+      "id": "site-coordination",
+      "name": "Site coordination"
+    },
+    {
+      "id": "project-engineering",
+      "name": "Project engineering"
+    },
+    {
+      "id": "site-safety",
+      "name": "Site safety"
+    },
+    {
+      "id": "document-control",
+      "name": "Document control"
     },
     {
       "id": "rfi-intake",
@@ -78,80 +74,80 @@
     },
     {
       "id": "person-corbett-construction-dana",
-      "name": "Dana Ruiz",
-      "title": "Vice President of Operations",
-      "department": "vice-president-of-operations",
-      "email": "dana.ruiz@corbettconstruction.com",
+      "name": "Operations Bot",
+      "title": "Operations",
+      "department": "operations",
+      "email": "corbett-construction-dana@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Dana Ruiz is vice president of operations at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Operations Bot leads operations at Corbett Construction Group: it hands work to the bots on its team and passes approvals to Patrick Corbett.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-mike",
-      "name": "Mike Ellison",
-      "title": "Chief Estimator",
-      "department": "chief-estimator",
-      "email": "mike.ellison@corbettconstruction.com",
+      "name": "Estimate Bot",
+      "title": "Estimating",
+      "department": "estimating",
+      "email": "corbett-construction-mike@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Mike Ellison is chief estimator at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Estimate Bot covers estimating for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-helen",
-      "name": "Helen Park",
-      "title": "Project Executive",
-      "department": "project-executive",
-      "email": "helen.park@corbettconstruction.com",
+      "name": "Project Bot",
+      "title": "Projects",
+      "department": "projects",
+      "email": "corbett-construction-helen@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Helen Park is project executive at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Project Bot leads projects at Corbett Construction Group: it hands work to the bots on its team and passes approvals to Patrick Corbett.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-andy",
-      "name": "Andy Brooks",
-      "title": "Superintendent",
-      "department": "superintendent",
-      "email": "andy.brooks@corbettconstruction.com",
+      "name": "Site Bot",
+      "title": "Site coordination",
+      "department": "site-coordination",
+      "email": "corbett-construction-andy@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Andy Brooks is superintendent at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Site Bot covers site coordination for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-rosa",
-      "name": "Rosa Nguyen",
-      "title": "Project Engineer",
-      "department": "project-engineer",
-      "email": "rosa.nguyen@corbettconstruction.com",
+      "name": "Engineering Bot",
+      "title": "Project engineering",
+      "department": "project-engineering",
+      "email": "corbett-construction-rosa@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Rosa Nguyen is project engineer at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Engineering Bot leads project engineering at Corbett Construction Group: it hands work to the bots on its team and passes approvals to Patrick Corbett.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-tom",
-      "name": "Tom Gallagher",
-      "title": "Safety Manager",
-      "department": "safety-manager",
-      "email": "tom.gallagher@corbettconstruction.com",
+      "name": "Safety Bot",
+      "title": "Site safety",
+      "department": "site-safety",
+      "email": "corbett-construction-tom@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Tom Gallagher is safety manager at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Safety Bot covers site safety for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-kim",
-      "name": "Kim Alvarez",
-      "title": "Document Control Clerk",
-      "department": "document-control-clerk",
-      "email": "kim.alvarez@corbettconstruction.com",
+      "name": "Document Bot",
+      "title": "Document control",
+      "department": "document-control",
+      "email": "corbett-construction-kim@corbettconstruction.com",
       "phone": "(303) 555-0194",
       "location": "Denver",
-      "bio": "Kim Alvarez is document control clerk at Corbett Construction Group, working with Front Range Schools.",
-      "startedOn": "2019-06-17"
+      "bio": "Document Bot covers document control for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-corbett-construction-email-inbox",

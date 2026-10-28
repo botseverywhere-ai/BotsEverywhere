@@ -1,24 +1,24 @@
 ---
-title: Ann Duffy
-department: matter-clerk
+title: Filing Bot
+department: matter-filing
 reportsTo: halvorsen-ruiz-jon
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Matter Clerk
+kind: bot
+role: Matter filing
 personId: person-halvorsen-ruiz-ann
 ---
 
 ## Owns
-Matter Clerk at Halvorsen & Ruiz LLP, including the call on the matter is opened and the engagement letter is signed, or the work is declined.
+Matter filing for Halvorsen & Ruiz LLP. The usual case is Sutter & Co. Retail and the two other active accounts.
 
 ## May
-Ask a bot to draft, match, or summarize work for Sutter & Co. Retail.
-Hold a step when the source is incomplete.
+Read the source file, the prior record, and the seat card for this step.
+Draft the next handoff for Ingrid Halvorsen to approve.
 
 ## Needs approval
-Anything that pays, signs, files, or sends on behalf of the organization.
-Changing a client or vendor record.
+Sending a message outside the organization.
+Moving money, changing terms, or closing the work.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+The step output is attached and Ingrid Halvorsen can approve or send it back.

@@ -12,32 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "practice-manager",
-      "name": "Practice Manager"
+      "id": "practice-operations",
+      "name": "Practice operations"
     },
     {
-      "id": "nursing-lead",
-      "name": "Nursing Lead"
+      "id": "nursing-coordination",
+      "name": "Nursing coordination"
     },
     {
-      "id": "referral-coordinator-lead",
-      "name": "Referral Coordinator Lead"
+      "id": "referrals",
+      "name": "Referrals"
     },
     {
-      "id": "front-desk-supervisor",
-      "name": "Front Desk Supervisor"
+      "id": "front-desk",
+      "name": "Front desk"
     },
     {
-      "id": "nurse",
-      "name": "Nurse"
+      "id": "care-notes",
+      "name": "Care notes"
     },
     {
-      "id": "billing-supervisor",
-      "name": "Billing Supervisor"
+      "id": "billing",
+      "name": "Billing"
     },
     {
-      "id": "referral-clerk",
-      "name": "Referral Clerk"
+      "id": "referral-filing",
+      "name": "Referral filing"
     },
     {
       "id": "operations",
@@ -78,80 +78,80 @@
     },
     {
       "id": "person-harborlight-clinic-joan",
-      "name": "Joan Keller",
-      "title": "Practice Manager",
-      "department": "practice-manager",
-      "email": "joan.keller@harborlightclinic.com",
+      "name": "Practice Bot",
+      "title": "Practice operations",
+      "department": "practice-operations",
+      "email": "harborlight-clinic-joan@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Joan Keller is practice manager at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Practice Bot leads practice operations at Harborlight Clinic: it hands work to the bots on its team and passes approvals to Dr. Anne Lind.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-robert",
-      "name": "Robert Hale",
-      "title": "Nursing Lead",
-      "department": "nursing-lead",
-      "email": "robert.hale@harborlightclinic.com",
+      "name": "Nursing Bot",
+      "title": "Nursing coordination",
+      "department": "nursing-coordination",
+      "email": "harborlight-clinic-robert@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Robert Hale is nursing lead at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Nursing Bot leads nursing coordination at Harborlight Clinic: it hands work to the bots on its team and passes approvals to Dr. Anne Lind.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-sofia",
-      "name": "Sofia Marin",
-      "title": "Referral Coordinator Lead",
-      "department": "referral-coordinator-lead",
-      "email": "sofia.marin@harborlightclinic.com",
+      "name": "Referral Lead Bot",
+      "title": "Referrals",
+      "department": "referrals",
+      "email": "harborlight-clinic-sofia@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Sofia Marin is referral coordinator lead at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Referral Lead Bot leads referrals at Harborlight Clinic: it hands work to the bots on its team and passes approvals to Dr. Anne Lind.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-amy",
-      "name": "Amy Cho",
-      "title": "Front Desk Supervisor",
-      "department": "front-desk-supervisor",
-      "email": "amy.cho@harborlightclinic.com",
+      "name": "Front Desk Bot",
+      "title": "Front desk",
+      "department": "front-desk",
+      "email": "harborlight-clinic-amy@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Amy Cho is front desk supervisor at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Front Desk Bot covers front desk for Harborlight Clinic.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-pete",
-      "name": "Pete Nowak",
-      "title": "Nurse",
-      "department": "nurse",
-      "email": "pete.nowak@harborlightclinic.com",
+      "name": "Care Notes Bot",
+      "title": "Care notes",
+      "department": "care-notes",
+      "email": "harborlight-clinic-pete@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Pete Nowak is nurse at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Care Notes Bot covers care notes for Harborlight Clinic.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-lina",
-      "name": "Lina Abbas",
-      "title": "Billing Supervisor",
-      "department": "billing-supervisor",
-      "email": "lina.abbas@harborlightclinic.com",
+      "name": "Billing Bot",
+      "title": "Billing",
+      "department": "billing",
+      "email": "harborlight-clinic-lina@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Lina Abbas is billing supervisor at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Billing Bot covers billing for Harborlight Clinic.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-ned",
-      "name": "Ned Brooks",
-      "title": "Referral Clerk",
-      "department": "referral-clerk",
-      "email": "ned.brooks@harborlightclinic.com",
+      "name": "Referral Filing Bot",
+      "title": "Referral filing",
+      "department": "referral-filing",
+      "email": "harborlight-clinic-ned@harborlightclinic.com",
       "phone": "(207) 555-0133",
       "location": "Portland",
-      "bio": "Ned Brooks is referral clerk at Harborlight Clinic, working with Maine Coast Referrals.",
-      "startedOn": "2019-06-17"
+      "bio": "Referral Filing Bot covers referral filing for Harborlight Clinic.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-harborlight-clinic-referral-inbox",

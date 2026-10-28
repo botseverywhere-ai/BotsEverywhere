@@ -20,8 +20,24 @@
       "name": "Finance"
     },
     {
-      "id": "client-service",
-      "name": "Client service"
+      "id": "client-delivery",
+      "name": "Client delivery"
+    },
+    {
+      "id": "ledger-control",
+      "name": "Ledger control"
+    },
+    {
+      "id": "accounts-payable",
+      "name": "Accounts payable"
+    },
+    {
+      "id": "vendor-relations",
+      "name": "Vendor relations"
+    },
+    {
+      "id": "billing",
+      "name": "Billing"
     }
   ],
   "people": [
@@ -38,80 +54,80 @@
     },
     {
       "id": "person-meridian-ledger-marcus",
-      "name": "Marcus Adeyemi",
-      "title": "Chief Operating Officer",
+      "name": "Operations Bot",
+      "title": "Operations",
       "department": "operations",
-      "email": "marcus.adeyemi@meridianledger.com",
+      "email": "meridian-ledger-marcus@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Marcus Adeyemi is chief operating officer at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Operations Bot leads operations at Meridian Ledger Partners: it hands work to the bots on its team and passes approvals to Helen Cho.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-priya",
-      "name": "Priya Shah",
-      "title": "Finance Lead",
+      "name": "Finance Bot",
+      "title": "Finance",
       "department": "finance",
-      "email": "priya.shah@meridianledger.com",
+      "email": "meridian-ledger-priya@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Priya Shah is finance lead at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Finance Bot leads finance at Meridian Ledger Partners: it hands work to the bots on its team and passes approvals to Helen Cho.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-owen",
-      "name": "Owen Blake",
-      "title": "Client Delivery Lead",
-      "department": "client-service",
-      "email": "owen.blake@meridianledger.com",
+      "name": "Client Delivery Bot",
+      "title": "Client delivery",
+      "department": "client-delivery",
+      "email": "meridian-ledger-owen@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Owen Blake is client delivery lead at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Client Delivery Bot covers client delivery for Meridian Ledger Partners.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-nora",
-      "name": "Nora Pell",
-      "title": "Controller",
-      "department": "finance",
-      "email": "nora.pell@meridianledger.com",
+      "name": "Controller Bot",
+      "title": "Ledger control",
+      "department": "ledger-control",
+      "email": "meridian-ledger-nora@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Nora Pell is controller at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Controller Bot covers ledger control for Meridian Ledger Partners.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-jonah",
-      "name": "Jonah Ellis",
-      "title": "Accounts Payable Coordinator",
-      "department": "finance",
-      "email": "jonah.ellis@meridianledger.com",
+      "name": "Payables Bot",
+      "title": "Accounts payable",
+      "department": "accounts-payable",
+      "email": "meridian-ledger-jonah@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Jonah Ellis is accounts payable coordinator at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Payables Bot leads accounts payable at Meridian Ledger Partners: it hands work to the bots on its team and passes approvals to Helen Cho.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-camille",
-      "name": "Camille Ortiz",
-      "title": "Vendor Relations Manager",
-      "department": "operations",
-      "email": "camille.ortiz@meridianledger.com",
+      "name": "Vendor Bot",
+      "title": "Vendor relations",
+      "department": "vendor-relations",
+      "email": "meridian-ledger-camille@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Camille Ortiz is vendor relations manager at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Vendor Bot covers vendor relations for Meridian Ledger Partners.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-drew",
-      "name": "Drew Okonkwo",
-      "title": "Billing Clerk",
-      "department": "finance",
-      "email": "drew.okonkwo@meridianledger.com",
+      "name": "Billing Bot",
+      "title": "Billing",
+      "department": "billing",
+      "email": "meridian-ledger-drew@meridianledger.com",
       "phone": "(312) 555-0184",
       "location": "Chicago",
-      "bio": "Drew Okonkwo is billing clerk at Meridian Ledger Partners, working with Northshore Components.",
-      "startedOn": "2019-06-17"
+      "bio": "Billing Bot covers billing for Meridian Ledger Partners.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-meridian-ledger-invoice-inbox",

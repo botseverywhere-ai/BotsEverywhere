@@ -12,7 +12,7 @@
       "id": "vesper-signal-main",
       "triggerId": "vesper-signal-trigger",
       "outcome": "The client receives a sourced answer a person has approved.",
-      "ownerSeatId": "vesper-signal-joel",
+      "ownerSeatId": "vesper-signal-owner",
       "kind": "main",
       "stepIds": [
         "vesper-signal-step-extract",
@@ -26,7 +26,7 @@
       "id": "vesper-signal-exception",
       "triggerId": "vesper-signal-trigger",
       "outcome": "The broken definition is corrected or the answer is held.",
-      "ownerSeatId": "vesper-signal-joel",
+      "ownerSeatId": "vesper-signal-owner",
       "kind": "contingency",
       "stepIds": [
         "vesper-signal-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "vesper-signal-main",
       "name": "Approve the client answer",
       "level": 3,
-      "executorSeatId": "vesper-signal-joel",
+      "executorSeatId": "vesper-signal-owner",
       "inputs": [
         "Cedar Route Transit source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "vesper-signal-exception",
       "name": "Approve the question to the client",
       "level": 3,
-      "executorSeatId": "vesper-signal-joel",
+      "executorSeatId": "vesper-signal-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "vesper-signal-cp-approve",
       "stepId": "vesper-signal-step-approve",
       "rule": "Any number that leaves the firm, or a claim about a person.",
-      "approverSeatId": "vesper-signal-joel",
+      "approverSeatId": "vesper-signal-owner",
       "required": true
     },
     {
       "id": "vesper-signal-cp-msg",
       "stepId": "vesper-signal-step-msg",
       "rule": "Any question that leaves the firm.",
-      "approverSeatId": "vesper-signal-joel",
+      "approverSeatId": "vesper-signal-owner",
       "required": true
     }
   ]

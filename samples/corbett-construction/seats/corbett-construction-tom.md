@@ -1,24 +1,24 @@
 ---
-title: Tom Gallagher
-department: safety-manager
+title: Safety Bot
+department: site-safety
 reportsTo: corbett-construction-dana
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Safety Manager
+kind: bot
+role: Site safety
 personId: person-corbett-construction-tom
 ---
 
 ## Owns
-Safety Manager at Corbett Construction Group, including the call on the RFI is answered against the spec, or sent back with a named owner.
+Site safety for Corbett Construction Group. The usual case is Front Range Schools and the two other active accounts.
 
 ## May
-Ask a bot to draft, match, or summarize work for Front Range Schools.
-Hold a step when the source is incomplete.
+Read the source file, the prior record, and the seat card for this step.
+Draft the next handoff for Patrick Corbett to approve.
 
 ## Needs approval
-Anything that pays, signs, files, or sends on behalf of the organization.
-Changing a client or vendor record.
+Sending a message outside the organization.
+Moving money, changing terms, or closing the work.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+The step output is attached and Patrick Corbett can approve or send it back.

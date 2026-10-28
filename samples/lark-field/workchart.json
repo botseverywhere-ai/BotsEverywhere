@@ -12,7 +12,7 @@
       "id": "lark-field-main",
       "triggerId": "lark-field-trigger",
       "outcome": "The campaign is approved, scheduled, and ready for the client to publish.",
-      "ownerSeatId": "lark-field-ruth",
+      "ownerSeatId": "lark-field-owner",
       "kind": "main",
       "stepIds": [
         "lark-field-step-intake",
@@ -26,7 +26,7 @@
       "id": "lark-field-exception",
       "triggerId": "lark-field-trigger",
       "outcome": "The off-brand item is rewritten or pulled.",
-      "ownerSeatId": "lark-field-ruth",
+      "ownerSeatId": "lark-field-owner",
       "kind": "contingency",
       "stepIds": [
         "lark-field-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "lark-field-main",
       "name": "Approve the client version",
       "level": 3,
-      "executorSeatId": "lark-field-ruth",
+      "executorSeatId": "lark-field-owner",
       "inputs": [
         "Hale Grocery source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "lark-field-exception",
       "name": "Approve the note to the client",
       "level": 3,
-      "executorSeatId": "lark-field-ruth",
+      "executorSeatId": "lark-field-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "lark-field-cp-approve",
       "stepId": "lark-field-step-approve",
       "rule": "Anything a client will see, or a spend change over $2,500.",
-      "approverSeatId": "lark-field-ruth",
+      "approverSeatId": "lark-field-owner",
       "required": true
     },
     {
       "id": "lark-field-cp-msg",
       "stepId": "lark-field-step-msg",
       "rule": "Any note that leaves the agency.",
-      "approverSeatId": "lark-field-ruth",
+      "approverSeatId": "lark-field-owner",
       "required": true
     }
   ]

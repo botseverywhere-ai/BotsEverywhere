@@ -12,7 +12,7 @@
       "id": "halvorsen-ruiz-main",
       "triggerId": "halvorsen-ruiz-trigger",
       "outcome": "The matter is opened and the engagement letter is signed, or the work is declined.",
-      "ownerSeatId": "halvorsen-ruiz-maya",
+      "ownerSeatId": "halvorsen-ruiz-owner",
       "kind": "main",
       "stepIds": [
         "halvorsen-ruiz-step-extract",
@@ -26,7 +26,7 @@
       "id": "halvorsen-ruiz-exception",
       "triggerId": "halvorsen-ruiz-trigger",
       "outcome": "The hit is cleared or the matter is declined.",
-      "ownerSeatId": "halvorsen-ruiz-maya",
+      "ownerSeatId": "halvorsen-ruiz-owner",
       "kind": "contingency",
       "stepIds": [
         "halvorsen-ruiz-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "halvorsen-ruiz-main",
       "name": "Partner approves the letter",
       "level": 3,
-      "executorSeatId": "halvorsen-ruiz-maya",
+      "executorSeatId": "halvorsen-ruiz-owner",
       "inputs": [
         "Sutter & Co. Retail source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "halvorsen-ruiz-exception",
       "name": "Approve the question",
       "level": 3,
-      "executorSeatId": "halvorsen-ruiz-maya",
+      "executorSeatId": "halvorsen-ruiz-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "halvorsen-ruiz-cp-approve",
       "stepId": "halvorsen-ruiz-step-approve",
       "rule": "Opening a matter, sending a letter, or declining a client.",
-      "approverSeatId": "halvorsen-ruiz-maya",
+      "approverSeatId": "halvorsen-ruiz-owner",
       "required": true
     },
     {
       "id": "halvorsen-ruiz-cp-msg",
       "stepId": "halvorsen-ruiz-step-msg",
       "rule": "Any note that names another client.",
-      "approverSeatId": "halvorsen-ruiz-maya",
+      "approverSeatId": "halvorsen-ruiz-owner",
       "required": true
     }
   ]

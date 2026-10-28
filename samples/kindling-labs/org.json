@@ -12,32 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "head-of-product",
-      "name": "Head of Product"
+      "id": "product",
+      "name": "Product"
     },
     {
-      "id": "engineering-manager",
-      "name": "Engineering Manager"
+      "id": "engineering",
+      "name": "Engineering"
     },
     {
-      "id": "support-lead",
-      "name": "Support Lead"
+      "id": "support",
+      "name": "Support"
     },
     {
-      "id": "product-manager",
-      "name": "Product Manager"
+      "id": "roadmap",
+      "name": "Roadmap"
     },
     {
-      "id": "senior-engineer",
-      "name": "Senior Engineer"
+      "id": "code-review",
+      "name": "Code review"
     },
     {
-      "id": "support-specialist",
-      "name": "Support Specialist"
+      "id": "help-desk",
+      "name": "Help desk"
     },
     {
-      "id": "qa-analyst",
-      "name": "QA Analyst"
+      "id": "testing",
+      "name": "Testing"
     },
     {
       "id": "operations",
@@ -78,80 +78,80 @@
     },
     {
       "id": "person-kindling-labs-priya",
-      "name": "Priya Raman",
-      "title": "Head of Product",
-      "department": "head-of-product",
-      "email": "priya.raman@kindlinglabs.com",
+      "name": "Product Bot",
+      "title": "Product",
+      "department": "product",
+      "email": "kindling-labs-priya@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Priya Raman is head of product at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "Product Bot leads product at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-chris",
-      "name": "Chris Ellison",
-      "title": "Engineering Manager",
-      "department": "engineering-manager",
-      "email": "chris.ellison@kindlinglabs.com",
+      "name": "Engineering Bot",
+      "title": "Engineering",
+      "department": "engineering",
+      "email": "kindling-labs-chris@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Chris Ellison is engineering manager at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "Engineering Bot leads engineering at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-nora",
-      "name": "Nora Feldman",
-      "title": "Support Lead",
-      "department": "support-lead",
-      "email": "nora.feldman@kindlinglabs.com",
+      "name": "Support Bot",
+      "title": "Support",
+      "department": "support",
+      "email": "kindling-labs-nora@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Nora Feldman is support lead at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "Support Bot leads support at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-sam",
-      "name": "Sam Ortega",
-      "title": "Product Manager",
-      "department": "product-manager",
-      "email": "sam.ortega@kindlinglabs.com",
+      "name": "Roadmap Bot",
+      "title": "Roadmap",
+      "department": "roadmap",
+      "email": "kindling-labs-sam@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Sam Ortega is product manager at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "Roadmap Bot covers roadmap for Kindling Labs.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-leah",
-      "name": "Leah Brooks",
-      "title": "Senior Engineer",
-      "department": "senior-engineer",
-      "email": "leah.brooks@kindlinglabs.com",
+      "name": "Code Review Bot",
+      "title": "Code review",
+      "department": "code-review",
+      "email": "kindling-labs-leah@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Leah Brooks is senior engineer at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "Code Review Bot leads code review at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-owen",
-      "name": "Owen Cho",
-      "title": "Support Specialist",
-      "department": "support-specialist",
-      "email": "owen.cho@kindlinglabs.com",
+      "name": "Help Desk Bot",
+      "title": "Help desk",
+      "department": "help-desk",
+      "email": "kindling-labs-owen@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Owen Cho is support specialist at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "Help Desk Bot covers help desk for Kindling Labs.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-mia",
-      "name": "Mia Grant",
-      "title": "QA Analyst",
-      "department": "qa-analyst",
-      "email": "mia.grant@kindlinglabs.com",
+      "name": "QA Bot",
+      "title": "Testing",
+      "department": "testing",
+      "email": "kindling-labs-mia@kindlinglabs.com",
       "phone": "(617) 555-0104",
       "location": "Boston",
-      "bio": "Mia Grant is qa analyst at Kindling Labs, working with Northwind Field Service.",
-      "startedOn": "2019-06-17"
+      "bio": "QA Bot covers testing for Kindling Labs.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-kindling-labs-error-inbox",

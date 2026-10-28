@@ -12,32 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "assurance-partner",
-      "name": "Assurance Partner"
+      "id": "assurance",
+      "name": "Assurance"
     },
     {
-      "id": "tax-partner",
-      "name": "Tax Partner"
+      "id": "tax",
+      "name": "Tax"
     },
     {
-      "id": "advisory-director",
-      "name": "Advisory Director"
+      "id": "advisory",
+      "name": "Advisory"
     },
     {
-      "id": "audit-manager",
-      "name": "Audit Manager"
+      "id": "audit",
+      "name": "Audit"
     },
     {
-      "id": "senior-accountant",
-      "name": "Senior Accountant"
+      "id": "accounting",
+      "name": "Accounting"
     },
     {
-      "id": "tax-manager",
-      "name": "Tax Manager"
+      "id": "tax-preparation",
+      "name": "Tax preparation"
     },
     {
-      "id": "workpaper-associate",
-      "name": "Workpaper Associate"
+      "id": "workpapers",
+      "name": "Workpapers"
     },
     {
       "id": "operations",
@@ -78,80 +78,80 @@
     },
     {
       "id": "person-rowan-accountants-david",
-      "name": "David Chen",
-      "title": "Assurance Partner",
-      "department": "assurance-partner",
-      "email": "david.chen@rowanandco.com",
+      "name": "Assurance Bot",
+      "title": "Assurance",
+      "department": "assurance",
+      "email": "rowan-accountants-david@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "David Chen is assurance partner at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Assurance Bot leads assurance at Rowan & Co.: it hands work to the bots on its team and passes approvals to Margaret Rowan.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-anita",
-      "name": "Anita Desai",
-      "title": "Tax Partner",
-      "department": "tax-partner",
-      "email": "anita.desai@rowanandco.com",
+      "name": "Tax Bot",
+      "title": "Tax",
+      "department": "tax",
+      "email": "rowan-accountants-anita@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "Anita Desai is tax partner at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Tax Bot leads tax at Rowan & Co.: it hands work to the bots on its team and passes approvals to Margaret Rowan.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-paul",
-      "name": "Paul Weber",
-      "title": "Advisory Director",
-      "department": "advisory-director",
-      "email": "paul.weber@rowanandco.com",
+      "name": "Advisory Bot",
+      "title": "Advisory",
+      "department": "advisory",
+      "email": "rowan-accountants-paul@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "Paul Weber is advisory director at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Advisory Bot covers advisory for Rowan & Co..",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-nina",
-      "name": "Nina Cole",
-      "title": "Audit Manager",
-      "department": "audit-manager",
-      "email": "nina.cole@rowanandco.com",
+      "name": "Audit Bot",
+      "title": "Audit",
+      "department": "audit",
+      "email": "rowan-accountants-nina@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "Nina Cole is audit manager at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Audit Bot covers audit for Rowan & Co..",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-omar",
-      "name": "Omar Farah",
-      "title": "Senior Accountant",
-      "department": "senior-accountant",
-      "email": "omar.farah@rowanandco.com",
+      "name": "Accounting Bot",
+      "title": "Accounting",
+      "department": "accounting",
+      "email": "rowan-accountants-omar@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "Omar Farah is senior accountant at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Accounting Bot leads accounting at Rowan & Co.: it hands work to the bots on its team and passes approvals to Margaret Rowan.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-liz",
-      "name": "Liz Potter",
-      "title": "Tax Manager",
-      "department": "tax-manager",
-      "email": "liz.potter@rowanandco.com",
+      "name": "Tax Prep Bot",
+      "title": "Tax preparation",
+      "department": "tax-preparation",
+      "email": "rowan-accountants-liz@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "Liz Potter is tax manager at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Tax Prep Bot covers tax preparation for Rowan & Co..",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-evan",
-      "name": "Evan Brooks",
-      "title": "Workpaper Associate",
-      "department": "workpaper-associate",
-      "email": "evan.brooks@rowanandco.com",
+      "name": "Workpaper Bot",
+      "title": "Workpapers",
+      "department": "workpapers",
+      "email": "rowan-accountants-evan@rowanandco.com",
       "phone": "(704) 555-0160",
       "location": "Charlotte",
-      "bio": "Evan Brooks is workpaper associate at Rowan & Co., working with Piedmont Mills.",
-      "startedOn": "2019-06-17"
+      "bio": "Workpaper Bot covers workpapers for Rowan & Co..",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-rowan-accountants-client-inbox",

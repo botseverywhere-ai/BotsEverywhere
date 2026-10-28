@@ -12,36 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "vice-president-of-operations",
-      "name": "Vice President of Operations"
-    },
-    {
-      "id": "customer-care-director",
-      "name": "Customer Care Director"
-    },
-    {
-      "id": "dispatch-manager",
-      "name": "Dispatch Manager"
-    },
-    {
-      "id": "senior-dispatcher",
-      "name": "Senior Dispatcher"
-    },
-    {
-      "id": "care-supervisor",
-      "name": "Care Supervisor"
-    },
-    {
-      "id": "claims-analyst",
-      "name": "Claims Analyst"
-    },
-    {
-      "id": "trace-clerk",
-      "name": "Trace Clerk"
-    },
-    {
       "id": "operations",
       "name": "Operations"
+    },
+    {
+      "id": "customer-care",
+      "name": "Customer care"
+    },
+    {
+      "id": "dispatch",
+      "name": "Dispatch"
+    },
+    {
+      "id": "route-planning",
+      "name": "Route planning"
+    },
+    {
+      "id": "care-queue",
+      "name": "Care queue"
+    },
+    {
+      "id": "claims",
+      "name": "Claims"
+    },
+    {
+      "id": "shipment-tracing",
+      "name": "Shipment tracing"
     },
     {
       "id": "exception-intake",
@@ -78,80 +74,80 @@
     },
     {
       "id": "person-redline-freight-marcus",
-      "name": "Marcus Bell",
-      "title": "Vice President of Operations",
-      "department": "vice-president-of-operations",
-      "email": "marcus.bell@redlinefreight.com",
+      "name": "Operations Bot",
+      "title": "Operations",
+      "department": "operations",
+      "email": "redline-freight-marcus@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Marcus Bell is vice president of operations at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Operations Bot leads operations at Redline Freight: it hands work to the bots on its team and passes approvals to Donna Keane.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-cindy",
-      "name": "Cindy Zhao",
-      "title": "Customer Care Director",
-      "department": "customer-care-director",
-      "email": "cindy.zhao@redlinefreight.com",
+      "name": "Customer Care Bot",
+      "title": "Customer care",
+      "department": "customer-care",
+      "email": "redline-freight-cindy@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Cindy Zhao is customer care director at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Customer Care Bot leads customer care at Redline Freight: it hands work to the bots on its team and passes approvals to Donna Keane.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-alan",
-      "name": "Alan Brooks",
-      "title": "Dispatch Manager",
-      "department": "dispatch-manager",
-      "email": "alan.brooks@redlinefreight.com",
+      "name": "Dispatch Bot",
+      "title": "Dispatch",
+      "department": "dispatch",
+      "email": "redline-freight-alan@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Alan Brooks is dispatch manager at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Dispatch Bot leads dispatch at Redline Freight: it hands work to the bots on its team and passes approvals to Donna Keane.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-joe",
-      "name": "Joe Harlan",
-      "title": "Senior Dispatcher",
-      "department": "senior-dispatcher",
-      "email": "joe.harlan@redlinefreight.com",
+      "name": "Route Bot",
+      "title": "Route planning",
+      "department": "route-planning",
+      "email": "redline-freight-joe@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Joe Harlan is senior dispatcher at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Route Bot covers route planning for Redline Freight.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-rina",
-      "name": "Rina Shah",
-      "title": "Care Supervisor",
-      "department": "care-supervisor",
-      "email": "rina.shah@redlinefreight.com",
+      "name": "Care Queue Bot",
+      "title": "Care queue",
+      "department": "care-queue",
+      "email": "redline-freight-rina@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Rina Shah is care supervisor at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Care Queue Bot leads care queue at Redline Freight: it hands work to the bots on its team and passes approvals to Donna Keane.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-erik",
-      "name": "Erik Moss",
-      "title": "Claims Analyst",
-      "department": "claims-analyst",
-      "email": "erik.moss@redlinefreight.com",
+      "name": "Claims Bot",
+      "title": "Claims",
+      "department": "claims",
+      "email": "redline-freight-erik@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Erik Moss is claims analyst at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Claims Bot covers claims for Redline Freight.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-beth",
-      "name": "Beth Cooper",
-      "title": "Trace Clerk",
-      "department": "trace-clerk",
-      "email": "beth.cooper@redlinefreight.com",
+      "name": "Trace Bot",
+      "title": "Shipment tracing",
+      "department": "shipment-tracing",
+      "email": "redline-freight-beth@redlinefreight.com",
       "phone": "(614) 555-0177",
       "location": "Columbus",
-      "bio": "Beth Cooper is trace clerk at Redline Freight, working with Oakline Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Trace Bot covers shipment tracing for Redline Freight.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-redline-freight-load-monitor",

@@ -12,7 +12,7 @@
       "id": "corbett-construction-main",
       "triggerId": "corbett-construction-trigger",
       "outcome": "The RFI is answered against the spec, or sent back with a named owner.",
-      "ownerSeatId": "corbett-construction-helen",
+      "ownerSeatId": "corbett-construction-owner",
       "kind": "main",
       "stepIds": [
         "corbett-construction-step-extract",
@@ -26,7 +26,7 @@
       "id": "corbett-construction-exception",
       "triggerId": "corbett-construction-trigger",
       "outcome": "The conflict is clarified with the architect or the RFI is rejected.",
-      "ownerSeatId": "corbett-construction-helen",
+      "ownerSeatId": "corbett-construction-owner",
       "kind": "contingency",
       "stepIds": [
         "corbett-construction-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "corbett-construction-main",
       "name": "Approve the answer",
       "level": 3,
-      "executorSeatId": "corbett-construction-helen",
+      "executorSeatId": "corbett-construction-owner",
       "inputs": [
         "Front Range Schools source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "corbett-construction-exception",
       "name": "Approve the outbound question",
       "level": 3,
-      "executorSeatId": "corbett-construction-helen",
+      "executorSeatId": "corbett-construction-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "corbett-construction-cp-approve",
       "stepId": "corbett-construction-step-approve",
       "rule": "Any answer that changes cost, schedule, or a life-safety detail.",
-      "approverSeatId": "corbett-construction-helen",
+      "approverSeatId": "corbett-construction-owner",
       "required": true
     },
     {
       "id": "corbett-construction-cp-msg",
       "stepId": "corbett-construction-step-msg",
       "rule": "Any message to the architect or owner.",
-      "approverSeatId": "corbett-construction-helen",
+      "approverSeatId": "corbett-construction-owner",
       "required": true
     }
   ]

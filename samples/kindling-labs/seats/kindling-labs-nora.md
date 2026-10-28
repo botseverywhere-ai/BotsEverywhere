@@ -1,19 +1,19 @@
 ---
-title: Nora Feldman
-department: support-lead
+title: Support Bot
+department: support
 reportsTo: kindling-labs-owner
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Support Lead
+kind: bot
+role: Support
 personId: person-kindling-labs-nora
 ---
 
 ## Owns
-Support Lead at Kindling Labs, including the call on a fix is ready for release, or the bug is returned with a reason.
+Support at Kindling Labs: hands each step to the right bot on its team, checks what comes back, and sends anything that needs approval to Jordan Hale.
 
 ## May
-Ask a bot to draft, match, or summarize work for Northwind Field Service.
+Ask the bots on its team to draft, match, or summarize work for Northwind Field Service.
 Hold a step when the source is incomplete.
 
 ## Needs approval
@@ -21,4 +21,4 @@ Anything that pays, signs, files, or sends on behalf of the organization.
 Changing a client or vendor record.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+Jordan Hale can see who did each step, what changed, and what still needs approval.

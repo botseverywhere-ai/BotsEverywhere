@@ -12,7 +12,7 @@
       "id": "meridian-ledger-main",
       "triggerId": "meridian-ledger-trigger",
       "outcome": "The invoice is paid correctly or rejected with a reason.",
-      "ownerSeatId": "meridian-ledger-priya",
+      "ownerSeatId": "meridian-ledger-helen",
       "kind": "main",
       "stepIds": [
         "meridian-ledger-step-extract",
@@ -26,7 +26,7 @@
       "id": "meridian-ledger-exception",
       "triggerId": "meridian-ledger-trigger",
       "outcome": "The mismatch is corrected, or the invoice is rejected.",
-      "ownerSeatId": "meridian-ledger-priya",
+      "ownerSeatId": "meridian-ledger-helen",
       "kind": "contingency",
       "stepIds": [
         "meridian-ledger-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "meridian-ledger-main",
       "name": "Approve the payment",
       "level": 3,
-      "executorSeatId": "meridian-ledger-priya",
+      "executorSeatId": "meridian-ledger-helen",
       "inputs": [
         "Northshore Components source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "meridian-ledger-exception",
       "name": "Approve the vendor message",
       "level": 3,
-      "executorSeatId": "meridian-ledger-priya",
+      "executorSeatId": "meridian-ledger-helen",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "meridian-ledger-cp-approve",
       "stepId": "meridian-ledger-step-approve",
       "rule": "Amount over $5,000, a new vendor, or any mismatch.",
-      "approverSeatId": "meridian-ledger-priya",
+      "approverSeatId": "meridian-ledger-helen",
       "required": true
     },
     {
       "id": "meridian-ledger-cp-msg",
       "stepId": "meridian-ledger-step-msg",
       "rule": "Any message that leaves the firm, or a decision to reject the invoice.",
-      "approverSeatId": "meridian-ledger-priya",
+      "approverSeatId": "meridian-ledger-helen",
       "required": true
     }
   ]

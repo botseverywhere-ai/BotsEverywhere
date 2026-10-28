@@ -12,32 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "head-of-client-services",
-      "name": "Head of Client Services"
+      "id": "client-services",
+      "name": "Client services"
     },
     {
-      "id": "creative-director",
-      "name": "Creative Director"
+      "id": "creative-direction",
+      "name": "Creative direction"
     },
     {
-      "id": "head-of-production",
-      "name": "Head of Production"
+      "id": "production",
+      "name": "Production"
     },
     {
-      "id": "account-director",
-      "name": "Account Director"
+      "id": "account-management",
+      "name": "Account management"
     },
     {
-      "id": "media-planner",
-      "name": "Media Planner"
+      "id": "media-planning",
+      "name": "Media planning"
     },
     {
-      "id": "studio-manager",
-      "name": "Studio Manager"
+      "id": "studio-work",
+      "name": "Studio work"
     },
     {
-      "id": "traffic-coordinator",
-      "name": "Traffic Coordinator"
+      "id": "job-traffic",
+      "name": "Job traffic"
     },
     {
       "id": "operations",
@@ -78,80 +78,80 @@
     },
     {
       "id": "person-lark-field-nina",
-      "name": "Nina Berg",
-      "title": "Head of Client Services",
-      "department": "head-of-client-services",
-      "email": "nina.berg@larkandfield.com",
+      "name": "Client Services Bot",
+      "title": "Client services",
+      "department": "client-services",
+      "email": "lark-field-nina@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Nina Berg is head of client services at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Client Services Bot leads client services at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-samir",
-      "name": "Samir Qureshi",
-      "title": "Creative Director",
-      "department": "creative-director",
-      "email": "samir.qureshi@larkandfield.com",
+      "name": "Creative Bot",
+      "title": "Creative direction",
+      "department": "creative-direction",
+      "email": "lark-field-samir@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Samir Qureshi is creative director at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Creative Bot leads creative direction at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-ruth",
-      "name": "Ruth Adler",
-      "title": "Head of Production",
-      "department": "head-of-production",
-      "email": "ruth.adler@larkandfield.com",
+      "name": "Production Bot",
+      "title": "Production",
+      "department": "production",
+      "email": "lark-field-ruth@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Ruth Adler is head of production at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Production Bot leads production at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-leah",
-      "name": "Leah Ortiz",
-      "title": "Account Director",
-      "department": "account-director",
-      "email": "leah.ortiz@larkandfield.com",
+      "name": "Account Bot",
+      "title": "Account management",
+      "department": "account-management",
+      "email": "lark-field-leah@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Leah Ortiz is account director at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Account Bot covers account management for Lark & Field.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-chris",
-      "name": "Chris Daley",
-      "title": "Media Planner",
-      "department": "media-planner",
-      "email": "chris.daley@larkandfield.com",
+      "name": "Media Plan Bot",
+      "title": "Media planning",
+      "department": "media-planning",
+      "email": "lark-field-chris@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Chris Daley is media planner at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Media Plan Bot covers media planning for Lark & Field.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-paulo",
-      "name": "Paulo Mendes",
-      "title": "Studio Manager",
-      "department": "studio-manager",
-      "email": "paulo.mendes@larkandfield.com",
+      "name": "Studio Bot",
+      "title": "Studio work",
+      "department": "studio-work",
+      "email": "lark-field-paulo@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Paulo Mendes is studio manager at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Studio Bot leads studio work at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-ivy",
-      "name": "Ivy Tran",
-      "title": "Traffic Coordinator",
-      "department": "traffic-coordinator",
-      "email": "ivy.tran@larkandfield.com",
+      "name": "Traffic Bot",
+      "title": "Job traffic",
+      "department": "job-traffic",
+      "email": "lark-field-ivy@larkandfield.com",
       "phone": "(212) 555-0146",
       "location": "New York",
-      "bio": "Ivy Tran is traffic coordinator at Lark & Field, working with Hale Grocery.",
-      "startedOn": "2019-06-17"
+      "bio": "Traffic Bot covers job traffic for Lark & Field.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-lark-field-brief-inbox",

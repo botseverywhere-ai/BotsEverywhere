@@ -12,7 +12,7 @@
       "id": "harborlight-clinic-main",
       "triggerId": "harborlight-clinic-trigger",
       "outcome": "The patient has a confirmed visit, or the referral is declined with a reason.",
-      "ownerSeatId": "harborlight-clinic-sofia",
+      "ownerSeatId": "harborlight-clinic-owner",
       "kind": "main",
       "stepIds": [
         "harborlight-clinic-step-extract",
@@ -26,7 +26,7 @@
       "id": "harborlight-clinic-exception",
       "triggerId": "harborlight-clinic-trigger",
       "outcome": "The right chart is found, or the referral is returned.",
-      "ownerSeatId": "harborlight-clinic-sofia",
+      "ownerSeatId": "harborlight-clinic-owner",
       "kind": "contingency",
       "stepIds": [
         "harborlight-clinic-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "harborlight-clinic-main",
       "name": "Confirm the booking",
       "level": 3,
-      "executorSeatId": "harborlight-clinic-sofia",
+      "executorSeatId": "harborlight-clinic-owner",
       "inputs": [
         "Maine Coast Referrals source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "harborlight-clinic-exception",
       "name": "Approve the clarification",
       "level": 3,
-      "executorSeatId": "harborlight-clinic-sofia",
+      "executorSeatId": "harborlight-clinic-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "harborlight-clinic-cp-approve",
       "stepId": "harborlight-clinic-step-approve",
       "rule": "Any message to a patient, or a decline.",
-      "approverSeatId": "harborlight-clinic-sofia",
+      "approverSeatId": "harborlight-clinic-owner",
       "required": true
     },
     {
       "id": "harborlight-clinic-cp-msg",
       "stepId": "harborlight-clinic-step-msg",
       "rule": "Any message that includes clinical detail.",
-      "approverSeatId": "harborlight-clinic-sofia",
+      "approverSeatId": "harborlight-clinic-owner",
       "required": true
     }
   ]

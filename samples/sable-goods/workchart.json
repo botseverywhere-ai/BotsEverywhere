@@ -12,7 +12,7 @@
       "id": "sable-goods-main",
       "triggerId": "sable-goods-trigger",
       "outcome": "The buyer gets a refund or a replacement, or a clear refusal.",
-      "ownerSeatId": "sable-goods-oscar",
+      "ownerSeatId": "sable-goods-owner",
       "kind": "main",
       "stepIds": [
         "sable-goods-step-extract",
@@ -26,7 +26,7 @@
       "id": "sable-goods-exception",
       "triggerId": "sable-goods-trigger",
       "outcome": "The order is found, or the buyer is asked for the missing detail.",
-      "ownerSeatId": "sable-goods-oscar",
+      "ownerSeatId": "sable-goods-owner",
       "kind": "contingency",
       "stepIds": [
         "sable-goods-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "sable-goods-main",
       "name": "Approve the refund or replacement",
       "level": 3,
-      "executorSeatId": "sable-goods-oscar",
+      "executorSeatId": "sable-goods-owner",
       "inputs": [
         "Repeat buyers source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "sable-goods-exception",
       "name": "Approve the question",
       "level": 3,
-      "executorSeatId": "sable-goods-oscar",
+      "executorSeatId": "sable-goods-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "sable-goods-cp-approve",
       "stepId": "sable-goods-step-approve",
       "rule": "Any refund over $150, or a refusal.",
-      "approverSeatId": "sable-goods-oscar",
+      "approverSeatId": "sable-goods-owner",
       "required": true
     },
     {
       "id": "sable-goods-cp-msg",
       "stepId": "sable-goods-step-msg",
       "rule": "Any message that offers money or refuses the return.",
-      "approverSeatId": "sable-goods-oscar",
+      "approverSeatId": "sable-goods-owner",
       "required": true
     }
   ]

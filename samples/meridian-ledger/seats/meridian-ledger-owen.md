@@ -1,24 +1,24 @@
 ---
-title: Owen Blake
-department: client-service
+title: Client Delivery Bot
+department: client-delivery
 reportsTo: meridian-ledger-helen
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Client Delivery Lead
+kind: bot
+role: Client delivery
 personId: person-meridian-ledger-owen
 ---
 
 ## Owns
-Client Delivery Lead at Meridian Ledger Partners, including the call on the invoice is paid correctly or rejected with a reason.
+Client delivery for Meridian Ledger Partners. The usual case is Northshore Components and the two other active accounts.
 
 ## May
-Ask a bot to draft, match, or summarize work for Northshore Components.
-Hold a step when the source is incomplete.
+Read the source file, the prior record, and the seat card for this step.
+Draft the next handoff for Helen Cho to approve.
 
 ## Needs approval
-Anything that pays, signs, files, or sends on behalf of the organization.
-Changing a client or vendor record.
+Sending a message outside the organization.
+Moving money, changing terms, or closing the work.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+The step output is attached and Helen Cho can approve or send it back.

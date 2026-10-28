@@ -1,24 +1,24 @@
 ---
-title: Leah Ortiz
-department: account-director
+title: Account Bot
+department: account-management
 reportsTo: lark-field-nina
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Account Director
+kind: bot
+role: Account management
 personId: person-lark-field-leah
 ---
 
 ## Owns
-Account Director at Lark & Field, including the call on the campaign is approved, scheduled, and ready for the client to publish.
+Account management for Lark & Field. The usual case is Hale Grocery and the two other active accounts.
 
 ## May
-Ask a bot to draft, match, or summarize work for Hale Grocery.
-Hold a step when the source is incomplete.
+Read the source file, the prior record, and the seat card for this step.
+Draft the next handoff for Claire Fenwick to approve.
 
 ## Needs approval
-Anything that pays, signs, files, or sends on behalf of the organization.
-Changing a client or vendor record.
+Sending a message outside the organization.
+Moving money, changing terms, or closing the work.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+The step output is attached and Claire Fenwick can approve or send it back.

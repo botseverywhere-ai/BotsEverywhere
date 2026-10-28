@@ -12,32 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "disputes-partner",
-      "name": "Disputes Partner"
+      "id": "disputes",
+      "name": "Disputes"
     },
     {
-      "id": "corporate-partner",
-      "name": "Corporate Partner"
+      "id": "corporate-matters",
+      "name": "Corporate matters"
     },
     {
-      "id": "employment-partner",
-      "name": "Employment Partner"
+      "id": "employment-matters",
+      "name": "Employment matters"
     },
     {
-      "id": "senior-associate",
-      "name": "Senior Associate"
+      "id": "matter-work",
+      "name": "Matter work"
     },
     {
-      "id": "associate",
-      "name": "Associate"
+      "id": "legal-research",
+      "name": "Legal research"
     },
     {
-      "id": "conflicts-manager",
-      "name": "Conflicts Manager"
+      "id": "conflict-checks",
+      "name": "Conflict checks"
     },
     {
-      "id": "matter-clerk",
-      "name": "Matter Clerk"
+      "id": "matter-filing",
+      "name": "Matter filing"
     },
     {
       "id": "operations",
@@ -78,80 +78,80 @@
     },
     {
       "id": "person-halvorsen-ruiz-rafael",
-      "name": "Rafael Ruiz",
-      "title": "Disputes Partner",
-      "department": "disputes-partner",
-      "email": "rafael.ruiz@halvorsenruiz.com",
+      "name": "Disputes Bot",
+      "title": "Disputes",
+      "department": "disputes",
+      "email": "halvorsen-ruiz-rafael@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Rafael Ruiz is disputes partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Disputes Bot leads disputes at Halvorsen & Ruiz LLP: it hands work to the bots on its team and passes approvals to Ingrid Halvorsen.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-maya",
-      "name": "Maya Stein",
-      "title": "Corporate Partner",
-      "department": "corporate-partner",
-      "email": "maya.stein@halvorsenruiz.com",
+      "name": "Corporate Bot",
+      "title": "Corporate matters",
+      "department": "corporate-matters",
+      "email": "halvorsen-ruiz-maya@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Maya Stein is corporate partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Corporate Bot leads corporate matters at Halvorsen & Ruiz LLP: it hands work to the bots on its team and passes approvals to Ingrid Halvorsen.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-ellen",
-      "name": "Ellen Cho",
-      "title": "Employment Partner",
-      "department": "employment-partner",
-      "email": "ellen.cho@halvorsenruiz.com",
+      "name": "Employment Bot",
+      "title": "Employment matters",
+      "department": "employment-matters",
+      "email": "halvorsen-ruiz-ellen@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Ellen Cho is employment partner at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Employment Bot leads employment matters at Halvorsen & Ruiz LLP: it hands work to the bots on its team and passes approvals to Ingrid Halvorsen.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-jon",
-      "name": "Jon Adler",
-      "title": "Senior Associate",
-      "department": "senior-associate",
-      "email": "jon.adler@halvorsenruiz.com",
+      "name": "Matter Bot",
+      "title": "Matter work",
+      "department": "matter-work",
+      "email": "halvorsen-ruiz-jon@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Jon Adler is senior associate at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Matter Bot leads matter work at Halvorsen & Ruiz LLP: it hands work to the bots on its team and passes approvals to Ingrid Halvorsen.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-priya",
-      "name": "Priya Nair",
-      "title": "Associate",
-      "department": "associate",
-      "email": "priya.nair@halvorsenruiz.com",
+      "name": "Research Bot",
+      "title": "Legal research",
+      "department": "legal-research",
+      "email": "halvorsen-ruiz-priya@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Priya Nair is associate at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Research Bot covers legal research for Halvorsen & Ruiz LLP.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-greg",
-      "name": "Greg Holt",
-      "title": "Conflicts Manager",
-      "department": "conflicts-manager",
-      "email": "greg.holt@halvorsenruiz.com",
+      "name": "Conflicts Bot",
+      "title": "Conflict checks",
+      "department": "conflict-checks",
+      "email": "halvorsen-ruiz-greg@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Greg Holt is conflicts manager at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Conflicts Bot covers conflict checks for Halvorsen & Ruiz LLP.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-ann",
-      "name": "Ann Duffy",
-      "title": "Matter Clerk",
-      "department": "matter-clerk",
-      "email": "ann.duffy@halvorsenruiz.com",
+      "name": "Filing Bot",
+      "title": "Matter filing",
+      "department": "matter-filing",
+      "email": "halvorsen-ruiz-ann@halvorsenruiz.com",
       "phone": "(415) 555-0199",
       "location": "San Francisco",
-      "bio": "Ann Duffy is matter clerk at Halvorsen & Ruiz LLP, working with Sutter & Co. Retail.",
-      "startedOn": "2019-06-17"
+      "bio": "Filing Bot covers matter filing for Halvorsen & Ruiz LLP.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-halvorsen-ruiz-conflict-check",

@@ -1,24 +1,24 @@
 ---
-title: Greg Holt
-department: conflicts-manager
+title: Conflicts Bot
+department: conflict-checks
 reportsTo: halvorsen-ruiz-ellen
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Conflicts Manager
+kind: bot
+role: Conflict checks
 personId: person-halvorsen-ruiz-greg
 ---
 
 ## Owns
-Conflicts Manager at Halvorsen & Ruiz LLP, including the call on the matter is opened and the engagement letter is signed, or the work is declined.
+Conflict checks for Halvorsen & Ruiz LLP. The usual case is Sutter & Co. Retail and the two other active accounts.
 
 ## May
-Ask a bot to draft, match, or summarize work for Sutter & Co. Retail.
-Hold a step when the source is incomplete.
+Read the source file, the prior record, and the seat card for this step.
+Draft the next handoff for Ingrid Halvorsen to approve.
 
 ## Needs approval
-Anything that pays, signs, files, or sends on behalf of the organization.
-Changing a client or vendor record.
+Sending a message outside the organization.
+Moving money, changing terms, or closing the work.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+The step output is attached and Ingrid Halvorsen can approve or send it back.

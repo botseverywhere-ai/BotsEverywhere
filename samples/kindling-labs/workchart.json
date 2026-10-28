@@ -12,7 +12,7 @@
       "id": "kindling-labs-main",
       "triggerId": "kindling-labs-trigger",
       "outcome": "A fix is ready for release, or the bug is returned with a reason.",
-      "ownerSeatId": "kindling-labs-priya",
+      "ownerSeatId": "kindling-labs-owner",
       "kind": "main",
       "stepIds": [
         "kindling-labs-step-extract",
@@ -26,7 +26,7 @@
       "id": "kindling-labs-exception",
       "triggerId": "kindling-labs-trigger",
       "outcome": "The missing detail is requested, or the ticket is closed as not reproduced.",
-      "ownerSeatId": "kindling-labs-priya",
+      "ownerSeatId": "kindling-labs-owner",
       "kind": "contingency",
       "stepIds": [
         "kindling-labs-step-query",
@@ -79,7 +79,7 @@
       "workstreamId": "kindling-labs-main",
       "name": "Approve the release",
       "level": 3,
-      "executorSeatId": "kindling-labs-priya",
+      "executorSeatId": "kindling-labs-owner",
       "inputs": [
         "Northwind Field Service source document"
       ],
@@ -119,7 +119,7 @@
       "workstreamId": "kindling-labs-exception",
       "name": "Approve the customer question",
       "level": 3,
-      "executorSeatId": "kindling-labs-priya",
+      "executorSeatId": "kindling-labs-owner",
       "inputs": [
         "Exception from the main stream"
       ],
@@ -173,14 +173,14 @@
       "id": "kindling-labs-cp-approve",
       "stepId": "kindling-labs-step-approve",
       "rule": "Any production release, or a customer-facing status.",
-      "approverSeatId": "kindling-labs-priya",
+      "approverSeatId": "kindling-labs-owner",
       "required": true
     },
     {
       "id": "kindling-labs-cp-msg",
       "stepId": "kindling-labs-step-msg",
       "rule": "Any question that goes to the customer.",
-      "approverSeatId": "kindling-labs-priya",
+      "approverSeatId": "kindling-labs-owner",
       "required": true
     }
   ]

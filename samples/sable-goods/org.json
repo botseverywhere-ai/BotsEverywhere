@@ -12,36 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "head-of-operations",
-      "name": "Head of Operations"
-    },
-    {
-      "id": "head-of-merchandising",
-      "name": "Head of Merchandising"
-    },
-    {
-      "id": "care-lead",
-      "name": "Care Lead"
-    },
-    {
-      "id": "warehouse-lead",
-      "name": "Warehouse Lead"
-    },
-    {
-      "id": "care-specialist",
-      "name": "Care Specialist"
-    },
-    {
-      "id": "buyer",
-      "name": "Buyer"
-    },
-    {
-      "id": "returns-clerk",
-      "name": "Returns Clerk"
-    },
-    {
       "id": "operations",
       "name": "Operations"
+    },
+    {
+      "id": "merchandising",
+      "name": "Merchandising"
+    },
+    {
+      "id": "customer-care",
+      "name": "Customer care"
+    },
+    {
+      "id": "warehouse",
+      "name": "Warehouse"
+    },
+    {
+      "id": "care-desk",
+      "name": "Care desk"
+    },
+    {
+      "id": "buying",
+      "name": "Buying"
+    },
+    {
+      "id": "return-logging",
+      "name": "Return logging"
     },
     {
       "id": "return-intake",
@@ -78,80 +74,80 @@
     },
     {
       "id": "person-sable-goods-chris",
-      "name": "Chris Dalton",
-      "title": "Head of Operations",
-      "department": "head-of-operations",
-      "email": "chris.dalton@sablegoods.com",
+      "name": "Operations Bot",
+      "title": "Operations",
+      "department": "operations",
+      "email": "sable-goods-chris@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Chris Dalton is head of operations at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Operations Bot leads operations at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-mei",
-      "name": "Mei Laurent",
-      "title": "Head of Merchandising",
-      "department": "head-of-merchandising",
-      "email": "mei.laurent@sablegoods.com",
+      "name": "Merchandising Bot",
+      "title": "Merchandising",
+      "department": "merchandising",
+      "email": "sable-goods-mei@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Mei Laurent is head of merchandising at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Merchandising Bot leads merchandising at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-oscar",
-      "name": "Oscar Bennett",
-      "title": "Care Lead",
-      "department": "care-lead",
-      "email": "oscar.bennett@sablegoods.com",
+      "name": "Care Bot",
+      "title": "Customer care",
+      "department": "customer-care",
+      "email": "sable-goods-oscar@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Oscar Bennett is care lead at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Care Bot leads customer care at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-jade",
-      "name": "Jade Murphy",
-      "title": "Warehouse Lead",
-      "department": "warehouse-lead",
-      "email": "jade.murphy@sablegoods.com",
+      "name": "Warehouse Bot",
+      "title": "Warehouse",
+      "department": "warehouse",
+      "email": "sable-goods-jade@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Jade Murphy is warehouse lead at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Warehouse Bot covers warehouse for Sable Goods.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-ali",
-      "name": "Ali Rahman",
-      "title": "Care Specialist",
-      "department": "care-specialist",
-      "email": "ali.rahman@sablegoods.com",
+      "name": "Care Desk Bot",
+      "title": "Care desk",
+      "department": "care-desk",
+      "email": "sable-goods-ali@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Ali Rahman is care specialist at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Care Desk Bot leads care desk at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-brooke",
-      "name": "Brooke Ellis",
-      "title": "Buyer",
-      "department": "buyer",
-      "email": "brooke.ellis@sablegoods.com",
+      "name": "Buying Bot",
+      "title": "Buying",
+      "department": "buying",
+      "email": "sable-goods-brooke@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Brooke Ellis is buyer at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Buying Bot covers buying for Sable Goods.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-tim",
-      "name": "Tim Vogel",
-      "title": "Returns Clerk",
-      "department": "returns-clerk",
-      "email": "tim.vogel@sablegoods.com",
+      "name": "Return Log Bot",
+      "title": "Return logging",
+      "department": "return-logging",
+      "email": "sable-goods-tim@sablegoods.com",
       "phone": "(503) 555-0118",
       "location": "Portland",
-      "bio": "Tim Vogel is returns clerk at Sable Goods, working with Repeat buyers.",
-      "startedOn": "2019-06-17"
+      "bio": "Return Log Bot covers return logging for Sable Goods.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-sable-goods-order-inbox",

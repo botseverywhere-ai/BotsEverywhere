@@ -12,32 +12,32 @@
       "name": "Leadership"
     },
     {
-      "id": "head-of-delivery",
-      "name": "Head of Delivery"
+      "id": "delivery",
+      "name": "Delivery"
     },
     {
-      "id": "head-of-data",
-      "name": "Head of Data"
+      "id": "data",
+      "name": "Data"
     },
     {
-      "id": "engagement-lead",
-      "name": "Engagement Lead"
+      "id": "client-engagements",
+      "name": "Client engagements"
     },
     {
-      "id": "analytics-manager",
-      "name": "Analytics Manager"
+      "id": "analytics",
+      "name": "Analytics"
     },
     {
-      "id": "data-engineer",
-      "name": "Data Engineer"
+      "id": "data-pipelines",
+      "name": "Data pipelines"
     },
     {
-      "id": "client-partner",
-      "name": "Client Partner"
+      "id": "client-relationships",
+      "name": "Client relationships"
     },
     {
-      "id": "reporting-associate",
-      "name": "Reporting Associate"
+      "id": "reporting",
+      "name": "Reporting"
     },
     {
       "id": "operations",
@@ -78,80 +78,80 @@
     },
     {
       "id": "person-vesper-signal-theo",
-      "name": "Theo Lang",
-      "title": "Head of Delivery",
-      "department": "head-of-delivery",
-      "email": "theo.lang@vespersignal.com",
+      "name": "Delivery Bot",
+      "title": "Delivery",
+      "department": "delivery",
+      "email": "vesper-signal-theo@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Theo Lang is head of delivery at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Delivery Bot leads delivery at Vesper Signal: it hands work to the bots on its team and passes approvals to Elena Voss.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-amira",
-      "name": "Amira Hassan",
-      "title": "Head of Data",
-      "department": "head-of-data",
-      "email": "amira.hassan@vespersignal.com",
+      "name": "Data Bot",
+      "title": "Data",
+      "department": "data",
+      "email": "vesper-signal-amira@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Amira Hassan is head of data at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Data Bot leads data at Vesper Signal: it hands work to the bots on its team and passes approvals to Elena Voss.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-joel",
-      "name": "Joel Prieto",
-      "title": "Engagement Lead",
-      "department": "engagement-lead",
-      "email": "joel.prieto@vespersignal.com",
+      "name": "Engagement Bot",
+      "title": "Client engagements",
+      "department": "client-engagements",
+      "email": "vesper-signal-joel@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Joel Prieto is engagement lead at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Engagement Bot leads client engagements at Vesper Signal: it hands work to the bots on its team and passes approvals to Elena Voss.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-sara",
-      "name": "Sara Nguyen",
-      "title": "Analytics Manager",
-      "department": "analytics-manager",
-      "email": "sara.nguyen@vespersignal.com",
+      "name": "Analytics Bot",
+      "title": "Analytics",
+      "department": "analytics",
+      "email": "vesper-signal-sara@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Sara Nguyen is analytics manager at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Analytics Bot leads analytics at Vesper Signal: it hands work to the bots on its team and passes approvals to Elena Voss.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-ben",
-      "name": "Ben Adler",
-      "title": "Data Engineer",
-      "department": "data-engineer",
-      "email": "ben.adler@vespersignal.com",
+      "name": "Pipeline Bot",
+      "title": "Data pipelines",
+      "department": "data-pipelines",
+      "email": "vesper-signal-ben@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Ben Adler is data engineer at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Pipeline Bot covers data pipelines for Vesper Signal.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-kate",
-      "name": "Kate Morrow",
-      "title": "Client Partner",
-      "department": "client-partner",
-      "email": "kate.morrow@vespersignal.com",
+      "name": "Client Bot",
+      "title": "Client relationships",
+      "department": "client-relationships",
+      "email": "vesper-signal-kate@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Kate Morrow is client partner at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Client Bot covers client relationships for Vesper Signal.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-luis",
-      "name": "Luis Ortega",
-      "title": "Reporting Associate",
-      "department": "reporting-associate",
-      "email": "luis.ortega@vespersignal.com",
+      "name": "Report Bot",
+      "title": "Reporting",
+      "department": "reporting",
+      "email": "vesper-signal-luis@vespersignal.com",
       "phone": "(206) 555-0172",
       "location": "Seattle",
-      "bio": "Luis Ortega is reporting associate at Vesper Signal, working with Cedar Route Transit.",
-      "startedOn": "2019-06-17"
+      "bio": "Report Bot covers reporting for Vesper Signal.",
+      "startedOn": "2026-03-02"
     },
     {
       "id": "person-vesper-signal-data-pull",

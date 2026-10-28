@@ -576,7 +576,7 @@ function HireDrawer({
   const [form, setForm] = useState<HireInput>({
     name: '',
     role: '',
-    reportsTo: seats.find((seat) => seat.type === 'human' && seat.reportsTo)?.id ?? '',
+    reportsTo: seats.find((seat) => seat.type === 'human' && !seat.reportsTo)?.id ?? '',
     steps: initialStep ? [initialStep] : [],
     owns: '',
     may: '',

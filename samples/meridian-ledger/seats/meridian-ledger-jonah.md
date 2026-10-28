@@ -1,19 +1,19 @@
 ---
-title: Jonah Ellis
-department: finance
+title: Payables Bot
+department: accounts-payable
 reportsTo: meridian-ledger-priya
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Accounts Payable Coordinator
+kind: bot
+role: Accounts payable
 personId: person-meridian-ledger-jonah
 ---
 
 ## Owns
-Accounts Payable Coordinator at Meridian Ledger Partners, including the call on the invoice is paid correctly or rejected with a reason.
+Accounts payable at Meridian Ledger Partners: hands each step to the right bot on its team, checks what comes back, and sends anything that needs approval to Helen Cho.
 
 ## May
-Ask a bot to draft, match, or summarize work for Northshore Components.
+Ask the bots on its team to draft, match, or summarize work for Northshore Components.
 Hold a step when the source is incomplete.
 
 ## Needs approval
@@ -21,4 +21,4 @@ Anything that pays, signs, files, or sends on behalf of the organization.
 Changing a client or vendor record.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+Helen Cho can see who did each step, what changed, and what still needs approval.

@@ -1,24 +1,24 @@
 ---
-title: Sam Ortega
-department: product-manager
+title: Roadmap Bot
+department: roadmap
 reportsTo: kindling-labs-priya
 addToGrokBotUrl: ""
 status: active
-kind: human
-role: Product Manager
+kind: bot
+role: Roadmap
 personId: person-kindling-labs-sam
 ---
 
 ## Owns
-Product Manager at Kindling Labs, including the call on a fix is ready for release, or the bug is returned with a reason.
+Roadmap for Kindling Labs. The usual case is Northwind Field Service and the two other active accounts.
 
 ## May
-Ask a bot to draft, match, or summarize work for Northwind Field Service.
-Hold a step when the source is incomplete.
+Read the source file, the prior record, and the seat card for this step.
+Draft the next handoff for Jordan Hale to approve.
 
 ## Needs approval
-Anything that pays, signs, files, or sends on behalf of the organization.
-Changing a client or vendor record.
+Sending a message outside the organization.
+Moving money, changing terms, or closing the work.
 
 ## Done when
-A human can see who did the step, what changed, and what still needs approval.
+The step output is attached and Jordan Hale can approve or send it back.

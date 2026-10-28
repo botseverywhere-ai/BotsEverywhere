@@ -135,8 +135,9 @@ function validateCompany(company: CompanySeed): string[] {
   const activeBots = company.seats.filter((seat) => seat.type === 'bot' && seat.status !== 'retired')
   const retiredBots = company.seats.filter((seat) => seat.type === 'bot' && seat.status === 'retired')
   if (humans.length < 1) errors.push(`${where}: needs a human owner`)
-  if (activeBots.length < 3 || activeBots.length > 6) {
-    errors.push(`${where}: expected 3–6 active bots, found ${activeBots.length}`)
+  // One person managing bots: the founder, the bots that lead, and the bots that do the steps.
+  if (activeBots.length < 3 || activeBots.length > 15) {
+    errors.push(`${where}: expected 3–15 active bots, found ${activeBots.length}`)
   }
   for (const bot of [...activeBots, ...retiredBots]) {
     const card = bot.card
