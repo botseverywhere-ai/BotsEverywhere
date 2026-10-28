@@ -1694,12 +1694,14 @@ function reserveSeatSlug(root: string, base: string, taken: Set<string>): string
 /** The routine a process asks its first-step bot for: a schedule, or an event Grok Bot can start a routine on. Else none. */
 function processRoutine(process: ProcessFile): BotRoutine | null {
   const description = process.trigger.description.trim()
+  // A flow marked "(paused)", as Grok Bot's import writes it, asks for its routine paused: never switch one back on.
+  const enabled = !/\(paused\)\s*$/i.test(description)
   if (process.trigger.type === 'schedule' && process.trigger.schedule.trim()) {
-    return { name: process.name, schedule: process.trigger.schedule.trim(), trigger: 'schedule', ...(description ? { description } : {}), enabled: true }
+    return { name: process.name, schedule: process.trigger.schedule.trim(), trigger: 'schedule', ...(description ? { description } : {}), enabled }
   }
   const source = process.trigger.source
   if (process.trigger.type === 'event' && source && (ROUTINE_STARTS as readonly string[]).includes(source)) {
-    return { name: process.name, schedule: '', trigger: source as BotRoutine['trigger'], ...(description ? { event: description } : {}), enabled: true }
+    return { name: process.name, schedule: '', trigger: source as BotRoutine['trigger'], ...(description ? { event: description } : {}), enabled }
   }
   return null
 }
@@ -2486,12 +2488,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
       const read = readOrgDir(root, slug)
       if (!read.ok) return send(res, 422, { errors: read.errors })
+      // A processes file from Grok Bot describes routines the bots already run, so it asks no bot for a routine.
       const imported = importProcessRows(root, parsed.rows, read.bundle.seats.map((seat) => ({ slug: seat.slug, title: seat.title })))
-      const saved = readProcessDir(root).processes
-      for (const item of imported.imported) {
-        const process = saved.find((entry) => entry.slug === item.slug)
-        if (process) requestProcessRoutine(root, slug, process)
-      }
       send(res, 200, imported)
       return
     }

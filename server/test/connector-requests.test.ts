@@ -66,3 +66,37 @@ test('saving a new process asks its first-step bot for the routine; notes or a d
     t.done()
   }
 })
+
+test('a flow marked (paused) asks for its routine paused, never active', async () => {
+  const t = team()
+  const started = await startTemplateServer({ port: 0, orgsDir: t.orgs, host: '127.0.0.1' })
+  try {
+    const process = { slug: 'weekly-brief', name: 'Weekly brief', trigger: { type: 'schedule', schedule: '0 9 * * 1', source: '', description: 'Mondays at 09:00, Europe/Madrid (paused)' }, steps: [{ seat: t.security, action: 'Write the brief' }], doneWhen: '', next: '', notes: '' }
+    const response = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/processes/weekly-brief`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(process) })
+    assert.equal(response.status, 200)
+    assert.deepEqual(readRequests(t.root).requests[0]!.routines?.map((routine) => [routine.name, routine.enabled]), [['Weekly brief', false]])
+  } finally {
+    await started.close()
+    t.done()
+  }
+})
+
+test('importing a processes file from Grok Bot asks no bot for a routine: it describes routines the bots already run', async () => {
+  const t = team()
+  const started = await startTemplateServer({ port: 0, orgsDir: t.orgs, host: '127.0.0.1' })
+  try {
+    const file = { processes: [
+      { name: 'Weekly brief', trigger: { type: 'schedule', schedule: '0 9 * * 1', description: 'Mondays at 09:00, Europe/Madrid' }, steps: [{ seat: 'Security', action: 'Write the brief' }] },
+      { name: 'Transcript check', trigger: { type: 'schedule', schedule: '44 8 * * 1-5', description: 'Weekdays at 08:44, Europe/Madrid (paused)' }, steps: [{ seat: 'Security', action: 'Scan transcripts' }] },
+    ] }
+    const response = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/processes-file`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(file) })
+    assert.equal(response.status, 200)
+    const read = readOrgDir(t.root, t.org)
+    assert.ok(read.ok)
+    assert.equal(read.bundle.processes?.length, 2, 'both flows are imported')
+    assert.deepEqual(readRequests(t.root).requests, [], 'nothing asks a bot to create or switch on a routine it already has')
+  } finally {
+    await started.close()
+    t.done()
+  }
+})
