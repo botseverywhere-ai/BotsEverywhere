@@ -33,18 +33,3 @@ export function readRunLogDir(orgDir: string): { lines: RunLine[]; skipped: numb
   }
   return { lines, skipped }
 }
-
-export async function playRun(orgDir: string, lines: RunLine[], paceMs: number, onWrite?: () => void): Promise<number> {
-  let wrote = 0
-  for (const line of lines) {
-    if (wrote > 0 && paceMs > 0) await delay(paceMs)
-    appendRunLine(orgDir, line)
-    wrote += 1
-    onWrite?.()
-  }
-  return wrote
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}

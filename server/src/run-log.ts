@@ -1,4 +1,3 @@
-import { deriveSteps, type ProcessFile, type SeatRef } from './processes.ts'
 import { normalizeText } from './normalize-text.ts'
 
 export const RUN_STATUSES = ['done', 'failed', 'skipped', 'waiting', 'running'] as const
@@ -147,38 +146,4 @@ function matchBot(bot: string, seats: { slug: string; title: string }[]): { slug
   const text = bot.trim().toLowerCase()
   if (!text) return undefined
   return seats.find((seat) => seat.title.trim().toLowerCase() === text) ?? seats.find((seat) => seat.slug === text)
-}
-
-export function planRun(process: ProcessFile, seats: SeatRef[], now = new Date()): RunLine[] {
-  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-  const derived = deriveSteps(process.steps, seats)
-  const lines: RunLine[] = []
-  let cursor = new Date(now)
-  const push = (action: string, seatSlug: string, status: RunStatus) => {
-    const seat = seats.find((item) => item.slug === seatSlug)
-    lines.push({
-      date,
-      time: `${pad(cursor.getHours())}:${pad(cursor.getMinutes())}`,
-      bot: seat?.title || seatSlug || 'Unassigned',
-      process: process.name,
-      step: action || 'step',
-      status,
-      note: '-',
-      index: lines.length,
-    })
-    cursor = new Date(cursor.getTime() + 60_000)
-  }
-  for (const step of derived) {
-    push(step.action, step.seat, 'running')
-    if (step.checkpoint) {
-      push(step.action, step.seat, 'waiting')
-      break
-    }
-    push(step.action, step.seat, 'done')
-  }
-  return lines
-}
-
-function pad(value: number): string {
-  return String(value).padStart(2, '0')
 }

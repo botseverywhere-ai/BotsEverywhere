@@ -39,42 +39,21 @@ test('a created bot that came with skills or routines leaves one update asking f
   }
 })
 
-test('saving a new process asks its first-step bot for the routine; notes or a delete ask for nothing', async () => {
+test('the Work Chart no longer saves or simulates a flow; Delete still removes one and asks no bot for anything', async () => {
   const t = team()
   const started = await startTemplateServer({ port: 0, orgsDir: t.orgs, host: '127.0.0.1' })
-  const put = (body: object) => fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/processes/weekly-brief`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
-  const process = { slug: 'weekly-brief', name: 'Weekly brief', trigger: { type: 'schedule', schedule: '0 9 * * 1', source: '', description: 'Writes the brief' }, steps: [{ seat: t.security, action: 'Write the brief' }], doneWhen: '', next: '', notes: '' }
+  const base = `http://127.0.0.1:${started.port}/api/orgs/${t.org}/processes`
   try {
-    assert.equal((await put(process)).status, 200)
-    const asked = readRequests(t.root).requests
-    assert.equal(asked.length, 1)
-    assert.equal(asked[0]!.seat, t.security)
-    assert.equal(asked[0]!.kind, 'update')
-    assert.deepEqual(asked[0]!.routines, [{ name: 'Weekly brief', schedule: '0 9 * * 1', trigger: 'schedule', description: 'Writes the brief' }], 'active is the default and is not written')
-    const stamp = asked[0]!.requestedAt
-    assert.equal((await put({ ...process, notes: 'Keep it short.' })).status, 200)
-    assert.equal(readRequests(t.root).requests[0]!.requestedAt, stamp, 'notes only: nothing new to send')
-    assert.equal((await put({ ...process, trigger: { ...process.trigger, schedule: '0 10 * * 1' } })).status, 200)
-    const moved = readRequests(t.root).requests
-    assert.equal(moved.length, 1)
-    assert.deepEqual(moved[0]!.routines?.map((routine) => routine.schedule), ['0 10 * * 1'], 'the newest schedule replaces the older one')
-    const before = JSON.stringify(readRequests(t.root).requests)
-    assert.equal((await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/processes/weekly-brief`, { method: 'DELETE' })).status, 200)
-    assert.equal(JSON.stringify(readRequests(t.root).requests), before)
-  } finally {
-    await started.close()
-    t.done()
-  }
-})
-
-test('a flow marked (paused) asks for its routine paused, never active', async () => {
-  const t = team()
-  const started = await startTemplateServer({ port: 0, orgsDir: t.orgs, host: '127.0.0.1' })
-  try {
-    const process = { slug: 'weekly-brief', name: 'Weekly brief', trigger: { type: 'schedule', schedule: '0 9 * * 1', source: '', description: 'Mondays at 09:00, Europe/Madrid (paused)' }, steps: [{ seat: t.security, action: 'Write the brief' }], doneWhen: '', next: '', notes: '' }
-    const response = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/processes/weekly-brief`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(process) })
-    assert.equal(response.status, 200)
-    assert.deepEqual(readRequests(t.root).requests[0]!.routines?.map((routine) => [routine.name, routine.enabled]), [['Weekly brief', false]])
+    const file = { processes: [{ name: 'Weekly brief', trigger: { type: 'schedule', schedule: '0 9 * * 1' }, steps: [{ seat: 'Security', action: 'Write the brief' }] }] }
+    assert.equal((await fetch(`${base}-file`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(file) })).status, 200)
+    const process = { slug: 'weekly-brief', name: 'Weekly brief', trigger: { type: 'schedule', schedule: '0 10 * * 1', source: '', description: '' }, steps: [{ seat: t.security, action: 'Write it' }], doneWhen: '', next: '', notes: '' }
+    assert.equal((await fetch(`${base}/weekly-brief`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(process) })).status, 404, 'no saving: flows come from Grok Bot')
+    assert.equal((await fetch(`${base}/weekly-brief/simulate`, { method: 'POST', body: '{}' })).status, 404, 'no simulated runs in the real run log')
+    assert.equal((await fetch(`${base}/weekly-brief`, { method: 'DELETE' })).status, 200)
+    const read = readOrgDir(t.root, t.org)
+    assert.ok(read.ok)
+    assert.equal(read.bundle.processes?.length ?? 0, 0)
+    assert.deepEqual(readRequests(t.root).requests, [], 'nothing was asked of any bot')
   } finally {
     await started.close()
     t.done()

@@ -9,7 +9,6 @@ import {
   parseProcessMarkdown,
   parseProcessesFile,
   processSlug,
-  routinePrompt,
   scheduleFasterThanHourly,
   serializeProcess,
   stepText,
@@ -124,21 +123,6 @@ test('a schedule that fires more than once an hour is flagged', () => {
   assert.equal(scheduleFasterThanHourly('every hour'), false)
 })
 
-test('the Grok Bot routine names the schedule, the steps, and the ask', () => {
-  const prompt = routinePrompt(invoice, [
-    { slug: 'invoice-bot', title: 'Invoice Bot', kind: 'bot', mustAskBefore: [] },
-    { slug: 'you', title: 'You', kind: 'human', mustAskBefore: [] },
-  ])
-  assert.match(prompt, /You are Invoice Bot\./)
-  assert.match(prompt, /Trigger: email — A supplier invoice lands in the inbox\./)
-  assert.match(prompt, /1\. Invoice Bot: Match the invoice to the open bill/)
-  assert.match(prompt, /2\. You: Approve payment/)
-  assert.match(prompt, /Ask me before Approve payment\./)
-  assert.match(prompt, /Done when: The invoice is matched/)
-  assert.match(prompt, /processes\/invoice-arrives\.md/)
-  assert.match(prompt, /write waiting and ask the owner/)
-})
-
 test("importing again replaces a flow with Grok Bot's latest version instead of writing a -2 copy; a name listed twice in one file keeps the first", () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-process-import-'))
   const seats = [{ slug: 'invoice-bot', title: 'Invoice Bot' }]
@@ -239,7 +223,4 @@ test("Grok Bot's Needs approval: mark adds a checkpoint and never removes one: t
   assert.equal(stepText('Needs approval: send you the exact post text'), 'send you the exact post text')
   assert.equal(stepText('  needs approval:merge to main'), 'merge to main')
   assert.equal(stepText('Gather context'), 'Gather context')
-  const prompt = routinePrompt({ name: 'Milestone', slug: 'milestone', trigger: { type: 'manual', schedule: '', source: '', description: '' }, steps: [{ seat: 'x', action: 'Needs approval: send you the exact post text' }], doneWhen: '' }, seats)
-  assert.match(prompt, /\n1\. x\.com: send you the exact post text\nAsk me before send you the exact post text\./)
-  assert.doesNotMatch(prompt, /Needs approval:/)
 })

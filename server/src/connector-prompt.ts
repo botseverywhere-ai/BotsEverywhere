@@ -241,13 +241,3 @@ Snapshot format:
 
 ${SNAPSHOT_FORMAT}`
 }
-
-export function logInstructions(folder: string, processFile: string, seatFile: string): string[] {
-  const path = folder.trim() || 'orgs/<slug>'
-  return [
-    `Before each run, read ${path}/${processFile} and ${path}/${seatFile}.`,
-    `After each step, append one line to ${path}/log/YYYY-MM-DD.md. If the file is missing, start it with "# Run log YYYY-MM-DD".`,
-    '- HH:MM | your name | process | step | done|failed|skipped|waiting|running | note or -',
-    'Before a checkpoint, write waiting and ask the owner before you continue.',
-  ]
-}

@@ -26,8 +26,6 @@ import {
   cardUnchanged,
   validateBundle,
   managerLoop,
-  ROUTINE_STARTS,
-  type BotRoutine,
   type FileActivity,
   type GrokSyncState,
   type OrgBundle,
@@ -38,12 +36,12 @@ import {
   type WorkDocument,
 } from './org-files.js'
 import { logFileName, parseLogMarkdown, parseOrgMarkdown, parseWorkMarkdown, serializeLogMarkdown, serializeOrgMarkdown, serializeWorkMarkdown } from './org-markdown.js'
-import { deleteProcessFile, importProcessRows, readProcessDir, writeProcessFile } from './process-files.js'
+import { deleteProcessFile, importProcessRows, readProcessDir } from './process-files.js'
 import { profileFileLines } from './profile-files.js'
 import { parseProcessesFile, parseProcessMarkdown, serializeProcess, type ProcessFile } from './processes.js'
 import { createLiveHub, type LiveKind } from './live-hub.js'
-import { isRunLogName, planRun } from './run-log.js'
-import { playRun, readRunLogDir } from './run-log-files.js'
+import { isRunLogName } from './run-log.js'
+import { readRunLogDir } from './run-log-files.js'
 import { IMPORT_LOCKED, importLocked, parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
 import { ORG_IMPORT_LOCKED, orgImportLocked, parseOrgFile, plainSlug, type OrgFile } from './org-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
@@ -1692,62 +1690,6 @@ function reserveSeatSlug(root: string, base: string, taken: Set<string>): string
   return null
 }
 
-/** The routine a process asks its first-step bot for: a schedule, or an event Grok Bot can start a routine on. Else none. */
-function processRoutine(process: ProcessFile): BotRoutine | null {
-  const description = process.trigger.description.trim()
-  // A flow marked "(paused)", as Grok Bot's import writes it, asks for its routine paused: never switch one back on.
-  const enabled = !/\(paused\)\s*$/i.test(description)
-  if (process.trigger.type === 'schedule' && process.trigger.schedule.trim()) {
-    return { name: process.name, schedule: process.trigger.schedule.trim(), trigger: 'schedule', ...(description ? { description } : {}), enabled }
-  }
-  const source = process.trigger.source
-  if (process.trigger.type === 'event' && source && (ROUTINE_STARTS as readonly string[]).includes(source)) {
-    return { name: process.name, schedule: '', trigger: source as BotRoutine['trigger'], ...(description ? { event: description } : {}), enabled }
-  }
-  return null
-}
-
-/** Whether a saved process changed what its routine should be. */
-function routineChanged(before: ProcessFile, after: ProcessFile): boolean {
-  const key = (process: ProcessFile) => JSON.stringify([process.name, process.trigger.type, process.trigger.schedule, process.trigger.source, process.trigger.description, process.steps[0]?.seat ?? ''])
-  return key(before) !== key(after)
-}
-
-/**
- * A new or changed process asks the bot on its first step for that routine, on the bot's one waiting update, as the
- * Connector used to do on its own. A routine named again replaces the older one: the newest request wins.
- */
-export function requestProcessRoutine(root: string, orgId: string, process: ProcessFile): boolean {
-  const first = process.steps[0]?.seat
-  const routine = processRoutine(process)
-  if (!first || !routine) return false
-  const read = readOrgDir(root, orgId)
-  if (!read.ok) return false
-  const seat = read.bundle.seats.find((item) => item.slug === first)
-  const path = seatFile(root, first)
-  const current = readRequests(root)
-  if (!seat || !canUpdate(seat) || !path || current.error) return false
-  if (current.requests.some((item) => item.seat === first && item.kind !== 'update')) return false
-  const same = (name: string) => name.replace(/\s+/g, ' ').trim().toLowerCase() === routine.name.replace(/\s+/g, ' ').trim().toLowerCase()
-  const stamp = new Date().toISOString()
-  const waiting = current.requests.find((item) => item.seat === first && item.kind === 'update')
-  const base: GrokRequest = waiting ?? { seat: first, name: seat.title, seatFile: path, prompt: '', kind: 'update', ...(seat.grokBotUrl?.trim() ? { grokBotUrl: seat.grokBotUrl.trim() } : {}), requestedAt: stamp }
-  writeRequests(root, [...current.requests.filter((item) => item.seat !== first), { ...base, routines: [...(base.routines ?? []).filter((item) => !same(item.name)), routine], requestedAt: stamp }])
-  appendActivity(root, {
-    id: `grok-request-routine-${first}-${stamp}`,
-    orgId,
-    type: 'edit',
-    actorSeatId: managerSeat(read.bundle.seats)?.slug || 'you',
-    actorType: 'human',
-    timestamp: stamp,
-    summary: `Asked ${seat.title} for the routine ${process.name}`,
-    subjectSeatId: first,
-    grok: 'out',
-    stats: requestStats({ routines: [routine] }).join('|'),
-  })
-  return true
-}
-
 /**
  * The main manager and the extra managers of one seat. Without `alsoReportsTo` it is `setSeatManager`. Extra managers
  * must be other seats here, never the seat or its main manager, and no line may loop back. A bot in Grok Bot gets them
@@ -2451,33 +2393,6 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       send(res, 200, readRunLogDir(root))
       return
     }
-    const simulateMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/processes\/([a-z0-9]+(?:-[a-z0-9]+)*)\/simulate$/.exec(url.pathname)
-    if (simulateMatch && req.method === 'POST') {
-      const slug = simulateMatch[1]!
-      const processSlug = simulateMatch[2]!
-      const root = orgRoot(orgsDir, slug)
-      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
-      const read = readOrgDir(root, slug)
-      if (!read.ok) return send(res, 422, { errors: read.errors })
-      const process = (read.bundle.processes ?? []).find((item) => item.slug === processSlug)
-      if (!process) return send(res, 404, { error: 'Process not found.' })
-      const body = await readBody(req)
-      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
-      let pace = 2000
-      if (body.trim()) {
-        try {
-          const parsed = JSON.parse(body) as { paceMs?: unknown }
-          if (typeof parsed.paceMs === 'number') pace = parsed.paceMs
-        } catch {
-          return send(res, 422, { errors: ['That body is not JSON.'] })
-        }
-      }
-      const paceMs = Number.isFinite(pace) && pace >= 0 && pace <= 5000 ? pace : 2000
-      const lines = planRun(process, read.bundle.seats.map((seat) => ({ slug: seat.slug, title: seat.title, kind: seat.kind, mustAskBefore: seat.mustAskBefore })))
-      void playRun(root, lines, paceMs, () => hub.publish(slug, 'log'))
-      send(res, 202, { ok: true, lines: lines.length })
-      return
-    }
     const processesFileMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/processes-file$/.exec(url.pathname)
     if (processesFileMatch && req.method === 'POST') {
       const slug = processesFileMatch[1]!
@@ -2495,27 +2410,14 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       return
     }
     const processMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/processes\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(url.pathname)
-    if (processMatch && (req.method === 'PUT' || req.method === 'DELETE')) {
+    if (processMatch && req.method === 'DELETE') {
       const slug = processMatch[1]!
       const processSlug = processMatch[2]!
       const root = orgRoot(orgsDir, slug)
       if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
-      if (req.method === 'DELETE') {
-        const removed = deleteProcessFile(root, processSlug)
-        if (!removed.ok) return send(res, 422, { errors: removed.errors })
-        send(res, 200, { ok: true })
-        return
-      }
-      const body = await readBody(req)
-      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
-      const draft = JSON.parse(body) as ProcessFile
-      const previousSlug = draft.slug && draft.slug !== processSlug ? draft.slug : ''
-      const previous = readProcessDir(root).processes.find((entry) => entry.slug === (previousSlug || processSlug))
-      const written = writeProcessFile(root, { ...draft, slug: processSlug }, previousSlug)
-      if (!written.ok) return send(res, 422, { errors: written.errors })
-      const saved = readProcessDir(root).processes.find((entry) => entry.slug === processSlug)
-      if (saved && (!previous || routineChanged(previous, saved))) requestProcessRoutine(root, slug, saved)
-      send(res, 200, written)
+      const removed = deleteProcessFile(root, processSlug)
+      if (!removed.ok) return send(res, 422, { errors: removed.errors })
+      send(res, 200, { ok: true })
       return
     }
     const botsFileMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/bots-file$/.exec(url.pathname)

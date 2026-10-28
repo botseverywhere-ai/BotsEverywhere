@@ -1,6 +1,5 @@
 import { SEAT_SLUG, quote, unquote } from './org-files.ts'
 import { normalizeText } from './normalize-text.ts'
-import { logInstructions } from './connector-prompt.ts'
 
 export const EVENT_SOURCES = ['email', 'slack', 'github', 'webhook', 'form'] as const
 export type EventSource = (typeof EVENT_SOURCES)[number]
@@ -369,39 +368,6 @@ function matchSeat(value: string, seats: { slug: string; title: string }[]): str
   const slug = processSlug(text)
   const slugged = seats.find((seat) => seat.slug === slug)
   return slugged?.slug ?? ''
-}
-
-export function routinePrompt(process: Pick<ProcessFile, 'name' | 'slug' | 'trigger' | 'steps' | 'doneWhen'>, seats: SeatRef[], ownerSlug = '', folder = 'orgs/<slug>'): string {
-  const owner = seats.find((seat) => seat.slug === (ownerSlug || process.steps[0]?.seat || ''))
-  const ownerName = owner?.title || 'the owning bot'
-  const derived = deriveSteps(process.steps, seats)
-  const lines = [
-    `You are ${ownerName}.`,
-    '',
-    `Routine: ${process.name}`,
-    '',
-    triggerLine(process.trigger),
-    '',
-    'Steps:',
-  ]
-  derived.forEach((step, index) => {
-    const seat = seats.find((item) => item.slug === step.seat)
-    lines.push(`${index + 1}. ${seat?.title || step.seat || 'Unassigned'}: ${stepText(step.action)}`)
-    if (step.checkpoint) lines.push(`Ask me before ${stepText(step.action) || step.because}.`)
-  })
-  lines.push('', `Done when: ${process.doneWhen.trim() || 'Say what finished.'}`, '')
-  const seatFile = owner ? `seats/${owner.slug}.md` : 'seats/<seat>.md'
-  lines.push(...logInstructions(folder, `processes/${process.slug || processSlug(process.name)}.md`, seatFile))
-  return lines.join('\n')
-}
-
-function triggerLine(trigger: ProcessTrigger): string {
-  if (trigger.type === 'schedule') return `Schedule: ${trigger.schedule || 'not set'}${trigger.description ? ` — ${trigger.description}` : ''}`
-  if (trigger.type === 'event') {
-    const source = trigger.source || 'event'
-    return `Trigger: ${source}${trigger.description ? ` — ${trigger.description}` : ''}`
-  }
-  return `Trigger: manual${trigger.description ? ` — ${trigger.description}` : ''}`
 }
 
 export function triggerLabel(trigger: ProcessTrigger): string {

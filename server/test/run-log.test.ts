@@ -7,11 +7,11 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import { serializeSeat, type SeatDocument } from '../src/org-files.ts'
 import { writeProcessFile } from '../src/process-files.ts'
-import { appendRunLine, playRun, readRunLogDir } from '../src/run-log-files.ts'
+import { appendRunLine, readRunLogDir } from '../src/run-log-files.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import { CONNECTOR_BOT_NAME, CONNECTOR_LOG_BOT, connectorPrompt } from '../src/connector-prompt.ts'
 import { orgChange } from '../src/live-hub.ts'
-import { activitySentence, liveSeats, parseRunLog, planRun, waitingLines } from '../src/run-log.ts'
+import { activitySentence, liveSeats, parseRunLog, waitingLines } from '../src/run-log.ts'
 import { readOrgDir, startTemplateServer, writeOrgDir } from '../src/template-server.ts'
 import type { OrgBundle } from '../src/org-files.ts'
 
@@ -34,7 +34,7 @@ test('the run log parser keeps six-field lines and counts the rest', () => {
   assert.equal(activitySentence(parsed.lines[0]!), '09:02 Invoice Bot matched invoice 1042, waiting for your approval')
 })
 
-test('a simulated run appends valid lines and stops on a checkpoint', async () => {
+test('a waiting step and the seats at work come from the lines a run appends', () => {
   const process: ProcessFile = {
     slug: 'invoice-arrives',
     name: 'Invoice arrives',
@@ -47,16 +47,14 @@ test('a simulated run appends valid lines and stops on a checkpoint', async () =
     next: '',
     notes: '',
   }
-  const seats = [
-    { slug: 'finance-bot', title: 'Finance Bot', kind: 'bot', mustAskBefore: [] },
-    { slug: 'you', title: 'You', kind: 'human', mustAskBefore: [] },
-  ]
-  const planned = planRun(process, seats, new Date(2026, 9, 17, 9, 2, 0))
-  assert.deepEqual(planned.map((line) => line.status), ['running', 'done', 'running', 'waiting'])
-  assert.equal(planned.at(-1)?.bot, 'You')
   const dir = mkdtempSync(join(tmpdir(), 'be-run-'))
-  const wrote = await playRun(dir, planned, 0)
-  assert.equal(wrote, 4)
+  const line = (index: number, time: string, bot: string, step: string, status: 'running' | 'done' | 'waiting') => ({ date: '2026-10-17', time, bot, process: process.name, step, status, note: '-', index })
+  for (const item of [
+    line(0, '09:02', 'Finance Bot', 'Match the invoice', 'running'),
+    line(1, '09:03', 'Finance Bot', 'Match the invoice', 'done'),
+    line(2, '09:04', 'You', 'Approve payment', 'running'),
+    line(3, '09:05', 'You', 'Approve payment', 'waiting'),
+  ]) appendRunLine(dir, item)
   const read = readRunLogDir(dir)
   assert.equal(read.skipped, 0)
   assert.equal(read.lines.length, 4)
@@ -75,7 +73,7 @@ test('a simulated run appends valid lines and stops on a checkpoint', async () =
   rmSync(dir, { recursive: true, force: true })
 })
 
-test('the watcher pushes a log change and simulate writes a real file', async () => {
+test('the watcher pushes a log change', async () => {
   const orgs = mkdtempSync(join(tmpdir(), 'be-live-'))
   const root = join(orgs, 'acme')
   mkdirSync(root, { recursive: true })
@@ -107,18 +105,6 @@ test('the watcher pushes a log change and simulate writes a real file', async ()
     })
     const payload = await seen
     assert.match(payload, /event: log/)
-    const response = await fetch(`http://127.0.0.1:${started.port}/api/orgs/acme/processes/daily-brief/simulate`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ paceMs: 0 }),
-    })
-    assert.equal(response.status, 202)
-    const body = await response.json() as { lines: number }
-    assert.equal(body.lines, 2)
-    await delay(30)
-    const read = readRunLogDir(root)
-    assert.ok(read.lines.some((line) => line.status === 'done' && line.step === 'Prepare the brief'))
-    assert.equal(read.skipped, 0)
     const org = readOrgDir(root, 'acme')
     assert.equal(org.ok, true)
   } finally {
