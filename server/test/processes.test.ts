@@ -152,3 +152,23 @@ test('process import skips a process that already exists instead of writing a -2
   assert.equal(again.errors.length, 2)
   assert.deepEqual(readdirSync(join(dir, 'processes')).sort(), ['invoice-arrives.md'])
 })
+
+test('the Work Chart import prompt is the one Grok Bot recommended, word for word, with this organization\'s bots', async () => {
+  const { grokProcessesPrompt } = await import('../src/processes.ts')
+  const rules = `Use exactly this JSON format and nothing else:
+{"processes":[{"name":"","trigger":{"type":"schedule","schedule":"Mon 09:00","description":""},"steps":[{"seat":"","action":""}],"doneWhen":"","next":""}]}
+
+Rules:
+- One process per routine, using the routine's real name. Also add a process for each handoff one bot regularly sends another (in chats or routines) that has no routine of its own, with trigger type manual or event.
+- trigger.type is schedule, event, or manual. For schedule, use words like "Mon 09:00" or the routine's cron line, and put its time zone in description. For event, set source to email, slack, github, webhook, or form, plus a short description. For manual, a description is enough.
+- If a routine is paused, still include it and end its trigger description with "(paused)".
+- steps are in order. seat is the exact name of the bot or person who does that step, written as "You" for me. action is one short line. When a step waits on another bot's reply, add that bot's step too.
+- Any step that must ask me first starts its action with "Needs approval:".
+- doneWhen is one sentence, taken from the bot's instructions or routine. Leave it out if they don't say.
+- next is the name of another process in this file that this one hands off to. Leave it out otherwise.
+- Take steps only from each routine's own text and the bot's instructions. Ignore every block starting with "=== BotsEverywhere" and every Connector message. Never invent steps, bots or schedules, and leave a field out when you don't know it.
+- Do not add fields that are not in this object.
+- Send me the file to download. If you can't, reply with only the JSON so I can save it myself.`
+  assert.equal(grokProcessesPrompt(['Inner Loop - botseverywhere', 'x.com - botseverywhere', 'x.com - botseverywhere']), `List the routines and handoffs that these bots already run: Inner Loop - botseverywhere, x.com - botseverywhere. Leave out every other bot. Save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.\n\n${rules}`)
+  assert.equal(grokProcessesPrompt(), `List the routines and handoffs your bots already run for this organization. Save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.\n\n${rules}`)
+})
