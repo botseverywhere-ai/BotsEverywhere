@@ -1,28 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import {
-  EVENT_SOURCES,
   grokProcessesPrompt,
   deriveSteps,
   processSlug,
-  routinePrompt,
   stepText,
   triggerLabel,
   waitsForYou,
-  type EventSource,
   type ProcessFile,
-  type ProcessStep,
   type TriggerType,
 } from '../../server/src/processes.ts'
 import { activitySentence, latestStepStatus, newestFirst, waitingLines, type RunLine } from '../../server/src/run-log.ts'
 import { CopyPromptButton } from '../directory/prompt-actions'
-import { FOLDER_EVENT, orgFolder } from '../org/folder-path'
 import { Button } from './Button'
 import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
@@ -58,20 +53,10 @@ export function ProcessChart({
 }) {
   const lanesRef = useRef<HTMLDivElement>(null)
   const [show, setShow] = useState<Show>('all')
-  const [drawer, setDrawer] = useState<ProcessFile | 'new' | null>(null)
   const [removing, setRemoving] = useState<ProcessFile | null>(null)
   const [notice, setNotice] = useState<SaveNotice | null>(null)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [folder, setFolder] = useState(() => orgFolder(orgId))
-  useEffect(() => {
-    const onFolder = (event: Event) => {
-      const detail = (event as CustomEvent<{ slug?: string; value?: string }>).detail
-      if (detail?.slug === orgId && typeof detail.value === 'string') setFolder(detail.value)
-    }
-    window.addEventListener(FOLDER_EVENT, onFolder)
-    return () => window.removeEventListener(FOLDER_EVENT, onFolder)
-  }, [orgId])
   const approvals = useMemo(() => waitingLines(runLines, processes), [processes, runLines])
   const feed = useMemo(() => newestFirst(runLines), [runLines])
   const offChart = useMemo(() => routinesOffChart(board, processes), [board, processes])
@@ -82,57 +67,6 @@ export function ProcessChart({
   const used = useMemo(() => new Set(processes.flatMap((process) => process.steps.map((step) => step.seat))), [processes])
   const idleBots = seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !used.has(seat.slug))
   const focusName = seats.find((seat) => seat.slug === focusSeat)?.title || focusSeat
-
-  async function save(draft: Draft) {
-    const name = draft.name.trim()
-    if (!name) {
-      setNotice(saveNotice(false, 'Process name is required.', 'Not saved'))
-      return
-    }
-    const base = processSlug(name)
-    if (!base) {
-      setNotice(saveNotice(false, 'That name is not a safe file name.', 'Not saved'))
-      return
-    }
-    const taken = new Set(processes.map((process) => process.slug).filter((slug) => slug !== draft.previousSlug))
-    let slug = base
-    if (taken.has(slug)) {
-      for (let n = 2; n < 100 && taken.has(slug); n += 1) slug = `${base}-${n}`
-    }
-    setBusy(true)
-    try {
-      const response = await fetch(`/api/orgs/${orgId}/processes/${slug}`, {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          slug: draft.previousSlug,
-          name,
-          trigger: {
-            type: draft.type,
-            schedule: draft.type === 'schedule' ? draft.schedule.trim() : '',
-            source: draft.type === 'event' ? draft.source : '',
-            description: draft.description.trim(),
-          },
-          steps: draft.steps.filter((step) => step.seat || step.action.trim()),
-          doneWhen: draft.doneWhen.trim(),
-          next: draft.next.trim(),
-          notes: draft.notes,
-        }),
-      })
-      const body = (await response.json()) as { errors?: string[]; error?: string }
-      if (!response.ok) {
-        setNotice(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not save the process.', 'Not saved'))
-        return
-      }
-      setDrawer(null)
-      setNotice(saveNotice(true, 'Process saved'))
-      await onReload()
-    } catch {
-      setNotice(saveNotice(false, SAVING_OFF, 'Not saved'))
-    } finally {
-      setBusy(false)
-    }
-  }
 
   async function remove(process: ProcessFile) {
     setBusy(true)
@@ -162,37 +96,21 @@ export function ProcessChart({
         headers: { 'content-type': 'application/json' },
         body: await file.text(),
       })
-      const body = (await response.json()) as { errors?: { name: string; error: string }[] | string[]; notes?: string[]; imported?: { name: string }[]; error?: string }
+      const body = (await response.json()) as { errors?: { name: string; error: string }[] | string[]; notes?: string[]; imported?: { name: string; replaced?: boolean }[]; error?: string }
       if (!response.ok) {
         const errors = Array.isArray(body.errors) ? body.errors.map((item) => (typeof item === 'string' ? item : item.error)).join(' ') : body.error
         setNotice(saveNotice(false, errors || 'Could not import processes.', 'Not imported'))
         return
       }
-      const count = body.imported?.length ?? 0
       const notes = body.notes?.filter(Boolean) ?? []
       const skipped = (body.errors ?? []).map((item) => (typeof item === 'string' ? item : `Skipped ${item.name}: ${item.error}`)).join(' ')
-      const summary = notes.length ? `${count} processes imported, ${notes.length} ${notes.length === 1 ? 'note' : 'notes'}` : `Imported ${count} processes`
+      const summary = importSummary((body.imported ?? []).map((item) => ({ replaced: item.replaced === true })))
       setNotice(saveNotice(true, [summary, notes.join(' '), skipped].filter(Boolean).join(' ')))
       await onReload()
     } catch {
       setNotice(saveNotice(false, SAVING_OFF, 'Not imported'))
     } finally {
       setBusy(false)
-    }
-  }
-
-  async function simulate(slug: string) {
-    setNotice(null)
-    try {
-      const response = await fetch(`/api/orgs/${orgId}/processes/${slug}/simulate`, { method: 'POST' })
-      if (!response.ok) {
-        const body = (await response.json()) as { errors?: string[]; error?: string }
-        setNotice(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not start the run.', 'Not started'))
-        return
-      }
-      setNotice(saveNotice(true, 'Run started'))
-    } catch {
-      setNotice(saveNotice(false, SAVING_OFF, 'Not started'))
     }
   }
 
@@ -215,13 +133,9 @@ export function ProcessChart({
       seats={seatRefs}
       focusSeat={focusSeat}
       editable={editable}
-      folder={folder}
       runLines={runLines}
       onSeat={onSeat}
-      onEdit={() => setDrawer(process)}
       onDelete={() => setRemoving(process)}
-      onSimulate={() => void simulate(process.slug)}
-      onCopied={(message) => setNotice(saveNotice(true, message))}
     />
   )
   return (
@@ -245,7 +159,6 @@ export function ProcessChart({
             </div>
           ) : null}
         </div>
-        {editable && !empty ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
       <div className="process-show" role="group" aria-label="Show">
@@ -321,17 +234,6 @@ export function ProcessChart({
           </div>
         </details>
       ) : null}
-      {drawer ? (
-        <ProcessDrawer
-          key={drawer === 'new' ? 'new' : drawer.slug}
-          process={drawer === 'new' ? null : drawer}
-          processes={processes}
-          seats={seats}
-          busy={busy}
-          onClose={() => setDrawer(null)}
-          onSave={(draft) => void save(draft)}
-        />
-      ) : null}
       {removing ? (
         <div className="be-modal" role="dialog" aria-labelledby="delete-process-title">
           <h2 id="delete-process-title">Delete {removing.name}?</h2>
@@ -377,13 +279,9 @@ function ProcessLane({
   seats,
   focusSeat,
   editable,
-  folder,
   runLines,
   onSeat,
-  onEdit,
   onDelete,
-  onSimulate,
-  onCopied,
 }: {
   process: ProcessFile
   processes: ProcessFile[]
@@ -394,20 +292,14 @@ function ProcessLane({
   seats: { slug: string; title: string; kind?: string; mustAskBefore?: string[] }[]
   focusSeat: string
   editable: boolean
-  folder: string
   runLines: RunLine[]
   onSeat: (slug: string) => void
-  onEdit: () => void
   onDelete: () => void
-  onSimulate: () => void
-  onCopied: (message: string) => void
 }) {
-  const [owner, setOwner] = useState(process.steps[0]?.seat || '')
   const derived = deriveSteps(process.steps, seats)
   const paused = lanePaused(process, live)
   const noRoutine = laneNoRoutine(process, live)
   const problems = laneProblems(process, allSeats, runLines)
-  const prompt = routinePrompt(process, seats, owner, folder)
   const statuses = latestStepStatus(runLines, process.name, process.steps)
   return (
     <li className={paused ? 'process-lane is-paused' : 'process-lane'} id={`process-${process.slug}`}>
@@ -487,158 +379,12 @@ function ProcessLane({
           ) : null}
         </ol>
       </div>
-      <div className="process-lane-tools">
-        <label className="field-label">
-          Copy for
-          <select className="text-input" value={owner} onChange={(event) => setOwner(event.target.value)}>
-            {seats.map((seat) => (
-              <option key={seat.slug} value={seat.slug}>{seat.title}</option>
-            ))}
-          </select>
-        </label>
-        <CopyPromptButton text={prompt} label="Copy for Grok Bot" onCopied={onCopied} />
-        {editable ? (
-          <div className="process-edit">
-            <Button variant="secondary" type="button" onClick={onSimulate}>Simulate a run</Button>
-            <Button variant="secondary" type="button" onClick={onEdit}>Edit</Button>
-            <Button variant="secondary" type="button" onClick={onDelete}>Delete</Button>
-          </div>
-        ) : null}
-      </div>
+      {editable ? (
+        <div className="process-lane-tools">
+          <Button variant="secondary" type="button" onClick={onDelete}>Delete</Button>
+        </div>
+      ) : null}
     </li>
-  )
-}
-
-interface Draft {
-  previousSlug: string
-  name: string
-  type: TriggerType
-  schedule: string
-  source: EventSource | ''
-  description: string
-  steps: ProcessStep[]
-  doneWhen: string
-  next: string
-  notes: string
-}
-
-function ProcessDrawer({
-  process,
-  processes,
-  seats,
-  busy,
-  onClose,
-  onSave,
-}: {
-  process: ProcessFile | null
-  processes: ProcessFile[]
-  seats: SeatDocument[]
-  busy: boolean
-  onClose: () => void
-  onSave: (draft: Draft) => void
-}) {
-  const [draft, setDraft] = useState<Draft>(() => process ? {
-    previousSlug: process.slug,
-    name: process.name,
-    type: process.trigger.type,
-    schedule: process.trigger.schedule,
-    source: process.trigger.source,
-    description: process.trigger.description,
-    steps: process.steps.length ? process.steps : [{ seat: seats[0]?.slug || '', action: '' }],
-    doneWhen: process.doneWhen,
-    next: process.next,
-    notes: process.notes,
-  } : {
-    previousSlug: '',
-    name: '',
-    type: 'manual',
-    schedule: '',
-    source: '',
-    description: '',
-    steps: [{ seat: seats.find((seat) => seat.kind === 'bot')?.slug || seats[0]?.slug || '', action: '' }],
-    doneWhen: '',
-    next: '',
-    notes: '',
-  })
-
-  function move(index: number, delta: number) {
-    const next = index + delta
-    if (next < 0 || next >= draft.steps.length) return
-    const steps = [...draft.steps]
-    const [item] = steps.splice(index, 1)
-    steps.splice(next, 0, item!)
-    setDraft({ ...draft, steps })
-  }
-
-  return (
-    <div className="be-drawer" role="dialog" aria-labelledby="process-drawer-title">
-      <header>
-        <h2 id="process-drawer-title">{process ? 'Edit process' : 'New process'}</h2>
-        <Button variant="secondary" type="button" onClick={onClose} aria-label="Close">Close</Button>
-      </header>
-      <label className="field-label">Name
-        <input className="text-input" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
-      </label>
-      <label className="field-label">Trigger
-        <select className="text-input" value={draft.type} onChange={(event) => setDraft({ ...draft, type: event.target.value as TriggerType })}>
-          <option value="schedule">Schedule</option>
-          <option value="event">Event</option>
-          <option value="manual">Manual</option>
-        </select>
-      </label>
-      {draft.type === 'schedule' ? (
-        <label className="field-label">When
-          <input className="text-input" value={draft.schedule} placeholder="Mon 09:00" onChange={(event) => setDraft({ ...draft, schedule: event.target.value })} />
-        </label>
-      ) : null}
-      {draft.type === 'event' ? (
-        <label className="field-label">Source
-          <select className="text-input" value={draft.source} onChange={(event) => setDraft({ ...draft, source: event.target.value as EventSource | '' })}>
-            <option value="">Choose a source</option>
-            {EVENT_SOURCES.map((source) => <option key={source} value={source}>{source}</option>)}
-          </select>
-        </label>
-      ) : null}
-      <label className="field-label">Description
-        <input className="text-input" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
-      </label>
-      <div className="process-step-editor">
-        <p className="field-label">Steps</p>
-        {draft.steps.map((step, index) => (
-          <div key={index} className="process-step-row">
-            <select className="text-input" value={step.seat} aria-label={`Seat for step ${index + 1}`} onChange={(event) => {
-              const steps = draft.steps.map((item, itemIndex) => itemIndex === index ? { ...item, seat: event.target.value } : item)
-              setDraft({ ...draft, steps })
-            }}>
-              <option value="">Choose a seat</option>
-              {seats.filter((seat) => seat.status !== 'retired').map((seat) => <option key={seat.slug} value={seat.slug}>{seat.title}</option>)}
-            </select>
-            <input className="text-input" value={step.action} aria-label={`Action for step ${index + 1}`} placeholder="What this seat does" onChange={(event) => {
-              const steps = draft.steps.map((item, itemIndex) => itemIndex === index ? { ...item, action: event.target.value } : item)
-              setDraft({ ...draft, steps })
-            }} />
-            <div className="process-order">
-              <Button variant="secondary" type="button" aria-label={`Move step ${index + 1} up`} onClick={() => move(index, -1)}>Up</Button>
-              <Button variant="secondary" type="button" aria-label={`Move step ${index + 1} down`} onClick={() => move(index, 1)}>Down</Button>
-            </div>
-          </div>
-        ))}
-        <Button variant="secondary" type="button" onClick={() => setDraft({ ...draft, steps: [...draft.steps, { seat: '', action: '' }] })}>Add step</Button>
-      </div>
-      <label className="field-label">Done when
-        <textarea className="text-input" rows={3} value={draft.doneWhen} onChange={(event) => setDraft({ ...draft, doneWhen: event.target.value })} />
-      </label>
-      <label className="field-label">Next process
-        <select className="text-input" value={draft.next} onChange={(event) => setDraft({ ...draft, next: event.target.value })}>
-          <option value="">None</option>
-          {processes.filter((item) => item.slug !== process?.slug).map((item) => <option key={item.slug} value={item.name}>{item.name}</option>)}
-        </select>
-      </label>
-      <label className="field-label">Notes
-        <textarea className="text-input" rows={3} value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
-      </label>
-      <Button variant="primary" type="button" onClick={() => onSave(draft)} disabled={busy}>Save</Button>
-    </div>
   )
 }
 

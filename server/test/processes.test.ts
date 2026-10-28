@@ -139,41 +139,45 @@ test('the Grok Bot routine names the schedule, the steps, and the ask', () => {
   assert.match(prompt, /write waiting and ask the owner/)
 })
 
-test('process import skips a process that already exists instead of writing a -2 copy', () => {
+test("importing again replaces a flow with Grok Bot's latest version instead of writing a -2 copy; a name listed twice in one file keeps the first", () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-process-import-'))
   const seats = [{ slug: 'invoice-bot', title: 'Invoice Bot' }]
   const row = { name: 'Invoice arrives', trigger: { type: 'manual' }, steps: [{ seat: 'Invoice Bot', action: 'Match it' }], doneWhen: 'Matched' }
-  const parsed = parseProcessesFile(JSON.stringify({ processes: [row, row] }))
+  const parsed = parseProcessesFile(JSON.stringify({ processes: [row, { ...row, doneWhen: 'Twice' }] }))
   assert.equal(parsed.ok, true)
   if (!parsed.ok) return
   const first = importProcessRows(dir, parsed.rows, seats)
-  assert.deepEqual(first.imported.map((item) => item.slug), ['invoice-arrives'])
-  assert.deepEqual(first.errors, [{ name: 'Invoice arrives', error: 'Already in this organization. The existing process was kept.' }])
-  const again = importProcessRows(dir, parsed.rows, seats)
-  assert.equal(again.imported.length, 0)
-  assert.equal(again.errors.length, 2)
+  assert.deepEqual(first.imported.map((item) => [item.slug, item.replaced]), [['invoice-arrives', false]])
+  assert.deepEqual(first.errors, [{ name: 'Invoice arrives', error: 'Listed twice in this file. The first one was kept.' }])
+  const newer = parseProcessesFile(JSON.stringify({ processes: [{ ...row, steps: [{ seat: 'Invoice Bot', action: 'Match it' }, { seat: 'Invoice Bot', action: 'Needs approval: pay it' }], doneWhen: 'Paid' }] }))
+  assert.equal(newer.ok, true)
+  if (!newer.ok) return
+  const again = importProcessRows(dir, newer.rows, seats)
+  assert.deepEqual(again.imported.map((item) => [item.slug, item.replaced]), [['invoice-arrives', true]])
+  assert.deepEqual(again.errors, [])
   assert.deepEqual(readdirSync(join(dir, 'processes')).sort(), ['invoice-arrives.md'])
+  const flow = readProcessDir(dir).processes[0]!
+  assert.deepEqual([flow.steps.length, flow.doneWhen], [2, 'Paid'], 'the flow is now what Grok Bot sent last')
 })
 
-test('process import replaces a flow the sync made from a routine and nobody changed, and keeps every other', () => {
+test('importing replaces every flow of the same name, whoever made it, and leaves the other flows alone', () => {
   const dir = mkdtempSync(join(tmpdir(), 'be-process-import-'))
   const seats = [{ slug: 'aura', title: 'Aura' }, { slug: 'prod', title: 'Prod' }]
   const trigger = { type: 'schedule' as const, schedule: '0 9 * * 1', source: '', description: '' }
-  // What the sync writes for a routine: one step that repeats the routine's name.
   writeProcessFile(dir, { slug: 'clip-brief', name: 'Clip brief', trigger, steps: [{ seat: 'aura', action: 'Clip brief' }], doneWhen: '', next: '', notes: '' })
   writeProcessFile(dir, { slug: 'health', name: 'Health', trigger, steps: [{ seat: 'prod', action: 'Health' }], doneWhen: 'The site is up', next: '', notes: '' })
   writeProcessFile(dir, { slug: 'wall', name: 'Wall', trigger, steps: [{ seat: 'prod', action: 'Ask for posts' }], doneWhen: '', next: '', notes: '' })
   const full = (name: string) => ({ name, trigger: { type: 'schedule', schedule: '0 9 * * 1' }, steps: [{ seat: 'Aura', action: 'Find stories' }, { seat: 'Prod', action: 'Redeploy' }] })
-  const parsed = parseProcessesFile(JSON.stringify({ processes: [full('Clip brief'), full('Clip brief'), full('Health'), full('Wall')] }))
+  const parsed = parseProcessesFile(JSON.stringify({ processes: [full('Clip brief'), full('Health')] }))
   assert.equal(parsed.ok, true)
   if (!parsed.ok) return
   const result = importProcessRows(dir, parsed.rows, seats)
-  assert.deepEqual(result.imported.map((item) => item.slug), ['clip-brief'])
-  assert.deepEqual(result.errors.map((item) => item.name), ['Clip brief', 'Health', 'Wall'], 'a second row with the same name, an edited Done when, and a step that is not the name are kept')
+  assert.deepEqual(result.imported.map((item) => [item.slug, item.replaced]), [['clip-brief', true], ['health', true]])
+  assert.deepEqual(result.errors, [])
   const flows = readProcessDir(dir).processes
   assert.deepEqual(flows.find((item) => item.slug === 'clip-brief')?.steps.map((step) => step.action), ['Find stories', 'Redeploy'])
-  assert.deepEqual(flows.find((item) => item.slug === 'health')?.steps.map((step) => step.action), ['Health'])
-  assert.deepEqual(flows.find((item) => item.slug === 'wall')?.steps.map((step) => step.action), ['Ask for posts'])
+  assert.deepEqual(flows.find((item) => item.slug === 'health')?.steps.map((step) => step.action), ['Find stories', 'Redeploy'])
+  assert.deepEqual(flows.find((item) => item.slug === 'wall')?.steps.map((step) => step.action), ['Ask for posts'], 'a flow not in the file stays')
 })
 
 test("the Work Chart tags a step as waiting for you only when Grok Bot marks it 'Needs approval:', never from words or who does it; the copied routine still asks before risky steps", () => {

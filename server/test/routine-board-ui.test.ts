@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
@@ -145,11 +145,27 @@ test("a bot's skills are the ones it reported in Grok Bot and the ones added her
   assert.equal(skillCount(undefined, [{ name: 'Invoices' }]), 1)
 })
 
+test('the Work Chart only shows what Grok Bot runs: no New process, Edit, Copy for Grok Bot, or Simulate; Delete stays', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  for (const gone of ['+ New process', 'Copy for Grok Bot', 'Simulate a run', 'ProcessDrawer', '/simulate', "method: 'PUT'", 'routinePrompt', '>Edit<']) assert.equal(chart.includes(gone), false, gone)
+  assert.match(chart, />Delete<\/Button>/)
+  const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
+  for (const gone of ['+ New process', 'Copy for Grok Bot', 'Simulate a run', 'or when the action contains send, pay, post']) assert.equal(docs.includes(gone), false, gone)
+  assert.ok(docs.includes('Importing again replaces each flow with Grok Bot&apos;s latest version.'))
+  assert.ok(docs.includes('<strong>Delete</strong> removes a flow Grok Bot no longer runs. It asks first.'))
+})
+
+test('the import says how many flows are new and how many it updated', () => {
+  assert.equal(importSummary([{ replaced: false }, { replaced: false }]), 'Imported 2 new processes')
+  assert.equal(importSummary([{ replaced: true }]), 'Updated 1 process')
+  assert.equal(importSummary([{ replaced: false }, { replaced: true }, { replaced: true }]), 'Imported 1 new process and updated 2')
+  assert.equal(importSummary([]), 'Nothing imported')
+})
+
 test('a Work Chart with no flows explains itself: the intro, its empty boxes, and the import from Grok Bot, open', () => {
   const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
   assert.match(chart, /const empty = processes\.length === 0/)
   assert.match(chart, /\{empty \? null : <p className="process-fallback">/, 'no fallback line before there is work')
-  assert.match(chart, /\{editable && !empty \? <Button variant="primary" type="button" onClick=\{\(\) => setDrawer\('new'\)\}>\+ New process<\/Button> : null\}/)
   assert.equal(chart.includes('be-empty'), false, 'the empty boxes say it instead')
   assert.equal(chart.includes('process-idle'), false, 'bots without work are a box like the others')
   assert.match(chart, /<details className="link-panel" open=\{empty\}>/)

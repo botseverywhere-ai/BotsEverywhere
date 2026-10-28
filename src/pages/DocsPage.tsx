@@ -494,8 +494,7 @@ The brief is filed and linked on the request.`}</CodeBlock>
           Each step names a seat and a short action. An arrow between steps owned by different seats is a handoff. <code>next</code> names the process this one hands off to.
         </p>
         <p>
-          A step is a checkpoint when the seat&apos;s Needs approval list covers it, or when the action contains send, pay, post, book, merge, publish, or delete.
-          The lane marks it <strong>Needs your approval</strong>, and the bot writes status <code>waiting</code> and asks before it continues.
+          A step whose action starts with <code>Needs approval:</code> waits for you. The lane marks it <strong>Needs your approval</strong>, and the bot writes status <code>waiting</code> and asks before it continues.
           Work that matches no process goes to the fallback process, <code>triage</code> unless <code>org.md</code> sets <code>fallbackProcess</code>, owned by You.
         </p>
         <p>Each process is one file, <code>orgs/&lt;slug&gt;/processes/&lt;name&gt;.md</code>:</p>
@@ -516,10 +515,8 @@ doneWhen: The invoice is matched and payment is approved or sent back.
 
 Plain notes for the people reading the file.`}</CodeBlock>
         <ul>
-          <li><strong>+ New process</strong> writes that file. Edit and Delete change the same file; Delete asks first.</li>
-          <li><strong>Copy for Grok Bot</strong> copies a routine for the owning bot: the trigger, the steps, each checkpoint as “ask me before…”, and done-when.</li>
-          <li><strong>Import processes from Grok Bot</strong> reads the routines Grok Bot already runs from a JSON file. An unknown seat name is reported and kept as written.</li>
-          <li><strong>Simulate a run</strong> writes example run-log lines about every two seconds, so you can watch the chart move.</li>
+          <li><strong>Import processes from Grok Bot</strong> reads the routines and handoffs Grok Bot runs from a JSON file and writes one file per flow. Importing again replaces each flow with Grok Bot&apos;s latest version. An unknown seat name is reported and kept as written.</li>
+          <li><strong>Delete</strong> removes a flow Grok Bot no longer runs. It asks first.</li>
         </ul>
         <p>
           While bots run, each step shows its latest status, with an activity feed and a <strong>Needs your approval</strong> list. Click a step to open its seat card.

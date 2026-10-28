@@ -23,6 +23,17 @@ export const HANDOFFS_HINT = "Flows whose trigger is someone handing work on, or
 export const OFF_CHART_HINT = "These routines run in Grok Bot, but this Work Chart doesn't show their steps yet. Import processes from Grok Bot and each one becomes a flow with all its steps."
 export const IDLE_HINT = 'Bots that do no step in any flow on this Work Chart yet.'
 
+/** What an import of Grok Bot's processes file did: flows new here, and flows it updated to Grok Bot's version. */
+export function importSummary(imported: { replaced: boolean }[]): string {
+  const updated = imported.filter((item) => item.replaced).length
+  const fresh = imported.length - updated
+  const noun = (count: number) => (count === 1 ? 'process' : 'processes')
+  if (fresh && updated) return `Imported ${fresh} new ${noun(fresh)} and updated ${updated}`
+  if (fresh) return `Imported ${fresh} new ${noun(fresh)}`
+  if (updated) return `Updated ${updated} ${noun(updated)}`
+  return 'Nothing imported'
+}
+
 /** Names the bots without work that still run routines with no flow, as one line; '' when none do. */
 export function idleWithRoutines(idle: string[], offChart: { bot: string }[]): string {
   const names = idle.filter((title) => offChart.some((routine) => routine.bot === title))
