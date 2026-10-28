@@ -15,10 +15,17 @@ Processes: none
 Take work only from your managers above. Send each result to the manager who gave you the work. When that is not your main manager, also send your main manager one line on what you did.
 When a manager is a person, keep the result in your chat for them.
 Before each run of a routine, read your seat file and your process files.
-Whenever you create, change, pause, resume, or delete one of your routines, send Connector - BotsEverywhere (3s53) your full routine list with SendToAgent, priority true, exactly in this form:
-BotsEverywhere routines: org-test | security
+Whenever your routines, the private skills turned on for you, or the work you regularly hand on or get change, send Connector - BotsEverywhere (3s53) your full profile with SendToAgent, priority true, exactly in this form:
+BotsEverywhere profile: org-test | security
+Routines:
 - <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>
-With no routines, send the first line and then: - none
+Skills:
+- <private skill turned on for you, not a built-in one> | <what it does, in one line>
+Sends:
+- <bot or person you hand work to> | <what you send> | <when>
+Receives:
+- <bot or person who hands you work> | <what you get> | <when>
+Under a heading with nothing in it, write: - none
 Run log: C:\\Users\\me\\orgs\\org-test\\log\\YYYY-MM-DD.md, in local time for Europe/Madrid. If the file is missing, start it with "# Run log YYYY-MM-DD".
 After each step of a routine, append exactly one line:
 - HH:MM | Security | <process name> | <step> | done|failed|skipped|waiting|running | note or -

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { OrgBundle, SeatDocument } from './org-files.ts'
-import { routineListForm } from './routine-reports.ts'
+import { profileForm } from './profile-reports.ts'
 
 /**
  * The BotsEverywhere block: one per organization at the end of a bot's instructions in Grok Bot. It names the bot's
@@ -19,7 +19,7 @@ export interface BlockInput {
   timeZone: string
   /** The bot's own name, as its log lines carry it. */
   botName: string
-  /** The seat's slug, which names it in the routine list the bot sends. */
+  /** The seat's slug, which names it in the profile the bot sends. */
   seat: string
   seatFile: string
   main: Party
@@ -59,8 +59,8 @@ export function blockText(input: BlockInput): string {
   lines.push(
     'When a manager is a person, keep the result in your chat for them.',
     'Before each run of a routine, read your seat file and your process files.',
-    `Whenever you create, change, pause, resume, or delete one of your routines, send Connector - BotsEverywhere (${input.copyId}) your full routine list with SendToAgent, priority true, exactly in this form:`,
-    ...routineListForm(input.orgId, input.seat),
+    `Whenever your routines, the private skills turned on for you, or the work you regularly hand on or get change, send Connector - BotsEverywhere (${input.copyId}) your full profile with SendToAgent, priority true, exactly in this form:`,
+    ...profileForm(input.orgId, input.seat),
     `Run log: ${orgPath(input.orgsFolder, input.orgId, 'log', 'YYYY-MM-DD.md')}, in local time for ${input.timeZone}. If the file is missing, start it with "# Run log YYYY-MM-DD".`,
     'After each step of a routine, append exactly one line:',
     `- HH:MM | ${input.botName} | <process name> | <step> | done|failed|skipped|waiting|running | note or -`,

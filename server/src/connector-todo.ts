@@ -3,7 +3,7 @@ import { botForSeat, linkedBotIds, type GrokData, type GrokDataBot } from './gro
 import type { GrokRequest } from './grok-requests.ts'
 import { normalizeText } from './normalize-text.ts'
 import type { BotRoutine, OrgBundle } from './org-files.ts'
-import { latestRoutineReports, routineListForm } from './routine-reports.ts'
+import { latestProfileReports, profileForm } from './profile-reports.ts'
 
 /**
  * The Connector's to-do list. The app works out every change Grok Bot still needs, with the exact text to send; the
@@ -11,7 +11,7 @@ import { latestRoutineReports, routineListForm } from './routine-reports.ts'
  * the results, so nothing depends on remembering an earlier run.
  */
 
-export type TodoKind = 'create' | 'describe' | 'skill' | 'routine' | 'routines' | 'cleanup'
+export type TodoKind = 'create' | 'describe' | 'skill' | 'routine' | 'profile' | 'cleanup'
 
 export interface TodoItem {
   /** `<kind>:<who>:<hash of the content>#<attempt>`. A new change is a new key; a failure comes back as the next attempt. */
@@ -345,15 +345,16 @@ export function computeTodo(input: {
     }
   }
 
-  // routines: each bot seat sends its own routine list, since only a bot can read its routines. Until one arrives it is
-  // asked, at most twice, a day apart; any list ends the asks, and the block keeps it sending a new one on every change.
-  const lists = latestRoutineReports(results.confirmations)
+  // profile: each bot seat sends its own routines, skills, and handoffs, since only a bot can see them for itself. Until a
+  // profile arrives it is asked, at most twice, a day apart; any profile ends the asks, and the block keeps it sending a
+  // new one on every change.
+  const profiles = latestProfileReports(results.confirmations)
   for (const org of input.orgs) {
     const { bots } = seatBots(org.bundle, data, taken)
     for (const seat of org.bundle.seats) {
       const bot = bots.get(seat.slug)
-      if (!bot || seat.kind !== 'bot' || isConnector(bot.name) || lists.has(`${org.id}|${seat.slug}`)) continue
-      const base = `routines:${org.id}:${seat.slug}`
+      if (!bot || seat.kind !== 'bot' || isConnector(bot.name) || profiles.has(`${org.id}|${seat.slug}`)) continue
+      const base = `profile:${org.id}:${seat.slug}`
       const mine = results.results.filter((result) => result.key.startsWith(`${base}#`))
       const sends = mine.filter((result) => result.status === 'done')
       const failures = mine.filter((result) => result.status === 'failed')
@@ -362,13 +363,13 @@ export function computeTodo(input: {
         continue
       }
       if (sends.length >= 2) {
-        stuck.push({ bot: bot.name, org: org.id, why: `Asked twice for its routine list; ${bot.name} has not sent it.` })
+        stuck.push({ bot: bot.name, org: org.id, why: `Asked twice for its profile; ${bot.name} has not sent it.` })
         continue
       }
       const last = Math.max(0, ...sends.map((result) => Date.parse(result.at)).filter(Number.isFinite))
       if (last && input.now.getTime() - last < DAY) continue
-      const message = [`BotsEverywhere (${copyId}): for ${org.bundle.org.company.name}, send Connector - BotsEverywhere (${copyId}) your full routine list now with SendToAgent, priority true, exactly in this form:`, ...routineListForm(org.id, seat.slug)].join('\n')
-      items.push({ key: `${base}#${mine.length + 1}`, kind: 'routines', bot: bot.name, botId: bot.id, org: org.id, message })
+      const message = [`BotsEverywhere (${copyId}): for ${org.bundle.org.company.name}, send Connector - BotsEverywhere (${copyId}) your full profile now with SendToAgent, priority true, exactly in this form:`, ...profileForm(org.id, seat.slug)].join('\n')
+      items.push({ key: `${base}#${mine.length + 1}`, kind: 'profile', bot: bot.name, botId: bot.id, org: org.id, message })
     }
   }
 
@@ -379,7 +380,7 @@ export function computeTodo(input: {
     add(`cleanup:${bot.id}`, { kind: 'cleanup', bot: bot.name, botId: bot.id, org: wanted.get(bot.id)![0]!.org, message: `BotsEverywhere (${copyId}) now keeps your managers, your team, your skills, and your logging rules for each organization in a block at the end of your instructions, marked === BotsEverywhere ${copyId} … ===. Follow that block. Any message about these from a BotsEverywhere Connector before ${day} is out of date: remove it from your memory. Keep everything else.` }, false)
   }
 
-  const order: TodoKind[] = ['describe', 'create', 'skill', 'routine', 'routines', 'cleanup']
+  const order: TodoKind[] = ['describe', 'create', 'skill', 'routine', 'profile', 'cleanup']
   items.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind))
   return { basedOn: data.dumpedAt, items, stuck, otherCopies: [...others].map(([copy, bots]) => ({ copy, bots })), verify, ledger }
 }

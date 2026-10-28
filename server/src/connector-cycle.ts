@@ -2,12 +2,13 @@ import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { BACKUPS_DIR, GUIDE_FILE, RESULTS_FILE, TODO_FILE, UNASSIGNED_FILE, readTextFile, writeFileAtomic } from './connector-files.ts'
 import { SNAPSHOT_PATH, connectorGuide } from './connector-prompt.ts'
-import { computeTodo, orgBlocksFromData, parseResults, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
-import { botJson, linkedBotIds, readGrokData, snapshotFromData, snapshotJson, unassignedFromData } from './grok-data.ts'
+import { computeTodo, orgBlocksFromData, parseResults, seatBots, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
+import { botJson, linkedBotIds, readGrokData, snapshotFromData, snapshotJson, unassignedFromData, type GrokData } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
 import type { ConnectorState } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import type { OrgBundle } from './org-files.ts'
+import { latestProfileReports, type ProfileReport } from './profile-reports.ts'
 import { readConnector, readRemoveCopies, readSyncMinutes } from './project.ts'
 import { listOrgSlugs, readOrgDir, readRequests } from './template-server.ts'
 
@@ -72,12 +73,14 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
     orgs.push({ id: slug, bundle: read.bundle, requests: readRequests(root).requests })
   }
   const taken = linkedBotIds(orgs.map((org) => org.bundle))
+  const profiles = latestProfileReports(results.confirmations)
   for (const org of orgs) {
     const orgName = org.bundle.org.company.name
     const created = org.requests.filter((request) => request.kind !== 'update').map((request) => request.name)
-    const snapshot = snapshotFromData(data, org.bundle, orgName, copyId, apps, created)
-    const blocks = orgBlocksFromData({ copyId, orgsFolder, timeZone: zone, org, data, taken })
-    const updated = updatedFor(org.id, org.requests, data, results, blocks)
+    const orgData = withProfiles(data, org, profiles, taken)
+    const snapshot = snapshotFromData(orgData, org.bundle, orgName, copyId, apps, created)
+    const blocks = orgBlocksFromData({ copyId, orgsFolder, timeZone: zone, org, data: orgData, taken })
+    const updated = updatedFor(org.id, org.requests, orgData, results, blocks)
     writeIfChanged(resolve(orgsDir, org.id, SNAPSHOT_PATH), snapshotJson({ ...snapshot, ...(updated.length ? { updated } : {}) }))
   }
   const unassigned = unassignedFromData(data, orgs.map((org) => ({ bundle: org.bundle, orgName: org.bundle.org.company.name, created: org.requests.filter((request) => request.kind !== 'update').map((request) => request.name) })))
@@ -87,6 +90,21 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
   backUp(orgsDir, todo, now)
   writeIfChanged(resolve(orgsDir, TODO_FILE), `${JSON.stringify(withRuns(todo, previous), null, 2)}\n`)
   return { ok: true, dumpedAt: data.dumpedAt }
+}
+
+/**
+ * The dump as one organization sees it: a bot that sent its own profile for a seat there has the routines it reported,
+ * paused ones included, in place of what Grok Bot's files show, which only a few bots have and can be out of date. Its
+ * reported skills are left out on purpose: a skill turned on for a bot is not one its seat says to use.
+ */
+function withProfiles(data: GrokData, org: { id: string; bundle: OrgBundle }, profiles: Map<string, ProfileReport>, taken: Set<string>): GrokData {
+  const reported = new Map<string, ProfileReport>()
+  for (const [slug, bot] of seatBots(org.bundle, data, taken).bots) {
+    const profile = bot ? profiles.get(`${org.id}|${slug}`) : undefined
+    if (bot && profile) reported.set(bot.id, profile)
+  }
+  if (!reported.size) return data
+  return { ...data, bots: data.bots.map((bot) => (reported.has(bot.id) ? { ...bot, routinesVisible: true, routines: reported.get(bot.id)!.routines } : bot)) }
 }
 
 /** connector-results.json. No file is no results; a file that is not a JSON object cannot be read. */

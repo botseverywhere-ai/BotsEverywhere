@@ -162,3 +162,28 @@ test('bots in no organization come from the dump', () => {
     t.done()
   }
 })
+
+test("a bot's own profile gives the snapshot its routines, paused ones included, in place of what Grok Bot's files show; reported skills stay off the seat", () => {
+  const t = team()
+  try {
+    const stale = { id: 'aura', name: 'Aura', grokBotUrl: 'grokbot://app/v1/agent?id=aura', description: 'Aura works.', routinesVisible: true, routines: [{ name: 'Old health', schedule: '0 9 * * 1-5', trigger: 'schedule' as const, timeZone: 'Europe/Madrid', enabled: true }] }
+    const data = dump('2026-10-28T16:00:00+01:00')
+    data.bots = data.bots.map((bot) => (bot.id === 'inner' ? { ...bot, routinesVisible: true, routines: stale.routines } : bot))
+    write(t.orgs, data)
+    writeFileSync(join(t.orgs, 'connector-results.json'), JSON.stringify({ results: [], confirmations: [{
+      line: `BotsEverywhere profile: ${t.org} | ${t.inner}\nRoutines:\n- Milestone check | 0 9,21 * * * | Europe/Madrid | paused | never\nSkills:\n- graph-skill | Export the team\nSends:\n- none\nReceives:\n- none`,
+      from: 'Inner Loop',
+      at: '2026-10-28T16:05:00+01:00',
+    }] }))
+    assert.ok(runConnectorCycle(t.orgs, ensureProjectId(t.orgs)).ok)
+    const snap = parseSnapshot(readFileSync(join(t.root, 'grok', 'snapshot.json'), 'utf8'), '')
+    assert.ok(snap.ok)
+    if (!snap.ok) return
+    const inner = snap.snapshot.bots.find((bot) => bot.name === 'Inner Loop')!
+    assert.deepEqual(inner.routines.map((routine) => [routine.name, routine.enabled]), [['Milestone check', false]], "the bot's own list replaces the stale files")
+    assert.deepEqual(inner.skills, [], "skills the bot has turned on are not skills it should use, so the seat's skills and its block are left alone")
+    assert.ok(snap.snapshot.processes.some((process) => process.name === 'Milestone check'), 'Sync can offer it as a process')
+  } finally {
+    t.done()
+  }
+})

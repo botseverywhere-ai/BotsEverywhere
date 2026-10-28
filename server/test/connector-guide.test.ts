@@ -61,10 +61,10 @@ test('Connect bots and Docs show the short prompt; a new interval needs no paste
   assert.equal(intervalWarning({ syncMinutes: 17, connector: { syncedAt: '', stamp: '1:1', unassigned: [], error: '', syncMinutes: 15 } } as never), 'Grok Bot still runs the Connector every 15 minutes, not every 17 minutes. The Connector changes its schedule on its next run, from CONNECTOR.md.')
 })
 
-test('the Connector asks for routine lists, keeps each list exactly as the bot sent it, and says so in its report', () => {
+test('the Connector asks for profiles, keeps each one exactly as the bot sent it, and says so in its report', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
-  assert.match(guide, /YOU \(after each run, and when a bot sends you a line starting "BotsEverywhere routine saved:" or "BotsEverywhere routines:"\)/)
-  assert.match(guide, /\n   - routines: SendToAgent to botId with priority true and exactly the item's message\.\n/)
-  assert.match(guide, /When a bot sends you a message with a line starting "BotsEverywhere routines:", add it to confirmations too: line \(that line and every line after it, exactly\), from, and at\./)
-  for (const line of ['Asked for routine lists: <bot names>', 'Routine lists received: <bot names>']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
+  assert.match(guide, /YOU \(after each run, and when a bot sends you a line starting "BotsEverywhere routine saved:" or "BotsEverywhere profile:"\)/)
+  assert.match(guide, /\n   - profile: SendToAgent to botId with priority true and exactly the item's message\.\n/)
+  assert.match(guide, /When a bot sends you a message with a line starting "BotsEverywhere profile:" or "BotsEverywhere routines:", add it to confirmations too: line \(that line and every line after it, exactly\), from, and at\./)
+  for (const line of ['Asked for profiles: <bot names>', 'Profiles received: <bot names>']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
 })

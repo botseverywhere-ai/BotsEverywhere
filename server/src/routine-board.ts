@@ -5,7 +5,7 @@ import { nextCronRun } from './cron-next.ts'
 import { linkedBotIds, type GrokData } from './grok-data.ts'
 import type { BotRoutine, OrgBundle } from './org-files.ts'
 import type { BoardBot, BoardRoutine, RoutineBoard } from './routine-board-types.ts'
-import { latestRoutineReports } from './routine-reports.ts'
+import { latestProfileReports } from './profile-reports.ts'
 
 export type { BoardBot, BoardRoutine, RoutineBoard, RoutineSource } from './routine-board-types.ts'
 
@@ -25,7 +25,7 @@ export function routineBoard(input: {
   timeZone: string
   now: Date
 }): RoutineBoard {
-  const reports = latestRoutineReports(input.confirmations)
+  const reports = latestProfileReports(input.confirmations)
   const found = input.data ? seatBots(input.bundle, input.data, linkedBotIds([input.bundle])).bots : new Map()
   const withNext = (routine: BotRoutine): BoardRoutine => {
     if (routine.enabled === false || routine.trigger !== 'schedule') return routine
@@ -44,7 +44,15 @@ export function routineBoard(input: {
     }
     const report = reports.get(`${input.orgId}|${seat.slug}`)
     if (report) {
-      bots.push({ ...base, source: 'bot', reportedAt: report.at, routines: report.routines.map(withNext) })
+      bots.push({
+        ...base,
+        source: 'bot',
+        reportedAt: report.at,
+        routines: report.routines.map(withNext),
+        ...(report.skills ? { skills: report.skills } : {}),
+        ...(report.sends ? { sends: report.sends } : {}),
+        ...(report.receives ? { receives: report.receives } : {}),
+      })
       continue
     }
     const bot = found.get(seat.slug)
