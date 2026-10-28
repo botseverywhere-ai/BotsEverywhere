@@ -50,7 +50,7 @@ export function ConnectGrok({ status, editable, onIntervalSaved }: { status: Syn
   const typed = editing ? validSyncMinutes(joinSyncMinutes(amount, unit)) : saved
   const minutes = typed ?? saved
   const shown = editing ? { amount, unit } : { ...splitSyncMinutes(saved), amount: String(splitSyncMinutes(saved).amount) }
-  const prompt = connectorBootstrapPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '' })
+  const prompt = connectorBootstrapPrompt({ id: project?.id ?? '', orgsFolder: project?.orgsFolder ?? '', syncMinutes: minutes })
   const { state, line } = connectorState(status)
   const statusFile = connectorStatusFile(status)
 

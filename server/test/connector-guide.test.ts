@@ -15,6 +15,15 @@ test('the prompt to paste is short, names the rules file, and has nothing a chat
   assert.ok(connectorBootstrapPrompt({ id: '3s53', orgsFolder: '/home/me/orgs' }).includes('/home/me/orgs/CONNECTOR.md'))
 })
 
+test('the prompt to paste names the interval, leaves later changes to CONNECTOR.md, and asks for the first run at once', () => {
+  const prompt = connectorBootstrapPrompt(WIN)
+  assert.match(prompt, /Keep exactly one routine, running every 15 minutes\. Its text is exactly this line:/)
+  assert.match(connectorBootstrapPrompt({ ...WIN, syncMinutes: 120 }), /Keep exactly one routine, running every 2 hours\./)
+  assert.match(prompt, /When CONNECTOR\.md names a different schedule, change the routine to that one\./)
+  assert.match(prompt, /Right after this setup, do THE RUN once now in this chat, and then YOU, so the owner sees the Connector connect without waiting for its first scheduled run\./)
+  assert.ok(connectorBootstrapPrompt({ ...WIN, syncMinutes: 10080 }).length < 1200)
+})
+
 test('the rules keep the run to files, leave every decision to the app, and give the exact hash command', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
   assert.match(guide, /THE RUN \(files only: never message, create, or change a bot, routine, skill, or memory\)/)
@@ -35,7 +44,7 @@ test('the schedule follows Runs every, and Windows writing is named only on Wind
 test('Connect bots and Docs show the short prompt; a new interval needs no paste', async () => {
   const connect = readFileSync(new URL('../../src/components/ConnectGrok.tsx', import.meta.url), 'utf8')
   const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
-  assert.match(connect, /connectorBootstrapPrompt\(\{ id: project\?\.id \?\? '', orgsFolder: project\?\.orgsFolder \?\? '' \}\)/)
+  assert.match(connect, /connectorBootstrapPrompt\(\{ id: project\?\.id \?\? '', orgsFolder: project\?\.orgsFolder \?\? '', syncMinutes: minutes \}\)/)
   assert.match(docs, /connectorBootstrapPrompt\(\{ id: '<id>', orgsFolder: '<project folder>\/orgs' \}\)/)
   assert.match(connect, /Saved\. The Connector switches to every \$\{everyLabel\(typed\)\} on its next run\./)
   const { intervalWarning } = await import('../../src/components/sync-copy.ts')

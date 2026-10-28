@@ -76,7 +76,7 @@ function guidePath(orgsFolder: string, file: string): string {
  * What the owner pastes into Grok Bot once. Short, and free of characters a chat could mangle: every rule lives in
  * CONNECTOR.md, which the app writes and the Connector reads with Shell.
  */
-export function connectorBootstrapPrompt({ id, orgsFolder }: { id: string; orgsFolder: string }): string {
+export function connectorBootstrapPrompt({ id, orgsFolder, syncMinutes = DEFAULT_SYNC_MINUTES }: { id: string; orgsFolder: string; syncMinutes?: number }): string {
   const guide = guidePath(orgsFolder, 'CONNECTOR.md')
   return `Create a bot named ${connectorName(id)}. If a bot with that name already exists, do not create a second one: replace its instructions with this text.
 
@@ -84,8 +84,11 @@ You are the Connector for one copy of BotsEverywhere, id ${id || '<id>'}. Your r
 ${guide}
 At the start of every run and every turn, read the whole file with Shell and follow it exactly. It replaces every earlier BotsEverywhere rule in your memory and in your routine. If you cannot read it, do nothing else, and tell the owner in this chat once.
 
-Keep exactly one routine. Its text is exactly this line, and its schedule is the one CONNECTOR.md names:
-Read ${guide} with Shell and do THE RUN in it.`
+Keep exactly one routine, running every ${everyLabel(syncMinutes)}. Its text is exactly this line:
+Read ${guide} with Shell and do THE RUN in it.
+When CONNECTOR.md names a different schedule, change the routine to that one.
+
+Right after this setup, do THE RUN once now in this chat, and then YOU, so the owner sees the Connector connect without waiting for its first scheduled run.`
 }
 
 const HASH = `python3 -c "import json,hashlib,sys;print(hashlib.sha256(json.load(open(sys.argv[1]))['description'].encode('utf-8')).hexdigest())" /home/box/agent-data/agents/<botId>/profile.json`
