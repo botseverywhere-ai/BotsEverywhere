@@ -4,33 +4,16 @@ import { seatBots } from './connector-todo.ts'
 import { nextCronRun } from './cron-next.ts'
 import { linkedBotIds, type GrokData } from './grok-data.ts'
 import type { BotRoutine, OrgBundle } from './org-files.ts'
+import type { BoardBot, BoardRoutine, RoutineBoard } from './routine-board-types.ts'
 import { latestRoutineReports } from './routine-reports.ts'
+
+export type { BoardBot, BoardRoutine, RoutineBoard, RoutineSource } from './routine-board-types.ts'
 
 /**
  * The routines each bot runs in Grok Bot, for the Work Chart. Only a bot can read its own routines, so its own report wins;
  * without one, the Connector's reading of Grok Bot's files, which can be out of date; without that, nothing is known. The
  * Connector's own run comes from the app, which sets its interval and sees each run land.
  */
-export type RoutineSource = 'bot' | 'files' | 'none' | 'app'
-
-export interface BoardRoutine extends BotRoutine {
-  /** When it runs next, for an active schedule. Absent for a paused routine or one that starts on an event. */
-  nextRun?: string
-}
-
-export interface BoardBot {
-  slug: string
-  title: string
-  source: RoutineSource
-  /** When the bot sent the list shown, for a bot's own report. */
-  reportedAt: string
-  routines: BoardRoutine[]
-}
-
-export interface RoutineBoard {
-  bots: BoardBot[]
-}
-
 export function routineBoard(input: {
   orgId: string
   bundle: OrgBundle

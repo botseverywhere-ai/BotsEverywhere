@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import {
   EVENT_SOURCES,
@@ -34,6 +34,7 @@ export function ProcessChart({
   onSeat,
   onReload,
   png,
+  routines,
 }: {
   orgId: string
   editable: boolean
@@ -46,6 +47,8 @@ export function ProcessChart({
   onReload: () => Promise<void>
   /** Your own orgs only: Download PNG on the line under the heading. */
   png?: { orgName: string }
+  /** Your own orgs only: the routines each bot runs in Grok Bot, under the heading. */
+  routines?: ReactNode
 }) {
   const lanesRef = useRef<HTMLUListElement>(null)
   const [drawer, setDrawer] = useState<ProcessFile | 'new' | null>(null)
@@ -197,6 +200,7 @@ export function ProcessChart({
         {editable ? <Button variant="primary" type="button" onClick={() => setDrawer('new')}>+ New process</Button> : null}
       </div>
       {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
+      {routines}
       {focusSeat ? <p className="process-focus">Showing steps owned by {focusName}.</p> : null}
       {processes.length === 0 ? <p className="be-empty">No processes yet. A process is one trigger, the steps, and when the work is done.</p> : null}
       <ul className="process-lanes" ref={lanesRef}>

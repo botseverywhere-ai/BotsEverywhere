@@ -86,8 +86,11 @@ export function cronText(cron: string): string {
   const everyHours = step(hour)
   if (number(minute) && everyHours && day === '*' && weekday === '*') return `Every ${everyHours} hours`
   if (number(minute) && hour === '*' && day === '*' && weekday === '*') return Number(minute) === 0 ? 'Every hour' : `Every hour at :${minute.padStart(2, '0')}`
-  if (!number(minute) || !number(hour) || Number(minute) > 59 || Number(hour) > 23) return 'Custom schedule'
-  const at = clock(Number(hour), Number(minute))
+  // One hour, or a list of them: 0 9,21 * * * runs at 9:00 AM and 9:00 PM.
+  const hours = hour.split(',')
+  if (!number(minute) || Number(minute) > 59 || !hours.every((item) => number(item) && Number(item) <= 23)) return 'Custom schedule'
+  const times = hours.map((item) => clock(Number(item), Number(minute)))
+  const at = times.length <= 2 ? times.join(' and ') : `${times.slice(0, -1).join(', ')}, and ${times[times.length - 1]}`
   if (day === '*' && weekday === '*') return `Every day at ${at}`
   if (day === '*') {
     const days = dayNames(weekday)

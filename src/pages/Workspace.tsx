@@ -7,6 +7,7 @@ import { SiteNav } from '../components/SiteNav'
 import { CompanyOverview } from './CompanyOverview'
 import { OrgChart } from '../components/OrgChart'
 import { ProcessChart } from '../components/ProcessChart'
+import { RoutineBoard } from '../components/RoutineBoard'
 import { formatShortDate, shownBotMetrics, withConnectorRuns } from '../../server/src/bot-metrics.ts'
 import { liveSeats } from '../../server/src/run-log.ts'
 import { useRunLines } from '../live/use-run-log'
@@ -967,6 +968,7 @@ export function Workspace({
               onSeat={setSelected}
               onReload={rereadOrg}
               png={editable ? { orgName: company.org.name } : undefined}
+              routines={editable ? <RoutineBoard orgId={bundle.id} refresh={sync} /> : undefined}
             />
           ) : null}
           {view === 'org' ? (
