@@ -1,11 +1,12 @@
 /** Download PNG on your own org chart and work chart: the BotsEverywhere logo, the organization's name, then the whole chart. */
+import { redrawAlsoLines } from './AlsoReportsLines'
 
 export type PngChart = 'org' | 'work'
 
 const CHART_LABEL: Record<PngChart, string> = { org: 'Org Chart', work: 'Work Chart' }
 
 /** Buttons, pickers, and links in a chart. They come out of the copy before it is laid out, so they leave no gap. */
-export const PNG_SKIP = '.org-toggle, .org-work-link, .org-idle, .be-hire-link, .process-lane-tools'
+export const PNG_SKIP = '.org-toggle, .org-work-link, .org-idle, .be-hire-link, .process-delete'
 
 /** Space before Download PNG, after the legend, and before Find seat. */
 const LEGEND_GAP = 12
@@ -69,6 +70,8 @@ export async function downloadChartPng(chart: HTMLElement, orgName: string, kind
   }
   sheet.append(logo, name, label, copy)
   document.body.append(sheet)
+  // The sheet is as wide as the whole chart, so its cards are not where they sit on screen: the dotted lines follow them.
+  if (kind === 'org') for (const svg of copy.querySelectorAll<SVGSVGElement>('.org-also-lines')) redrawAlsoLines(svg)
   try {
     await logo.decode()
     // The sheet is placed off screen to lay it out; the image itself starts at its corner.

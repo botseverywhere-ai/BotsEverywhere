@@ -309,7 +309,7 @@ function ProcessLane({
         <div className="process-lane-actions">
           {paused === null ? null : <span className={paused ? 'routine-state is-paused' : 'routine-state is-active'}>{paused ? 'Paused' : 'Active'}</span>}
           {problems.length ? <span className="routine-state is-problem">Needs attention</span> : null}
-          {editable ? <Button variant="secondary" type="button" onClick={onDelete}>Delete</Button> : null}
+          {editable ? <Button variant="secondary" type="button" className="process-delete" onClick={onDelete}>Delete</Button> : null}
         </div>
       </div>
       <div className="process-lane-main">

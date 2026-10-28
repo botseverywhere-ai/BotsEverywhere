@@ -118,7 +118,7 @@ test("a flow's last and next run come from the bot's report: a paused routine ha
 test('a flow reads as a header with its name, badges, and Delete, then its trigger and runs as labeled facts; a routine does not repeat its schedule in words', () => {
   const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
   assert.match(chart, /<div className="process-lane-head">\n\s+<h2>\{process\.name\}<\/h2>\n\s+<div className="process-lane-actions">/, 'name on the left, badges and Delete on the right')
-  assert.match(chart, /\{editable \? <Button variant="secondary" type="button" onClick=\{onDelete\}>Delete<\/Button> : null\}/)
+  assert.match(chart, /\{editable \? <Button variant="secondary" type="button" className="process-delete" onClick=\{onDelete\}>Delete<\/Button> : null\}/)
   assert.match(chart, /<dl className="process-runs">\n\s+<dt>Last run<\/dt>\n\s+<dd>\{runs\.last\}<\/dd>\n\s+\{runs\.next \? <><dt>Next run<\/dt><dd>\{runs\.next\}<\/dd><\/> : null\}/)
   assert.match(chart, /\{flowSegment\(process\) === 'handoffs' && process\.trigger\.description \? <p>\{process\.trigger\.description\}<\/p> : null\}/, "only a handoff's trigger needs its words")
   assert.equal(chart.includes('process-lane-tools'), false)

@@ -54,7 +54,14 @@ test('the dotted lines sit inside the chart tree, so pan, zoom, and Download PNG
   assert.doesNotMatch(/PNG_SKIP = '([^']*)'/.exec(png)?.[1] ?? '', /also/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.org-also-lines \{[^}]*pointer-events: none/)
-  assert.match(css, /\.org-also-lines path \{[^}]*stroke-dasharray/)
+  // The line carries its own look, so a copy of the chart, like the PNG's, draws it dotted and never fills its curve.
+  const lines = readFileSync(new URL('../../src/components/AlsoReportsLines.tsx', import.meta.url), 'utf8')
+  assert.match(lines, /<path key=\{line\.key\} d=\{line\.d\} data-from=\{line\.from\} data-to=\{line\.to\} fill="none" stroke="currentColor" strokeWidth=\{2\} strokeDasharray="6 5" \/>/)
+  // The PNG lays the chart out again at its own width, so it draws each line again from the cards where they sit there.
+  assert.match(lines, /export function redrawAlsoLines\(svg: SVGSVGElement\): void \{/)
+  assert.match(png, /if \(kind === 'org'\) for \(const svg of copy\.querySelectorAll<SVGSVGElement>\('\.org-also-lines'\)\) redrawAlsoLines\(svg\)/)
+  assert.match(css, /\.org-also-lines \{[^}]*color: var\(--color-slate\)/)
+  assert.equal(css.includes('.org-also-lines path {'), false)
   // The layer is an element beside the top seats, so the tree's connector rules count list items only.
   assert.match(css, /\.org-tree li:only-of-type::before/)
   assert.doesNotMatch(css, /\.org-tree li:(?:only|first|last)-child/)

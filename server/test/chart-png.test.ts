@@ -87,6 +87,21 @@ test('your own work chart has Download PNG right next to the Work Chart title, o
   })
 })
 
+test("the Work Chart PNG leaves out each flow's Delete and gives the trigger column room, so nothing runs over the steps", async () => {
+  const { ProcessChart } = await import('../../src/components/ProcessChart.tsx')
+  const { PNG_SKIP } = await import('../../src/components/chart-png.ts')
+  assert.ok(WEEKLY.ok)
+  await withOrg(async (bundle) => {
+    const html = await render(ProcessChart, { orgId: bundle.id, editable: true, seats: bundle.seats, processes: [WEEKLY.process], onSeat: () => undefined, onReload: async () => undefined, png: { orgName: 'Acme Studio' } })
+    assert.match(html, /<button[^>]*class="btn btn-secondary process-delete"[^>]*>Delete<\/button>/)
+  })
+  assert.ok(PNG_SKIP.split(', ').includes('.process-delete'), PNG_SKIP)
+  assert.equal(PNG_SKIP.includes('process-lane-tools'), false)
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.chart-png-sheet \.process-lane-main \{ grid-template-columns: 260px minmax\(0, 1fr\); \}/)
+  assert.equal(css.includes('.chart-png-sheet .process-chip { white-space: nowrap; }'), false, 'a long trigger wraps inside its column, as on screen')
+})
+
 test('only your own orgs get the button: Workspace passes the organization name when the org is editable', () => {
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.equal(workspace.match(/png=\{editable \? \{ orgName: company\.org\.name \} : undefined\}/g)?.length, 2, 'on the org chart and the work chart')

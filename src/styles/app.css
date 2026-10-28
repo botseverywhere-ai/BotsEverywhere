@@ -649,8 +649,7 @@ button.seat.empty svg { opacity: 0.72; }
 .org-tree li:last-of-type::before { border-right: 2px solid var(--color-slate); }
 .org-tree li:first-of-type::after { border-left: 2px solid var(--color-slate); }
 /* Extra managers: dotted lines under the cards, inside the tree, so they pan, zoom, and download with it. */
-.org-also-lines { position: absolute; left: 0; top: 0; z-index: 0; overflow: visible; pointer-events: none; }
-.org-also-lines path { fill: none; stroke: var(--color-slate); stroke-width: 2; stroke-dasharray: 6 5; }
+.org-also-lines { position: absolute; left: 0; top: 0; z-index: 0; overflow: visible; pointer-events: none; color: var(--color-slate); }
 .org-tree ul::before {
   content: "";
   position: absolute;
@@ -857,8 +856,8 @@ button.seat.empty svg { opacity: 0.72; }
 .chart-png-logo { display: block; height: 32px; width: auto; }
 .chart-png-org { margin: var(--space-5) 0 0; font-size: var(--text-2xl); font-weight: var(--weight-semibold); }
 .chart-png-kind { margin: var(--space-1) 0 var(--space-5); color: var(--color-muted); font-size: var(--text-base); }
-/* The image measures text a hair wider than the page; a schedule chip at its edge wrapped. */
-.chart-png-sheet .process-chip { white-space: nowrap; }
+/* In the image, a flow's trigger column is wide enough that its schedule wraps only when it is long, never over the steps. */
+.chart-png-sheet .process-lane-main { grid-template-columns: 260px minmax(0, 1fr); }
 .swatch { width: 10px; height: 10px; border-radius: var(--control-radius); display: inline-block; }
 .swatch-human { background: var(--color-stone); }
 .swatch-bot { background: var(--color-ink); }
