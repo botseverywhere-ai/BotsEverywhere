@@ -78,8 +78,9 @@ test('sync status lists stuck items with reasons, a first failure, a dump error,
     assert.match(connector.stuck.find((item) => item.bot === 'Security')!.why, /^Failed twice: busy again$/)
     assert.match(connector.stuck.find((item) => item.bot === 'Outer Loop')!.why, /damaged/)
     assert.deepEqual(connector.failed, [{ bot: 'Inner Loop', why: 'UpdateAgent timed out' }])
-    assert.equal(connector.pending, 9, 'Grok Bot\'s block, the four profile asks, and the four cleanup messages have waited through three dumps; Inner Loop is on its second attempt')
+    assert.equal(connector.pending, 1, 'Grok Bot\'s block has waited through three dumps; Inner Loop is on its second attempt')
     assert.equal(connector.pendingSince, '2026-10-28T10:00:00+01:00')
+    assert.deepEqual(connector.waiting, { routines: 0, profiles: 4, notes: 4 }, 'messages to bots wait for the owner, not for a run')
     assert.deepEqual(connector.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: false }])
     assert.equal(connector.dumpError, '')
 
@@ -133,6 +134,7 @@ test('the drawer shows each of these under Going to Grok Bot', async () => {
       failed: [{ bot: 'Inner Loop', why: 'UpdateAgent timed out' }],
       pending: 3,
       pendingSince: '2026-10-28T10:00:00+01:00',
+      waiting: { routines: 1, profiles: 18, notes: 2 },
       dumpError: 'Bot 1 has no id.',
       otherCopies: [{ copy: 'uft5', bots: ['Security', 'Outer Loop'], removing: false }, { copy: 'k7m2', bots: ['Grok Bot'], removing: true }],
     },
@@ -145,6 +147,7 @@ test('the drawer shows each of these under Going to Grok Bot', async () => {
   assert.match(going, /<strong>Inner Loop<\/strong> · failed once, trying again on the next run: UpdateAgent timed out/)
   assert.match(going, /The Connector&#x27;s data could not be read: Bot 1 has no id\./)
   assert.match(going, /The Connector has not acted on 3 items since /)
+  assert.match(going, /18 profile requests, 1 routine request and 2 one-time notes wait for you\. Grok Bot sends messages to bots only from a chat, never from the Connector&#x27;s scheduled runs\. In the Connector&#x27;s chat in Grok Bot, say: do YOU now/)
   assert.match(going, /Blocks from copy uft5 in 2 bots: Security, Outer Loop/)
   assert.match(going, /<button[^>]*>Remove them<\/button>/)
   assert.match(going, /Blocks from copy k7m2 in 1 bot: Grok Bot · removing on the Connector&#x27;s next run/)

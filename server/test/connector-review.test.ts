@@ -185,6 +185,28 @@ test('a broken to-do file never breaks the drawer or the next cycle', () => {
   }
 })
 
+test("messages to bots wait for the owner from the start; only work a scheduled run can do counts as not acted on", () => {
+  const t = project()
+  try {
+    writeFileSync(join(t.orgs, GROK_DATA_FILE), JSON.stringify(data([bot('lead', 'Lead', 'Leads.')])))
+    const item = (kind: string, runs: number, since: string) => ({ key: `${kind}:lead#1`, kind, bot: 'Lead', botId: 'lead', org: t.org, message: 'Hi', runs, since })
+    writeFileSync(join(t.orgs, TODO_FILE), JSON.stringify({ basedOn: 'x', items: [
+      item('describe', 3, '2026-10-28T17:08:00+01:00'),
+      item('create', 1, '2026-10-28T18:00:00+01:00'),
+      item('profile', 3, '2026-10-28T17:08:00+01:00'),
+      item('profile', 0, '2026-10-28T18:00:00+01:00'),
+      item('routine', 1, '2026-10-28T18:00:00+01:00'),
+      item('cleanup', 4, '2026-10-28T17:00:00+01:00'),
+    ], stuck: [], otherCopies: [], ledger: [] }))
+    const state = connectorState(t.orgs, t.org)
+    assert.equal(state.pending, 1, 'the describe item, listed after more than two runs')
+    assert.equal(state.pendingSince, '2026-10-28T17:08:00+01:00')
+    assert.deepEqual(state.waiting, { routines: 1, profiles: 2, notes: 1 })
+  } finally {
+    t.done()
+  }
+})
+
 test("a bot whose routines Grok Bot does not show keeps the seat's apps; one whose routines it shows gets exactly what it finds", () => {
   const withApps = seat('lead', 'title: Lead\nkind: bot\nreportsTo: you\ngrokBotUrl: "grokbot://app/v1/agent?id=lead"\napps: ["Gmail"]')
   const desk = org('org-a', 'Desk', [you, withApps])

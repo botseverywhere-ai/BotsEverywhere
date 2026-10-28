@@ -90,6 +90,8 @@ export interface ConnectorState {
   /** Items listed after more than two dumps with no result, and the first of those dumps. */
   pending: number
   pendingSince: string
+  /** Messages to bots, which Grok Bot sends only from the Connector's chat, never from a scheduled run: they wait for the owner. */
+  waiting: { routines: number; profiles: number; notes: number }
   /** Why the Connector's data could not be read, or ''. */
   dumpError: string
   /** Blocks other copies of BotsEverywhere left in bots. removing: the owner asked to remove them. */
