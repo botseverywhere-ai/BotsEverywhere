@@ -119,24 +119,7 @@ export function SeatDrawer({
         <p className="reports">{reportsTo ? `Reports to ${reportsTo}` : 'Top of the chart'}</p>
       )}
       {alsoManagers && onAlsoReportsTo && seat.reportsTo && alsoManagers.length ? (
-        <fieldset className="also-reports">
-          <legend className="field-label">Also reports to</legend>
-          {alsoManagers.map((item) => {
-            const also = seat.alsoReportsTo ?? []
-            const checked = also.includes(item.slug)
-            return (
-              <label key={item.slug} className="also-choice" title={item.disabled}>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  disabled={Boolean(item.disabled)}
-                  onChange={() => onAlsoReportsTo(checked ? also.filter((slug) => slug !== item.slug) : [...also, item.slug])}
-                />
-                {item.title}
-              </label>
-            )
-          })}
-        </fieldset>
+        <AlsoReportsTo key={seat.id} choices={alsoManagers} value={seat.alsoReportsTo ?? []} onChange={onAlsoReportsTo} />
       ) : null}
       {onCreateInGrok && seat.type === 'bot' && grokSyncClass(seat) !== 'is-in-grok' ? (
         <section className="grok-create" aria-label="Grok Bot">
@@ -229,6 +212,40 @@ export function SeatDrawer({
         </Button>
       ) : null}
     </aside>
+  )
+}
+
+/** Also reports to: one dropdown per extra manager, like Reports to above, and + for another. None takes one away. */
+function AlsoReportsTo({ choices, value, onChange }: { choices: { slug: string; title: string; disabled?: string }[]; value: string[]; onChange: (slugs: string[]) => void }) {
+  const [adding, setAdding] = useState(false)
+  // With no extra manager yet there is still one dropdown to pick the first.
+  const rows = adding || !value.length ? [...value, ''] : value
+  const free = choices.some((item) => !item.disabled && !value.includes(item.slug))
+
+  function pick(index: number, slug: string) {
+    setAdding(false)
+    if (index >= value.length) {
+      if (slug) onChange([...value, slug])
+      return
+    }
+    onChange(slug ? value.map((item, at) => (at === index ? slug : item)) : value.filter((_, at) => at !== index))
+  }
+
+  return (
+    <fieldset className="also-reports">
+      <legend className="field-label">Also reports to</legend>
+      {rows.map((slug, index) => (
+        <select key={`${index}-${slug}`} className="text-input" aria-label={`Also reports to ${index + 1}`} value={slug} onChange={(event) => pick(index, event.target.value)}>
+          <option value="">None</option>
+          {choices.map((item) => (
+            <option key={item.slug} value={item.slug} disabled={Boolean(item.disabled) || (item.slug !== slug && value.includes(item.slug))} title={item.disabled}>
+              {item.disabled ? `${item.title} (would make a loop)` : item.title}
+            </option>
+          ))}
+        </select>
+      ))}
+      <Button variant="secondary" type="button" className="also-add" disabled={rows.includes('') || !free} onClick={() => setAdding(true)} aria-label="Add another manager">+</Button>
+    </fieldset>
   )
 }
 
