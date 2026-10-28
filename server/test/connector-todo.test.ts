@@ -183,3 +183,29 @@ test('a change reported done that a newer dump still does not show comes back as
   const afterDump = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: { results: [{ key: first.key, status: 'done', at: '2026-10-28T09:30:00.000Z' }], confirmations: [] } })
   assert.equal(afterDump.items.some((entry) => entry.kind === 'describe'), false, 'done after this dump: wait for the next one')
 })
+
+test('each bot seat is asked once for its routine list, with the form to fill in, until it sends one; a second ask a day later, then stuck', () => {
+  const desk = org('org-a', 'Desk', [you, lead])
+  const dump = data([bot('lead', 'Lead', 'Leads.'), bot('conn', 'Connector - BotsEverywhere (3s53)', 'Syncs.')])
+  const run = (results: ResultsFile, now = NOW) => computeTodo({ ...BASE, now, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results })
+  const asks = (results: ResultsFile, now = NOW) => run(results, now).items.filter((item) => item.kind === 'routines')
+  const first = asks(NO_RESULTS)
+  assert.equal(first.length, 1, 'one ask, for the bot seat; none for a person or the Connector')
+  assert.equal(first[0]!.key, 'routines:org-a:lead#1')
+  assert.equal(first[0]!.botId, 'lead')
+  assert.equal(first[0]!.message, [
+    'BotsEverywhere (3s53): for Desk, send Connector - BotsEverywhere (3s53) your full routine list now with SendToAgent, priority true, exactly in this form:',
+    'BotsEverywhere routines: org-a | lead',
+    '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>',
+    'With no routines, send the first line and then: - none',
+  ].join('\n'))
+  const sent: ResultsFile = { results: [{ key: 'routines:org-a:lead#1', status: 'done', at: '2026-10-28T10:30:00+01:00' }], confirmations: [] }
+  assert.equal(asks(sent).length, 0, 'sent once: wait a day for the list')
+  assert.equal(asks(sent, new Date('2026-10-29T10:31:00.000Z'))[0]?.key, 'routines:org-a:lead#2', 'no list after a day: ask once more')
+  const twice: ResultsFile = { results: [...sent.results, { key: 'routines:org-a:lead#2', status: 'done', at: '2026-10-29T11:31:00+01:00' }], confirmations: [] }
+  const later = run(twice, new Date('2026-10-31T10:00:00.000Z'))
+  assert.equal(later.items.some((item) => item.kind === 'routines'), false)
+  assert.ok(later.stuck.some((item) => item.why === 'Asked twice for its routine list; Lead has not sent it.'), JSON.stringify(later.stuck))
+  const listed: ResultsFile = { results: [], confirmations: [{ line: 'BotsEverywhere routines: org-a | lead\n- none', from: 'Lead', at: '2026-10-28T10:40:00+01:00' }] }
+  assert.equal(asks(listed).length, 0, 'a list, even an empty one, ends the asks')
+})

@@ -78,7 +78,7 @@ test('sync status lists stuck items with reasons, a first failure, a dump error,
     assert.match(connector.stuck.find((item) => item.bot === 'Security')!.why, /^Failed twice: busy again$/)
     assert.match(connector.stuck.find((item) => item.bot === 'Outer Loop')!.why, /damaged/)
     assert.deepEqual(connector.failed, [{ bot: 'Inner Loop', why: 'UpdateAgent timed out' }])
-    assert.equal(connector.pending, 5, 'Grok Bot\'s block and the four cleanup messages have waited through three dumps; Inner Loop is on its second attempt')
+    assert.equal(connector.pending, 9, 'Grok Bot\'s block, the four routine-list asks, and the four cleanup messages have waited through three dumps; Inner Loop is on its second attempt')
     assert.equal(connector.pendingSince, '2026-10-28T10:00:00+01:00')
     assert.deepEqual(connector.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: false }])
     assert.equal(connector.dumpError, '')

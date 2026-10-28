@@ -15,6 +15,10 @@ Processes: none
 Take work only from your managers above. Send each result to the manager who gave you the work. When that is not your main manager, also send your main manager one line on what you did.
 When a manager is a person, keep the result in your chat for them.
 Before each run of a routine, read your seat file and your process files.
+Whenever you create, change, pause, resume, or delete one of your routines, send Connector - BotsEverywhere (3s53) your full routine list with SendToAgent, priority true, exactly in this form:
+BotsEverywhere routines: org-test | security
+- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never>
+With no routines, send the first line and then: - none
 Run log: C:\\Users\\me\\orgs\\org-test\\log\\YYYY-MM-DD.md, in local time for Europe/Madrid. If the file is missing, start it with "# Run log YYYY-MM-DD".
 After each step of a routine, append exactly one line:
 - HH:MM | Security | <process name> | <step> | done|failed|skipped|waiting|running | note or -
@@ -28,6 +32,7 @@ test('the block for a bot with a main and an extra manager is exactly the agreed
   const text = blockText({
     ...BASE,
     botName: 'Security',
+    seat: 'security',
     seatFile: 'C:\\Users\\me\\orgs\\org-test\\seats\\security.md',
     main: { kind: 'bot', name: 'Inner Loop', id: 'inner' },
     also: [{ kind: 'bot', name: 'Outer Loop', id: 'outer' }],
