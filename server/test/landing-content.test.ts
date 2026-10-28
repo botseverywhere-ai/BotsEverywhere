@@ -29,7 +29,8 @@ test('the homepage speaks to one person running bots, not a team of people', () 
     assert.equal(page.includes('team of people and bots'), false)
   }
   for (const line of ['Every seat has a written card', 'Ten fictional organizations, each one person and their bots.', 'One person and their bots in one tree.', 'one card per seat']) assert.ok(landing.includes(line), line)
-  for (const gone of ['person or bot', 'Ten fictional teams', 'People and bots in one tree']) assert.equal(landing.includes(gone), false, gone)
+  for (const gone of ['person or bot', 'Ten fictional teams', 'People and bots in one tree', 'not just the people']) assert.equal(landing.includes(gone), false, gone)
+  assert.ok(landing.includes('<h2 id="why-work-chart-title">Map the work, triggers, handoffs and routines by bots.</h2>'))
   assert.ok(read('../../src/components/file-guide-copy.ts').includes("seats: 'One file per seat:"))
 })
 

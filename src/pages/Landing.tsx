@@ -95,7 +95,7 @@ export function Landing() {
             <p className="ld-label">Why a work chart</p>
             <div className="ld-idea">
               <div>
-                <h2 id="why-work-chart-title">Map the work, not just the people.</h2>
+                <h2 id="why-work-chart-title">Map the work, triggers, handoffs and routines by bots.</h2>
                 <p>
                   An org chart shows who reports to whom. It does not show how an invoice becomes a payment, who checks it, or where it waits.
                   Once bots take over the routing, the summaries, and the first drafts, that second map is the one humans manage.
