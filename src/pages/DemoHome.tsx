@@ -15,7 +15,7 @@ export function DemoHome() {
         <div className="eyebrow">{showcase ? 'Read-only showcase' : 'Open source'}</div>
         <h1>BotsEverywhere is an open source team management tool for bots.</h1>
         <p className="sub">
-          Founders copy it to map their bots in one place: an org chart, a work chart of who does
+          Organizations copy it to map their bots in one place: an org chart, a work chart of who does
           what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own
           computer.
         </p>

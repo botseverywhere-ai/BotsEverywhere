@@ -13,8 +13,7 @@ test('the homepage quotes the work chart article word for word, credits it, and 
   const quoted = 'Every layer of management in your organization exists because, at some point, a human being was the most reliable way to gather information, interpret it, and move it to the next decision point'
   assert.ok(sentence.startsWith(quoted), 'the quote is the article\'s own words, cut where its sentence turns')
   assert.ok(landing.includes(`<p>${quoted}.</p>`))
-  assert.ok(landing.includes('<p className="ld-quote-turn">Bots move the work. Humans manage it.</p>'), 'our conclusion, in our voice, after the credit line')
-  assert.ok(landing.includes('that second map is the one humans manage.'))
+  assert.ok(landing.includes('<p className="ld-quote-turn">Bots move the work. The work chart shows how.</p>'), 'our conclusion, in our voice, after the credit line')
   assert.doesNotMatch(landing, /You manage it|the one you manage/)
   assert.doesNotMatch(landing, /they write|systematically eliminating/)
   assert.ok(landing.includes('<q>If you automate a broken process, you scale the breakdown</q>.'), 'the period is ours, outside the quote: the article continues with a colon')
@@ -22,14 +21,32 @@ test('the homepage quotes the work chart article word for word, credits it, and 
   assert.match(landing, /<a href=\{ARTICLE\} target="_blank" rel="noreferrer">Read the article<\/a>/)
 })
 
-test('the homepage speaks to one person running bots, not a team of people', () => {
+test('the homepage speaks of the org chart and the work chart, as the article does, never of people', () => {
   const demo = read('../../src/pages/DemoHome.tsx')
   for (const page of [landing, demo]) {
-    assert.ok(page.includes('Founders copy it to map their bots in one place'), 'the hero names who it is for')
+    assert.ok(page.includes('Organizations copy it to map their bots in one place'))
     assert.equal(page.includes('team of people and bots'), false)
   }
-  for (const line of ['Every seat has a written card', 'Ten fictional organizations, each one person and their bots.', 'One person and their bots in one tree.', 'one card per seat']) assert.ok(landing.includes(line), line)
-  for (const gone of ['person or bot', 'Ten fictional teams', 'People and bots in one tree']) assert.equal(landing.includes(gone), false, gone)
+  for (const line of [
+    '<h2 id="why-work-chart-title">Map the work chart, not just the org chart.</h2>',
+    'that second map, the work chart, is the one that runs the organization.',
+    '<p className="ld-quote-turn">Bots move the work. The work chart shows how.</p>',
+    'waits at a checkpoint on the work chart. Bots draft. Nothing goes out until it is approved.',
+    '<h2>Bots do the steps. Checkpoints hold the decisions.</h2>',
+    'Every checkpoint names its approver.',
+    '<em>CHECKPOINT</em>Approve payment',
+    '<p>Every bot in one tree. Who owns what, who reports to whom.</p>',
+    'with checkpoints where the work waits for approval.',
+    'Ten fictional organizations run by bots. Open one to read the org chart, the work chart, and the seat cards.',
+    'Three views of one organization',
+    "{ name: 'HR', category: 'HR',",
+    '<h2>Draw the org chart. Map the work chart.</h2>',
+    'Every seat has a written card',
+    'one card per seat',
+  ]) assert.ok(landing.includes(line), line)
+  // Only the article's own words may speak of a human being.
+  const ours = landing.replace('a human being was the most reliable way', '')
+  assert.doesNotMatch(ours, /\b(people|person|persons|humans?|workers?|participants?|founders?|employees?)\b/i)
   assert.ok(read('../../src/components/file-guide-copy.ts').includes("seats: 'One file per seat:"))
 })
 
@@ -38,7 +55,7 @@ test('every homepage claim about the app matches the app', () => {
   assert.ok(landing.includes('listen on 127.0.0.1'))
   const processes = read('../src/processes.ts')
   for (const verb of ['send', 'pay', 'post', 'book', 'merge', 'publish', 'delete']) assert.ok(processes.includes(`'${verb}'`), `${verb} is a checkpoint verb`)
-  assert.ok(landing.includes('A step that sends, pays, posts, books, merges, publishes, or deletes waits for a named human.'))
+  assert.ok(landing.includes('A step that sends, pays, posts, books, merges, publishes, or deletes waits at a checkpoint on the work chart.'))
   const docs = read('../../src/pages/DocsPage.tsx')
   assert.ok(docs.includes('no analytics, no telemetry, and no third-party scripts'), 'Docs says the same about tracking')
   assert.ok(docs.includes('stores no passwords, tokens, or API keys'), 'Docs says the same about keys')
@@ -65,7 +82,7 @@ test('homepage wording and layout rules: organization, open source, square corne
 
 test('the homepage has no dashes in its text, and ends on the ink closing band', () => {
   assert.doesNotMatch(landing, /[\u2013\u2014]/, 'no en or em dash anywhere on the page')
-  assert.match(landing, /<section className="ld-closing">\s+<div className="ld-wrap ld-final">\s+<h2>Map your team\. Staff the seats\.<\/h2>/)
+  assert.match(landing, /<section className="ld-closing">\s+<div className="ld-wrap ld-final">\s+<h2>Draw the org chart\. Map the work chart\.<\/h2>/)
   assert.match(css, /\.ld-closing \{ background: var\(--color-ink\); color: var\(--color-inverse\); \}/)
   assert.match(css, /\.ld-closing \.btn-primary[^{]*\{ background: var\(--color-white\); color: var\(--color-ink\);/, 'the main button stays visible on ink')
 })
