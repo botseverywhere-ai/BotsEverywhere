@@ -215,7 +215,7 @@ export function SeatDrawer({
   )
 }
 
-/** Also reports to: one dropdown per extra manager, like Reports to above, and + for another. None takes one away. */
+/** Also reports to: one dropdown per extra manager, like Reports to above, and a button for another. None takes one away. */
 function AlsoReportsTo({ choices, value, onChange }: { choices: { slug: string; title: string; disabled?: string }[]; value: string[]; onChange: (slugs: string[]) => void }) {
   const [adding, setAdding] = useState(false)
   // With no extra manager yet there is still one dropdown to pick the first.
@@ -244,7 +244,7 @@ function AlsoReportsTo({ choices, value, onChange }: { choices: { slug: string; 
           ))}
         </select>
       ))}
-      <Button variant="secondary" type="button" className="also-add" disabled={rows.includes('') || !free} onClick={() => setAdding(true)} aria-label="Add another manager">+</Button>
+      <Button variant="secondary" type="button" className="also-add" disabled={rows.includes('') || !free} onClick={() => setAdding(true)}>+ Add another manager</Button>
     </fieldset>
   )
 }
