@@ -174,21 +174,22 @@ Rules:
   assert.equal(grokProcessesPrompt(), `List the routines and handoffs your bots already run for this organization. Save them as one file named botseverywhere-processes.json so I can import them into the BotsEverywhere Work Chart.\n\n${rules}`)
 })
 
-test("a process that uses Grok Bot's Needs approval: mark is trusted: only the marked steps are checkpoints, and steps read without the mark", () => {
+test("Grok Bot's Needs approval: mark adds a checkpoint and never removes one: the seat's Needs approval list and the risky verbs still count in a marked process; steps read without the mark", () => {
   const seats = [
     { slug: 'you', title: 'Miguel', kind: 'human', mustAskBefore: [] },
     { slug: 'inner', title: 'Inner Loop', kind: 'bot', mustAskBefore: ['Running a prompt through Cursor'] },
     { slug: 'x', title: 'x.com', kind: 'bot', mustAskBefore: [] },
   ]
   const steps = deriveSteps([
-    { seat: 'inner', action: 'Reply with short bullets on what changed and what is merged' },
     { seat: 'inner', action: 'Run the prompt through Cursor until tests pass' },
-    { seat: 'x', action: 'Draft the X post' },
-    { seat: 'x', action: 'Needs approval: send you the exact post text' },
-    { seat: 'you', action: 'Post it from your own account' },
+    { seat: 'inner', action: 'Merge to main' },
+    { seat: 'x', action: 'Needs approval: change the pricing page' },
+    { seat: 'x', action: 'Compare with drafted milestones' },
   ], seats)
-  assert.deepEqual(steps.map((step) => step.checkpoint), [false, false, false, true, false], 'merged, post, a seat word, and your own step no longer guess a checkpoint')
-  assert.equal(steps[3]!.because, 'Needs approval')
+  assert.deepEqual(steps.map((step) => step.checkpoint), [true, true, true, false], "the seat's own rule and a risky verb still ask, though another step carries the mark")
+  assert.equal(steps[0]!.because, 'Running a prompt through Cursor')
+  assert.equal(steps[1]!.because, 'merge')
+  assert.equal(steps[2]!.because, 'Needs approval', 'the mark asks where no word would')
   assert.equal(stepText('Needs approval: send you the exact post text'), 'send you the exact post text')
   assert.equal(stepText('  needs approval:merge to main'), 'merge to main')
   assert.equal(stepText('Gather context'), 'Gather context')

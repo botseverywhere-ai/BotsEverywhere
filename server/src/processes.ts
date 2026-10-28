@@ -92,12 +92,11 @@ export function stepText(action: string): string {
 
 export function deriveSteps(steps: ProcessStep[], seats: SeatRef[]): DerivedStep[] {
   const approver = approverSlug(seats)
-  // A process that uses Grok Bot's mark says exactly which steps ask first, so only those are checkpoints. Without the
-  // mark, a step's words and its seat's Needs approval list decide.
-  const marked = steps.some((step) => NEEDS_APPROVAL.test(step.action))
   return steps.map((step) => {
     const seat = seats.find((item) => item.slug === step.seat)
-    const because = marked ? (NEEDS_APPROVAL.test(step.action) ? 'Needs approval' : '') : checkpointBecause(step.action, seat?.mustAskBefore ?? [])
+    // Grok Bot's mark adds a checkpoint and never removes one: the seat's Needs approval list and the risky verbs always
+    // count, whatever another step says, so a step the import forgot to mark still asks.
+    const because = NEEDS_APPROVAL.test(step.action) ? 'Needs approval' : checkpointBecause(stepText(step.action), seat?.mustAskBefore ?? [])
     return { ...step, checkpoint: Boolean(because), because, approver }
   })
 }
