@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneRuns, routinesOffChart, scheduleWords } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
@@ -101,22 +101,32 @@ test('a schedule reads in words with its time zone; a cron line with no words st
   assert.equal(scheduleWords('Mon 09:00'), 'Mon 09:00')
 })
 
-test('a routine says when it last ran and runs next; a paused one has no next run', () => {
+test("a flow's last and next run come from the bot's report: a paused routine has no next run; Grok Bot's files give only the last run, marked not confirmed", () => {
   const last = '2026-10-28T09:00:12+01:00'
   const next = '2026-10-28T20:00:00.000Z'
-  assert.equal(whenLine({ enabled: true, lastRun: last, nextRun: next }), `Last run ${formatShortDate(last)} · Next run ${formatShortDate(next)}`)
-  assert.equal(whenLine({ enabled: true }), 'Not run yet')
-  assert.equal(whenLine({ enabled: false, lastRun: last }), `Last run ${formatShortDate(last)}`)
-  assert.equal(whenLine({ enabled: false }), 'Never run')
+  const live = (routine: { enabled?: boolean; lastRun?: string; nextRun?: string }, source: 'bot' | 'files' = 'bot') => ({ source, routine: { name: 'R', schedule: '0 9 * * *', ...routine } })
+  assert.deepEqual(laneRuns(live({ enabled: true, lastRun: last, nextRun: next })), { last: formatShortDate(last), next: formatShortDate(next), note: '' })
+  assert.deepEqual(laneRuns(live({ enabled: true, nextRun: next })), { last: 'Never', next: formatShortDate(next), note: '' })
+  assert.deepEqual(laneRuns(live({ enabled: false, lastRun: last, nextRun: next })), { last: formatShortDate(last), next: '', note: '' }, 'paused: no next run')
+  assert.deepEqual(laneRuns(live({ enabled: false })), { last: 'Never', next: '', note: '' })
+  assert.deepEqual(laneRuns(live({ lastRun: '2026-09-18T09:12:52+02:00', nextRun: next }, 'files')), { last: formatShortDate('2026-09-18T09:12:52+02:00'), next: '', note: 'Not confirmed by the bot yet' })
+  assert.deepEqual(laneRuns(live({}, 'files')), { last: 'Unknown', next: '', note: 'Not confirmed by the bot yet' })
+  assert.equal(laneRuns(null), null)
+  assert.equal(laneRuns(laneRoutine(flow('Inner Loop milestone check', 'x-com'), board))?.last, formatShortDate('2026-10-28T09:09:57+01:00'))
 })
 
-test("a flow's runs come from the bot's report; from Grok Bot's files only the last run shows, marked as not confirmed, never a next run", () => {
-  const reported = laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)
-  assert.equal(laneWhen(reported), whenLine(reported!.routine))
-  const files = laneRoutine(flow('Aura production health', 'aura'), board)!
-  assert.equal(laneWhen({ ...files, routine: { ...files.routine, lastRun: '2026-09-18T09:12:52+02:00', nextRun: '2026-10-29T08:00:00.000Z' } }), `Last run ${formatShortDate('2026-09-18T09:12:52+02:00')} · not confirmed by the bot yet`)
-  assert.equal(laneWhen(files), 'Not confirmed by the bot yet')
-  assert.equal(laneWhen(null), '')
+test('a flow reads as a header with its name, badges, and Delete, then its trigger and runs as labeled facts; a routine does not repeat its schedule in words', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /<div className="process-lane-head">\n\s+<h2>\{process\.name\}<\/h2>\n\s+<div className="process-lane-actions">/, 'name on the left, badges and Delete on the right')
+  assert.match(chart, /\{editable \? <Button variant="secondary" type="button" onClick=\{onDelete\}>Delete<\/Button> : null\}/)
+  assert.match(chart, /<dl className="process-runs">\n\s+<dt>Last run<\/dt>\n\s+<dd>\{runs\.last\}<\/dd>\n\s+\{runs\.next \? <><dt>Next run<\/dt><dd>\{runs\.next\}<\/dd><\/> : null\}/)
+  assert.match(chart, /\{flowSegment\(process\) === 'handoffs' && process\.trigger\.description \? <p>\{process\.trigger\.description\}<\/p> : null\}/, "only a handoff's trigger needs its words")
+  assert.equal(chart.includes('process-lane-tools'), false)
+  assert.equal(chart.includes('laneWhen'), false)
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.process-lane-head \{/)
+  assert.match(css, /\.process-runs \{/)
+  assert.equal(css.includes('.process-lane-tools'), false)
 })
 
 test("routines a bot reports that have no flow yet are named once; the Connector's own run is not one of them", () => {
@@ -243,7 +253,7 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   assert.match(chart, /\{problems\.length \? <ul className="process-problems">\{problems\.map\(\(problem\) => <li key=\{problem\}>\{problem\}<\/li>\)\}<\/ul> : null\}/)
   assert.equal(chart.includes('process-warn'), false, 'the once-an-hour warning is one of the problems now')
   assert.match(chart, /routinesOffChart\(board, processes\)/)
-  assert.match(chart, /\{live \? <p>\{laneWhen\(live\)\}<\/p> : null\}/, "runs read from the bot's report; Grok Bot's files never give a next run")
+  assert.match(chart, /const runs = laneRuns\(live\)/, "runs read from the bot's report; Grok Bot's files never give a next run")
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(workspace, /const routineBoard = useRoutineBoard\(bundle\.id, sync, editable\)/)
   assert.match(workspace, /board=\{editable \? routineBoard : null\}/)

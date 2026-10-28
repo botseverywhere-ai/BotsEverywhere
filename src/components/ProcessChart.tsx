@@ -17,7 +17,7 @@ import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneRuns, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
@@ -301,23 +301,34 @@ function ProcessLane({
   const noRoutine = laneNoRoutine(process, live)
   const problems = laneProblems(process, allSeats, runLines)
   const statuses = latestStepStatus(runLines, process.name, process.steps)
+  const runs = laneRuns(live)
   return (
     <li className={paused ? 'process-lane is-paused' : 'process-lane'} id={`process-${process.slug}`}>
+      <div className="process-lane-head">
+        <h2>{process.name}</h2>
+        <div className="process-lane-actions">
+          {paused === null ? null : <span className={paused ? 'routine-state is-paused' : 'routine-state is-active'}>{paused ? 'Paused' : 'Active'}</span>}
+          {problems.length ? <span className="routine-state is-problem">Needs attention</span> : null}
+          {editable ? <Button variant="secondary" type="button" onClick={onDelete}>Delete</Button> : null}
+        </div>
+      </div>
       <div className="process-lane-main">
         <div className="process-trigger">
-          <h2>{process.name}</h2>
           <span className="process-kicker">Trigger</span>
           <span className="process-chip">
             <TriggerIcon type={process.trigger.type} />
             {process.trigger.type === 'schedule' ? scheduleWords(process.trigger.schedule, live?.routine.timeZone) : triggerLabel(process.trigger)}
           </span>
-          <div className="process-badges">
-            {paused === null ? null : <span className={paused ? 'routine-state is-paused' : 'routine-state is-active'}>{paused ? 'Paused' : 'Active'}</span>}
-            {problems.length ? <span className="routine-state is-problem">Needs attention</span> : null}
-          </div>
-          {live ? <p>{laneWhen(live)}</p> : null}
+          {flowSegment(process) === 'handoffs' && process.trigger.description ? <p>{process.trigger.description}</p> : null}
+          {runs ? (
+            <dl className="process-runs">
+              <dt>Last run</dt>
+              <dd>{runs.last}</dd>
+              {runs.next ? <><dt>Next run</dt><dd>{runs.next}</dd></> : null}
+            </dl>
+          ) : null}
+          {runs?.note ? <p>{runs.note}</p> : null}
           {noRoutine ? <p>{noRoutine}</p> : null}
-          {process.trigger.description ? <p>{process.trigger.description}</p> : null}
           {problems.length ? <ul className="process-problems">{problems.map((problem) => <li key={problem}>{problem}</li>)}</ul> : null}
         </div>
         <ol className="process-steps">
@@ -379,11 +390,6 @@ function ProcessLane({
           ) : null}
         </ol>
       </div>
-      {editable ? (
-        <div className="process-lane-tools">
-          <Button variant="secondary" type="button" onClick={onDelete}>Delete</Button>
-        </div>
-      ) : null}
     </li>
   )
 }

@@ -73,24 +73,22 @@ export function laneNoRoutine(process: Pick<ProcessFile, 'trigger'>, live: Retur
   return "No badge yet: the bot hasn't reported a routine with this name."
 }
 
-/** A flow's runs: from the bot's own report, last and next; from Grok Bot's files only the last run, marked unconfirmed. */
-export function laneWhen(live: ReturnType<typeof laneRoutine>): string {
-  if (!live) return ''
-  if (live.source !== 'files') return whenLine(live.routine)
-  return live.routine.lastRun ? `Last run ${formatShortDate(live.routine.lastRun)} · not confirmed by the bot yet` : 'Not confirmed by the bot yet'
+/**
+ * A flow's last and next run, on the same clock as Logs. From the bot's own report: last and next, and a paused routine
+ * has no next run. From Grok Bot's files: only the last run, with a note that the bot has not confirmed it.
+ */
+export function laneRuns(live: { source: RoutineSource; routine: Pick<BoardRoutine, 'enabled' | 'lastRun' | 'nextRun'> } | null): { last: string; next: string; note: string } | null {
+  if (!live) return null
+  const last = live.routine.lastRun ? formatShortDate(live.routine.lastRun) : ''
+  if (live.source === 'files') return { last: last || 'Unknown', next: '', note: 'Not confirmed by the bot yet' }
+  const next = live.routine.enabled !== false && live.routine.nextRun ? formatShortDate(live.routine.nextRun) : ''
+  return { last: last || 'Never', next, note: '' }
 }
 
 /** A schedule in words, with its time zone. A cron line stays as it is only when it has no words. */
 export function scheduleWords(schedule: string, timeZone = ''): string {
   const words = cronText(schedule)
   return [words && words !== 'Custom schedule' ? words : schedule, timeZone].filter(Boolean).join(' · ')
-}
-
-/** When a routine last ran and runs next, on the same clock as Logs. A paused routine has no next run. */
-export function whenLine(routine: Pick<BoardRoutine, 'enabled' | 'lastRun' | 'nextRun'>): string {
-  const last = routine.lastRun ? `Last run ${formatShortDate(routine.lastRun)}` : ''
-  if (routine.enabled === false) return last || 'Never run'
-  return [last || 'Not run yet', routine.nextRun ? `Next run ${formatShortDate(routine.nextRun)}` : ''].filter(Boolean).join(' · ')
 }
 
 /**
