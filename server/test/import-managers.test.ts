@@ -94,3 +94,8 @@ test("the import prompt takes a manager only from the owner's own words, never f
   const docs = readFileSync(new URL('../../docs/bots-file.md', import.meta.url), 'utf8')
   assert.ok(docs.includes(GROK_BOTS_PROMPT), 'docs/bots-file.md carries the same prompt')
 })
+
+test('the import prompt lists the Connector like any bot, so it gets a seat and a Performance row', () => {
+  assert.doesNotMatch(GROK_BOTS_PROMPT, /Leave out any bot named "Connector - BotsEverywhere"/)
+  assert.match(GROK_BOTS_PROMPT, /- Include the Connector, the bot named "Connector - BotsEverywhere \(…\)", like any other bot\./)
+})

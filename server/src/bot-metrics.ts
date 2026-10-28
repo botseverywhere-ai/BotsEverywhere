@@ -83,6 +83,27 @@ export function shownBotMetrics(input: {
   }
 }
 
+/**
+ * The Connector's own row. It reports nothing about itself, but the app logs a Connector runs today event in every
+ * organization on each run it sees: the runs on days whose last run falls in the last 30 days are its automated tasks,
+ * and its last run is when it was last active. Every other bot, and a Connector with no such event, keeps its numbers.
+ */
+export function withConnectorRuns(title: string, shown: ShownBotMetrics, events: { id: string; kind?: string; timestamp: string; stats?: string }[], now = Date.now()): ShownBotMetrics {
+  if (!title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase())) return shown
+  const days = events.filter((event) => event.kind === 'connector-run' && event.id.startsWith('connector-day-'))
+  if (!days.length) return shown
+  let runs = 0
+  let last = Date.parse(shown.lastActive) || 0
+  for (const day of days) {
+    const at = Date.parse(day.timestamp)
+    if (!Number.isFinite(at) || at > now) continue
+    last = Math.max(last, at)
+    const count = Number(/(?:^|\|)Runs today=(\d+)(?:\||$)/.exec(day.stats ?? '')?.[1])
+    if (at >= now - WINDOW_MS && Number.isInteger(count)) runs += count
+  }
+  return { ...shown, tasks: runs, lastActive: last ? new Date(last).toISOString() : '' }
+}
+
 function combine(baseline: number | undefined, extra: number): number | null {
   if (baseline === undefined) return extra > 0 ? extra : null
   return baseline + extra

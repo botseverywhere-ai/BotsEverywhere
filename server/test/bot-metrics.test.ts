@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { formatShortDate, shownBotMetrics } from '../src/bot-metrics.ts'
+import { formatShortDate, shownBotMetrics, withConnectorRuns } from '../src/bot-metrics.ts'
 
 /** Run-log lines carry the wall-clock time of this computer, so the fixtures are built in local time. */
 function local(hours: number, minutes: number): Date {
@@ -83,4 +83,31 @@ test('a time shows in the time zone of the computer showing it, and a date alone
     if (before === undefined) delete process.env.TZ
     else process.env.TZ = before
   }
+})
+
+const runDay = (day: string, at: string, runs: number) => ({ id: `connector-day-${day}`, kind: 'connector-run', timestamp: at, stats: `Runs today=${runs}|First=09:00|Last=14:07|In Grok Bot=0|Waiting=0|No organization=16` })
+
+test("the Connector's row counts the runs the app logged: runs in 30 days are its tasks, its last run is when it was last active", () => {
+  const now = Date.parse('2026-10-28T14:10:00.000Z')
+  const shown = { createdAt: '2026-10-28', lastActive: '', usage: null, tasks: null }
+  const events = [
+    runDay('2026-10-28', '2026-10-28T13:07:53.532Z', 2),
+    runDay('2026-10-20', '2026-10-20T21:00:00.000Z', 5),
+    runDay('2026-09-10', '2026-09-10T21:00:00.000Z', 9),
+    { id: 'sync-2026-10-28T13:00:00.000Z', kind: 'sync', timestamp: '2026-10-28T13:00:00.000Z', stats: 'Runs today=40' },
+  ]
+  assert.deepEqual(withConnectorRuns('Connector - BotsEverywhere (acn8)', shown, events, now), { ...shown, tasks: 7, lastActive: '2026-10-28T13:07:53.532Z' })
+  assert.equal(withConnectorRuns('connector - botseverywhere', shown, events, now).tasks, 7, 'capital letters ignored')
+  const later = { ...shown, lastActive: '2026-10-28T14:00:00.000Z' }
+  assert.equal(withConnectorRuns('Connector - BotsEverywhere (acn8)', later, events, now).lastActive, '2026-10-28T14:00:00.000Z', 'a newer time already shown stays')
+})
+
+test('every other bot, and a Connector with no logged runs, keeps the numbers it had', () => {
+  const now = Date.parse('2026-10-28T14:10:00.000Z')
+  const shown = { createdAt: '', lastActive: '2026-10-27T10:00:00.000Z', usage: 3, tasks: 1 }
+  const events = [runDay('2026-10-28', '2026-10-28T13:07:53.532Z', 2)]
+  assert.equal(withConnectorRuns('Research - botseverywhere', shown, events, now), shown)
+  assert.equal(withConnectorRuns('Connector - BotsEverywhere (acn8)', shown, [], now), shown)
+  const page = readFileSync(fileURLToPath(new URL('../../src/pages/Workspace.tsx', import.meta.url)), 'utf8')
+  assert.match(page, /map\.set\(seat\.slug, withConnectorRuns\(seat\.title, shownBotMetrics\(\{/, 'Performance uses it for every bot row')
 })

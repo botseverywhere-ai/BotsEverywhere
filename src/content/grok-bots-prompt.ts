@@ -40,7 +40,7 @@ The values above are examples of the shape only. Never copy an example value, in
 
 Rules:
 - One entry per bot, using each bot's real name. Don't invent bots or duties.
-- Leave out any bot named "Connector - BotsEverywhere" or "Connector - BotsEverywhere (…)". It only syncs files.
+- Include the Connector, the bot named "Connector - BotsEverywhere (…)", like any other bot.
 - grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
 - section is the name of the Grok Bot sidebar section the bot is in, exactly as the sidebar shows it. Leave it out for unassigned bots or when you can't see it.
 - reportsTo and skills come only from what the owner wrote in the bot's own instructions.

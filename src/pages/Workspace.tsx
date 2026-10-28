@@ -7,7 +7,7 @@ import { SiteNav } from '../components/SiteNav'
 import { CompanyOverview } from './CompanyOverview'
 import { OrgChart } from '../components/OrgChart'
 import { ProcessChart } from '../components/ProcessChart'
-import { formatShortDate, shownBotMetrics } from '../../server/src/bot-metrics.ts'
+import { formatShortDate, shownBotMetrics, withConnectorRuns } from '../../server/src/bot-metrics.ts'
 import { liveSeats } from '../../server/src/run-log.ts'
 import { useRunLines } from '../live/use-run-log'
 import { remember, remembered, type RememberedStatus } from '../live/connector-memory'
@@ -236,7 +236,7 @@ export function Workspace({
     const map = new Map<string, ReturnType<typeof shownBotMetrics>>()
     for (const seat of seats) {
       if (seat.kind !== 'bot') continue
-      map.set(seat.slug, shownBotMetrics({
+      map.set(seat.slug, withConnectorRuns(seat.title, shownBotMetrics({
         title: seat.title,
         slug: seat.slug,
         createdAt: seat.createdAt,
@@ -245,10 +245,10 @@ export function Workspace({
         tasksDone30d: seat.tasksDone30d,
         reportedAt: seat.grokSyncedAt,
         log: runLines,
-      }))
+      }), activity))
     }
     return map
-  }, [runLines, seats])
+  }, [runLines, seats, activity])
   const chartSeats = [...active.map((seat) => (seat.type === 'bot' ? { ...seat, shown: metricsById.get(seat.id) } : seat)), ...openSeats]
   const least = leastUsed(bots.map((seat) => ({
     id: seat.id,
@@ -1196,7 +1196,7 @@ function PerformanceTable({
       </table>
       <p className="be-performance-note">
         Times used counts each time the Connector saw a bot become active, or the chats the bot logged itself. Automated tasks done counts each routine run the Connector saw,
-        or the routine steps the bot logged as done. All of it is in the run log. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
+        or the routine steps the bot logged as done. All of it is in the run log. The Connector&apos;s own row counts its runs, from Connector runs today in Logs. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
       </p>
     </>
   )
