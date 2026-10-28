@@ -5,8 +5,9 @@ import { connectorRanAt, lastRunShort } from './sync-copy.ts'
 /** Your files on Organization Overview, grouped by who writes each part. */
 export const FILE_GROUPS: { title: string; keys: FileGuideKey[] }[] = [
   { title: 'Your organization', keys: ['org', 'seats', 'processes'] },
-  { title: 'Your bots write these', keys: ['log'] },
-  { title: 'The Connector writes these', keys: ['grok', 'connector'] },
+  { title: 'Your bots and the app write these', keys: ['log'] },
+  { title: 'The app writes these from Grok Bot', keys: ['grok'] },
+  { title: 'The Connector writes these', keys: ['connector'] },
 ]
 
 export const FILE_ID_NOTE = "The folder name is this organization's ID. It never changes, so bots always find their files."
@@ -24,8 +25,8 @@ export const FILE_WHAT: Record<FileGuideKey, string> = {
   org: 'Name, purpose, and who reports to whom',
   seats: 'One file per person or bot: what it owns, may do, and must ask before doing',
   processes: 'The work: what starts it and each step',
-  log: 'What each bot did, one file per day, and events like hires and syncs',
-  grok: 'What the Connector last saw in Grok Bot, and the bots the app asked it to create',
+  log: 'What each bot did, one file per day, and events like hires, syncs, and Connector runs',
+  grok: "What Grok Bot showed on the Connector's last run, and the bots and changes waiting to go to Grok Bot",
   connector: 'When the Connector last ran. It sits in the orgs folder, beside every organization',
 }
 

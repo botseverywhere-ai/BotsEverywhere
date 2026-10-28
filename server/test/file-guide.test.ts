@@ -99,9 +99,12 @@ test('GET /api/orgs/<slug>/files serves the guide, and 404 for an org that is no
 test('the file guide groups the files by who writes them, in plain words', () => {
   assert.deepEqual(FILE_GROUPS, [
     { title: 'Your organization', keys: ['org', 'seats', 'processes'] },
-    { title: 'Your bots write these', keys: ['log'] },
-    { title: 'The Connector writes these', keys: ['grok', 'connector'] },
+    { title: 'Your bots and the app write these', keys: ['log'] },
+    { title: 'The app writes these from Grok Bot', keys: ['grok'] },
+    { title: 'The Connector writes these', keys: ['connector'] },
   ])
+  assert.equal(FILE_WHAT.log, 'What each bot did, one file per day, and events like hires, syncs, and Connector runs')
+  assert.equal(FILE_WHAT.grok, "What Grok Bot showed on the Connector's last run, and the bots and changes waiting to go to Grok Bot")
   assert.deepEqual(FILE_NAMES, { org: 'org.md', seats: 'seats/', processes: 'processes/', log: 'log/', grok: 'grok/', connector: 'connector.json' })
   for (const key of Object.keys(FILE_NAMES) as (keyof typeof FILE_NAMES)[]) {
     assert.ok(FILE_WHAT[key].length > 0, `${key} says what it holds`)
