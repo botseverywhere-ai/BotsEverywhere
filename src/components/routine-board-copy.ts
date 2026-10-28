@@ -1,12 +1,16 @@
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import type { BoardBot, BoardRoutine, RoutineBoard } from '../../server/src/routine-board-types.ts'
+import type { BoardBot, BoardRoutine, Handoff, RoutineBoard } from '../../server/src/routine-board-types.ts'
 
-/** Routines in Grok Bot on the Work Chart: bots with routines one by one, the rest named in two short lines. */
-export function boardGroups(board: RoutineBoard): { withRoutines: BoardBot[]; noRoutines: string[]; waiting: string[] } {
+/**
+ * Routines and handoffs in Grok Bot on the Work Chart: each bot with routines or handoffs gets its row; the bots that
+ * reported none, and the bots still to report, are named in two short lines.
+ */
+export function boardGroups(board: RoutineBoard): { shown: BoardBot[]; nothing: string[]; waiting: string[] } {
+  const hasWork = (bot: BoardBot) => bot.routines.length > 0 || (bot.sends?.length ?? 0) > 0 || (bot.receives?.length ?? 0) > 0
   return {
-    withRoutines: board.bots.filter((bot) => bot.routines.length),
-    noRoutines: board.bots.filter((bot) => !bot.routines.length && (bot.source === 'bot' || bot.source === 'files')).map((bot) => bot.title),
-    waiting: board.bots.filter((bot) => !bot.routines.length && (bot.source === 'none' || bot.source === 'app')).map((bot) => bot.title),
+    shown: board.bots.filter(hasWork),
+    nothing: board.bots.filter((bot) => !hasWork(bot) && (bot.source === 'bot' || bot.source === 'files')).map((bot) => bot.title),
+    waiting: board.bots.filter((bot) => !hasWork(bot) && (bot.source === 'none' || bot.source === 'app')).map((bot) => bot.title),
   }
 }
 
@@ -22,4 +26,9 @@ export function sourceLine(bot: Pick<BoardBot, 'source' | 'reportedAt'>): string
 export function whenLine(routine: Pick<BoardRoutine, 'enabled' | 'lastRun' | 'nextRun'>): string {
   if (routine.enabled === false) return `Paused · ${routine.lastRun ? `last run ${formatShortDate(routine.lastRun)}` : 'never run'}`
   return [routine.lastRun ? `Last run ${formatShortDate(routine.lastRun)}` : 'Not run yet', routine.nextRun ? `Next run ${formatShortDate(routine.nextRun)}` : ''].filter(Boolean).join(' · ')
+}
+
+/** One handoff, as the bot reported it: who, what, and when. */
+export function handoffLine(handoff: Handoff): string {
+  return `${handoff.who}: ${handoff.what}${handoff.when ? ` (${handoff.when})` : ''}`
 }

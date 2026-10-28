@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { Seat } from '../data/mock-companies'
 import type { AccountApp } from '../../server/src/grok-sync.ts'
-import { isGrokBotUrl, isSeatGrokLink } from '../../server/src/org-files.ts'
+import { isGrokBotUrl, isSeatGrokLink, type BotSkill } from '../../server/src/org-files.ts'
 import { displayCardText } from '../preview/card-text'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
 import { Button } from './Button'
@@ -46,6 +46,7 @@ export function SeatDrawer({
   grokUpdateItems = [],
   onUpdateInGrok,
   accountApps,
+  reportedSkills,
   children,
 }: {
   seat: Seat
@@ -79,6 +80,8 @@ export function SeatDrawer({
   grokRequestedAt?: string
   /** Apps connected to the Grok Bot account, for each app's status in Profile. */
   accountApps?: AccountApp[]
+  /** Skills turned on for this bot in Grok Bot, as the bot itself reported them. Absent until it does. */
+  reportedSkills?: BotSkill[]
   /** Writes a request the Connector reads on its next run. */
   onCreateInGrok?: () => void
   /** Saves Profile on an organization of your own: the prompt or instructions, skills, and routines. */
@@ -119,7 +122,7 @@ export function SeatDrawer({
         <p className="reports">{reportsTo ? `Reports to ${reportsTo}` : 'Top of the chart'}</p>
       )}
       {alsoManagers && onAlsoReportsTo && seat.reportsTo && alsoManagers.length ? (
-        <AlsoReportsTo key={seat.id} choices={alsoManagers} value={seat.alsoReportsTo ?? []} onChange={onAlsoReportsTo} />
+        <AlsoReportsTo key={`also-${seat.id}`} choices={alsoManagers} value={seat.alsoReportsTo ?? []} onChange={onAlsoReportsTo} />
       ) : null}
       {onCreateInGrok && seat.type === 'bot' && grokSyncClass(seat) !== 'is-in-grok' ? (
         <section className="grok-create" aria-label="Grok Bot">
@@ -179,7 +182,7 @@ export function SeatDrawer({
         )
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && onProfile ? (
-        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} grokUpdateItems={grokUpdateItems} accountApps={accountApps} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
+        <BotProfile key={seat.id} seat={seat} grokRequestedAt={grokRequestedAt} grokUpdateAt={grokUpdateAt} grokUpdateItems={grokUpdateItems} accountApps={accountApps} reportedSkills={reportedSkills} onProfile={onProfile} onCreateInGrok={onCreateInGrok} onUpdateInGrok={onUpdateInGrok} />
       ) : null}
       {tab === 'profile' && seat.type === 'bot' && !onProfile ? (
         <>

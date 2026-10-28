@@ -2240,6 +2240,9 @@ a.site-nav-cta:focus {
 .routine-state { flex: none; padding: 0 var(--space-2); border: var(--hairline); border-radius: var(--control-radius); font-size: var(--text-xs); font-weight: var(--weight-semibold); letter-spacing: 0.04em; text-transform: uppercase; }
 .routine-state.is-active { background: var(--color-green-50); color: var(--color-green-700); border-color: var(--mint); }
 .routine-state.is-paused { background: var(--color-white); color: var(--color-muted); }
+.routine-handoffs { display: grid; gap: var(--space-1); font-size: var(--text-sm); color: var(--color-ink); }
+.routine-handoffs strong { font-weight: var(--weight-medium); }
+.routine-handoffs ul { display: grid; gap: var(--space-1); margin: 0; padding-left: var(--space-4); }
 .routine-others { margin: 0; padding-top: var(--space-3); border-top: var(--hairline); font-size: var(--text-sm); color: var(--color-muted); }
 .routine-others strong { color: var(--color-ink); font-weight: var(--weight-medium); }
 .process-lane { display: grid; gap: var(--space-3); padding: var(--space-4); border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); }

@@ -8,6 +8,7 @@ import { CompanyOverview } from './CompanyOverview'
 import { OrgChart } from '../components/OrgChart'
 import { ProcessChart } from '../components/ProcessChart'
 import { RoutineBoard } from '../components/RoutineBoard'
+import { useRoutineBoard } from '../live/use-routine-board'
 import { formatShortDate, shownBotMetrics, withConnectorRuns } from '../../server/src/bot-metrics.ts'
 import { liveSeats } from '../../server/src/run-log.ts'
 import { useRunLines } from '../live/use-run-log'
@@ -26,7 +27,7 @@ import { rememberOrgFolder } from '../org/folder-path'
 import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
-import { botApps } from '../org/bot-apps'
+import { connectedApps } from '../org/bot-apps'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
 import { LogPanel } from '../components/LogPanel'
@@ -261,6 +262,7 @@ export function Workspace({
   const waitingUpdate = chartSeat ? sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update') : undefined
   // Apps connected to the Grok Bot account, from the Connector's last report: one list for every organization.
   const accountApps = editable ? sync?.project?.connector?.apps ?? connection?.project?.connector?.apps : undefined
+  const routineBoard = useRoutineBoard(bundle.id, sync, editable)
 
   const applyLoaded = useCallback((loaded: OrgBundle): OrgBundle => {
     const canonical = bundleFromState(bundle.id, loaded.org, loaded.seats, loaded.work, loaded.activity ?? [])
@@ -968,7 +970,7 @@ export function Workspace({
               onSeat={setSelected}
               onReload={rereadOrg}
               png={editable ? { orgName: company.org.name } : undefined}
-              routines={editable ? <RoutineBoard orgId={bundle.id} refresh={sync} /> : undefined}
+              routines={editable && routineBoard ? <RoutineBoard board={routineBoard} /> : undefined}
             />
           ) : null}
           {view === 'org' ? (
@@ -1056,6 +1058,7 @@ export function Workspace({
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
           grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate) : []}
           accountApps={accountApps}
+          reportedSkills={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.skills}
           onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}
@@ -1169,7 +1172,7 @@ function PerformanceTable({
     <>
       <table className="be-performance">
         <thead>
-          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Apps</th><th>Action</th></tr>
+          <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Connected</th><th>Action</th></tr>
         </thead>
         <tbody>
           {rows.map((seat) => {
@@ -1187,7 +1190,7 @@ function PerformanceTable({
                     <td>{formatShortDate(seat.shown?.lastActive || '')}</td>
                   </>
                 )}
-                <td>{seat.apps?.length ? botApps(seat.apps, accountApps).map((app, index) => (
+                <td>{connectedApps(accountApps).length ? connectedApps(accountApps).map((app, index) => (
                   <span key={app.name} className={app.status === 'needsAuth' ? 'app-needs-auth' : undefined}>{index ? ', ' : ''}{app.name}{app.status === 'needsAuth' ? ' (needs sign-in)' : ''}</span>
                 )) : '—'}</td>
                 <td>{canRetire ? <Button variant="secondary" type="button" onClick={() => onRetire(seat.id)}>Retire…</Button> : null}</td>

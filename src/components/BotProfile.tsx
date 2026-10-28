@@ -1,9 +1,9 @@
 import { useEffect, useId, useState } from 'react'
 import type { Seat } from '../data/mock-companies'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import { ROUTINE_STARTS, type BotRoutine, type RoutineStart } from '../../server/src/org-files.ts'
+import { ROUTINE_STARTS, type BotRoutine, type BotSkill, type RoutineStart } from '../../server/src/org-files.ts'
 import type { AccountApp } from '../../server/src/grok-sync.ts'
-import { botApps, NEEDS_SIGN_IN } from '../org/bot-apps'
+import { connectedApps, NEEDS_SIGN_IN } from '../org/bot-apps'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
 import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, UPDATE_HINT, UPDATE_LABEL, updateWaitingLine, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
@@ -20,11 +20,13 @@ export interface ProfileChanges {
  * Profile on an organization of your own: how the bot works. A directory bot's prompt and a hand-added bot's
  * instructions are edited here; an imported bot's skills and routines come from Grok Bot and are only shown.
  */
-export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdateItems = [], accountApps, onProfile, onCreateInGrok, onUpdateInGrok }: {
+export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdateItems = [], accountApps, reportedSkills, onProfile, onCreateInGrok, onUpdateInGrok }: {
   seat: Seat
   grokRequestedAt: string
   /** Apps connected to the Grok Bot account, for each app's status. */
   accountApps?: AccountApp[]
+  /** Skills turned on for this bot in Grok Bot, as the bot itself reported them. Absent until it does. */
+  reportedSkills?: BotSkill[]
   grokUpdateAt?: string
   /** The waiting update's changes, one per line. A move waits as an update too, so Update bot stays to add skills and routines to it. */
   grokUpdateItems?: string[]
@@ -76,7 +78,8 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdat
         <>
           <SkillEditor initial={seat.skills ?? []} onSave={(skills) => onProfile({ skills: draftRows(skills) })} />
           <RoutineEditor initial={seat.routines ?? []} onSave={(routines) => onProfile({ routines: draftRoutines(routines) })} />
-          <AppList apps={seat.apps} account={accountApps} />
+          <TurnedOnSkills skills={reportedSkills} />
+          <AppList account={accountApps} />
           {!parts.addToGrok && onUpdateInGrok ? (
             <section className="profile-update">
               {grokUpdateAt ? (
@@ -94,7 +97,8 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdat
       ) : (
         <>
           <ProfileLists seat={seat} />
-          <AppList apps={seat.apps} account={accountApps} />
+          <TurnedOnSkills skills={reportedSkills} />
+          <AppList account={accountApps} />
         </>
       )}
       {seat.publicUrl ? (
@@ -114,12 +118,12 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdat
   )
 }
 
-/** Connected apps the bot uses, read only: Grok Bot connects them, and the Connector reports them on each run. */
-export function AppList({ apps, account }: { apps?: string[]; account?: AccountApp[] }) {
-  const rows = botApps(apps, account)
+/** What the bot is connected to, read only. Apps belong to the whole Grok Bot account, so every bot can use each one. */
+export function AppList({ account }: { account?: AccountApp[] }) {
+  const rows = connectedApps(account)
   return (
     <section className="profile-list">
-      <h3 className="card-label">Apps</h3>
+      <h3 className="card-label">Connected</h3>
       {rows.length ? (
         <ul>
           {rows.map((app) => (
@@ -130,7 +134,27 @@ export function AppList({ apps, account }: { apps?: string[]; account?: AccountA
             </li>
           ))}
         </ul>
-      ) : <p className="auth-note">No apps yet. The Connector lists the apps this bot uses on its next run.</p>}
+      ) : <p className="auth-note">No apps yet. The Connector lists the apps connected to your Grok Bot account on its next run.</p>}
+    </section>
+  )
+}
+
+/** The private skills turned on for the bot in Grok Bot, as the bot itself reported them. Read only, and apart from the skills its seat says to use. */
+function TurnedOnSkills({ skills }: { skills?: BotSkill[] }) {
+  if (!skills) return null
+  return (
+    <section className="profile-list">
+      <h3 className="card-label">Turned on in Grok Bot</h3>
+      {skills.length ? (
+        <ul>
+          {skills.map((skill) => (
+            <li key={skill.name}>
+              <strong>{skill.name}</strong>
+              {skill.description ? <span className="profile-line">{skill.description}</span> : null}
+            </li>
+          ))}
+        </ul>
+      ) : <p className="auth-note">The bot reports no private skills turned on.</p>}
     </section>
   )
 }
