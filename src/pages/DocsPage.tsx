@@ -389,16 +389,14 @@ npm run dev`}</CodeBlock>
         <h2 id="set-up-org">Step 2: Set up your organization</h2>
         <p>
           Choose <strong>Open your org</strong> in the header. With one organization on this computer it opens that one; with several you pick one or create a new one.
-          On the <strong>Connect bots</strong> tab, Step 2 offers four ways to fill an organization. You can do this before or after Step 1.
+          On the <strong>Connect bots</strong> tab, Step 2 offers two ways to fill an organization. You can do this before or after Step 1.
         </p>
         <ul>
           <li><strong>Option 1: Import from your Grok Bot.</strong> Copy a prompt, ask Grok Bot for the bots you already run, and import the file it writes. See <To id="files">Import and export</To>.</li>
           <li><strong>Option 2: Import from a template .json (build an organization from an interview with an LLM).</strong> Copy the prompt and give it to any AI together with the downloaded template. The AI asks about your organization, shows the bots it proposes, and writes the file once you confirm; then import it. The template carries the same instructions, so an AI given only the file does the same, and it explains every field, so you can also fill it in yourself. Once the organization has bots, <strong>Export bots file</strong> sits in Step 2.</li>
-          <li><strong>Option 3: Add your organization manually.</strong> Fill in the organization fields on <strong>Organization Overview</strong>, then add seats on the <To id="org-chart">org chart</To>.</li>
-          <li><strong>Option 4: Import an existing organization .json (describe your organization to an LLM).</strong> For an organization that already exists. Copy the prompt, fill in its blanks (name, websites, social media, description, the people and who they report to, and which one is you), and give it to any AI with the downloaded organization template. The AI reads what it can open, asks only about what is missing, shows the structure, and writes the file once you confirm. The import adds the departments, one seat per person, and the org chart. Several people can be at the top, and someone with two managers keeps the second on their profile. Bots come after, through Option 1 or 2. See <code>docs/organization-file.md</code>.</li>
         </ul>
         <p>
-          These options are for an organization with no bots yet, and Option 4 for one that has only You, so it goes first. Once it has bots, importing again is off, because it would add a second copy of each bot. New bots from Grok Bot arrive through <strong>Sync with Grok Bot</strong>, and one bot at a time is <strong>Add existing bot</strong> or the directory.
+          These options are for an organization with no bots yet. Once it has bots, importing again is off, because it would add a second copy of each bot. New bots from Grok Bot arrive through <strong>Sync with Grok Bot</strong>, and one bot at a time is <strong>Add existing bot</strong> or the directory.
         </p>
         <p>
           To start from a sample, open <a href="#/templates">Templates</a>, pick one, and choose <strong>Use this template</strong>. It is copied into a new folder under <code>orgs/</code>;

@@ -166,7 +166,6 @@ export function CompanyOverview({
         onImported={async () => { await onImported(); await reloadProfile() }}
         onAddSeat={onAddSeat}
         onAddExisting={onAddExisting}
-        onCompanyFields={() => { window.location.hash = `#/org/${slug}/overview` }}
       />
     ) : null}
     <div className="overview">

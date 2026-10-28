@@ -218,10 +218,10 @@ test('the organization file template carries the whole prompt and imports clean'
   }
 })
 
-test('Option 4 sits on Connect bots with the prompt, a template download, and an import that posts to the writer', () => {
+test('for the demo, Option 4 is off Connect bots; its panel and the writer route stay for later', () => {
   const link = readFileSync(fileURLToPath(new URL('../../src/components/LinkCompany.tsx', import.meta.url)), 'utf8')
-  assert.match(link, /option=\{4\} title="Import an existing organization \.json" badge="describe your organization to an LLM"/)
-  assert.match(link, /<OrgFileImport /)
+  assert.equal(link.includes('Import an existing organization'), false)
+  assert.equal(link.includes('<OrgFileImport '), false)
   const panel = readFileSync(fileURLToPath(new URL('../../src/components/OrgFileImport.tsx', import.meta.url)), 'utf8')
   assert.match(panel, /prompt=\{ORG_FILE_PROMPT\}/)
   assert.match(panel, /href="\/organization-file-template\.json"/)
@@ -231,10 +231,11 @@ test('Option 4 sits on Connect bots with the prompt, a template download, and an
   assert.match(server, /\\\/org-file\$/)
 })
 
-test('docs/organization-file.md and the Docs page carry Option 4 and the same prompt', () => {
+test('docs/organization-file.md keeps the prompt; the Docs page lists only the two ways Step 2 offers', () => {
   const docs = readFileSync(fileURLToPath(new URL('../../docs/organization-file.md', import.meta.url)), 'utf8')
   assert.ok(docs.includes(ORG_FILE_PROMPT), 'docs/organization-file.md carries the same prompt')
   const page = readFileSync(fileURLToPath(new URL('../../src/pages/DocsPage.tsx', import.meta.url)), 'utf8')
-  assert.match(page, /Option 4: Import an existing organization \.json \(describe your organization to an LLM\)/)
-  assert.match(page, /four ways to fill an organization/)
+  assert.equal(page.includes('Option 3: Add your organization manually'), false)
+  assert.equal(page.includes('Option 4: Import an existing organization'), false)
+  assert.match(page, /two ways to fill an organization/)
 })

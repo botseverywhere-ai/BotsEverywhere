@@ -4,10 +4,9 @@ import { IMPORT_LOCKED, importLocked } from '../../server/src/bots-file.ts'
 import { FOLDER_EVENT, orgFolder, seatsFolder } from '../org/folder-path'
 import { Button } from './Button'
 import { BotsFileImport, downloadBotsFile } from './BotsFileImport'
-import { OrgFileImport } from './OrgFileImport'
 import { FILE_NAMES, FILE_WHAT, botsLine } from './file-guide-copy'
 
-type LinkPanel = 'grok' | 'template' | 'manual' | 'existing'
+type LinkPanel = 'grok' | 'template'
 
 export function LinkCompany({
   slug,
@@ -15,7 +14,6 @@ export function LinkCompany({
   onImported,
   onAddSeat,
   onAddExisting,
-  onCompanyFields,
   defaultOpen = null,
 }: {
   slug: string
@@ -24,7 +22,6 @@ export function LinkCompany({
   /** Add a seat, as on the org chart: a person or a bot. */
   onAddSeat: () => void
   onAddExisting: () => void
-  onCompanyFields: () => void
   /** Organization Overview leaves every panel closed. The empty-organization start screen opens the first. */
   defaultOpen?: LinkPanel | null
 }) {
@@ -81,17 +78,6 @@ export function LinkCompany({
           </Panel>
           <Panel id="import-from-template" option={2} title="Import from a template .json" badge="build an organization from an interview with an LLM" open={open === 'template'} onPick={(event) => pick('template', event)}>
             <BotsFileImport slug={slug} mode="template" onImported={onImported} />
-          </Panel>
-          <Panel id="add-manually" option={3} title="Add your organization manually" open={open === 'manual'} onPick={(event) => pick('manual', event)}>
-            <p className="overview-note">Fill in the organization details below, then hire bots from the directory or add an existing bot.</p>
-            <div className="dir-actions">
-              <Button variant="secondary" href="#/directory">Bot directory</Button>
-              <Button variant="secondary" type="button" onClick={onAddExisting}>Add existing bot</Button>
-              <Button variant="secondary" type="button" onClick={onCompanyFields}>Organization fields</Button>
-            </div>
-          </Panel>
-          <Panel id="import-existing-org" option={4} title="Import an existing organization .json" badge="describe your organization to an LLM" open={open === 'existing'} onPick={(event) => pick('existing', event)}>
-            <OrgFileImport slug={slug} seats={seats} onImported={onImported} />
           </Panel>
         </>
       )}
