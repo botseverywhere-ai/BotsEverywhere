@@ -21,7 +21,15 @@ export function laneRoutine(process: Pick<ProcessFile, 'name' | 'steps'>, board:
 export const ROUTINES_HINT = 'Flows whose trigger is a schedule: a bot starts them on its own. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.'
 export const HANDOFFS_HINT = "Flows whose trigger is someone handing work on, or an event like an email. Nothing runs on a timer, so there's no badge."
 export const OFF_CHART_HINT = "These routines run in Grok Bot, but this Work Chart doesn't show their steps yet. Import processes from Grok Bot and each one becomes a flow with all its steps."
-export const IDLE_HINT = 'Bots that do no step in any flow on this Work Chart yet. Some still run routines in Grok Bot, listed under Routines without a flow.'
+export const IDLE_HINT = 'Bots that do no step in any flow on this Work Chart yet.'
+
+/** Names the bots without work that still run routines with no flow, as one line; '' when none do. */
+export function idleWithRoutines(idle: string[], offChart: { bot: string }[]): string {
+  const names = idle.filter((title) => offChart.some((routine) => routine.bot === title))
+  if (!names.length) return ''
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
+  return `${list} still ${names.length === 1 ? 'runs' : 'run'} routines in Grok Bot, listed under Routines without a flow.`
+}
 
 /** A scheduled flow is a routine a bot starts on its own; a manual or event flow is a handoff. */
 export function flowSegment(process: Pick<ProcessFile, 'trigger'>): 'routines' | 'handoffs' {

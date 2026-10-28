@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
 
@@ -44,7 +44,15 @@ test('routines and handoffs are different segments: a scheduled flow is a routin
   assert.equal(ROUTINES_HINT, 'Flows whose trigger is a schedule: a bot starts them on its own. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.')
   assert.equal(HANDOFFS_HINT, "Flows whose trigger is someone handing work on, or an event like an email. Nothing runs on a timer, so there's no badge.")
   assert.equal(OFF_CHART_HINT, "These routines run in Grok Bot, but this Work Chart doesn't show their steps yet. Import processes from Grok Bot and each one becomes a flow with all its steps.")
-  assert.equal(IDLE_HINT, 'Bots that do no step in any flow on this Work Chart yet. Some still run routines in Grok Bot, listed under Routines without a flow.')
+  assert.equal(IDLE_HINT, 'Bots that do no step in any flow on this Work Chart yet.')
+})
+
+test('bots without work that still run routines with no flow are named; when none do, nothing more is said', () => {
+  const off = [{ bot: 'Tradbot' }, { bot: 'Tradbot' }, { bot: 'Overheard' }, { bot: 'x.com' }]
+  assert.equal(idleWithRoutines(['Events', 'UX/UI'], off), '', 'none of them run a routine without a flow')
+  assert.equal(idleWithRoutines(['Events', 'Tradbot'], off), 'Tradbot still runs routines in Grok Bot, listed under Routines without a flow.')
+  assert.equal(idleWithRoutines(['Overheard', 'Events', 'Tradbot'], off), 'Overheard and Tradbot still run routines in Grok Bot, listed under Routines without a flow.')
+  assert.equal(idleWithRoutines(['A', 'B', 'C'], [{ bot: 'A' }, { bot: 'B' }, { bot: 'C' }]), 'A, B and C still run routines in Grok Bot, listed under Routines without a flow.')
 })
 
 test('a routine flow with no badge says why; one with a badge, a handoff, or a stale file match says nothing more', () => {
@@ -171,7 +179,8 @@ test('the Work Chart shows routines, handoffs, routines without a flow, and bots
     "{ value: 'off', label: 'Routines without a flow', count: offChart.length }",
     "{ value: 'idle', label: 'Bots without work', count: idleBots.length }",
   ]) assert.ok(chart.includes(option), option)
-  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}', '{IDLE_HINT}']) assert.ok(chart.includes(`<SegmentHint>${hint}</SegmentHint>`), hint)
+  assert.ok(chart.includes("<SegmentHint>{[IDLE_HINT, idleWithRoutines(idleBots.map((seat) => seat.title), offChart)].filter(Boolean).join(' ')}</SegmentHint>"), 'the second line only when it is true')
+  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}']) assert.ok(chart.includes(`<SegmentHint>${hint}</SegmentHint>`), hint)
   assert.match(chart, /function SegmentHint\(\{ children \}: \{ children: string \}\) \{\n\s+return <p className="process-segment-hint"><InfoIcon \/><span>\{children\}<\/span><\/p>/, 'every box explanation starts with an (i)')
   assert.match(chart, /function InfoIcon\(\) \{/)
   assert.match(chart, /\/\/ Manual: a raised hand, someone hands the work on\.\n\s+return \(\n\s+<svg className="process-icon" viewBox="0 0 16 16" aria-hidden="true">\n\s+<path d="M4\.75 4\.5v6c0 2\.1 1\.55 3\.75 3\.5 3\.75s3\.25-1\.65 3\.25-3\.75v-5M7 7\.5V3M9\.25 7\.5V3\.5M4\.75 10 3 8\.25"/, 'the Manual trigger shows a hand: palm, fingers, and thumb')

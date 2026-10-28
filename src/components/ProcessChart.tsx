@@ -22,7 +22,7 @@ import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, flowSegment, idleWithRoutines, laneNoRoutine, laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
@@ -291,7 +291,7 @@ export function ProcessChart({
         {show === 'all' || show === 'idle' ? (
           <section className="process-segment" aria-labelledby="segment-idle">
             <h2 id="segment-idle">Bots without work <span className="process-count">{idleBots.length}</span></h2>
-            <SegmentHint>{IDLE_HINT}</SegmentHint>
+            <SegmentHint>{[IDLE_HINT, idleWithRoutines(idleBots.map((seat) => seat.title), offChart)].filter(Boolean).join(' ')}</SegmentHint>
             {idleBots.length ? (
               <ul className="process-bot-list">
                 {idleBots.map((seat) => <li key={seat.slug}>{seat.title}</li>)}
