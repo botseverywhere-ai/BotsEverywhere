@@ -24,11 +24,12 @@ test('the prompt to paste names the interval, leaves later changes to CONNECTOR.
   assert.ok(connectorBootstrapPrompt({ ...WIN, syncMinutes: 10080 }).length < 1200)
 })
 
-test('after acting on the to-do list, the Connector reports in its chat what it did, and stays quiet when it did nothing', () => {
+test('after every run the Connector reports in its chat what it read and did, and says when there was nothing to change', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
-  assert.match(guide, /\n5\. Then reply in this chat with a short report of what you just did, so the owner can see it in Grok Bot:\n   BotsEverywhere sync at HH:MM\n/)
-  for (const line of ['Updated instructions: <bot names>', 'Created: <bot names>', 'Saved skills: <skill names>', 'Asked for a routine: <bot names>', 'Sent the one-time note: <bot names>', 'Routine confirmed: <bot names>', 'Skipped, changed in Grok Bot: <bot names>', 'Failed: <bot name>: <why>']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
-  assert.match(guide, /Leave out a line with nothing in it\. If you carried out no item and added no confirmation, write nothing\./)
+  assert.match(guide, /\n5\. Then, after every run and every time you act, reply in this chat with a short report, so the owner always knows what you did in Grok Bot:\n   BotsEverywhere sync at HH:MM\n   - Read from Grok Bot: <N> bots, <N> skills, <N> apps\n/)
+  for (const line of ['Updated instructions: <bot names>', 'Created: <bot names>', 'Saved skills: <skill names>', 'Asked for a routine: <bot names>', 'Sent the one-time note: <bot names>', 'Routine confirmed: <bot names>', 'Skipped, changed in Grok Bot: <bot names>', 'Failed: <bot name>: <why>', 'Nothing to change.']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
+  assert.match(guide, /Leave out a line with nothing in it\. Write Nothing to change only when you carried out no item and added no confirmation\./)
+  assert.doesNotMatch(guide, /added no confirmation, write nothing/, 'no run goes unreported')
   assert.match(guide, /\n6\. When several run messages arrive together, do this once, with one report\./)
   assert.match(guide, /Never ask the owner to confirm anything\./, 'a report tells; it never asks')
 })
