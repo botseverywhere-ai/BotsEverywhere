@@ -127,6 +127,8 @@ test('a flow reads as a header with its name, badges, and Delete, then its trigg
   assert.match(css, /\.process-lane-head \{/)
   assert.match(css, /\.process-runs \{/)
   assert.equal(css.includes('.process-lane-tools'), false)
+  assert.match(css, /\.process-steps \{ list-style: none; display: flex; align-items: stretch; gap: var\(--space-2\); margin: 0; padding: 0 0 var\(--space-3\); overflow-x: auto; \}/, 'room between the steps and their scrollbar')
+  assert.match(css, /\.be-body > \.preview-drawer \{ align-self: start; background: var\(--color-white\); \}/, 'a seat panel beside a chart scrolls with the page, not on its own')
 })
 
 test("routines a bot reports that have no flow yet are named once; the Connector's own run is not one of them", () => {
