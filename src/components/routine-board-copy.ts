@@ -1,5 +1,7 @@
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import type { ProcessFile } from '../../server/src/processes.ts'
+import { CONNECTOR_BOT_NAME } from '../../server/src/connector-prompt.ts'
+import { scheduleFasterThanHourly, type ProcessFile } from '../../server/src/processes.ts'
+import { latestStepStatus, type RunLine } from '../../server/src/run-log.ts'
 import type { BoardRoutine, RoutineBoard, RoutineSource } from '../../server/src/routine-board-types.ts'
 import { cronText } from './bot-profile-copy'
 
@@ -14,12 +16,13 @@ export function laneRoutine(process: Pick<ProcessFile, 'name' | 'steps'>, board:
 
 /**
  * Whether a flow is paused. The bot's own report decides; without one, the "(paused)" mark Grok Bot's import writes at
- * the end of a trigger's description. Grok Bot's files never decide: they still said active for routines paused weeks
- * earlier. Null when nothing reliable says.
+ * the end of a trigger's description; without that, a routine is active. Grok Bot's files never decide: they still said
+ * active for routines paused weeks earlier. A manual flow is not a routine, so it has no state: null.
  */
 export function lanePaused(process: Pick<ProcessFile, 'trigger'>, live: ReturnType<typeof laneRoutine>): boolean | null {
   if (live && (live.source === 'bot' || live.source === 'app')) return live.routine.enabled === false
-  return /\(paused\)\s*$/i.test(process.trigger.description) ? true : null
+  if (/\(paused\)\s*$/i.test(process.trigger.description)) return true
+  return process.trigger.type === 'manual' ? null : false
 }
 
 /** A flow's runs: from the bot's own report, last and next; from Grok Bot's files only the last run, marked unconfirmed. */
@@ -40,6 +43,26 @@ export function whenLine(routine: Pick<BoardRoutine, 'enabled' | 'lastRun' | 'ne
   const last = routine.lastRun ? `Last run ${formatShortDate(routine.lastRun)}` : ''
   if (routine.enabled === false) return last || 'Never run'
   return [last || 'Not run yet', routine.nextRun ? `Next run ${formatShortDate(routine.nextRun)}` : ''].filter(Boolean).join(' · ')
+}
+
+/**
+ * What needs your attention in a flow, in plain words: a step with no seat, or whose seat is gone or retired; a last run
+ * that failed; a schedule that runs more than once an hour. The Connector's own run is meant to run often.
+ */
+export function laneProblems(process: ProcessFile, seats: { slug: string; title: string; status: string }[], runLines: RunLine[]): string[] {
+  const problems: string[] = []
+  for (const step of process.steps) {
+    const seat = seats.find((item) => item.slug === step.seat)
+    if (!step.seat) problems.push('A step has no seat')
+    else if (!seat) problems.push(`${step.seat} is not a seat in this organization`)
+    else if (seat.status === 'retired') problems.push(`${seat.title} is retired`)
+  }
+  const failed = [...latestStepStatus(runLines, process.name, process.steps).values()].filter((line) => line.status === 'failed').map((line) => line.step)
+  if (failed.length) problems.push(`The last run failed at: ${failed.join(', ')}`)
+  const first = seats.find((item) => item.slug === process.steps[0]?.seat)
+  const connector = Boolean(first?.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()))
+  if (process.trigger.type === 'schedule' && scheduleFasterThanHourly(process.trigger.schedule) && !connector) problems.push('Runs more than once an hour')
+  return [...new Set(problems)]
 }
 
 /** Routines bots report that have no flow on the Work Chart yet, as "Bot: routine". The Connector's own run is not one. */

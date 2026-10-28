@@ -4,7 +4,7 @@ import test from 'node:test'
 import { formatShortDate } from '../src/bot-metrics.ts'
 import type { ProcessFile } from '../src/processes.ts'
 import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
-import { lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
+import { lanePaused, laneProblems, laneRoutine, laneWhen, routinesOffChart, scheduleWords, whenLine } from '../../src/components/routine-board-copy.ts'
 import { connectedApps } from '../../src/org/bot-apps.ts'
 
 const bot = (slug: string, source: BoardBot['source'], routines: BoardBot['routines'] = []): BoardBot => ({ slug, title: slug.toUpperCase(), source, reportedAt: '', routines })
@@ -23,12 +23,32 @@ test("a flow shows the routine of the same name owned by the bot on its first st
   assert.equal(laneRoutine(flow('Anything', 'x-com'), null), null)
 })
 
-test("a flow is paused by the bot's own report first, then by the (paused) mark Grok Bot's import writes, then by Grok Bot's files", () => {
+test("a routine flow is Active unless the bot's own report or the (paused) mark says paused; a manual flow is not a routine and has no state", () => {
   assert.equal(lanePaused(flow('Inner Loop milestone check', 'x-com', 'Daily (paused)'), laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), false, "the bot's report wins over an old mark")
   assert.equal(lanePaused(flow('transcript-healthcheck', 'eggbot', 'Weekdays at 08:44, Europe/Madrid (paused)'), null), true)
   assert.equal(lanePaused(flow('Aura production health', 'aura', 'Weekdays (paused)'), laneRoutine(flow('Aura production health', 'aura'), board)), true, "the mark wins over Grok Bot's stale files")
-  assert.equal(lanePaused(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), null, "Grok Bot's files still said active for routines paused weeks ago, so they never decide the badge")
-  assert.equal(lanePaused(flow('Build handoff', 'eggbot', 'Manual'), null), null, 'nothing says, so no badge')
+  assert.equal(lanePaused(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), false, 'nothing marks it paused, so it is Active')
+  assert.equal(lanePaused(flow('Weekly brief', 'eggbot'), null), false)
+  assert.equal(lanePaused({ ...flow('Build handoff', 'eggbot'), trigger: { type: 'manual', schedule: '', source: '', description: 'Outer Loop has a change' } }, null), null, 'a manual flow shows no state')
+})
+
+test('a flow names what needs your attention: a step whose seat is gone or retired, a last run that failed, a schedule faster than hourly', () => {
+  const seats = [
+    { slug: 'inner', title: 'Inner Loop', status: 'active' as const },
+    { slug: 'old', title: 'Old Bot', status: 'retired' as const },
+    { slug: 'connector', title: 'Connector - BotsEverywhere (acn8)', status: 'active' as const },
+  ]
+  const process = (steps: { seat: string; action: string }[], schedule = '0 9 * * 1'): ProcessFile => ({ slug: 'p', name: 'Weekly', trigger: { type: 'schedule', schedule, source: '', description: '' }, steps, doneWhen: '', next: '', notes: '' })
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }]), seats, []), [])
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }, { seat: 'old', action: 'Review' }, { seat: 'gone', action: 'Ship' }]), seats, []), ['Old Bot is retired', 'gone is not a seat in this organization'])
+  assert.deepEqual(laneProblems(process([{ seat: '', action: 'Ship' }]), seats, []), ['A step has no seat'])
+  const failed = [
+    { date: '2026-10-28', time: '09:00', bot: 'Inner Loop', process: 'Weekly', step: 'Check', status: 'done' as const, note: '-', index: 0 },
+    { date: '2026-10-28', time: '09:01', bot: 'Inner Loop', process: 'Weekly', step: 'Review', status: 'failed' as const, note: 'timeout', index: 1 },
+  ]
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }, { seat: 'inner', action: 'Review' }]), seats, failed), ['The last run failed at: Review'])
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }], '*/10 * * * *'), seats, []), ['Runs more than once an hour'])
+  assert.deepEqual(laneProblems(process([{ seat: 'connector', action: 'Sync' }], '*/20 * * * *'), seats, []), [], "the Connector's own run is meant to run often")
 })
 
 test('a schedule reads in words with its time zone; a cron line with no words stays as it is', () => {
@@ -81,6 +101,10 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   assert.match(chart, /className=\{paused \? 'process-lane is-paused' : 'process-lane'\}/)
   assert.match(chart, /\{paused === null \? null : <span className=\{paused \? 'routine-state is-paused' : 'routine-state is-active'\}>\{paused \? 'Paused' : 'Active'\}<\/span>\}/)
   assert.match(chart, /<span>\{stepText\(step\.action\)\}<\/span>/, "steps read without Grok Bot's Needs approval: mark")
+  assert.match(chart, /const problems = laneProblems\(process, allSeats, runLines\)/)
+  assert.match(chart, /\{problems\.length \? <span className="routine-state is-problem">Needs attention<\/span> : null\}/)
+  assert.match(chart, /\{problems\.length \? <ul className="process-problems">\{problems\.map\(\(problem\) => <li key=\{problem\}>\{problem\}<\/li>\)\}<\/ul> : null\}/)
+  assert.equal(chart.includes('process-warn'), false, 'the once-an-hour warning is one of the problems now')
   assert.match(chart, /routinesOffChart\(board, processes\)/)
   assert.match(chart, /\{live \? <p>\{laneWhen\(live\)\}<\/p> : null\}/, "runs read from the bot's report; Grok Bot's files never give a next run")
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
@@ -104,6 +128,7 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   assert.match(profile, /<h3 className="card-label">Turned on in Grok Bot<\/h3>/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.process-lane\.is-paused \{/)
+  assert.match(css, /\.routine-state\.is-problem \{ background: var\(--color-amber-50\); color: var\(--color-amber-800\); border-color: var\(--color-amber-200\); \}/)
   assert.equal(css.includes('.routine-board {'), false)
   assert.match(css, /\.app-badge\.is-connected \{ background: var\(--color-green-50\); color: var\(--color-green-700\); border-color: var\(--color-green-200\); \}/)
   assert.match(css, /\.app-badge\.is-needs-auth \{ background: var\(--color-amber-50\); color: var\(--color-amber-800\); border-color: var\(--color-amber-200\); \}/)

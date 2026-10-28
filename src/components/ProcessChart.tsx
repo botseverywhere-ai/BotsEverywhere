@@ -6,7 +6,6 @@ import {
   deriveSteps,
   processSlug,
   routinePrompt,
-  scheduleFasterThanHourly,
   stepText,
   triggerLabel,
   type EventSource,
@@ -22,7 +21,7 @@ import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import type { RoutineBoard } from '../../server/src/routine-board-types.ts'
-import { lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
+import { laneProblems, lanePaused, laneRoutine, laneWhen, routinesOffChart, scheduleWords } from './routine-board-copy'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then try again.'
 
@@ -214,6 +213,7 @@ export function ProcessChart({
             process={process}
             processes={processes}
             live={laneRoutine(process, board)}
+            allSeats={seats}
             seats={seatRefs}
             focusSeat={focusSeat}
             editable={editable}
@@ -308,6 +308,7 @@ function ProcessLane({
   process,
   processes,
   live,
+  allSeats,
   seats,
   focusSeat,
   editable,
@@ -323,6 +324,8 @@ function ProcessLane({
   processes: ProcessFile[]
   /** The routine this flow runs in Grok Bot, when a bot reports it. */
   live: ReturnType<typeof laneRoutine>
+  /** Every seat with its status, so a step whose seat is retired or gone shows as needing attention. */
+  allSeats: SeatDocument[]
   seats: { slug: string; title: string; kind?: string; mustAskBefore?: string[] }[]
   focusSeat: string
   editable: boolean
@@ -336,8 +339,8 @@ function ProcessLane({
 }) {
   const [owner, setOwner] = useState(process.steps[0]?.seat || '')
   const derived = deriveSteps(process.steps, seats)
-  const fast = process.trigger.type === 'schedule' && scheduleFasterThanHourly(process.trigger.schedule)
   const paused = lanePaused(process, live)
+  const problems = laneProblems(process, allSeats, runLines)
   const prompt = routinePrompt(process, seats, owner, folder)
   const statuses = latestStepStatus(runLines, process.name, process.steps)
   return (
@@ -349,10 +352,13 @@ function ProcessLane({
             <TriggerIcon type={process.trigger.type} />
             {process.trigger.type === 'schedule' ? scheduleWords(process.trigger.schedule, live?.routine.timeZone) : triggerLabel(process.trigger)}
           </span>
-          {paused === null ? null : <span className={paused ? 'routine-state is-paused' : 'routine-state is-active'}>{paused ? 'Paused' : 'Active'}</span>}
+          <div className="process-badges">
+            {paused === null ? null : <span className={paused ? 'routine-state is-paused' : 'routine-state is-active'}>{paused ? 'Paused' : 'Active'}</span>}
+            {problems.length ? <span className="routine-state is-problem">Needs attention</span> : null}
+          </div>
           {live ? <p>{laneWhen(live)}</p> : null}
           {process.trigger.description ? <p>{process.trigger.description}</p> : null}
-          {fast ? <p className="process-warn">Runs more than once an hour.</p> : null}
+          {problems.length ? <ul className="process-problems">{problems.map((problem) => <li key={problem}>{problem}</li>)}</ul> : null}
         </div>
         <ol className="process-steps">
           {derived.map((step, index) => {

@@ -2236,6 +2236,9 @@ a.site-nav-cta:focus {
 .routine-state.is-active { background: var(--color-green-50); color: var(--color-green-700); border-color: var(--mint); }
 .routine-state.is-paused { background: var(--color-white); color: var(--color-muted); }
 .process-trigger .routine-state { justify-self: start; }
+.routine-state.is-problem { background: var(--color-amber-50); color: var(--color-amber-800); border-color: var(--color-amber-200); }
+.process-badges { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.process-problems { margin: 0; padding-left: var(--space-4); color: var(--color-amber-800); font-size: var(--text-sm); }
 .process-lane.is-paused { background: var(--color-gray-100); }
 .process-lane.is-paused .process-steps { opacity: 0.6; }
 .process-off-chart { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
