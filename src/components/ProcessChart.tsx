@@ -260,21 +260,21 @@ export function ProcessChart({
         {show === 'all' || show === 'routines' ? (
           <section className="process-segment" aria-labelledby="segment-routines">
             <h2 id="segment-routines">Routines <span className="process-count">{routineFlows.length}</span></h2>
-            <p className="process-segment-hint">{ROUTINES_HINT}</p>
+            <SegmentHint>{ROUTINES_HINT}</SegmentHint>
             {routineFlows.length ? <ul className="process-lanes">{routineFlows.map(lane)}</ul> : <p className="process-segment-empty">No routines on the Work Chart yet.</p>}
           </section>
         ) : null}
         {show === 'all' || show === 'handoffs' ? (
           <section className="process-segment" aria-labelledby="segment-handoffs">
             <h2 id="segment-handoffs">Handoffs <span className="process-count">{handoffFlows.length}</span></h2>
-            <p className="process-segment-hint">{HANDOFFS_HINT}</p>
+            <SegmentHint>{HANDOFFS_HINT}</SegmentHint>
             {handoffFlows.length ? <ul className="process-lanes">{handoffFlows.map(lane)}</ul> : <p className="process-segment-empty">No handoffs on the Work Chart yet.</p>}
           </section>
         ) : null}
         {show === 'all' || show === 'off' ? (
           <section className="process-segment" aria-labelledby="segment-off">
             <h2 id="segment-off">Routines without a flow <span className="process-count">{offChart.length}</span></h2>
-            <p className="process-segment-hint">{OFF_CHART_HINT}</p>
+            <SegmentHint>{OFF_CHART_HINT}</SegmentHint>
             {offChart.length ? (
               <ul className="process-off-list">
                 {offChart.map((routine) => (
@@ -291,7 +291,7 @@ export function ProcessChart({
         {show === 'all' || show === 'idle' ? (
           <section className="process-segment" aria-labelledby="segment-idle">
             <h2 id="segment-idle">Bots without work <span className="process-count">{idleBots.length}</span></h2>
-            <p className="process-segment-hint">{IDLE_HINT}</p>
+            <SegmentHint>{IDLE_HINT}</SegmentHint>
             {idleBots.length ? (
               <ul className="process-bot-list">
                 {idleBots.map((seat) => <li key={seat.slug}>{seat.title}</li>)}
@@ -646,6 +646,21 @@ function CheckMark() {
   return (
     <svg className="process-icon" viewBox="0 0 16 16" aria-hidden="true">
       <path d="M3.5 8.5 6.5 11.5 12.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** What a Work Chart box holds, after an (i). */
+function SegmentHint({ children }: { children: string }) {
+  return <p className="process-segment-hint"><InfoIcon /><span>{children}</span></p>
+}
+
+function InfoIcon() {
+  return (
+    <svg className="process-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8 7.25V11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="8" cy="5" r="0.9" fill="currentColor" />
     </svg>
   )
 }

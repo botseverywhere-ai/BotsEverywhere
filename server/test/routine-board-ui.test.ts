@@ -171,7 +171,9 @@ test('the Work Chart shows routines, handoffs, routines without a flow, and bots
     "{ value: 'off', label: 'Routines without a flow', count: offChart.length }",
     "{ value: 'idle', label: 'Bots without work', count: idleBots.length }",
   ]) assert.ok(chart.includes(option), option)
-  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}', '{IDLE_HINT}']) assert.ok(chart.includes(`<p className="process-segment-hint">${hint}</p>`), hint)
+  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}', '{IDLE_HINT}']) assert.ok(chart.includes(`<SegmentHint>${hint}</SegmentHint>`), hint)
+  assert.match(chart, /function SegmentHint\(\{ children \}: \{ children: string \}\) \{\n\s+return <p className="process-segment-hint"><InfoIcon \/><span>\{children\}<\/span><\/p>/, 'every box explanation starts with an (i)')
+  assert.match(chart, /function InfoIcon\(\) \{/)
   assert.match(chart, /\{show === 'all' \|\| show === 'routines' \? \(/, 'the Routines box shows even with no flows, so the chart explains itself')
   assert.match(chart, /\{show === 'all' \|\| show === 'handoffs' \? \(/)
   assert.match(chart, /\{show === 'all' \|\| show === 'off' \? \(/)
