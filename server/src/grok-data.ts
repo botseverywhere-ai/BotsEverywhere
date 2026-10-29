@@ -29,6 +29,9 @@ export interface GrokDataBot {
   publicUrl?: string
   /** For a bot new to the app: a card summed up from its description, used only to fill a new seat. */
   card?: { owns: string[]; may: string[]; needsApproval: string[]; doneWhen: string }
+  /** Who the bot's own text, outside every BotsEverywhere block, says it reports to, by its name in Grok Bot. */
+  reportsTo?: string
+  alsoReportsTo?: string[]
 }
 
 export interface GrokData {
@@ -36,6 +39,8 @@ export interface GrokData {
   copy: string
   bots: GrokDataBot[]
   skills: { name: string; description: string }[]
+  /** The Connector itself, which the bots list leaves out. Absent from a Connector on older rules. */
+  self?: { id: string; name: string; grokBotUrl: string }
 }
 
 type Rec = Record<string, unknown>
@@ -88,10 +93,16 @@ export function parseGrokData(text: string): { ok: true; data: GrokData } | { ok
       ...(routinesVisible && count(item.tasksDone30d) !== undefined ? { tasksDone30d: count(item.tasksDone30d) } : {}),
       ...(publicUrl ? { publicUrl } : {}),
       ...(card ? { card } : {}),
+      // A manager that does not read is dropped, never the dump: it only places a new seat.
+      ...(str(item.reportsTo) ? { reportsTo: str(item.reportsTo) } : {}),
+      ...(strings(item.alsoReportsTo).length ? { alsoReportsTo: strings(item.alsoReportsTo) } : {}),
     })
   }
   const skills = Array.isArray(raw.skills) ? raw.skills.filter(isRecord).map((skill) => ({ name: str(skill.name), description: str(skill.description) })).filter((skill) => skill.name) : []
-  return { ok: true, data: { dumpedAt, copy: str(raw.copy), bots, skills } }
+  const self = isRecord(raw.self) && str(raw.self.id) && str(raw.self.name)
+    ? { id: str(raw.self.id), name: str(raw.self.name), grokBotUrl: str(raw.self.grokBotUrl) || `grokbot://app/v1/agent?id=${str(raw.self.id)}` }
+    : undefined
+  return { ok: true, data: { dumpedAt, copy: str(raw.copy), bots, skills, ...(self ? { self } : {}) } }
 }
 
 export function readGrokData(orgsDir: string): { ok: true; data: GrokData; stamp: string } | { ok: false; error: string; missing: boolean } {
@@ -162,10 +173,13 @@ function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[];
   const own = ownerText(bot.description)
   const routines = bot.routinesVisible ? bot.routines ?? [] : []
   const routineText = routines.map((routine) => [routine.name, routine.description ?? '', routine.event ?? ''].join(' ')).join(' ')
+  const fromBlock = managerFromBlock(bot.description, args.copyId, args.orgId)
   return {
     name: bot.name,
     grokBotUrl: bot.grokBotUrl,
-    reportsTo: managerFromBlock(bot.description, args.copyId, args.orgId) ?? managerFromOwnerText(own, args.seats) ?? 'You',
+    // This organization's block first; else who the bot's own text names, as the Connector read it.
+    reportsTo: fromBlock ?? bot.reportsTo ?? managerFromOwnerText(own, args.seats) ?? 'You',
+    ...(!fromBlock && bot.alsoReportsTo?.length ? { alsoReportsTo: bot.alsoReportsTo } : {}),
     owns: bot.card?.owns ?? [],
     may: bot.card?.may ?? [],
     needsApproval: bot.card?.needsApproval ?? [],
@@ -183,6 +197,13 @@ function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[];
     note: '',
     error: '',
   }
+}
+
+/** Every bot in the dump as a bots-file row for one organization, placed by who its own text names, and the Connector itself. */
+export function rowsFromDump(data: GrokData, copyId: string, orgId: string): BotsFileRow[] {
+  const rows = data.bots.map((bot) => rowFor(bot, data, { seats: [], orgId, copyId, apps: undefined, seat: undefined }))
+  if (!data.self) return rows
+  return [...rows, { name: data.self.name, grokBotUrl: data.self.grokBotUrl, reportsTo: 'You', owns: [], may: [], needsApproval: [], doneWhen: [], createdAt: '', lastActive: '', routines: [], skills: [], apps: [], publicUrl: '', botStatus: '', note: '', error: '' }]
 }
 
 function appsFor(found: string[], kept: string[]): string[] {

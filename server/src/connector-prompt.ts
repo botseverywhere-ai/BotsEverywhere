@@ -114,6 +114,8 @@ THE RUN (files only: never message, create, or change a bot, routine, skill, or 
    - runs30d from /home/box/agent-data/search-index.db: messages to that bot with role user in the last 30 days, leaving out hidden prompts, routine wakes, and your own notices.
    - routines and tasksDone30d only for bots that have /home/box/agent-data/agents/<id>/automations/, with routinesVisible true. For every other bot set routinesVisible false and leave both out.
    - for a bot whose description has no line starting "=== BotsEverywhere ${copy} ", a card: owns, may, needsApproval, and doneWhen, a few words each, summed up from its description.
+   - reportsTo and alsoReportsTo: who its own text, outside every "=== BotsEverywhere" block, says it reports to, by that bot's exact name in Grok Bot, or You for the owner. A line like "<name> manages all <project> work" counts for a <project> bot. Leave both out when its text names no one.
+   - self: your own id, name, and link.
    - skills: every folder in /home/box/agent-data/workflows, with the name and description from its SKILL.md.
    Never copy a value from an earlier run. Leave out what you cannot see now.
 3. Write ${file('connector.json')} last, with syncedAt, syncMinutes ${syncMinutes}, and apps: every connected app as {"name", "status"}, status connected or needsAuth. Never an email, token, or private link.
@@ -154,7 +156,7 @@ Write UTF-8 without a byte-order mark, with LF line endings.${windows ? ' On Win
 Never write org.md, seats/, processes/, work-chart.md, requests.json, snapshot.json, connector-todo.json, CONNECTOR.md, or project.json: the app owns them.
 
 grok-data.json format (the values only show the shape; leave out any field you cannot see):
-{ "dumpedAt": "ISO datetime", "copy": "${copy}", "bots": [{ "id": "", "name": "", "grokBotUrl": "", "description": "", "section": "", "createdAt": "YYYY-MM-DD", "lastActive": "ISO datetime", "runs30d": 0, "routinesVisible": false, "routines": [{ "name": "", "trigger": "schedule, or an event's product", "schedule": "cron line", "timeZone": "", "event": "", "enabled": true, "lastRun": "ISO datetime" }], "tasksDone30d": 0, "publicUrl": "https://...", "card": { "owns": [""], "may": [""], "needsApproval": [""], "doneWhen": "" } }], "skills": [{ "name": "", "description": "" }] }
+{ "dumpedAt": "ISO datetime", "copy": "${copy}", "bots": [{ "id": "", "name": "", "grokBotUrl": "", "description": "", "section": "", "createdAt": "YYYY-MM-DD", "lastActive": "ISO datetime", "runs30d": 0, "routinesVisible": false, "routines": [{ "name": "", "trigger": "schedule, or an event's product", "schedule": "cron line", "timeZone": "", "event": "", "enabled": true, "lastRun": "ISO datetime" }], "tasksDone30d": 0, "publicUrl": "https://...", "reportsTo": "", "alsoReportsTo": [""], "card": { "owns": [""], "may": [""], "needsApproval": [""], "doneWhen": "" } }], "self": { "id": "", "name": "", "grokBotUrl": "" }, "skills": [{ "name": "", "description": "" }] }
 
 connector-results.json format:
 { "results": [{ "key": "", "status": "done", "at": "ISO datetime", "why": "", "botId": "" }], "confirmations": [{ "line": "", "from": "", "at": "ISO datetime" }] }
