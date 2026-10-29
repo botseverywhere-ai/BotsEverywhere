@@ -986,6 +986,7 @@ export function Workspace({
               sample={sample}
               onOrg={setOrg}
               onImported={rereadOrg}
+              onNotice={(ok, message) => tell(ok ? saveNotice(true, message) : saveNotice(false, message))}
               onAddSeat={() => setAdding(true)}
               onAddExisting={() => setExistingBot(true)}
               sync={sync}
@@ -1325,7 +1326,7 @@ function AddSeatDialog({
         Reports to
         <select value={reportsTo} onChange={(event) => setReportsTo(event.target.value)}>
           <option value="">*** Top of the chart ***</option>
-          {seats.filter((seat) => seat.status !== 'retired').map((seat) => (
+          {seats.filter((seat) => seat.status !== 'retired' && !isGreyed(seat)).map((seat) => (
             <option key={seat.slug} value={seat.slug}>{seat.title}</option>
           ))}
         </select>

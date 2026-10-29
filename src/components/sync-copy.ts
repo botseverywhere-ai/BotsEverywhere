@@ -506,3 +506,10 @@ export function accountRows(account: GrokAccount): { id: string; name: string; m
     pickable: bot.where === 'active' && Boolean(bot.seat),
   }))
 }
+
+/** Everything Import from the Connector has to say: how many came in, how many are greyed, each note, and what was not added. */
+export function connectorImportNotice(result: { imported: unknown[]; greyed: unknown[]; notes: { name: string; note: string }[]; errors: { name: string; error: string }[] }): string {
+  const parts = [connectorImportLine(result.imported.length, result.greyed.length), ...result.notes.map((item) => `${item.name}: ${item.note}`)]
+  if (result.errors.length) parts.push(`Not added: ${result.errors.map((item) => `${item.name}: ${item.error}`).join(' ')}`)
+  return parts.join(' ')
+}

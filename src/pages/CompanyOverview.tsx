@@ -26,6 +26,7 @@ export function CompanyOverview({
   onImported,
   onAddSeat,
   onAddExisting,
+  onNotice,
   sync = null,
   onSyncChanged,
   chartHref = '',
@@ -44,6 +45,8 @@ export function CompanyOverview({
   /** Opens Add a seat, the same dialog as on the org chart. */
   onAddSeat: () => void
   onAddExisting: () => void
+  /** Tells the page's notices, for results that outlive Step 2. */
+  onNotice?: (ok: boolean, message: string) => void
   /** Re-reads the sync status after the Connector interval is saved. */
   onSyncChanged?: () => Promise<void>
   /** The org chart of this organization. A name in an Overview list opens it on that seat. */
@@ -168,6 +171,7 @@ export function CompanyOverview({
         onAddExisting={onAddExisting}
         connectorRan={Boolean(sync?.project?.connector?.syncedAt)}
         mainBot={sync?.mainBot ?? ''}
+        onNotice={onNotice}
       />
     ) : null}
     <div className="overview">

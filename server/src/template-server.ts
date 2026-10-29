@@ -535,6 +535,8 @@ export function createHiredSeat(
   if (reportsTo && !read.bundle.seats.some((seat) => seat.slug === reportsTo)) {
     return { ok: false, errors: [`${reportsTo} is not a seat in this org.`] }
   }
+  const greyedManager = read.bundle.seats.find((seat) => seat.slug === reportsTo && isGreyed(seat))
+  if (reportsTo && greyedManager) return { ok: false, errors: [greyedManagerText(greyedManager.title)] }
   const addToGrokBotUrl = (input.addToGrokBotUrl || '').trim()
   const card = {
     owns: lineList(input.owns),
@@ -672,6 +674,8 @@ export function createExistingBot(
   if (!read.bundle.seats.some((seat) => seat.slug === reportsTo)) {
     return { ok: false, errors: [`${reportsTo} is not a seat in this org.`] }
   }
+  const greyedManager = read.bundle.seats.find((seat) => seat.slug === reportsTo && isGreyed(seat))
+  if (greyedManager) return { ok: false, errors: [greyedManagerText(greyedManager.title)] }
   const card = {
     owns: lineList(input.owns),
     may: lineList(input.may),
@@ -902,14 +906,28 @@ export function importBotsFile(
     if (otherOrgs.length) greyed.push({ name: item.row.name, slug: created.slug, orgs: otherOrgs })
   }
   const importedSlugs = new Set(imported.map((item) => item.slug))
+  const placed = readOrgDir(root, orgId)
+  const parent = new Map((placed.ok ? placed.bundle.seats : []).map((seat) => [seat.slug, seat.reportsTo]))
   for (const item of writes) {
     if (!item.managerIsNew || !importedSlugs.has(item.slug)) continue
     if (!importedSlugs.has(item.manager)) {
       errors.push({ name: item.row.name, error: 'Reports to a bot that was not imported.' })
       continue
     }
+    // Managers read from bots' own text can point at each other: a loop would leave the organization unreadable.
+    const seen = new Set<string>()
+    let cursor = item.manager
+    while (cursor && cursor !== item.slug && !seen.has(cursor)) {
+      seen.add(cursor)
+      cursor = parent.get(cursor) || ''
+    }
+    if (cursor === item.slug) {
+      notes.push({ name: item.row.name, note: `${item.row.reportsTo.trim()} already reports to ${item.row.name}, so this would make a loop; placed under You.` })
+      continue
+    }
     const pointed = retargetSeat(root, item.slug, item.manager)
     if (!pointed.ok) errors.push({ name: item.row.name, error: pointed.errors.join(' ') })
+    else parent.set(item.slug, item.manager)
   }
   // Extra managers, once every imported seat exists. A name that is not here is left out; a loop is never written.
   const titles = new Map([...existing.map((seat) => [seat.title.trim().toLowerCase(), seat.slug] as const), ...imported.map((item) => [item.name.trim().toLowerCase(), item.slug] as const)])
@@ -1291,12 +1309,15 @@ function isConnectorName(name: string): boolean {
  * The bots active in every other organization of the project, by Grok Bot id, with the organizations each is in. A bot
  * works for one organization. Each organization is read once; a bad one is skipped.
  */
-export function botsInOtherOrgs(orgsDir: string, orgId: string): Map<string, string[]> {
+export function botsInOtherOrgs(orgsDir: string, orgId: string, unreadable: string[] = []): Map<string, string[]> {
   const found = new Map<string, string[]>()
   for (const other of listOrgSlugs(orgsDir)) {
     if (other === orgId) continue
     const read = readOrgDir(resolve(orgsDir, other), other)
-    if (!read.ok) continue
+    if (!read.ok) {
+      unreadable.push(other)
+      continue
+    }
     const orgName = read.bundle.org.company.name
     for (const seat of read.bundle.seats) {
       const key = botKey(seat.grokBotUrl ?? '')
@@ -1312,6 +1333,11 @@ export function botsInOtherOrgs(orgsDir: string, orgId: string): Map<string, str
 /** Why a bot active in another organization is not added here. */
 export function inOtherOrgsText(name: string, orgs: string[]): string {
   return `${name} is already in ${andList(orgs)}. A bot works for one organization. To use it here too, duplicate it in Grok Bot, rename the copy, and add the copy. To move it here, retire it there first.`
+}
+
+/** Why a seat may not report to a greyed one: its bot works for another organization. */
+function greyedManagerText(title: string): string {
+  return `${title} works in another organization. A bot never reports to a greyed bot.`
 }
 
 /** Organizations of the project with an active seat on this Grok Bot link. A bad org is skipped. */
@@ -1666,6 +1692,9 @@ export function importFromConnector(orgsDir: string, root: string, orgId: string
   const read = readOrgDir(root, orgId)
   if (!read.ok) return { error: read.errors.join(' '), status: 422 }
   if (importLocked(read.bundle.seats, readMainBot(orgsDir))) return { error: IMPORT_LOCKED, status: 409 }
+  const unreadable: string[] = []
+  botsInOtherOrgs(orgsDir, orgId, unreadable)
+  if (unreadable.length) return { error: `${andList(unreadable)} could not be read, so the import cannot tell which bots already work there. Fix it first.`, status: 422 }
   const copyId = ensureProjectId(orgsDir)
   const rows = rowsFromDump(dump.data, copyId, orgId)
   // A Connector on older rules does not name itself: its link comes from another organization's Connector seat, else none.
@@ -1862,6 +1891,8 @@ export function setSeatManagers(root: string, orgId: string, slug: string, repor
     if (target === slug) return { ok: false, errors: [`${seat.title} cannot report to itself.`] }
     if (target === main) return { ok: false, errors: [`${title(target)} is already the main manager.`] }
   }
+  const greyedTarget = [main, ...also].map((target) => read.bundle.seats.find((item) => item.slug === target)).find((item) => item && isGreyed(item))
+  if (greyedTarget) return { ok: false, errors: [greyedManagerText(greyedTarget.title)] }
   const loop = managerLoop(read.bundle.seats.map((item) => (item.slug === slug ? { slug, reportsTo: main, alsoReportsTo: also } : item)))
   if (loop) return { ok: false, errors: [`That makes a loop: ${title(loop)} would end up reporting to itself. Pick another manager.`] }
   const file = `orgs/${orgId}/seats/${slug}.md`
@@ -1981,10 +2012,11 @@ export function moveBotHere(orgsDir: string, orgId: string, slug: string): { ok:
   const here = found.bundle.org.company.name
   const at = new Date().toISOString()
   const from: string[] = []
-  for (const other of listOrgSlugs(orgsDir)) {
-    if (other === orgId) continue
-    const otherRoot = resolve(orgsDir, other)
-    const read = readOrgDir(otherRoot, other)
+  // An organization that cannot be read could still run the bot: moving now could leave it working in two.
+  const others = listOrgSlugs(orgsDir).filter((other) => other !== orgId).map((other) => ({ other, otherRoot: resolve(orgsDir, other), read: readOrgDir(resolve(orgsDir, other), other) }))
+  const unreadable = others.filter((item) => !item.read.ok).map((item) => item.other)
+  if (unreadable.length) return { ok: false, errors: [`${found.seat.title} cannot move yet: ${andList(unreadable)} could not be read. Fix it first, so the bot is not left working in two organizations.`] }
+  for (const { other, otherRoot, read } of others) {
     if (!read.ok) continue
     for (const seat of read.bundle.seats) {
       if (seat.kind !== 'bot' || seat.status === 'retired' || botKey(seat.grokBotUrl ?? '') !== key) continue
@@ -2035,6 +2067,25 @@ export function removeGreyedSeat(orgsDir: string, orgId: string, slug: string): 
   const path = seatFile(found.root, slug)
   if (!path) return { ok: false, errors: [`Refusing to remove seat ${slug}.`] }
   const orgs = botsInOtherOrgs(orgsDir, orgId).get(botKey(found.seat.elsewhereUrl ?? '')) ?? []
+  // A seat that still reports to it goes under the default manager. Nothing is touched unless the result reads back.
+  const fallback = managerSeat(found.bundle.seats)?.slug ?? ''
+  const seats = found.bundle.seats
+    .filter((item) => item.slug !== slug)
+    .map((item) => ({ ...item, ...(item.reportsTo === slug ? { reportsTo: fallback } : {}), ...(item.alsoReportsTo?.includes(slug) ? { alsoReportsTo: item.alsoReportsTo.filter((also) => also !== slug) } : {}) }))
+  const org = { ...found.bundle.org, seats: found.bundle.org.seats.filter((item) => item.slug !== slug).map((item) => (item.reportsTo === slug ? { ...item, reportsTo: fallback || null } : item)) }
+  const problems = validateBundle({ ...found.bundle, org, seats })
+  if (problems.length) return { ok: false, errors: [`${found.seat.title} cannot be removed yet: ${problems.join(' ')}`] }
+  for (const item of found.bundle.seats) {
+    if (item.slug === slug) continue
+    if (item.reportsTo === slug) {
+      const pointed = retargetSeat(found.root, item.slug, fallback)
+      if (!pointed.ok) return pointed
+    }
+    if (item.alsoReportsTo?.includes(slug)) {
+      const also = writeAlsoLine(found.root, item.slug, item.alsoReportsTo.filter((value) => value !== slug))
+      if (!also.ok) return also
+    }
+  }
   unlinkSync(path)
   const parsed = parseOrgMarkdown(readText(resolve(found.root, 'org.md')))
   if (parsed.ok) writeFileSync(resolve(found.root, 'org.md'), serializeOrgMarkdown({ ...parsed.org, seats: parsed.org.seats.filter((item) => item.slug !== slug) }, parsed.profile))
@@ -2141,6 +2192,7 @@ export function setSeatManager(root: string, orgId: string, slug: string, report
   if (!seat) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
   const manager = read.bundle.seats.find((item) => item.slug === target)
   if (!manager) return { ok: false, errors: [`${target} is not a seat in this org.`] }
+  if (isGreyed(manager)) return { ok: false, errors: [greyedManagerText(manager.title)] }
   if (target === slug) return { ok: false, errors: [`${seat.title} cannot report to itself.`] }
   const parent = new Map(read.bundle.org.seats.map((item) => [item.slug, item.reportsTo || '']))
   const seen = new Set<string>()
@@ -2330,7 +2382,7 @@ export function readRoutineBoard(orgsDir: string, slug: string, now = new Date()
     const ranAt = Number(connector?.stamp.split(':')[0])
     return routineBoard({
       orgId: slug,
-      bundle: read.bundle,
+      bundle: { ...read.bundle, seats: grokSeats(read.bundle.seats) },
       data: dump.ok ? dump.data : null,
       confirmations: [...(results ? parseResults(results).confirmations : []), ...profileFileLines(orgsDir, [slug])],
       connector: connector && ranAt > 0 ? { lastRun: new Date(ranAt).toISOString(), syncMinutes: connector.syncMinutes ?? readSyncMinutes(orgsDir) } : null,

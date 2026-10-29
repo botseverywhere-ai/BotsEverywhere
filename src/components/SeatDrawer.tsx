@@ -113,7 +113,7 @@ export function SeatDrawer({
         </Button>
       </div>
       {greyed ? (
-        <GreyedSeatBox bot={seat.name} {...greyed} />
+        <GreyedSeatBox key={seat.id} bot={seat.name} {...greyed} />
       ) : (
       <>
       <p className="reports">

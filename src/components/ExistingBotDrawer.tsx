@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
-import { isSeatGrokLink } from '../../server/src/org-files.ts'
+import { isGreyed, isSeatGrokLink } from '../../server/src/org-files.ts'
 import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice } from './save-notice'
@@ -38,7 +38,8 @@ export function ExistingBotDrawer({
   onClose: () => void
   onSave: (draft: ExistingBotDraft) => Promise<ExistingBotResult>
 }) {
-  const managers = seats.filter((seat) => seat.status !== 'retired')
+  // A greyed seat's bot works elsewhere: no bot reports to it.
+  const managers = seats.filter((seat) => seat.status !== 'retired' && !isGreyed(seat))
   const you = defaultManager(managers)
   const [name, setName] = useState('')
   const [grokBotUrl, setGrokBotUrl] = useState('')

@@ -120,8 +120,9 @@ export function canUpdate(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokSync
 }
 
 /** Only a bot seat with no Grok Bot link can be created. A link means the bot exists, even when a snapshot lacked it, so asking again would make a duplicate. */
-export function canRequest(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokSync' | 'grokBotUrl'>): boolean {
-  if (seat.kind !== 'bot' || seat.status === 'retired' || seat.grokBotUrl?.trim()) return false
+export function canRequest(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokSync' | 'grokBotUrl'> & { elsewhereUrl?: string }): boolean {
+  // A greyed seat's bot exists, in another organization: creating it by name would link that bot here.
+  if (seat.kind !== 'bot' || seat.status === 'retired' || seat.grokBotUrl?.trim() || seat.elsewhereUrl?.trim()) return false
   return seat.grokSync !== 'synced' && seat.grokSync !== 'new'
 }
 

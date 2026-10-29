@@ -6,7 +6,7 @@ import { Button } from './Button'
 import { BotsFileImport, downloadBotsFile } from './BotsFileImport'
 import { FILE_NAMES, FILE_WHAT, botsLine } from './file-guide-copy'
 import { SaveAlert } from './SaveAlert'
-import { connectorImportLine } from './sync-copy'
+import { connectorImportNotice } from './sync-copy'
 
 type LinkPanel = 'grok' | 'template'
 
@@ -19,6 +19,7 @@ export function LinkCompany({
   defaultOpen = null,
   connectorRan = false,
   mainBot = '',
+  onNotice,
 }: {
   slug: string
   seats: SeatDocument[]
@@ -32,6 +33,8 @@ export function LinkCompany({
   connectorRan?: boolean
   /** The main bot's Grok Bot id: it does not lock the import. */
   mainBot?: string
+  /** Tells the page's notices, which stay after this step closes. */
+  onNotice?: (ok: boolean, message: string) => void
 }) {
   const [open, setOpen] = useState<LinkPanel | null>(defaultOpen)
   // The writer's real folder once the sync status named it, so the path is the one on this computer.
@@ -82,7 +85,7 @@ export function LinkCompany({
         <>
           <p className="overview-note">Pick one way to fill this organization. You can do this before or after Step 1.</p>
           <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
-            {connectorRan ? <ConnectorImport slug={slug} onImported={onImported} /> : null}
+            {connectorRan ? <ConnectorImport slug={slug} onImported={onImported} onNotice={onNotice} /> : null}
             <BotsFileImport slug={slug} mode="grok" onImported={onImported} />
           </Panel>
           <Panel id="import-from-template" option={2} title="Import from a template .json" badge="build an organization from an interview with an LLM" open={open === 'template'} onPick={(event) => pick('template', event)}>
@@ -95,18 +98,21 @@ export function LinkCompany({
 }
 
 /** Import from the Connector: every bot it read in Grok Bot, with who each reports to. Nothing to paste. */
-function ConnectorImport({ slug, onImported }: { slug: string; onImported: () => Promise<void> }) {
+function ConnectorImport({ slug, onImported, onNotice }: { slug: string; onImported: () => Promise<void>; onNotice?: (ok: boolean, message: string) => void }) {
   const [state, setState] = useState<{ busy: boolean; ok: boolean; message: string } | null>(null)
   async function run() {
     setState({ busy: true, ok: true, message: '' })
     try {
       const response = await fetch(`/api/orgs/${slug}/connector-import`, { method: 'POST' })
-      const body = (await response.json()) as { imported?: unknown[]; greyed?: unknown[]; error?: string }
+      const body = (await response.json()) as { imported?: unknown[]; greyed?: unknown[]; notes?: { name: string; note: string }[]; errors?: { name: string; error: string }[]; error?: string }
       if (!response.ok) {
         setState({ busy: false, ok: false, message: body.error || 'Could not import from the Connector.' })
         return
       }
-      setState({ busy: false, ok: true, message: connectorImportLine(body.imported?.length ?? 0, body.greyed?.length ?? 0) })
+      const message = connectorImportNotice({ imported: body.imported ?? [], greyed: body.greyed ?? [], notes: body.notes ?? [], errors: body.errors ?? [] })
+      setState({ busy: false, ok: true, message })
+      // This step closes once the organization has bots, so the page's notices carry the result.
+      onNotice?.(!body.errors?.length, message)
       await onImported()
     } catch {
       setState({ busy: false, ok: false, message: 'Saving is off. Restart npm run dev.' })
