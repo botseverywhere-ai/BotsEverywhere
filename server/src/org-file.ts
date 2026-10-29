@@ -49,8 +49,9 @@ export interface OrgFile {
  * An organization file fills a new organization once: You, and the Connector's seat when Step 1 came first. Any other
  * seat means the structure is already there, and a second import would write a copy of each person.
  */
-export function orgImportLocked(seats: Pick<SeatDocument, 'slug' | 'kind' | 'title'>[]): boolean {
-  return seats.some((seat) => seat.slug !== 'you' && !(seat.kind === 'bot' && seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase())))
+export function orgImportLocked(seats: (Pick<SeatDocument, 'slug' | 'kind' | 'title'> & { grokBotUrl?: string })[], mainBot = ''): boolean {
+  const isMain = (link = '') => Boolean(mainBot) && /[?&]id=([^&#s]+)/.exec(link)?.[1] === mainBot
+  return seats.some((seat) => seat.slug !== 'you' && !(seat.kind === 'bot' && (seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()) || isMain(seat.grokBotUrl))))
 }
 
 /** A file name from a name: accents become plain letters, so José is jose, not jos-. */

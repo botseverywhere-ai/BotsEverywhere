@@ -55,7 +55,7 @@ import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { connectorState, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
 import { RESULTS_FILE, readTextFile } from './connector-files.js'
 import { parseResults } from './connector-todo.js'
-import { readGrokData } from './grok-data.js'
+import { botRow, readGrokData, rowsFromDump } from './grok-data.js'
 import { routineBoard, type RoutineBoard } from './routine-board.js'
 import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
@@ -945,7 +945,7 @@ export function importOrgFile(root: string, orgId: string, file: OrgFile): { ok:
   if (!orgExists(root)) return { ok: false, errors: ['Org not found.'] }
   const read = readOrgDir(root, orgId)
   if (!read.ok) return read
-  if (orgImportLocked(read.bundle.seats)) return { ok: false, errors: [ORG_IMPORT_LOCKED] }
+  if (orgImportLocked(read.bundle.seats, readMainBot(dirname(root)))) return { ok: false, errors: [ORG_IMPORT_LOCKED] }
   const people = file.people.filter((person) => !person.error)
   if (people.length === 0) return { ok: false, errors: ['No one in this file can be imported.'] }
   const org = read.bundle.org
@@ -1629,6 +1629,37 @@ export function adoptUnassigned(orgsDir: string, root: string, orgId: string, na
     })
   }
   return { ok: true, added, errors: imported.errors }
+}
+
+/**
+ * Import from the Connector: every bot in its last dump, each under the manager its own text names, and the Connector
+ * itself. A bot active in another organization comes in greyed (importBotsFile). A bot already here is not added twice.
+ */
+export function importFromConnector(orgsDir: string, root: string, orgId: string): BotsFileResult | { error: string; status: number } {
+  const dump = readGrokData(orgsDir)
+  if (!dump.ok) return { error: dump.missing ? 'No data from the Connector yet.' : dump.error, status: dump.missing ? 404 : 422 }
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return { error: read.errors.join(' '), status: 422 }
+  if (importLocked(read.bundle.seats, readMainBot(orgsDir))) return { error: IMPORT_LOCKED, status: 409 }
+  const copyId = ensureProjectId(orgsDir)
+  const rows = rowsFromDump(dump.data, copyId, orgId)
+  // A Connector on older rules does not name itself: its link comes from another organization's Connector seat, else none.
+  if (!dump.data.self) rows.push(botRow(connectorName(copyId), connectorLinkElsewhere(orgsDir, orgId)))
+  const here = new Set(read.bundle.seats.flatMap((seat) => [botKey(seat.grokBotUrl ?? ''), botKey(seat.elsewhereUrl ?? '')]).filter(Boolean))
+  const connectorHere = read.bundle.seats.some((seat) => isConnectorName(seat.title))
+  const fresh = rows.filter((row) => !here.has(botKey(row.grokBotUrl)) && !(connectorHere && isConnectorName(row.name)))
+  return importBotsFile(root, orgId, fresh, { grokSync: 'synced', grokSyncedAt: dump.data.dumpedAt })
+}
+
+/** The link on the Connector's seat in another organization, or '' when no organization has one. */
+function connectorLinkElsewhere(orgsDir: string, orgId: string): string {
+  for (const other of listOrgSlugs(orgsDir)) {
+    if (other === orgId) continue
+    const read = readOrgDir(resolve(orgsDir, other), other)
+    const seat = read.ok ? read.bundle.seats.find((item) => isConnectorName(item.title) && item.grokBotUrl?.trim()) : undefined
+    if (seat?.grokBotUrl) return seat.grokBotUrl.trim()
+  }
+  return ''
 }
 
 export function previewSnapshotJson(root: string, orgId: string, json: string): { ok: true; status: SyncStatus } | { ok: false; errors: string[] } {
@@ -2527,8 +2558,21 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const parsed = parseBotsFile(body)
       if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
       const current = readOrgDir(root, slug)
-      if (current.ok && importLocked(current.bundle.seats)) return send(res, 409, { error: IMPORT_LOCKED })
+      if (current.ok && importLocked(current.bundle.seats, readMainBot(orgsDir))) return send(res, 409, { error: IMPORT_LOCKED })
       send(res, 200, importBotsFile(root, slug, parsed.rows))
+      return
+    }
+    const connectorImportMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/connector-import$/.exec(url.pathname)
+    if (connectorImportMatch && req.method === 'POST') {
+      // Writes a seat for every bot, so a page on another site must not reach it.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may import bots.' })
+      const slug = connectorImportMatch[1]!
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const result = importFromConnector(orgsDir, root, slug)
+      if ('status' in result) return send(res, result.status, { error: result.error })
+      send(res, 200, result)
       return
     }
     const orgFileMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/org-file$/.exec(url.pathname)
@@ -2541,7 +2585,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const parsed = parseOrgFile(body)
       if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
       const current = readOrgDir(root, slug)
-      if (current.ok && orgImportLocked(current.bundle.seats)) return send(res, 409, { errors: [ORG_IMPORT_LOCKED] })
+      if (current.ok && orgImportLocked(current.bundle.seats, readMainBot(orgsDir))) return send(res, 409, { errors: [ORG_IMPORT_LOCKED] })
       const result = importOrgFile(root, slug, parsed.file)
       if (!result.ok) return send(res, 422, { errors: result.errors })
       send(res, 200, result)

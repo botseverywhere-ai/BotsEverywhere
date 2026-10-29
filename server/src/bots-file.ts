@@ -9,8 +9,10 @@ export const IMPORT_LOCKED = 'This organization already has bots, so importing a
  * A bots file fills an empty organization once. After that Sync with Grok Bot brings new bots, and a second import would
  * write a copy of each bot beside the first. The Connector's own seat does not count: it only syncs files.
  */
-export function importLocked(seats: Pick<SeatDocument, 'kind' | 'title'>[]): boolean {
-  return seats.some((seat) => seat.kind === 'bot' && !seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()))
+export function importLocked(seats: (Pick<SeatDocument, 'kind' | 'title'> & { grokBotUrl?: string })[], mainBot = ''): boolean {
+  // The main bot belongs in every organization, so it does not fill this one either.
+  const isMain = (link = '') => Boolean(mainBot) && /[?&]id=([^&#s]+)/.exec(link)?.[1] === mainBot
+  return seats.some((seat) => seat.kind === 'bot' && !seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()) && !isMain(seat.grokBotUrl))
 }
 
 /** One bot from a bots file, after the field names are normalized. */

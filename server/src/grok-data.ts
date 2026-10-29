@@ -202,8 +202,12 @@ function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[];
 /** Every bot in the dump as a bots-file row for one organization, placed by who its own text names, and the Connector itself. */
 export function rowsFromDump(data: GrokData, copyId: string, orgId: string): BotsFileRow[] {
   const rows = data.bots.map((bot) => rowFor(bot, data, { seats: [], orgId, copyId, apps: undefined, seat: undefined }))
-  if (!data.self) return rows
-  return [...rows, { name: data.self.name, grokBotUrl: data.self.grokBotUrl, reportsTo: 'You', owns: [], may: [], needsApproval: [], doneWhen: [], createdAt: '', lastActive: '', routines: [], skills: [], apps: [], publicUrl: '', botStatus: '', note: '', error: '' }]
+  return data.self ? [...rows, botRow(data.self.name, data.self.grokBotUrl)] : rows
+}
+
+/** A bot row with a name and a link and nothing else, under You. */
+export function botRow(name: string, grokBotUrl: string): BotsFileRow {
+  return { name, grokBotUrl, reportsTo: 'You', owns: [], may: [], needsApproval: [], doneWhen: [], createdAt: '', lastActive: '', routines: [], skills: [], apps: [], publicUrl: '', botStatus: '', note: '', error: '' }
 }
 
 function appsFor(found: string[], kept: string[]): string[] {
