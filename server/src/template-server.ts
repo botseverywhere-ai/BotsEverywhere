@@ -26,6 +26,7 @@ import {
   cardUnchanged,
   validateBundle,
   managerLoop,
+  grokSeats,
   type FileActivity,
   type GrokSyncState,
   type OrgBundle,
@@ -1436,7 +1437,7 @@ export function syncStatus(root: string, orgId: string, orgsDir = ''): { ok: tru
     if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
     return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
   }
-  const plan = planSync(snap.snapshot, read.bundle.seats, read.bundle.processes ?? [], read.bundle.org.company.name, orgsDir ? accountBots(orgsDir, orgId) : [])
+  const plan = planSync(snap.snapshot, grokSeats(read.bundle.seats), read.bundle.processes ?? [], read.bundle.org.company.name, orgsDir ? accountBots(orgsDir, orgId) : [])
   return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
 }
 
@@ -1457,7 +1458,7 @@ function projectBots(orgsDir: string, readOrg = orgReader(orgsDir)): { orgId: st
   return listOrgSlugs(orgsDir).flatMap((orgId) => {
     const read = readOrg(orgId)
     if (!read.ok) return []
-    return read.bundle.seats
+    return grokSeats(read.bundle.seats)
       .filter((seat) => seat.kind === 'bot' && seat.status !== 'retired')
       .map((seat) => ({ orgId, orgName: read.bundle.org.company.name, slug: seat.slug, title: seat.title }))
   })
@@ -1537,7 +1538,7 @@ export function grokAccount(orgsDir: string, orgId: string, readOrg = orgReader(
     }
     const read = readOrg(other)
     const orgName = read.ok ? read.bundle.org.company.name : other
-    const seats = read.ok ? read.bundle.seats.filter((seat) => seat.kind === 'bot') : []
+    const seats = read.ok ? grokSeats(read.bundle.seats).filter((seat) => seat.kind === 'bot') : []
     for (const bot of snap.snapshot.bots) {
       const link = bot.grokBotUrl.trim()
       const name = bot.name.trim().toLowerCase()
@@ -1595,7 +1596,7 @@ export function previewSnapshotJson(root: string, orgId: string, json: string): 
   if (!read.ok) return read
   const parsed = parseSnapshot(json, new Date().toISOString())
   if (!parsed.ok) return { ok: false, errors: [parsed.error] }
-  const plan = planSync(parsed.snapshot, read.bundle.seats, read.bundle.processes ?? [], read.bundle.org.company.name)
+  const plan = planSync(parsed.snapshot, grokSeats(read.bundle.seats), read.bundle.processes ?? [], read.bundle.org.company.name)
   return { ok: true, status: { snapshot: { stamp: '', syncedAt: parsed.snapshot.syncedAt }, error: '', plan, lastConfirmed: lastSyncConfirmed(read.bundle), folder: resolve(root) } }
 }
 
@@ -2555,7 +2556,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
         if (request.stamp !== snap.stamp) return send(res, 409, { error: 'The snapshot changed. Review it again.' })
         snapshot = snap.snapshot
       }
-      const plan = planSync(snapshot, read.bundle.seats, read.bundle.processes ?? [], read.bundle.org.company.name, accountBots(orgsDir, slug))
+      const plan = planSync(snapshot, grokSeats(read.bundle.seats), read.bundle.processes ?? [], read.bundle.org.company.name, accountBots(orgsDir, slug))
       const applied = applySync(root, slug, plan)
       if (!applied.ok) return send(res, 422, { errors: applied.errors })
       // Only the Connector's own snapshot proves a bot exists; a pasted file does not clear requests.

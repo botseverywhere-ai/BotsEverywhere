@@ -1,7 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { BotsFileRow } from './bots-file.ts'
-import type { FileActivity, SeatDocument } from './org-files.ts'
+import { grokSeats, type FileActivity, type SeatDocument } from './org-files.ts'
 import { normalizeText } from './normalize-text.ts'
 import { staleMinutes } from './connector-timing.ts'
 import { readConnector, readSyncMinutes } from './project.ts'
@@ -260,7 +260,7 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     const read = readOrgDir(root, orgId)
     if (!read.ok) continue
     const orgName = read.bundle.org.company.name
-    const seats = read.bundle.seats
+    const seats = grokSeats(read.bundle.seats)
     const before: OrgMemory = memory.orgs[orgId] ?? { bots: null, day: '', runs: 0, firstRunAt: '' }
     let seenNow = before.seen
     if (firstEver) {

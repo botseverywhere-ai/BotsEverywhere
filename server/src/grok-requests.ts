@@ -129,8 +129,9 @@ export function canRequest(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokSyn
  * A retired bot the person can still delete in Grok Bot: it has a link to open, and no Connector run has shown it gone.
  * Grok Bot gives the Connector no delete tool, so the person deletes it there; the app only notices it is gone.
  */
-export function canDelete(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokBotUrl' | 'grokDeletedAt'>): boolean {
-  return seat.kind === 'bot' && seat.status === 'retired' && Boolean(seat.grokBotUrl?.trim()) && !seat.grokDeletedAt
+export function canDelete(seat: Pick<SeatDocument, 'kind' | 'status' | 'grokBotUrl' | 'grokDeletedAt' | 'movedTo'>): boolean {
+  // A bot that moved to another organization still works there: it is not to be deleted.
+  return seat.kind === 'bot' && seat.status === 'retired' && Boolean(seat.grokBotUrl?.trim()) && !seat.grokDeletedAt && !seat.movedTo
 }
 
 /** A bot the Connector reported, from a snapshot or connector.json. */
