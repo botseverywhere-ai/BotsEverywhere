@@ -64,7 +64,7 @@ test('Also reports to lists active seats other than itself and its main manager;
   assert.match(drawer, /<legend className="field-label">Also reports to<\/legend>/)
   assert.match(drawer, /<AlsoReportsTo key=\{`also-\$\{seat\.id\}`\} choices=\{alsoManagers\} value=\{seat\.alsoReportsTo \?\? \[\]\} onChange=\{onAlsoReportsTo\} \/>/, 'one dropdown per extra manager instead of a box per seat; its key never matches Profile\'s, which sits beside it')
   assert.match(drawer, /<select key=\{`\$\{index\}-\$\{slug\}`\} className="text-input"/, 'each one is a native select, like Reports to')
-  assert.match(drawer, /<option value="">None<\/option>/, 'None takes an extra manager away')
+  assert.match(drawer, /<option value="">\*\*\* None \*\*\*<\/option>/, '*** None *** takes an extra manager away, easy to find at the top of the list')
   assert.match(drawer, /disabled=\{Boolean\(item\.disabled\) \|\| \(item\.slug !== slug && value\.includes\(item\.slug\)\)\}/, 'a loop, or a manager already picked in another dropdown, cannot be picked')
   assert.match(drawer, /\{item\.disabled \? `\$\{item\.title\} \(would make a loop\)` : item\.title\}/)
   assert.match(drawer, /className="also-add".*>\+ Add another manager<\/Button>/, 'a button under the dropdowns says what it adds')

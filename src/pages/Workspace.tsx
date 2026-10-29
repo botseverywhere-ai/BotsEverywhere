@@ -1288,7 +1288,7 @@ function AddSeatDialog({
       <label>
         Reports to
         <select value={reportsTo} onChange={(event) => setReportsTo(event.target.value)}>
-          <option value="">Top of the chart</option>
+          <option value="">*** Top of the chart ***</option>
           {seats.filter((seat) => seat.status !== 'retired').map((seat) => (
             <option key={seat.slug} value={seat.slug}>{seat.title}</option>
           ))}

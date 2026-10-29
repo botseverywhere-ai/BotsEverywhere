@@ -12,3 +12,8 @@ test('Add a seat: the short name keeps capitals and spaces, and the file name is
   assert.match(workspace, /<input value=\{shortName\} onChange=\{\(event\) => setShortName\(event\.target\.value\)\} \/>/)
   assert.match(workspace, /const slug = slugify\(shortName\)/)
 })
+
+test('Add a seat: Reports to marks the no-manager choice so it is easy to find', () => {
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /<select value=\{reportsTo\} onChange=\{\(event\) => setReportsTo\(event\.target\.value\)\}>\s*<option value="">\*\*\* Top of the chart \*\*\*<\/option>/)
+})

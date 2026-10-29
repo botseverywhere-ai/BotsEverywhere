@@ -243,7 +243,7 @@ function AlsoReportsTo({ choices, value, onChange }: { choices: { slug: string; 
       <legend className="field-label">Also reports to</legend>
       {rows.map((slug, index) => (
         <select key={`${index}-${slug}`} className="text-input" aria-label={`Also reports to ${index + 1}`} value={slug} onChange={(event) => pick(index, event.target.value)}>
-          <option value="">None</option>
+          <option value="">*** None ***</option>
           {choices.map((item) => (
             <option key={item.slug} value={item.slug} disabled={Boolean(item.disabled) || (item.slug !== slug && value.includes(item.slug))} title={item.disabled}>
               {item.disabled ? `${item.title} (would make a loop)` : item.title}
