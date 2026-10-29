@@ -50,7 +50,7 @@ export interface OrgFile {
  * seat means the structure is already there, and a second import would write a copy of each person.
  */
 export function orgImportLocked(seats: (Pick<SeatDocument, 'slug' | 'kind' | 'title'> & { grokBotUrl?: string })[], mainBot = ''): boolean {
-  const isMain = (link = '') => Boolean(mainBot) && /[?&]id=([^&#s]+)/.exec(link)?.[1] === mainBot
+  const isMain = (link = '') => Boolean(mainBot) && /[?&]id=([^&#\s]+)/.exec(link)?.[1] === mainBot
   return seats.some((seat) => seat.slug !== 'you' && !(seat.kind === 'bot' && (seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()) || isMain(seat.grokBotUrl))))
 }
 

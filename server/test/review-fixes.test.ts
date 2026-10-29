@@ -3,7 +3,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { parseBotsFile } from '../src/bots-file.ts'
+import { importLocked, parseBotsFile } from '../src/bots-file.ts'
+import { orgImportLocked } from '../src/org-file.ts'
 import { GROK_DATA_FILE } from '../src/connector-files.ts'
 import { canRequest } from '../src/grok-requests.ts'
 import { connectorImportNotice } from '../../src/components/sync-copy.ts'
@@ -133,4 +134,10 @@ test('I5: while another organization cannot be read, no bot moves and the Connec
   } finally {
     done()
   }
+})
+
+test('the main bot is recognized whatever letters its id has', () => {
+  const seats = [{ kind: 'human' as const, title: 'You', slug: 'you', grokBotUrl: '' }, { kind: 'bot' as const, title: 'My Assistant', slug: 'my-assistant', grokBotUrl: link('sss-ask-1') }]
+  assert.equal(importLocked(seats, 'sss-ask-1'), false)
+  assert.equal(orgImportLocked(seats, 'sss-ask-1'), false)
 })

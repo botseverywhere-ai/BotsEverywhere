@@ -11,7 +11,7 @@ export const IMPORT_LOCKED = 'This organization already has bots, so importing a
  */
 export function importLocked(seats: (Pick<SeatDocument, 'kind' | 'title'> & { grokBotUrl?: string })[], mainBot = ''): boolean {
   // The main bot belongs in every organization, so it does not fill this one either.
-  const isMain = (link = '') => Boolean(mainBot) && /[?&]id=([^&#s]+)/.exec(link)?.[1] === mainBot
+  const isMain = (link = '') => Boolean(mainBot) && /[?&]id=([^&#\s]+)/.exec(link)?.[1] === mainBot
   return seats.some((seat) => seat.kind === 'bot' && !seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()) && !isMain(seat.grokBotUrl))
 }
 
