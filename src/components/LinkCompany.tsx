@@ -5,6 +5,8 @@ import { FOLDER_EVENT, orgFolder, seatsFolder } from '../org/folder-path'
 import { Button } from './Button'
 import { BotsFileImport, downloadBotsFile } from './BotsFileImport'
 import { FILE_NAMES, FILE_WHAT, botsLine } from './file-guide-copy'
+import { SaveAlert } from './SaveAlert'
+import { connectorImportLine } from './sync-copy'
 
 type LinkPanel = 'grok' | 'template'
 
@@ -15,6 +17,8 @@ export function LinkCompany({
   onAddSeat,
   onAddExisting,
   defaultOpen = null,
+  connectorRan = false,
+  mainBot = '',
 }: {
   slug: string
   seats: SeatDocument[]
@@ -24,6 +28,10 @@ export function LinkCompany({
   onAddExisting: () => void
   /** Organization Overview leaves every panel closed. The empty-organization start screen opens the first. */
   defaultOpen?: LinkPanel | null
+  /** The Connector has reported: Option 1 can import from what it read, with nothing to paste. */
+  connectorRan?: boolean
+  /** The main bot's Grok Bot id: it does not lock the import. */
+  mainBot?: string
 }) {
   const [open, setOpen] = useState<LinkPanel | null>(defaultOpen)
   // The writer's real folder once the sync status named it, so the path is the one on this computer.
@@ -36,7 +44,7 @@ export function LinkCompany({
     window.addEventListener(FOLDER_EVENT, onFolder)
     return () => window.removeEventListener(FOLDER_EVENT, onFolder)
   }, [slug])
-  const locked = importLocked(seats)
+  const locked = importLocked(seats, mainBot)
   const seatsAt = seatsFolder(folder)
 
   function pick(id: LinkPanel, event: MouseEvent<HTMLElement>) {
@@ -74,6 +82,7 @@ export function LinkCompany({
         <>
           <p className="overview-note">Pick one way to fill this organization. You can do this before or after Step 1.</p>
           <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
+            {connectorRan ? <ConnectorImport slug={slug} onImported={onImported} /> : null}
             <BotsFileImport slug={slug} mode="grok" onImported={onImported} />
           </Panel>
           <Panel id="import-from-template" option={2} title="Import from a template .json" badge="build an organization from an interview with an LLM" open={open === 'template'} onPick={(event) => pick('template', event)}>
@@ -82,6 +91,33 @@ export function LinkCompany({
         </>
       )}
     </section>
+  )
+}
+
+/** Import from the Connector: every bot it read in Grok Bot, with who each reports to. Nothing to paste. */
+function ConnectorImport({ slug, onImported }: { slug: string; onImported: () => Promise<void> }) {
+  const [state, setState] = useState<{ busy: boolean; ok: boolean; message: string } | null>(null)
+  async function run() {
+    setState({ busy: true, ok: true, message: '' })
+    try {
+      const response = await fetch(`/api/orgs/${slug}/connector-import`, { method: 'POST' })
+      const body = (await response.json()) as { imported?: unknown[]; greyed?: unknown[]; error?: string }
+      if (!response.ok) {
+        setState({ busy: false, ok: false, message: body.error || 'Could not import from the Connector.' })
+        return
+      }
+      setState({ busy: false, ok: true, message: connectorImportLine(body.imported?.length ?? 0, body.greyed?.length ?? 0) })
+      await onImported()
+    } catch {
+      setState({ busy: false, ok: false, message: 'Saving is off. Restart npm run dev.' })
+    }
+  }
+  return (
+    <div className="connector-import">
+      <Button variant="primary" type="button" disabled={state?.busy} aria-busy={state?.busy || undefined} onClick={() => void run()}>Import from the Connector</Button>
+      <p className="overview-note">Every bot comes in with who it reports to. Bots already in another organization come in greyed.</p>
+      {state?.message ? <SaveAlert kind={state.ok ? 'ok' : 'bad'}>{state.message}</SaveAlert> : null}
+    </div>
   )
 }
 

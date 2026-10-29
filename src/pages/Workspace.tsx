@@ -24,7 +24,7 @@ import { SyncDrawer } from '../components/SyncDrawer'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
-import { activeBotCount, botLimitLine, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
+import { activeBotCount, botLimitLine, greyedDone, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
@@ -52,6 +52,7 @@ import {
   activeBotCardGaps,
   bundleFromState,
   cardUnchanged,
+  isGreyed,
   serializeSeat,
   type FileActivity,
   type OrgBundle,
@@ -131,7 +132,7 @@ export function Workspace({
   const byId = useMemo(() => new Map(company.seats.map((seat) => [seat.id, seat])), [company])
   const active = company.seats.filter((seat) => seat.status !== 'retired')
   const openSeats = useMemo(() => openOrgSeats(company.steps, company.seats, company.org.id), [company])
-  const bots = active.filter((seat) => seat.type === 'bot')
+  const bots = active.filter((seat) => seat.type === 'bot' && !seat.elsewhere)
   const retired = seats.filter((seat) => seat.status === 'retired')
   const chartSeat = selected ? byId.get(selected) ?? null : null
   const workOwners = useMemo(
@@ -241,7 +242,8 @@ export function Workspace({
   const metricsById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof shownBotMetrics>>()
     for (const seat of seats) {
-      if (seat.kind !== 'bot') continue
+      // A greyed seat's numbers belong to the organization its bot works for.
+      if (seat.kind !== 'bot' || isGreyed(seat)) continue
       // The bot's own count of its routine runs, from its Run history, comes before Grok Bot's files.
       const board = routineBoard?.bots.find((item) => item.slug === seat.slug)
       map.set(seat.slug, withConnectorRuns(seat.title, shownBotMetrics({
@@ -258,7 +260,7 @@ export function Workspace({
     }
     return map
   }, [runLines, seats, activity, routineBoard])
-  const chartSeats = [...active.map((seat) => (seat.type === 'bot' ? { ...seat, shown: metricsById.get(seat.id) } : seat)), ...openSeats]
+  const chartSeats = [...active.map((seat) => (seat.type === 'bot' ? { ...seat, shown: metricsById.get(seat.id), ...(seat.elsewhere ? { elsewhere: sync?.elsewhere?.[seat.id] ?? [] } : {}) } : seat)), ...openSeats]
   const least = leastUsed(bots.map((seat) => ({
     id: seat.id,
     stats: { usageCount30d: metricsById.get(seat.id)?.usage ?? 0 },
@@ -691,6 +693,29 @@ export function Workspace({
     }
   }
 
+  /** A choice on a greyed seat: Move it here, Rename and publish in Grok Bot, It's my main bot, or Remove. */
+  async function greyedAction(slug: string, action: 'move-here' | 'publish' | 'main-bot' | 'remove', name = '') {
+    setBotNotice(null)
+    try {
+      const response = await fetch(action === 'remove' ? `/api/orgs/${bundle.id}/seats/${slug}` : `/api/orgs/${bundle.id}/seats/${slug}/${action}`, {
+        method: action === 'remove' ? 'DELETE' : 'POST',
+        ...(action === 'publish' ? { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }) } : {}),
+      })
+      const body = (await response.json()) as { errors?: string[]; error?: string }
+      if (!response.ok) {
+        tell(saveNotice(false, body.errors?.join(' ') || body.error || 'Could not change where that bot works.'))
+        return
+      }
+      if (action === 'remove') setSelected('')
+      await rereadOrg()
+      void loadSync()
+      tell(saveNotice(true, greyedDone(action, name)), orgChartLink)
+    } catch {
+      setWriter('down')
+      tell(saveNotice(false, SAVING_OFF))
+    }
+  }
+
   async function setAlsoManagers(slug: string, reportsTo: string, alsoReportsTo: string[]) {
     setBotNotice(null)
     try {
@@ -1063,7 +1088,16 @@ export function Workspace({
           least={least?.id === chartSeat.id}
           fading={false}
           sample={sample}
-          allowRetire={editable && writer === 'up'}
+          allowRetire={editable && writer === 'up' && !chartSeat.elsewhere}
+          greyed={editable && chartSeat.elsewhere ? {
+            orgs: sync?.elsewhere?.[chartSeat.id] ?? [],
+            orgName: company.org.name,
+            canMarkMain: !sync?.mainBot,
+            onMove: () => { void greyedAction(chartSeat.id, 'move-here') },
+            onPublish: (name) => { void greyedAction(chartSeat.id, 'publish', name) },
+            onRemove: () => { void greyedAction(chartSeat.id, 'remove') },
+            onMainBot: () => { void greyedAction(chartSeat.id, 'main-bot') },
+          } : undefined}
           cardSave={cardSave && cardSave.slug === chartSeat.id ? cardSave : null}
           onTab={(tab) => setSeatTab({ id: chartSeat.id, tab })}
           onClose={() => setSelected('')}

@@ -1,5 +1,5 @@
 import type { CompanySeed, Seat, TriggerSource } from '../data/mock-companies.ts'
-import { seatStats, type OrgBundle, type OrgDocument } from '../../server/src/org-files.ts'
+import { isGreyed, seatStats, type OrgBundle, type OrgDocument } from '../../server/src/org-files.ts'
 
 const SOURCES: TriggerSource[] = ['email', 'chat', 'meeting', 'dashboard', 'customer', 'alert', 'management', 'schedule']
 
@@ -16,6 +16,7 @@ export function companyFromBundle(bundle: OrgBundle): CompanySeed {
       type: seat.kind,
       reportsTo: seat.reportsTo || undefined,
       ...(seat.alsoReportsTo?.length ? { alsoReportsTo: seat.alsoReportsTo } : {}),
+      ...(isGreyed(seat) ? { elsewhere: [] } : {}),
       grokShareUrl: seat.addToGrokBotUrl || null,
       addToGrokBotUrl: seat.addToGrokBotUrl || null,
       grokBotUrl: seat.grokBotUrl || null,

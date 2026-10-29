@@ -1846,6 +1846,17 @@ a.site-nav-cta:focus {
 .org-card-hit.is-in-grok { border-left: 3px solid var(--color-green-400); }
 .org-card-hit.is-off-grok { border-style: dashed; color: var(--color-muted); }
 .org-card-hit.is-unsynced { color: var(--color-muted); }
+/* A greyed bot works for another organization: dashed, muted, and grey, with where it works as its tag. */
+.org-card-hit.is-elsewhere { border-style: dashed; color: var(--color-muted); background: var(--color-gray-100); }
+.org-sync-tag.is-elsewhere { border-style: dashed; }
+.greyed-box { display: grid; gap: var(--space-3); margin: var(--space-3) 0 0; padding: var(--space-3); border: var(--border-dashed); }
+.greyed-line { margin: 0; }
+.greyed-choice { display: grid; gap: var(--space-1); }
+.greyed-choice .btn { justify-self: start; }
+.greyed-choice .auth-note { margin: 0; }
+.connector-import { display: grid; gap: var(--space-2); margin: 0 0 var(--space-4); }
+.connector-import .btn { justify-self: start; }
+.connector-import .overview-note { margin: 0; }
 .swatch-grok { background: var(--color-green-400); }
 .swatch-off-grok { background: var(--color-white); border: 1px dashed var(--color-muted); }
 .swatch-retired { background: var(--color-white); border: 1px solid var(--color-muted); }

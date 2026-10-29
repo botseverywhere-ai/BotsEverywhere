@@ -10,6 +10,7 @@ import { SaveAlert } from './SaveAlert'
 import type { SeatDrawerTab } from './seat-drawer-tab'
 import { grokRequestLine, grokSyncClass, grokSyncLine, grokSyncTag } from './sync-copy'
 import { BotProfile, ProfileLists, type ProfileChanges } from './BotProfile'
+import { GreyedSeatBox } from './GreyedSeatBox'
 
 export interface DirectoryProfileView {
   category: string
@@ -49,6 +50,7 @@ export function SeatDrawer({
   accountApps,
   reportedSkills,
   reportedApps,
+  greyed,
   children,
 }: {
   seat: Seat
@@ -96,6 +98,8 @@ export function SeatDrawer({
   grokUpdateItems?: string[]
   /** Update bot: asks the Connector to send this bot's skills and routines to Grok Bot. */
   onUpdateInGrok?: () => void
+  /** The seat's bot works in another organization: the panel offers the ways it can work here instead of its tabs. */
+  greyed?: { orgs: string[]; orgName: string; canMarkMain: boolean; onMove: () => void; onPublish: (name: string) => void; onRemove: () => void; onMainBot: () => void }
   children?: ReactNode
 }) {
   return (
@@ -108,6 +112,10 @@ export function SeatDrawer({
           </svg>
         </Button>
       </div>
+      {greyed ? (
+        <GreyedSeatBox bot={seat.name} {...greyed} />
+      ) : (
+      <>
       <p className="reports">
         {seat.role} · <span className={`type-mark type-${seat.type}`}>{seat.type}</span>
         {least ? <span className="least-tag">Least used</span> : null}
@@ -218,6 +226,8 @@ export function SeatDrawer({
           Retire…
         </Button>
       ) : null}
+      </>
+      )}
     </aside>
   )
 }

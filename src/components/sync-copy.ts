@@ -62,6 +62,40 @@ export function grokSyncClass(seat: Pick<SyncSeat, 'grokSync' | 'grokBotUrl'>): 
   return linked(seat) ? 'is-in-grok' : 'is-unsynced'
 }
 
+/** Organization names in a sentence: A, A and B, or A, B, and C. */
+function orgNames(orgs: string[]): string {
+  if (orgs.length < 3) return orgs.join(' and ')
+  return `${orgs.slice(0, -1).join(', ')}, and ${orgs[orgs.length - 1]}`
+}
+
+/** The tag on a greyed bot's card: where it works. Before the writer names it, it says another organization. */
+export function elsewhereTag(orgs: string[]): string {
+  return `In ${orgs.length ? orgNames(orgs) : 'another organization'}`
+}
+
+/** The first line in a greyed seat's panel. */
+export function greyedLine(bot: string, orgs: string[]): string {
+  return `${bot} is used in ${orgs.length ? orgNames(orgs) : 'another organization'}. A bot works for one organization.`
+}
+
+/** Where a greyed bot works, for the panel's other lines. */
+export function greyedOrgs(orgs: string[]): string {
+  return orgs.length ? orgNames(orgs) : 'another organization'
+}
+
+/** After Import from the Connector. */
+export function connectorImportLine(added: number, greyed: number): string {
+  return greyed ? `${added} bots added. ${greyed} are greyed: they work in another organization.` : `${added} bots added.`
+}
+
+/** After a choice on a greyed bot. */
+export function greyedDone(action: 'move-here' | 'publish' | 'main-bot' | 'remove', name = ''): string {
+  if (action === 'move-here') return "Moved here. Grok Bot gets its new organization on the Connector's next run."
+  if (action === 'publish') return `Asked for ${name}. The Connector creates it in Grok Bot on its next run.`
+  if (action === 'main-bot') return 'Saved as your main bot. It works in every organization.'
+  return 'Removed from this organization. The bot keeps working where it is.'
+}
+
 /** Numbers beside the org chart legend. Open seats are not counted; a bot nothing is known about is in neither Grok Bot count. */
 export function legendCounts(
   seats: ({ id: string; type: 'human' | 'bot' | 'system' } & Pick<SyncSeat, 'grokSync' | 'grokBotUrl'>)[],

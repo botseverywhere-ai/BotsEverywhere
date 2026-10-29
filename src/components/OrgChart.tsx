@@ -5,7 +5,7 @@ import { anchoredScroll, fitScale, formatZoom, pickedSeatName } from './org-zoom
 import { Button } from './Button'
 import { SeatListDrawer } from './SeatListDrawer'
 import { botBlurb, orgCardLabel, taskNote } from './org-card-copy'
-import { accountRows, grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
+import { accountRows, elsewhereTag, grokSyncClass, grokSyncTag, legendCounts, legendGroup, LEGEND_TITLES, seatListMeta, type LegendGroup } from './sync-copy'
 import type { AccountApp, GrokAccount } from '../../server/src/grok-sync.ts'
 import { botApps } from '../org/bot-apps'
 import { AlsoReportsLines } from './AlsoReportsLines'
@@ -538,15 +538,16 @@ function OrgBranch({
   const also = (seat.alsoReportsTo ?? []).flatMap((id) => names.get(id) ?? []).join(', ')
   const isCollapsed = collapsed.has(seat.id)
   const seatLive = live?.get(seat.id)
+  // A greyed bot works for another organization: its card says where, never a Grok Bot state of this one.
   const sync = grokStates && seat.type === 'bot' && !empty
-    ? { tag: grokSyncTag(seat), className: grokSyncClass(seat) === 'is-off-grok' ? 'is-missing' : grokSyncClass(seat) }
+    ? seat.elsewhere ? { tag: elsewhereTag(seat.elsewhere), className: 'is-elsewhere' } : { tag: grokSyncTag(seat), className: grokSyncClass(seat) === 'is-off-grok' ? 'is-missing' : grokSyncClass(seat) }
     : null
   const classes = [
     selectedId === seat.id ? 'sel' : '',
     foundId === seat.id ? 'found' : '',
     highlightId === seat.id ? 'is-hired' : '',
     seatLive?.running ? 'is-live' : '',
-    sync ? grokSyncClass(seat) : '',
+    sync ? (seat.elsewhere ? 'is-elsewhere' : grokSyncClass(seat)) : '',
     `org-kind-${seat.type}`,
   ]
     .filter(Boolean)

@@ -166,6 +166,8 @@ export function CompanyOverview({
         onImported={async () => { await onImported(); await reloadProfile() }}
         onAddSeat={onAddSeat}
         onAddExisting={onAddExisting}
+        connectorRan={Boolean(sync?.project?.connector?.syncedAt)}
+        mainBot={sync?.mainBot ?? ''}
       />
     ) : null}
     <div className="overview">

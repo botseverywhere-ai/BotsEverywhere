@@ -96,6 +96,8 @@ export interface Seat {
   reportsTo?: string
   /** Extra managers, drawn dotted. */
   alsoReportsTo?: string[]
+  /** Set on a greyed seat: its bot works for these organizations. Empty until the writer names them. */
+  elsewhere?: string[]
   /** Bot only. Editable in the session; a reload restores this seed value. */
   prompt?: string
   /** Bot only. Empty until a real Grok Bot link exists. */
