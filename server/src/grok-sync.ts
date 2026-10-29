@@ -80,6 +80,10 @@ export interface SyncStatus {
   project?: ProjectInfo
   /** What the Connector could not do. Absent when the writer did not say. */
   connector?: ConnectorState
+  /** Greyed seat → the organizations where its bot works, by their current names. */
+  elsewhere?: Record<string, string[]>
+  /** The main bot's Grok Bot id, or '' until the owner marks one. */
+  mainBot?: string
 }
 
 export interface ConnectorState {

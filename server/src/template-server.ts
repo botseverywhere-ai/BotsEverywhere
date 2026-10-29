@@ -1474,13 +1474,36 @@ export function syncStatus(root: string, orgId: string, orgsDir = ''): { ok: tru
   const project = orgsDir ? projectInfo(orgsDir, orgId, readOrg) : undefined
   const retiredElsewhere = orgsDir ? retiredActiveElsewhere(orgsDir, read.bundle.seats, readOrg) : {}
   const connector = orgsDir ? { connector: connectorState(orgsDir, orgId) } : {}
+  // Where each greyed seat's bot works, by the organizations' names now, and the main bot.
+  const greyed = orgsDir ? { elsewhere: greyedElsewhere(orgsDir, orgId, read.bundle.seats, readOrg), mainBot: readMainBot(orgsDir) } : {}
   const snap = readSnapshot(root)
   if (!snap.ok) {
-    if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
-    return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
+    if (snap.missing) return { ok: true, status: { snapshot: null, error: '', plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector, ...greyed } }
+    return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: '' }, error: snap.error, plan: null, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector, ...greyed } }
   }
   const plan = planSync(snap.snapshot, grokSeats(read.bundle.seats), read.bundle.processes ?? [], read.bundle.org.company.name, orgsDir ? accountBots(orgsDir, orgId) : [])
-  return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector } }
+  return { ok: true, status: { snapshot: { stamp: snap.stamp, syncedAt: snap.snapshot.syncedAt }, error: '', plan, lastConfirmed, folder, requests, retiredElsewhere, project, ...connector, ...greyed } }
+}
+
+/** Each greyed seat here → the organizations where its bot is active, read with the request's one reader. */
+function greyedElsewhere(orgsDir: string, orgId: string, seats: SeatDocument[], readOrg = orgReader(orgsDir)): Record<string, string[]> {
+  const wanted = seats.filter((seat) => isGreyed(seat))
+  if (!wanted.length) return {}
+  const activeIn = new Map<string, string[]>()
+  for (const other of listOrgSlugs(orgsDir)) {
+    if (other === orgId) continue
+    const read = readOrg(other)
+    if (!read.ok) continue
+    for (const seat of read.bundle.seats) {
+      const key = botKey(seat.grokBotUrl ?? '')
+      if (seat.kind !== 'bot' || seat.status === 'retired' || !key) continue
+      activeIn.set(key, [...new Set([...(activeIn.get(key) ?? []), read.bundle.org.company.name])])
+    }
+  }
+  return Object.fromEntries(wanted.flatMap((seat) => {
+    const orgs = activeIn.get(botKey(seat.elsewhereUrl ?? ''))
+    return orgs?.length ? [[seat.slug, orgs]] : []
+  }))
 }
 
 /** Bots the Grok Bot account runs outside this org's snapshot: unassigned ones, other orgs' snapshots, and the Connector. A bad snapshot is skipped. */

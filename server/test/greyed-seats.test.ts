@@ -67,6 +67,22 @@ test('a greyed seat gets no block, no snapshot row, and no sync match', () => {
   }
 })
 
+test('the sync status names the organizations of a greyed bot by their current name, and the main bot', () => {
+  const { orgs, a, b, done } = greyedProject()
+  try {
+    const orgFile = join(orgs, a, 'org.md')
+    writeFileSync(orgFile, readFileSync(orgFile, 'utf8').replace(/^name: .*$/m, 'name: Renamed Org'))
+    writeFileSync(join(orgs, 'project.json'), JSON.stringify({ id: 'acn8', mainBot: 'g1' }))
+    const status = syncStatus(join(orgs, b), b, orgs)
+    assert.ok(status.ok)
+    if (!status.ok) return
+    assert.deepEqual(status.status.elsewhere, { security: ['Renamed Org'] })
+    assert.equal(status.status.mainBot, 'g1')
+  } finally {
+    done()
+  }
+})
+
 test("a moved bot's retired seat offers no Delete in Grok Bot", () => {
   assert.equal(canDelete({ kind: 'bot', status: 'retired', grokBotUrl: link('s1'), movedTo: 'org-abcd2345' }), false)
   assert.equal(canDelete({ kind: 'bot', status: 'retired', grokBotUrl: link('s1') }), true)
