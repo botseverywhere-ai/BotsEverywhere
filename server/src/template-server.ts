@@ -50,7 +50,7 @@ import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
-import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readMainBot, readSyncMinutes, writeRemoveCopy, writeSyncMinutes } from './project.js'
+import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readMainBot, readSyncMinutes, writeMainBot, writeRemoveCopy, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { connectorState, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
 import { RESULTS_FILE, readTextFile } from './connector-files.js'
@@ -1107,6 +1107,8 @@ export function requestGrokBot(root: string, orgId: string, seatSlug: string, or
   if (!read.ok) return read
   const seat = read.bundle.seats.find((item) => item.slug === seatSlug)
   if (!seat) return { ok: false, errors: [`seats/${seatSlug}.md is not in this org.`] }
+  // A greyed seat names a bot that works elsewhere: creating it by that name would link that bot here.
+  if (isGreyed(seat)) return { ok: false, errors: [`${seat.title} works in another organization. Move it here, or rename and publish a copy.`] }
   if (!canRequest(seat)) return { ok: false, errors: [`${seat.title} is already in Grok Bot or is not an active bot.`] }
   const path = seatFile(root, seat.slug)
   if (!path) return { ok: false, errors: ['That seat slug is not valid.'] }
@@ -1892,6 +1894,154 @@ function retargetSeat(root: string, slug: string, reportsTo: string): { ok: true
   return { ok: true }
 }
 
+/** Rewrites one seat file through its parser, so every field the change leaves alone stays as it was. */
+function patchSeat(root: string, slug: string, change: (seat: SeatDocument) => SeatDocument): { ok: true } | { ok: false; errors: string[] } {
+  const path = seatFile(root, slug)
+  if (!path || !existsSync(path)) return { ok: false, errors: [`seats/${slug}.md is not in this org.`] }
+  const parsed = parseSeatMarkdown(slug, readText(path))
+  if (!parsed.ok) return parsed
+  const source = serializeSeat({ ...change({ ...parsed.seat }), source: '' })
+  const checked = parseSeatMarkdown(slug, source)
+  if (!checked.ok) return checked
+  writeFileSync(path, source.endsWith('\n') ? source : `${source}\n`)
+  return { ok: true }
+}
+
+const NOT_GREYED = 'That seat is not greyed.'
+
+function greyedSeat(orgsDir: string, orgId: string, slug: string): { ok: true; root: string; bundle: OrgBundle; seat: SeatDocument } | { ok: false; errors: string[] } {
+  const root = orgRoot(orgsDir, orgId)
+  if (!root || !orgExists(root)) return { ok: false, errors: ['Org not found.'] }
+  if (unsafePath(slug) || !SEAT_SLUG.test(slug)) return { ok: false, errors: ['Seat slug must be a lowercase slug.'] }
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  const seat = read.bundle.seats.find((item) => item.slug === slug)
+  if (!seat || !isGreyed(seat)) return { ok: false, errors: [NOT_GREYED] }
+  return { ok: true, root, bundle: read.bundle, seat }
+}
+
+/** Seats that waited for `slug` move under it, unless the owner moved them since. Either way they stop waiting. */
+function pullFollowers(root: string, orgId: string, slug: string, move = true): { ok: true } | { ok: false; errors: string[] } {
+  const read = readOrgDir(root, orgId)
+  if (!read.ok) return read
+  const fallback = managerSeat(read.bundle.seats)?.slug ?? ''
+  for (const seat of read.bundle.seats) {
+    if (seat.waitsFor !== slug) continue
+    if (move && seat.reportsTo === fallback) {
+      const pointed = retargetSeat(root, seat.slug, slug)
+      if (!pointed.ok) return pointed
+    }
+    const cleared = patchSeat(root, seat.slug, (item) => ({ ...item, waitsFor: undefined }))
+    if (!cleared.ok) return cleared
+  }
+  return { ok: true }
+}
+
+/** A greyed seat starts working here: its link comes back, and the seats waiting for it move under it. */
+function activateSeat(root: string, orgId: string, slug: string): { ok: true } | { ok: false; errors: string[] } {
+  const done = patchSeat(root, slug, (seat) => ({ ...seat, grokBotUrl: seat.elsewhereUrl ?? '', elsewhereUrl: undefined }))
+  return done.ok ? pullFollowers(root, orgId, slug) : done
+}
+
+function ownerEvent(root: string, orgId: string, seats: SeatDocument[], event: { id: string; type: FileActivity['type']; at: string; summary: string; subject: string }) {
+  appendActivity(root, { id: `${event.id}-${event.at}`, orgId, type: event.type, actorSeatId: managerSeat(seats)?.slug || 'you', actorType: 'human', timestamp: event.at, summary: event.summary, subjectSeatId: event.subject })
+}
+
+/**
+ * Move it here: the bot is retired in every other organization where it works, its reports there go under its manager
+ * there, and its seat here becomes active. The Connector swaps its block on its next run.
+ */
+export function moveBotHere(orgsDir: string, orgId: string, slug: string): { ok: true } | { ok: false; errors: string[] } {
+  const found = greyedSeat(orgsDir, orgId, slug)
+  if (!found.ok) return found
+  const key = botKey(found.seat.elsewhereUrl ?? '')
+  const here = found.bundle.org.company.name
+  const at = new Date().toISOString()
+  const from: string[] = []
+  for (const other of listOrgSlugs(orgsDir)) {
+    if (other === orgId) continue
+    const otherRoot = resolve(orgsDir, other)
+    const read = readOrgDir(otherRoot, other)
+    if (!read.ok) continue
+    for (const seat of read.bundle.seats) {
+      if (seat.kind !== 'bot' || seat.status === 'retired' || botKey(seat.grokBotUrl ?? '') !== key) continue
+      for (const report of read.bundle.seats) {
+        if (report.slug === seat.slug || report.status === 'retired') continue
+        if (report.reportsTo === seat.slug) {
+          const pointed = retargetSeat(otherRoot, report.slug, seat.reportsTo)
+          if (!pointed.ok) return pointed
+        }
+        if (report.alsoReportsTo?.includes(seat.slug)) {
+          const also = writeAlsoLine(otherRoot, report.slug, report.alsoReportsTo.filter((item) => item !== seat.slug))
+          if (!also.ok) return also
+        }
+      }
+      const retired = patchSeat(otherRoot, seat.slug, (item) => ({ ...item, status: 'retired', retiredAt: at, movedTo: orgId }))
+      if (!retired.ok) return retired
+      ownerEvent(otherRoot, other, read.bundle.seats, { id: `moved-${seat.slug}`, type: 'fire', at, summary: `Moved to ${here}: ${seat.title}`, subject: seat.slug })
+      if (!from.includes(read.bundle.org.company.name)) from.push(read.bundle.org.company.name)
+    }
+  }
+  const active = activateSeat(found.root, orgId, slug)
+  if (!active.ok) return active
+  ownerEvent(found.root, orgId, found.bundle.seats, { id: `moved-here-${slug}`, type: 'hire', at, summary: from.length ? `Moved here from ${andList(from)}: ${found.seat.title}` : `${found.seat.title} works here now`, subject: slug })
+  return { ok: true }
+}
+
+/**
+ * Rename and publish in Grok Bot: the seat takes a new name and asks the Connector to create that bot, so a copy works
+ * here and the original stays where it is. The original's name is refused: the Connector would link the original.
+ */
+export function publishCopy(orgsDir: string, orgId: string, slug: string, name: string): { ok: true } | { ok: false; errors: string[] } {
+  const title = name.trim()
+  if (!title) return { ok: false, errors: ['Give the new bot a name.'] }
+  const found = greyedSeat(orgsDir, orgId, slug)
+  if (!found.ok) return found
+  if (title.toLowerCase() === found.seat.title.trim().toLowerCase()) return { ok: false, errors: [`Pick a new name. ${found.seat.title} is the bot that works in another organization.`] }
+  const renamed = patchSeat(found.root, slug, (seat) => ({ ...seat, title, role: title, elsewhereUrl: undefined, grokSync: undefined }))
+  if (!renamed.ok) return renamed
+  const asked = requestGrokBot(found.root, orgId, slug, orgsDir)
+  if (!asked.ok) return asked
+  return pullFollowers(found.root, orgId, slug)
+}
+
+/** Remove: the greyed seat leaves this organization's chart. The bot keeps working where it is. */
+export function removeGreyedSeat(orgsDir: string, orgId: string, slug: string): { ok: true } | { ok: false; errors: string[] } {
+  const found = greyedSeat(orgsDir, orgId, slug)
+  if (!found.ok) return found
+  const path = seatFile(found.root, slug)
+  if (!path) return { ok: false, errors: [`Refusing to remove seat ${slug}.`] }
+  const orgs = botsInOtherOrgs(orgsDir, orgId).get(botKey(found.seat.elsewhereUrl ?? '')) ?? []
+  unlinkSync(path)
+  const parsed = parseOrgMarkdown(readText(resolve(found.root, 'org.md')))
+  if (parsed.ok) writeFileSync(resolve(found.root, 'org.md'), serializeOrgMarkdown({ ...parsed.org, seats: parsed.org.seats.filter((item) => item.slug !== slug) }, parsed.profile))
+  const cleared = pullFollowers(found.root, orgId, slug, false)
+  if (!cleared.ok) return cleared
+  ownerEvent(found.root, orgId, found.bundle.seats, { id: `removed-${slug}`, type: 'edit', at: new Date().toISOString(), summary: orgs.length ? `Removed ${found.seat.title}; it stays in ${andList(orgs)}` : `Removed ${found.seat.title}`, subject: slug })
+  return { ok: true }
+}
+
+/** It's my main bot: saved by Grok Bot id, and every greyed seat of that bot, in every organization, starts working. */
+export function markMainBot(orgsDir: string, orgId: string, slug: string): { ok: true } | { ok: false; errors: string[] } {
+  const found = greyedSeat(orgsDir, orgId, slug)
+  if (!found.ok) return found
+  const key = botKey(found.seat.elsewhereUrl ?? '')
+  const saved = writeMainBot(orgsDir, key)
+  if (!saved.ok) return { ok: false, errors: [saved.error] }
+  for (const other of listOrgSlugs(orgsDir)) {
+    const root = resolve(orgsDir, other)
+    const read = readOrgDir(root, other)
+    if (!read.ok) continue
+    for (const seat of read.bundle.seats) {
+      if (!isGreyed(seat) || botKey(seat.elsewhereUrl ?? '') !== key) continue
+      const active = activateSeat(root, other, seat.slug)
+      if (!active.ok) return active
+    }
+  }
+  ownerEvent(found.root, orgId, found.bundle.seats, { id: `main-bot-${slug}`, type: 'edit', at: new Date().toISOString(), summary: `${found.seat.title} is your main bot`, subject: slug })
+  return { ok: true }
+}
+
 /** What Profile saves. A field left out stays as it was; an empty value clears it. */
 export interface SeatProfileInput {
   instructions?: unknown
@@ -1984,6 +2134,11 @@ export function setSeatManager(root: string, orgId: string, slug: string, report
   if (seat.reportsTo === target) return { ok: true, file, sent: false }
   const pointed = retargetSeat(root, slug, target)
   if (!pointed.ok) return pointed
+  // The owner placed it: it stops waiting for a greyed manager.
+  if (seat.waitsFor) {
+    const cleared = patchSeat(root, slug, (item) => ({ ...item, waitsFor: undefined }))
+    if (!cleared.ok) return cleared
+  }
   const actor = managerSeat(read.bundle.seats)?.slug || 'you'
   const stamp = new Date().toISOString()
   const before = read.bundle.seats.find((item) => item.slug === seat.reportsTo)?.title ?? ''
@@ -2762,6 +2917,34 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       })
       if (!updated.ok) return send(res, 422, { errors: updated.errors })
       send(res, 200, { ok: true, file: updated.file })
+      return
+    }
+    const greyedMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/seats\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(move-here|publish|main-bot)$/.exec(url.pathname)
+    if ((greyedMatch && req.method === 'POST') || (seatMatch && req.method === 'DELETE')) {
+      // Retires, creates, or removes bots across organizations, so only this computer may ask.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may change where a bot works.' })
+      const slug = (greyedMatch ?? seatMatch)![1]!
+      const seatSlug = (greyedMatch ?? seatMatch)![2]!
+      let done: { ok: true } | { ok: false; errors: string[] }
+      if (!greyedMatch) done = removeGreyedSeat(orgsDir, slug, seatSlug)
+      else if (greyedMatch[3] === 'move-here') done = moveBotHere(orgsDir, slug, seatSlug)
+      else if (greyedMatch[3] === 'main-bot') done = markMainBot(orgsDir, slug, seatSlug)
+      else {
+        if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { errors: ['Send JSON.'] })
+        const body = await readBody(req)
+        if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+        let name = ''
+        try {
+          const value = (JSON.parse(body) as { name?: unknown }).name
+          name = typeof value === 'string' ? value : ''
+        } catch {
+          return send(res, 422, { errors: ['That body is not JSON.'] })
+        }
+        done = publishCopy(orgsDir, slug, seatSlug, name)
+      }
+      if (!done.ok) return send(res, 422, { errors: done.errors })
+      send(res, 200, { ok: true })
       return
     }
     const orgMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(url.pathname)
