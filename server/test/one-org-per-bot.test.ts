@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { parseBotsFile } from '../src/bots-file.ts'
+import { writeMainBot } from '../src/project.ts'
 import { createExistingBot, createOrgFiles, importBotsFile, startTemplateServer } from '../src/template-server.ts'
 
 const link = (id: string) => `grokbot://app/v1/agent?id=${id}`
@@ -57,7 +58,7 @@ test('a copy, a retired bot, a bot without a link, and the Connector are never r
   }
 })
 
-test('importing many bots skips one active in another organization, and its reports go under You', () => {
+test('importing brings a bot active elsewhere in greyed, and a bot naming it as manager waits under You', () => {
   const { dir, a, b, add, done } = project()
   try {
     assert.ok(add(a, 'Research', 'r1').ok)
@@ -65,10 +66,44 @@ test('importing many bots skips one active in another organization, and its repo
     assert.ok(file.ok)
     if (!file.ok) return
     const result = importBotsFile(join(dir, b), b, file.rows)
-    assert.deepEqual(result.imported.map((item) => item.name), ['Writer'])
-    assert.deepEqual(result.errors, [{ name: 'Research', error: `${message('Research', 'BotsEverywhere')} If it is your main bot, add it with Add existing bot.` }])
-    assert.deepEqual(result.notes, [{ name: 'Writer', note: 'Research is not a seat here; placed under You.' }])
-    assert.match(readFileSync(join(dir, b, 'seats', 'writer.md'), 'utf8'), /^reportsTo: you$/m)
+    assert.deepEqual(result.imported.map((item) => item.name).sort(), ['Research', 'Writer'])
+    assert.deepEqual(result.greyed, [{ name: 'Research', slug: 'research', orgs: ['BotsEverywhere'] }])
+    assert.deepEqual(result.errors, [])
+    const writer = readFileSync(join(dir, b, 'seats', 'writer.md'), 'utf8')
+    assert.match(writer, /^reportsTo: you$/m)
+    assert.match(writer, /^waitsFor: "?research"?$/m)
+    const research = readFileSync(join(dir, b, 'seats', 'research.md'), 'utf8')
+    assert.match(research, /^grokBotUrl: ""$/m)
+    assert.match(research, /^elsewhereUrl: "grokbot:\/\/app\/v1\/agent\?id=r1"$/m)
+  } finally {
+    done()
+  }
+})
+
+test('the main bot is never greyed or refused', () => {
+  const { dir, a, b, add, done } = project()
+  try {
+    assert.ok(add(a, 'Grok Bot', 'main').ok)
+    assert.ok(writeMainBot(dir, 'main').ok)
+    const file = parseBotsFile(JSON.stringify({ bots: [{ name: 'Grok Bot', grokBotUrl: link('main') }] }))
+    assert.ok(file.ok)
+    if (!file.ok) return
+    assert.deepEqual(importBotsFile(join(dir, b), b, file.rows).greyed, [])
+    const other = createOrgFiles(dir, 'techiewithmiguel', 'You')
+    assert.ok(other.ok)
+    if (other.ok) assert.ok(add(other.slug, 'Grok Bot', 'main').ok, 'Add existing bot lets the main bot in too')
+  } finally {
+    done()
+  }
+})
+
+test('a manager that is not in the file goes under You with a note', () => {
+  const { dir, b, done } = project()
+  try {
+    const file = parseBotsFile(JSON.stringify({ bots: [{ name: 'Writer', grokBotUrl: link('w1'), reportsTo: 'Nobody' }] }))
+    assert.ok(file.ok)
+    if (!file.ok) return
+    assert.deepEqual(importBotsFile(join(dir, b), b, file.rows).notes, [{ name: 'Writer', note: 'Nobody is not a seat here; placed under You.' }])
   } finally {
     done()
   }

@@ -27,6 +27,7 @@ import {
   validateBundle,
   managerLoop,
   grokSeats,
+  isGreyed,
   type FileActivity,
   type GrokSyncState,
   type OrgBundle,
@@ -49,7 +50,7 @@ import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
 import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-prompt.js'
 import { everyLabel, scheduleFor } from './connector-timing.js'
-import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readSyncMinutes, writeRemoveCopy, writeSyncMinutes } from './project.js'
+import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readMainBot, readSyncMinutes, writeRemoveCopy, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
 import { connectorState, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
 import { RESULTS_FILE, readTextFile } from './connector-files.js'
@@ -619,6 +620,10 @@ export interface ExistingBotInput {
   allowEmptyCard?: boolean
   /** Add anyway: the bot may stay active in another organization too. Only the main bot should. */
   allowOtherOrgs?: boolean
+  /** The bot works in another organization: the seat is greyed, with the link in elsewhereUrl. */
+  greyed?: boolean
+  /** The greyed seat this one's own text names as its manager. */
+  waitsFor?: string
 }
 
 /**
@@ -630,6 +635,7 @@ export function createExistingBot(
   orgId: string,
   input: ExistingBotInput,
   elsewhere?: Map<string, string[]>,
+  mainBot?: string,
 ): { ok: true; slug: string; file: string } | { ok: false; errors: string[]; otherOrgs?: string[] } {
   if (!orgExists(root)) return { ok: false, errors: ['Org not found.'] }
   const unsafe = [input.reportsTo, input.slug].some((value) => unsafePath(value))
@@ -647,10 +653,15 @@ export function createExistingBot(
   if (!slug) return { ok: false, errors: ['Could not pick a free file name for that seat.'] }
   const grokBotUrl = (input.grokBotUrl || '').trim()
   if (!isSeatGrokLink(grokBotUrl)) return { ok: false, errors: ['Grok Bot link must be an http, https, or grokbot:// link.'] }
-  if (grokBotUrl && input.allowOtherOrgs !== true && !isConnectorName(name)) {
+  if (grokBotUrl && input.allowOtherOrgs !== true && input.greyed !== true && !isConnectorName(name) && botKey(grokBotUrl) !== (mainBot ?? readMainBot(dirname(root)))) {
     const otherOrgs = (elsewhere ?? botsInOtherOrgs(dirname(root), orgId)).get(botKey(grokBotUrl)) ?? []
     if (otherOrgs.length) return { ok: false, errors: [inOtherOrgsText(name, otherOrgs)], otherOrgs }
   }
+  const waitsFor = (input.waitsFor || '').trim()
+  if (waitsFor && !SEAT_SLUG.test(waitsFor)) return { ok: false, errors: ['waitsFor must be a seat slug.'] }
+  // A greyed seat keeps its link apart, so nothing that talks to Grok Bot treats it as this organization's bot.
+  const greyedLink = input.greyed === true && grokBotUrl ? grokBotUrl : ''
+  const seatLink = greyedLink ? '' : grokBotUrl
   let reportsTo = (input.reportsTo || '').trim()
   if (!reportsTo) {
     const you = managerSeat(read.bundle.seats)
@@ -681,7 +692,9 @@ export function createExistingBot(
     retiredAt: '',
     directoryId: '',
     seatOrigin: 'existing',
-    grokBotUrl,
+    grokBotUrl: seatLink,
+    ...(greyedLink ? { elsewhereUrl: greyedLink } : {}),
+    ...(waitsFor ? { waitsFor } : {}),
     ...(input.createdAt ? { createdAt: input.createdAt } : {}),
     ...(input.lastActive ? { lastActive: input.lastActive } : {}),
     ...(input.runs30d !== undefined ? { runs30d: input.runs30d } : {}),
@@ -700,7 +713,9 @@ export function createExistingBot(
   if (cardErrors.length) return { ok: false, errors: cardErrors }
   const written = serializeExistingSeat({
     name,
-    grokBotUrl,
+    grokBotUrl: seatLink,
+    elsewhereUrl: greyedLink,
+    waitsFor,
     reportsTo,
     ...card,
     createdAt: input.createdAt,
@@ -751,6 +766,8 @@ export interface BotsFileResult {
   errors: { name: string; error: string }[]
   /** Imported, with something changed on the way, such as a manager that is not here. */
   notes: { name: string; note: string }[]
+  /** Imported greyed: the bot works in these other organizations. */
+  greyed: { name: string; slug: string; orgs: string[] }[]
 }
 
 /** Writes a seat's extra managers on the line after reportsTo, or takes the line out when there are none. */
@@ -777,23 +794,23 @@ export function importBotsFile(
   rows: BotsFileRow[],
   stamp?: { grokSync: GrokSyncState; grokSyncedAt: string },
 ): BotsFileResult {
-  if (!orgExists(root)) return { imported: [], errors: [{ name: 'File', error: 'Org not found.' }], notes: [] }
+  if (!orgExists(root)) return { imported: [], errors: [{ name: 'File', error: 'Org not found.' }], notes: [], greyed: [] }
   const read = readOrgDir(root, orgId)
-  if (!read.ok) return { imported: [], errors: read.errors.map((error) => ({ name: 'File', error })), notes: [] }
+  if (!read.ok) return { imported: [], errors: read.errors.map((error) => ({ name: 'File', error })), notes: [], greyed: [] }
   const existing = read.bundle.seats.map((seat) => ({ slug: seat.slug, title: seat.title }))
   const taken = new Set(existing.map((seat) => seat.slug))
   const errors: { name: string; error: string }[] = []
   const notes: { name: string; note: string }[] = []
   const elsewhere = botsInOtherOrgs(dirname(root), orgId)
+  const mainBot = readMainBot(dirname(root))
+  // A bot active in another organization comes in greyed. The Connector and the main bot belong in every organization.
+  const otherOrgsOf = (row: BotsFileRow): string[] => {
+    const key = botKey(row.grokBotUrl ?? '')
+    return !key || key === mainBot || isConnectorName(row.name) ? [] : elsewhere.get(key) ?? []
+  }
   const ready = rows.filter((row) => {
-    if (row.error) {
-      errors.push({ name: row.name, error: row.error })
-      return false
-    }
-    // Skipped before any seat is planned, so a bot reporting to it goes under You like any other missing manager.
-    const otherOrgs = isConnectorName(row.name) ? [] : elsewhere.get(botKey(row.grokBotUrl ?? '')) ?? []
-    if (!otherOrgs.length) return true
-    errors.push({ name: row.name, error: `${inOtherOrgsText(row.name, otherOrgs)} If it is your main bot, add it with Add existing bot.` })
+    if (!row.error) return true
+    errors.push({ name: row.name, error: row.error })
     return false
   })
   const planned = ready.map((row) => ({ row, slug: reserveSeatSlug(root, slugify(row.name), taken) }))
@@ -801,16 +818,29 @@ export function importBotsFile(
     if (item.slug) continue
     errors.push({ name: item.row.name, error: 'Could not pick a free file name for that seat.' })
   }
+  const greyedSlugs = new Set([
+    ...read.bundle.seats.filter((seat) => isGreyed(seat)).map((seat) => seat.slug),
+    ...planned.flatMap((item) => (item.slug && otherOrgsOf(item.row).length ? [item.slug] : [])),
+  ])
   const batch = new Map<string, string>()
   for (const item of planned) {
     if (!item.slug) continue
     batch.set(item.row.name.trim().toLowerCase(), item.slug)
     batch.set(item.slug, item.slug)
   }
-  const writes: { row: BotsFileRow; slug: string; manager: string; managerIsNew: boolean }[] = []
+  const writes: { row: BotsFileRow; slug: string; manager: string; managerIsNew: boolean; waitsFor?: string }[] = []
   for (const item of planned) {
     if (!item.slug) continue
     const resolved = resolveManager(item.row.reportsTo, item.row.name, existing, batch)
+    if (resolved.ok && greyedSlugs.has(resolved.slug)) {
+      // A bot never reports to a greyed one: it waits under You and moves under it once that bot works here.
+      const you = resolveManager('You', item.row.name, existing, batch)
+      if (you.ok) {
+        notes.push({ name: item.row.name, note: `${item.row.reportsTo.trim()} works in another organization; placed under You until it works here.` })
+        writes.push({ row: item.row, slug: item.slug, manager: you.slug, managerIsNew: false, waitsFor: resolved.slug })
+        continue
+      }
+    }
     if (!resolved.ok) {
       // A manager from another copy, or one never added here, never costs the bot its seat: it goes under You.
       const you = resolveManager('You', item.row.name, existing, batch)
@@ -829,20 +859,15 @@ export function importBotsFile(
   }
   const dropped = new Set(writes.filter((item) => item.managerIsNew && !writes.some((other) => other.slug === item.manager)).map((item) => item.slug))
   const imported: { name: string; slug: string; file: string }[] = []
+  const greyed: BotsFileResult['greyed'] = []
   for (const item of writes) {
     if (dropped.has(item.slug)) {
       errors.push({ name: item.row.name, error: `Reports to a bot that was not imported.` })
       continue
     }
-    const created = createExistingBot(root, orgId, {
-      name: item.row.name,
-      slug: item.slug,
-      grokBotUrl: item.row.grokBotUrl,
-      reportsTo: item.managerIsNew ? '' : item.manager,
-      owns: item.row.owns,
-      may: item.row.may,
-      mustAskBefore: item.row.needsApproval,
-      doneWhen: item.row.doneWhen,
+    const otherOrgs = otherOrgsOf(item.row)
+    // A greyed seat keeps its card but none of Grok Bot's numbers: those belong to the organization it works for.
+    const numbers = otherOrgs.length ? {} : {
       createdAt: item.row.createdAt,
       lastActive: item.row.lastActive,
       runs30d: item.row.runs30d,
@@ -854,13 +879,27 @@ export function importBotsFile(
       botStatus: item.row.botStatus || undefined,
       grokSync: stamp?.grokSync,
       grokSyncedAt: stamp?.grokSyncedAt,
+    }
+    const created = createExistingBot(root, orgId, {
+      name: item.row.name,
+      slug: item.slug,
+      grokBotUrl: item.row.grokBotUrl,
+      reportsTo: item.managerIsNew ? '' : item.manager,
+      owns: item.row.owns,
+      may: item.row.may,
+      mustAskBefore: item.row.needsApproval,
+      doneWhen: item.row.doneWhen,
+      ...numbers,
       allowEmptyCard: true,
-    }, elsewhere)
+      greyed: otherOrgs.length > 0,
+      ...(item.waitsFor ? { waitsFor: item.waitsFor } : {}),
+    }, elsewhere, mainBot)
     if (!created.ok) {
       errors.push({ name: item.row.name, error: created.errors.join(' ') })
       continue
     }
     imported.push({ name: item.row.name, slug: created.slug, file: created.file })
+    if (otherOrgs.length) greyed.push({ name: item.row.name, slug: created.slug, orgs: otherOrgs })
   }
   const importedSlugs = new Set(imported.map((item) => item.slug))
   for (const item of writes) {
@@ -881,6 +920,7 @@ export function importBotsFile(
     for (const name of item.row.alsoReportsTo) {
       const target = titles.get(name.trim().toLowerCase())
       if (!target) notes.push({ name: item.row.name, note: `${name.trim()} is not a seat here; left out of Also reports to.` })
+      else if (greyedSlugs.has(target)) notes.push({ name: item.row.name, note: `${name.trim()} works in another organization; left out of Also reports to.` })
       else if (target !== slug && target !== item.manager && !also.includes(target)) also.push(target)
     }
     if (!also.length) continue
@@ -892,7 +932,7 @@ export function importBotsFile(
     const written = writeAlsoLine(root, slug, also)
     if (!written.ok) errors.push({ name: item.row.name, error: written.errors.join(' ') })
   }
-  return { imported, errors, notes }
+  return { imported, errors, notes, greyed }
 }
 
 /**
