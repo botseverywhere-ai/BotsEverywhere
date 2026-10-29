@@ -153,7 +153,23 @@ export interface SeatDocument {
   grokMissingSince?: string
   /** ISO datetime of the Connector run that showed this retired bot gone from Grok Bot after a delete request. */
   grokDeletedAt?: string
+  /** The bot's Grok Bot link while it works for another organization. Set only on a greyed seat, whose grokBotUrl is empty. */
+  elsewhereUrl?: string
+  /** The greyed seat this seat's own text names as its manager. It moves under that seat once it works here. */
+  waitsFor?: string
+  /** The organization id this bot moved to. Set only on a retired seat. */
+  movedTo?: string
   source: string
+}
+
+/** A seat whose bot works for another organization: shown greyed, kept out of everything that talks to Grok Bot. */
+export function isGreyed(seat: Pick<SeatDocument, 'elsewhereUrl' | 'grokBotUrl'>): boolean {
+  return Boolean(seat.elsewhereUrl?.trim()) && !seat.grokBotUrl?.trim()
+}
+
+/** The seats that are not greyed: the ones Grok Bot may know as this organization's. */
+export function grokSeats(seats: SeatDocument[]): SeatDocument[] {
+  return seats.filter((seat) => !isGreyed(seat))
 }
 
 export type ActivityType = 'work' | 'approval' | 'exception' | 'hire' | 'fire' | 'edit'
@@ -300,6 +316,7 @@ export function parseSeatMarkdown(slug: string, source: string): { ok: true; sea
     grokBotUrl,
     ...readBotMetrics(data),
     ...readSyncFields(data),
+    ...readGreyedFields(data),
     ...card,
     source: '',
   }
@@ -334,6 +351,9 @@ export function serializeSeat(seat: Omit<SeatDocument, 'source'> & { source?: st
       grokSyncedAt: seat.grokSyncedAt,
       grokMissingSince: seat.grokMissingSince,
       grokDeletedAt: seat.grokDeletedAt,
+      elsewhereUrl: seat.elsewhereUrl,
+      waitsFor: seat.waitsFor,
+      movedTo: seat.movedTo,
       status: seat.status,
       retiredAt: seat.retiredAt,
     })
@@ -399,6 +419,9 @@ export function serializeExistingSeat(seat: {
   grokSyncedAt?: string
   grokMissingSince?: string
   grokDeletedAt?: string
+  elsewhereUrl?: string
+  waitsFor?: string
+  movedTo?: string
   /** Written only when retired. An imported bot with no status line is active. */
   status?: 'active' | 'retired'
   retiredAt?: string
@@ -823,6 +846,9 @@ function metricLines(seat: {
   grokSyncedAt?: string
   grokMissingSince?: string
   grokDeletedAt?: string
+  elsewhereUrl?: string
+  waitsFor?: string
+  movedTo?: string
 }): string[] {
   const lines: string[] = []
   if (seat.createdAt) lines.push(`createdAt: ${quote(seat.createdAt)}`)
@@ -839,7 +865,22 @@ function metricLines(seat: {
   if (seat.grokSyncedAt) lines.push(`grokSyncedAt: ${quote(seat.grokSyncedAt)}`)
   if (seat.grokMissingSince) lines.push(`grokMissingSince: ${quote(seat.grokMissingSince)}`)
   if (seat.grokDeletedAt) lines.push(`grokDeletedAt: ${quote(seat.grokDeletedAt)}`)
+  if (seat.elsewhereUrl?.trim()) lines.push(`elsewhereUrl: ${quote(seat.elsewhereUrl.trim())}`)
+  if (seat.waitsFor?.trim()) lines.push(`waitsFor: ${quote(seat.waitsFor.trim())}`)
+  if (seat.movedTo?.trim()) lines.push(`movedTo: ${quote(seat.movedTo.trim())}`)
   return lines
+}
+
+/** A greyed seat's link, the seat it waits for, and where a bot moved. A value that cannot be one is dropped. */
+function readGreyedFields(data: Record<string, string>): Pick<SeatDocument, 'elsewhereUrl' | 'waitsFor' | 'movedTo'> {
+  const fields: Pick<SeatDocument, 'elsewhereUrl' | 'waitsFor' | 'movedTo'> = {}
+  const elsewhereUrl = data.elsewhereUrl?.trim() || ''
+  if (elsewhereUrl && isSeatGrokLink(elsewhereUrl)) fields.elsewhereUrl = elsewhereUrl
+  const waitsFor = data.waitsFor?.trim() || ''
+  if (SEAT_SLUG.test(waitsFor)) fields.waitsFor = waitsFor
+  const movedTo = data.movedTo?.trim() || ''
+  if (SEAT_SLUG.test(movedTo)) fields.movedTo = movedTo
+  return fields
 }
 
 function readSyncFields(data: Record<string, string>): Pick<SeatDocument, 'grokSync' | 'grokSyncedAt' | 'grokMissingSince' | 'grokDeletedAt'> {
