@@ -20,9 +20,12 @@ export type ExistingBotDraft = {
   may: string[]
   mustAskBefore: string[]
   doneWhen: string[]
+  /** Add anyway: keep it active in the other organization too. */
+  allowOtherOrgs?: boolean
 }
 
-export type ExistingBotResult = { ok: true } | { ok: false; error: string }
+/** `otherOrgs` when the bot is already active in another organization. */
+export type ExistingBotResult = { ok: true } | { ok: false; error: string; otherOrgs?: string[] }
 
 export function ExistingBotDrawer({
   orgSlug,
@@ -48,6 +51,8 @@ export function ExistingBotDrawer({
   })
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  // Why this bot is already in another organization. Add anyway is for the main bot, which belongs in every one.
+  const [elsewhere, setElsewhere] = useState('')
   const link = grokBotUrl.trim()
   const linkError = link && !isSeatGrokLink(link) ? 'Use an http, https, or grokbot:// link.' : ''
   const emptySection = SECTIONS.find(([key]) => splitLines(lines[key]).length === 0)?.[1] ?? null
@@ -59,10 +64,11 @@ export function ExistingBotDrawer({
     onClose()
   }
 
-  async function submit() {
+  async function submit(anyway = false) {
     if (saving || blocked) return
     setSaving(true)
     setSaveError('')
+    setElsewhere('')
     const result = await onSave({
       name: name.trim(),
       grokBotUrl: link,
@@ -71,9 +77,11 @@ export function ExistingBotDrawer({
       may: splitLines(lines.may),
       mustAskBefore: splitLines(lines.mustAskBefore),
       doneWhen: splitLines(lines.doneWhen),
+      ...(anyway ? { allowOtherOrgs: true } : {}),
     })
     if (!result.ok) {
-      setSaveError(result.error)
+      if (result.otherOrgs?.length) setElsewhere(result.error)
+      else setSaveError(result.error)
       setSaving(false)
     }
   }
@@ -97,7 +105,10 @@ export function ExistingBotDrawer({
             <input
               value={grokBotUrl}
               placeholder="https://"
-              onChange={(event) => setGrokBotUrl(event.target.value)}
+              onChange={(event) => {
+                setGrokBotUrl(event.target.value)
+                setElsewhere('')
+              }}
               disabled={saving}
             />
             <span className="be-field-help">Optional. Any http or https link.</span>
@@ -135,16 +146,27 @@ export function ExistingBotDrawer({
         <footer className="be-hire-foot">
           <p className="be-hire-path">Save writes orgs/{orgSlug}/seats/{slug || '…'}.md</p>
           {saveError ? <SaveAlert kind="bad">{saveNotice(false, saveError).message}</SaveAlert> : null}
-          <Button
-            variant="primary"
-            className={saving ? 'is-busy btn-block' : 'btn-block'}
-            type="button"
-            disabled={saving || blocked}
-            aria-busy={saving || undefined}
-            onClick={() => void submit()}
-          >
-            {saving ? 'Saving' : 'Save'}
-          </Button>
+          {elsewhere ? (
+            <>
+              <SaveAlert kind="bad">{elsewhere}</SaveAlert>
+              <p className="be-caption">Only your main bot belongs in every organization.</p>
+              <div className="existing-elsewhere-actions">
+                <Button variant="primary" type="button" disabled={saving} aria-busy={saving || undefined} onClick={() => void submit(true)}>Add anyway</Button>
+                <Button variant="secondary" type="button" disabled={saving} onClick={() => setElsewhere('')}>Cancel</Button>
+              </div>
+            </>
+          ) : (
+            <Button
+              variant="primary"
+              className={saving ? 'is-busy btn-block' : 'btn-block'}
+              type="button"
+              disabled={saving || blocked}
+              aria-busy={saving || undefined}
+              onClick={() => void submit()}
+            >
+              {saving ? 'Saving' : 'Save'}
+            </Button>
+          )}
         </footer>
       </aside>
     </div>

@@ -2154,6 +2154,8 @@ a.site-nav-cta:focus {
 .be-drawer.be-hire { overflow: hidden; padding: 0; }
 .be-hire-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--space-4) var(--space-5) 0; }
 .be-hire textarea { min-height: 4rem; }
+.be-hire .be-hire-foot .be-caption { margin: 0; }
+.existing-elsewhere-actions { display: flex; gap: var(--space-2); }
 .be-hire .be-add { display: none; }
 .be-hire label, .be-hire .be-field { margin-top: var(--space-3); }
 .be-hire .be-hire-foot {

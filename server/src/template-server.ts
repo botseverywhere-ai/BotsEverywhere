@@ -616,14 +616,20 @@ export interface ExistingBotInput {
   grokSyncedAt?: string
   /** Bots-file import may omit card sections. The Add existing bot form still requires them. */
   allowEmptyCard?: boolean
+  /** Add anyway: the bot may stay active in another organization too. Only the main bot should. */
+  allowOtherOrgs?: boolean
 }
 
-/** Writes one seat for a bot the user already has. A taken slug is saved as `<slug>-2`. */
+/**
+ * Writes one seat for a bot the user already has. A taken slug is saved as `<slug>-2`. A bot active in another
+ * organization is refused with `otherOrgs`, unless added anyway; `elsewhere` saves a caller adding many bots a read per bot.
+ */
 export function createExistingBot(
   root: string,
   orgId: string,
   input: ExistingBotInput,
-): { ok: true; slug: string; file: string } | { ok: false; errors: string[] } {
+  elsewhere?: Map<string, string[]>,
+): { ok: true; slug: string; file: string } | { ok: false; errors: string[]; otherOrgs?: string[] } {
   if (!orgExists(root)) return { ok: false, errors: ['Org not found.'] }
   const unsafe = [input.reportsTo, input.slug].some((value) => unsafePath(value))
   if (unsafe) return { ok: false, errors: ['That name is not a safe file name.'] }
@@ -640,6 +646,10 @@ export function createExistingBot(
   if (!slug) return { ok: false, errors: ['Could not pick a free file name for that seat.'] }
   const grokBotUrl = (input.grokBotUrl || '').trim()
   if (!isSeatGrokLink(grokBotUrl)) return { ok: false, errors: ['Grok Bot link must be an http, https, or grokbot:// link.'] }
+  if (grokBotUrl && input.allowOtherOrgs !== true && !isConnectorName(name)) {
+    const otherOrgs = (elsewhere ?? botsInOtherOrgs(dirname(root), orgId)).get(botKey(grokBotUrl)) ?? []
+    if (otherOrgs.length) return { ok: false, errors: [inOtherOrgsText(name, otherOrgs)], otherOrgs }
+  }
   let reportsTo = (input.reportsTo || '').trim()
   if (!reportsTo) {
     const you = managerSeat(read.bundle.seats)
@@ -773,9 +783,16 @@ export function importBotsFile(
   const taken = new Set(existing.map((seat) => seat.slug))
   const errors: { name: string; error: string }[] = []
   const notes: { name: string; note: string }[] = []
+  const elsewhere = botsInOtherOrgs(dirname(root), orgId)
   const ready = rows.filter((row) => {
-    if (!row.error) return true
-    errors.push({ name: row.name, error: row.error })
+    if (row.error) {
+      errors.push({ name: row.name, error: row.error })
+      return false
+    }
+    // Skipped before any seat is planned, so a bot reporting to it goes under You like any other missing manager.
+    const otherOrgs = isConnectorName(row.name) ? [] : elsewhere.get(botKey(row.grokBotUrl ?? '')) ?? []
+    if (!otherOrgs.length) return true
+    errors.push({ name: row.name, error: `${inOtherOrgsText(row.name, otherOrgs)} If it is your main bot, add it with Add existing bot.` })
     return false
   })
   const planned = ready.map((row) => ({ row, slug: reserveSeatSlug(root, slugify(row.name), taken) }))
@@ -837,7 +854,7 @@ export function importBotsFile(
       grokSync: stamp?.grokSync,
       grokSyncedAt: stamp?.grokSyncedAt,
       allowEmptyCard: true,
-    })
+    }, elsewhere)
     if (!created.ok) {
       errors.push({ name: item.row.name, error: created.errors.join(' ') })
       continue
@@ -1214,6 +1231,44 @@ export function clearFulfilledRequests(root: string, orgId: string, plan: SyncPl
       stats: [`Asked=${item.requestedAt ? localStamp(item.requestedAt) : '-'}`, `Took=${item.requestedAt ? waitedFor(item.requestedAt, at) : '-'}`].join('|'),
     })
   }
+}
+
+/** A bot's Grok Bot id, from its link. A link without one stands for itself. */
+function botKey(link: string): string {
+  const trimmed = link.trim()
+  return /[?&]id=([^&#\s]+)/.exec(trimmed)?.[1] ?? trimmed
+}
+
+/** One Connector serves every organization of the project, so it is never held to one. */
+function isConnectorName(name: string): boolean {
+  return name.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase())
+}
+
+/**
+ * The bots active in every other organization of the project, by Grok Bot id, with the organizations each is in. A bot
+ * works for one organization. Each organization is read once; a bad one is skipped.
+ */
+export function botsInOtherOrgs(orgsDir: string, orgId: string): Map<string, string[]> {
+  const found = new Map<string, string[]>()
+  for (const other of listOrgSlugs(orgsDir)) {
+    if (other === orgId) continue
+    const read = readOrgDir(resolve(orgsDir, other), other)
+    if (!read.ok) continue
+    const orgName = read.bundle.org.company.name
+    for (const seat of read.bundle.seats) {
+      const key = botKey(seat.grokBotUrl ?? '')
+      if (seat.kind !== 'bot' || seat.status === 'retired' || !key) continue
+      const orgs = found.get(key) ?? []
+      if (!orgs.includes(orgName)) orgs.push(orgName)
+      found.set(key, orgs)
+    }
+  }
+  return found
+}
+
+/** Why a bot active in another organization is not added here. */
+export function inOtherOrgsText(name: string, orgs: string[]): string {
+  return `${name} is already in ${andList(orgs)}. A bot works for one organization. To use it here too, duplicate it in Grok Bot, rename the copy, and add the copy. To move it here, retire it there first.`
 }
 
 /** Organizations of the project with an active seat on this Grok Bot link. A bad org is skipped. */
@@ -2354,7 +2409,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const body = await readBody(req)
       if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
       const created = createExistingBot(root, slug, JSON.parse(body) as ExistingBotInput)
-      if (!created.ok) return send(res, 422, { errors: created.errors })
+      // 409 tells the page the bot is in another organization, so it can offer Add anyway.
+      if (!created.ok) return send(res, created.otherOrgs ? 409 : 422, { errors: created.errors, ...(created.otherOrgs ? { otherOrgs: created.otherOrgs } : {}) })
       send(res, 201, { ok: true, slug: created.slug, file: created.file })
       return
     }

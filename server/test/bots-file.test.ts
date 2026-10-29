@@ -290,10 +290,12 @@ test('export then import into an empty company recreates the seats', () => {
   assert.equal(collections?.grokBotUrl, 'https://example.com/grok/collections')
   assert.equal(collections?.reportsTo, 'Invoice Bot')
   assert.equal(file.includes('"Ada"'), false)
-  const target = createOrgFiles(dir, 'South office', 'You')
+  // Another copy of the app: within one, a bot already active in North office is not added to a second organization.
+  const otherCopy = mkdtempSync(join(tmpdir(), 'be-bots-round-copy-'))
+  const target = createOrgFiles(otherCopy, 'South office', 'You')
   assert.equal(target.ok, true)
   if (!target.ok) return
-  const targetRoot = join(dir, target.slug)
+  const targetRoot = join(otherCopy, target.slug)
   const imported = importBotsFile(targetRoot, target.slug, parsed.rows)
   assert.deepEqual(imported.errors, [])
   const again = readOrgDir(targetRoot, target.slug)
@@ -323,6 +325,7 @@ test('export then import into an empty company recreates the seats', () => {
   const notes = readFileSync(join(targetRoot, 'seats', 'notes-bot.md'), 'utf8')
   assert.match(notes, /grokBotUrl: ""/)
   rmSync(dir, { recursive: true, force: true })
+  rmSync(otherCopy, { recursive: true, force: true })
 })
 
 test('an existing seat file is not overwritten', () => {

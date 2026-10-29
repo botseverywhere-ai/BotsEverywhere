@@ -590,15 +590,17 @@ export function Workspace({
       setWriter('down')
       return { ok: false, error: SAVING_OFF }
     }
-    let body: { slug?: string; errors?: string[]; error?: string }
+    let body: { slug?: string; errors?: string[]; error?: string; otherOrgs?: string[] }
     try {
-      body = (await response.json()) as { slug?: string; errors?: string[]; error?: string }
+      body = (await response.json()) as { slug?: string; errors?: string[]; error?: string; otherOrgs?: string[] }
     } catch {
       setWriter('down')
       return { ok: false, error: SAVING_OFF }
     }
     if (!response.ok) {
-      return { ok: false, error: body.errors?.join(' ') || body.error || 'Could not add that bot.' }
+      const error = body.errors?.join(' ') || body.error || 'Could not add that bot.'
+      // Already in another organization: the drawer offers Add anyway.
+      return response.status === 409 && body.otherOrgs?.length ? { ok: false, error, otherOrgs: body.otherOrgs } : { ok: false, error }
     }
     try {
       await rereadOrg()
