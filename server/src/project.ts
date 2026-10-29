@@ -49,9 +49,9 @@ function readProjectText(orgsDir: string): string {
   }
 }
 
-function writeProjectFile(orgsDir: string, id: string, syncMinutes: number, removeCopies = readRemoveCopies(orgsDir)): boolean {
+function writeProjectFile(orgsDir: string, id: string, syncMinutes: number, removeCopies = readRemoveCopies(orgsDir), mainBot = readMainBot(orgsDir)): boolean {
   // The default interval is not written, so a copy that never changed it keeps the file it had.
-  const data = { id, ...(syncMinutes === DEFAULT_SYNC_MINUTES ? {} : { syncMinutes }), ...(removeCopies.length ? { removeCopies } : {}) }
+  const data = { id, ...(syncMinutes === DEFAULT_SYNC_MINUTES ? {} : { syncMinutes }), ...(removeCopies.length ? { removeCopies } : {}), ...(mainBot ? { mainBot } : {}) }
   try {
     writeFileSync(resolve(orgsDir, PROJECT_FILE), `${JSON.stringify(data, null, 2)}\n`, 'utf8')
     return true
@@ -125,6 +125,23 @@ export function writeRemoveCopy(orgsDir: string, copy: string): { ok: true; remo
   const current = readRemoveCopies(orgsDir)
   const removeCopies = current.includes(copy) ? current : [...current, copy]
   return writeProjectFile(orgsDir, id, readSyncMinutes(orgsDir), removeCopies) ? { ok: true, removeCopies } : { ok: false, error: 'Could not write project.json.' }
+}
+
+/** The Grok Bot id of the owner's main bot, which belongs in every organization. Empty until the owner marks one. */
+export function readMainBot(orgsDir: string): string {
+  try {
+    const data = JSON.parse(normalizeText(readProjectText(orgsDir) || '{}')) as { mainBot?: unknown }
+    return typeof data?.mainBot === 'string' ? data.mainBot.trim() : ''
+  } catch {
+    return ''
+  }
+}
+
+/** Saves the main bot by its Grok Bot id, so renaming it changes nothing. */
+export function writeMainBot(orgsDir: string, botId: string): { ok: true } | { ok: false; error: string } {
+  const id = botId.trim()
+  if (!id) return { ok: false, error: 'That bot has no Grok Bot id.' }
+  return writeProjectFile(orgsDir, ensureProjectId(orgsDir), readSyncMinutes(orgsDir), readRemoveCopies(orgsDir), id) ? { ok: true } : { ok: false, error: 'Could not write project.json.' }
 }
 
 /** Reads orgs/connector.json. Null when the project Connector never wrote it. Never throws. */
