@@ -15,12 +15,12 @@ Processes: none
 Take work only from your managers above. Send each result to the manager who gave you the work. When that is not your main manager, also send your main manager one line on what you did.
 When a manager is a person, keep the result in your chat for them.
 Before each run of a routine, read your seat file and your process files.
-Profile file: C:\\Users\\me\\orgs\\org-test\\profiles\\security.md. Each time you are active, in a chat, on a message, or when one of your routines finishes, check it. If it is missing, more than a day old, or no longer matches your routines, the private skills turned on for you, the apps you use, or the work you regularly hand on or get, write it with Shell, exactly in this form and nothing else:
+Profile file: C:\\Users\\me\\orgs\\org-test\\profiles\\security.md. Each time you are active, in a chat, on a message, or when one of your routines finishes, check it. If it is missing, more than a day old, or no longer matches your routines, the private skills you use in your work, the apps you use, or the work you regularly hand on or get, write it with Shell, exactly in this form and nothing else:
 BotsEverywhere profile: org-test | security
 Routines:
 - <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never> | <times it ran in the last 30 days, from its Run history>
 Skills:
-- <private skill turned on for you, not a built-in one> | <what it does, in one line>
+- <private skill you use in your work; leave out skills you only have turned on> | <what it does, in one line>
 Apps used:
 - <app connected to the account that you use> | <what you use it for>
 Sends:

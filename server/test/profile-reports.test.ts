@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { latestProfileReports, parseProfileReport, profileForm } from '../src/profile-reports.ts'
 
@@ -8,7 +9,7 @@ test('the profile a bot fills in names its organization and seat, then its routi
     'Routines:',
     '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never> | <times it ran in the last 30 days, from its Run history>',
     'Skills:',
-    '- <private skill turned on for you, not a built-in one> | <what it does, in one line>',
+    '- <private skill you use in your work; leave out skills you only have turned on> | <what it does, in one line>',
     'Apps used:',
     '- <app connected to the account that you use> | <what you use it for>',
     'Sends:',
@@ -97,4 +98,12 @@ test('the newest profile for each seat wins', () => {
   ])
   assert.deepEqual([...reports.keys()].sort(), ['org-a|lead', 'org-a|x-com'])
   assert.equal(reports.get('org-a|x-com')!.routines[0]!.name, 'New')
+})
+
+test('the profile form asks for skills the bot uses, not every skill turned on', () => {
+  const form = profileForm('org-x', 'seat').join('\n')
+  assert.match(form, /- <private skill you use in your work; leave out skills you only have turned on> \| <what it does, in one line>/)
+  assert.equal(form.includes('turned on for you'), false)
+  const profile = readFileSync(new URL('../../src/components/BotProfile.tsx', import.meta.url), 'utf8')
+  assert.match(profile, /Used in its work, as the bot reported them\./)
 })

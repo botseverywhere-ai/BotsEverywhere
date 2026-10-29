@@ -203,7 +203,7 @@ function SkillEditor({ initial, inGrok, onSave }: { initial: Skill[]; inGrok?: B
       <h3 className="card-label">Skills</h3>
       {shown.length ? (
         <>
-          <p className="field-hint">Turned on in Grok Bot, as the bot reported them.</p>
+          <p className="field-hint">Used in its work, as the bot reported them.</p>
           <SkillItems skills={shown} />
         </>
       ) : null}

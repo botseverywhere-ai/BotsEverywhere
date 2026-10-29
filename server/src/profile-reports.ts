@@ -19,7 +19,7 @@ export function profileForm(orgId: string, seat: string): string[] {
     'Routines:',
     '- <routine name> | <cron line, or the event that starts it> | <time zone> | active or paused | <last run in ISO 8601, or never> | <times it ran in the last 30 days, from its Run history>',
     'Skills:',
-    '- <private skill turned on for you, not a built-in one> | <what it does, in one line>',
+    '- <private skill you use in your work; leave out skills you only have turned on> | <what it does, in one line>',
     'Apps used:',
     '- <app connected to the account that you use> | <what you use it for>',
     'Sends:',
