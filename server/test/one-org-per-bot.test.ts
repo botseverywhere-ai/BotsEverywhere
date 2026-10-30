@@ -4,8 +4,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { parseBotsFile } from '../src/bots-file.ts'
+import { GROK_DATA_FILE } from '../src/connector-files.ts'
 import { writeMainBot } from '../src/project.ts'
-import { createExistingBot, createOrgFiles, importBotsFile, startTemplateServer } from '../src/template-server.ts'
+import { createExistingBot, createOrgFiles, importBotsFile, importFromConnector, readOrgDir, setSeatManagers, startTemplateServer } from '../src/template-server.ts'
 
 const link = (id: string) => `grokbot://app/v1/agent?id=${id}`
 const card = { owns: ['Briefs'], may: ['Read sources'], mustAskBefore: ['Publishing'], doneWhen: ['The brief is sent'] }
@@ -75,6 +76,68 @@ test('importing brings a bot active elsewhere in greyed, and a bot naming it as 
     const research = readFileSync(join(dir, b, 'seats', 'research.md'), 'utf8')
     assert.match(research, /^grokBotUrl: ""$/m)
     assert.match(research, /^elsewhereUrl: "grokbot:\/\/app\/v1\/agent\?id=r1"$/m)
+  } finally {
+    done()
+  }
+})
+
+const managerOf = (dir: string, org: string, slug: string) => /^reportsTo: "?([^"\n]*)"?$/m.exec(readFileSync(join(dir, org, 'seats', `${slug}.md`), 'utf8'))?.[1]
+
+test('importing from the Connector keeps the managers each bot has in the organization it works for', () => {
+  const { dir, a, b, add, done } = project()
+  try {
+    assert.ok(add(a, 'Grok Bot', 'g1').ok)
+    assert.ok(add(a, 'Brand', 'b1', { reportsTo: 'grok-bot' }).ok)
+    assert.ok(add(a, 'Demo Video', 'd1', { reportsTo: 'brand' }).ok)
+    // Their own text only names Grok Bot; the structure was set in BotsEverywhere.
+    writeFileSync(join(dir, GROK_DATA_FILE), JSON.stringify({ dumpedAt: '2026-10-30T15:00:00+01:00', copy: 'acn8', bots: [
+      { id: 'g1', name: 'Grok Bot', description: 'Routes work.', routinesVisible: false },
+      { id: 'b1', name: 'Brand', description: 'Brand work.', routinesVisible: false, reportsTo: 'Grok Bot' },
+      { id: 'd1', name: 'Demo Video', description: 'Demo work.', routinesVisible: false, reportsTo: 'Grok Bot' },
+    ], skills: [] }))
+    const result = importFromConnector(dir, join(dir, b), b)
+    assert.ok(!('error' in result), JSON.stringify(result))
+    if ('error' in result) return
+    assert.deepEqual(result.errors, [])
+    assert.deepEqual(result.greyed.map((item) => item.name).sort(), ['Brand', 'Demo Video', 'Grok Bot'])
+    assert.equal(managerOf(dir, b, 'grok-bot'), 'you')
+    assert.equal(managerOf(dir, b, 'brand'), 'grok-bot', 'a greyed bot may report to a greyed bot')
+    assert.equal(managerOf(dir, b, 'demo-video'), 'brand', 'the manager it has where it works wins over its own text')
+    assert.ok(readOrgDir(join(dir, b), b).ok, 'the organization reads back')
+  } finally {
+    done()
+  }
+})
+
+test('importing keeps the extra managers a bot has in the organization it works for', () => {
+  const { dir, a, b, add, done } = project()
+  try {
+    assert.ok(add(a, 'Inner Loop', 'i1').ok)
+    assert.ok(add(a, 'Outer Loop', 'o1').ok)
+    assert.ok(add(a, 'Security', 's1').ok)
+    assert.ok(setSeatManagers(join(dir, a), a, 'security', 'inner-loop', ['outer-loop']).ok)
+    const file = parseBotsFile(JSON.stringify({ bots: [{ name: 'Inner Loop', grokBotUrl: link('i1') }, { name: 'Outer Loop', grokBotUrl: link('o1') }, { name: 'Security', grokBotUrl: link('s1') }] }))
+    assert.ok(file.ok)
+    if (!file.ok) return
+    assert.deepEqual(importBotsFile(join(dir, b), b, file.rows).errors, [])
+    const security = readFileSync(join(dir, b, 'seats', 'security.md'), 'utf8')
+    assert.match(security, /^reportsTo: "?inner-loop"?$/m)
+    assert.match(security, /^alsoReportsTo: .*outer-loop/m)
+  } finally {
+    done()
+  }
+})
+
+test('a bot whose manager where it works is not imported falls back to who its own text names', () => {
+  const { dir, a, b, add, done } = project()
+  try {
+    assert.ok(add(a, 'Brand', 'b1').ok)
+    assert.ok(add(a, 'Demo Video', 'd1', { reportsTo: 'brand' }).ok)
+    const file = parseBotsFile(JSON.stringify({ bots: [{ name: 'Grok Bot', grokBotUrl: link('g1') }, { name: 'Demo Video', grokBotUrl: link('d1'), reportsTo: 'Grok Bot' }] }))
+    assert.ok(file.ok)
+    if (!file.ok) return
+    assert.deepEqual(importBotsFile(join(dir, b), b, file.rows).errors, [])
+    assert.equal(managerOf(dir, b, 'demo-video'), 'grok-bot')
   } finally {
     done()
   }

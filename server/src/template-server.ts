@@ -674,8 +674,9 @@ export function createExistingBot(
   if (!read.bundle.seats.some((seat) => seat.slug === reportsTo)) {
     return { ok: false, errors: [`${reportsTo} is not a seat in this org.`] }
   }
+  // A bot that works here never reports to a greyed one. A greyed one may: neither gets a block.
   const greyedManager = read.bundle.seats.find((seat) => seat.slug === reportsTo && isGreyed(seat))
-  if (greyedManager) return { ok: false, errors: [greyedManagerText(greyedManager.title)] }
+  if (greyedManager && input.greyed !== true) return { ok: false, errors: [greyedManagerText(greyedManager.title)] }
   const card = {
     owns: lineList(input.owns),
     may: lineList(input.may),
@@ -805,13 +806,16 @@ export function importBotsFile(
   const taken = new Set(existing.map((seat) => seat.slug))
   const errors: { name: string; error: string }[] = []
   const notes: { name: string; note: string }[] = []
-  const elsewhere = botsInOtherOrgs(dirname(root), orgId)
+  const homes = new Map<string, HomeManagers>()
+  const elsewhere = botsInOtherOrgs(dirname(root), orgId, [], homes)
   const mainBot = readMainBot(dirname(root))
   // A bot active in another organization comes in greyed. The Connector and the main bot belong in every organization.
   const otherOrgsOf = (row: BotsFileRow): string[] => {
     const key = botKey(row.grokBotUrl ?? '')
     return !key || key === mainBot || isConnectorName(row.name) ? [] : elsewhere.get(key) ?? []
   }
+  // A greyed bot keeps the managers the owner gave it where it works, over who its own text names.
+  const homeOf = (row: BotsFileRow): HomeManagers | undefined => (otherOrgsOf(row).length ? homes.get(botKey(row.grokBotUrl ?? '')) : undefined)
   const ready = rows.filter((row) => {
     if (!row.error) return true
     errors.push({ name: row.name, error: row.error })
@@ -832,16 +836,28 @@ export function importBotsFile(
     batch.set(item.row.name.trim().toLowerCase(), item.slug)
     batch.set(item.slug, item.slug)
   }
-  const writes: { row: BotsFileRow; slug: string; manager: string; managerIsNew: boolean; waitsFor?: string }[] = []
+  // Seats here and in this file by Grok Bot id, so a manager from another organization is found by id, never by name.
+  const byKey = new Map<string, string>()
+  for (const seat of read.bundle.seats) {
+    for (const link of [seat.grokBotUrl, seat.elsewhereUrl]) if (botKey(link ?? '')) byKey.set(botKey(link ?? ''), seat.slug)
+  }
+  for (const item of planned) if (item.slug && botKey(item.row.grokBotUrl ?? '')) byKey.set(botKey(item.row.grokBotUrl ?? ''), item.slug)
+  const youHere = resolveManager('You', '', existing, batch)
+  const hereSlug = (manager: HomeManager): string | undefined => (manager.key ? byKey.get(manager.key) : youHere.ok ? youHere.slug : undefined)
+  const writes: { row: BotsFileRow; slug: string; manager: string; managerName: string; managerIsNew: boolean; waitsFor?: string }[] = []
   for (const item of planned) {
     if (!item.slug) continue
-    const resolved = resolveManager(item.row.reportsTo, item.row.name, existing, batch)
-    if (resolved.ok && greyedSlugs.has(resolved.slug)) {
-      // A bot never reports to a greyed one: it waits under You and moves under it once that bot works here.
+    const home = homeOf(item.row)?.reportsTo
+    const homeSlug = home ? hereSlug(home) : undefined
+    const managerName = homeSlug && home ? home.name : item.row.reportsTo.trim()
+    const resolved = resolveManager(homeSlug ?? item.row.reportsTo, item.row.name, existing, batch)
+    if (resolved.ok && greyedSlugs.has(resolved.slug) && !greyedSlugs.has(item.slug)) {
+      // A bot that works here never reports to a greyed one: it waits under You and moves under it once that bot works
+      // here. A greyed bot may: neither gets a block.
       const you = resolveManager('You', item.row.name, existing, batch)
       if (you.ok) {
-        notes.push({ name: item.row.name, note: `${item.row.reportsTo.trim()} works in another organization; placed under You until it works here.` })
-        writes.push({ row: item.row, slug: item.slug, manager: you.slug, managerIsNew: false, waitsFor: resolved.slug })
+        notes.push({ name: item.row.name, note: `${managerName} works in another organization; placed under You until it works here.` })
+        writes.push({ row: item.row, slug: item.slug, manager: you.slug, managerName: 'You', managerIsNew: false, waitsFor: resolved.slug })
         continue
       }
     }
@@ -856,10 +872,10 @@ export function importBotsFile(
       }
       const missing = resolved.error.endsWith('is not a seat in this org or in this file.')
       notes.push({ name: item.row.name, note: missing ? `${item.row.reportsTo.trim()} is not a seat here; placed under You.` : `${resolved.error.replace(/\.$/, '')}; placed under You.` })
-      writes.push({ row: item.row, slug: item.slug, manager: you.slug, managerIsNew: false })
+      writes.push({ row: item.row, slug: item.slug, manager: you.slug, managerName: 'You', managerIsNew: false })
       continue
     }
-    writes.push({ row: item.row, slug: item.slug, manager: resolved.slug, managerIsNew: resolved.isNew })
+    writes.push({ row: item.row, slug: item.slug, manager: resolved.slug, managerName, managerIsNew: resolved.isNew })
   }
   const dropped = new Set(writes.filter((item) => item.managerIsNew && !writes.some((other) => other.slug === item.manager)).map((item) => item.slug))
   const imported: { name: string; slug: string; file: string }[] = []
@@ -922,7 +938,7 @@ export function importBotsFile(
       cursor = parent.get(cursor) || ''
     }
     if (cursor === item.slug) {
-      notes.push({ name: item.row.name, note: `${item.row.reportsTo.trim()} already reports to ${item.row.name}, so this would make a loop; placed under You.` })
+      notes.push({ name: item.row.name, note: `${item.managerName} already reports to ${item.row.name}, so this would make a loop; placed under You.` })
       continue
     }
     const pointed = retargetSeat(root, item.slug, item.manager)
@@ -931,14 +947,22 @@ export function importBotsFile(
   }
   // Extra managers, once every imported seat exists. A name that is not here is left out; a loop is never written.
   const titles = new Map([...existing.map((seat) => [seat.title.trim().toLowerCase(), seat.slug] as const), ...imported.map((item) => [item.name.trim().toLowerCase(), item.slug] as const)])
+  const seatsHere = new Set([...existing.map((seat) => seat.slug), ...importedSlugs])
   for (const item of writes) {
     const slug = imported.find((entry) => entry.name === item.row.name)?.slug
-    if (!slug || !item.row.alsoReportsTo?.length) continue
+    // A greyed bot takes its extra managers from where it works too; one that is not here is left out.
+    const home = homeOf(item.row)
+    const named = home
+      ? home.alsoReportsTo.map((manager) => {
+        const target = hereSlug(manager)
+        return { name: manager.name, target: target && seatsHere.has(target) ? target : undefined }
+      })
+      : (item.row.alsoReportsTo ?? []).map((name) => ({ name, target: titles.get(name.trim().toLowerCase()) }))
+    if (!slug || !named.length) continue
     const also: string[] = []
-    for (const name of item.row.alsoReportsTo) {
-      const target = titles.get(name.trim().toLowerCase())
+    for (const { name, target } of named) {
       if (!target) notes.push({ name: item.row.name, note: `${name.trim()} is not a seat here; left out of Also reports to.` })
-      else if (greyedSlugs.has(target)) notes.push({ name: item.row.name, note: `${name.trim()} works in another organization; left out of Also reports to.` })
+      else if (greyedSlugs.has(target) && !greyedSlugs.has(slug)) notes.push({ name: item.row.name, note: `${name.trim()} works in another organization; left out of Also reports to.` })
       else if (target !== slug && target !== item.manager && !also.includes(target)) also.push(target)
     }
     if (!also.length) continue
@@ -1305,11 +1329,24 @@ function isConnectorName(name: string): boolean {
   return name.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase())
 }
 
+/** A manager a bot has in the organization it works for: a bot there by its Grok Bot id, or You, which has no id. */
+export interface HomeManager {
+  key: string
+  name: string
+}
+
+/** Who a bot reports to in the organization it works for. A person other than You is left out: nothing matches them here. */
+export interface HomeManagers {
+  reportsTo?: HomeManager
+  alsoReportsTo: HomeManager[]
+}
+
 /**
  * The bots active in every other organization of the project, by Grok Bot id, with the organizations each is in. A bot
- * works for one organization. Each organization is read once; a bad one is skipped.
+ * works for one organization. Each organization is read once; a bad one is skipped. `managers` gets who each bot reports
+ * to there, from the first organization it is in.
  */
-export function botsInOtherOrgs(orgsDir: string, orgId: string, unreadable: string[] = []): Map<string, string[]> {
+export function botsInOtherOrgs(orgsDir: string, orgId: string, unreadable: string[] = [], managers?: Map<string, HomeManagers>): Map<string, string[]> {
   const found = new Map<string, string[]>()
   for (const other of listOrgSlugs(orgsDir)) {
     if (other === orgId) continue
@@ -1319,12 +1356,21 @@ export function botsInOtherOrgs(orgsDir: string, orgId: string, unreadable: stri
       continue
     }
     const orgName = read.bundle.org.company.name
+    const bySlug = new Map(read.bundle.seats.map((seat) => [seat.slug, seat]))
+    const you = managerSeat(read.bundle.seats)?.slug
+    const managerOf = (slug: string): HomeManager | undefined => {
+      if (slug === you) return { key: '', name: 'You' }
+      const seat = bySlug.get(slug)
+      const key = seat?.kind === 'bot' ? botKey(seat.grokBotUrl || seat.elsewhereUrl || '') : ''
+      return seat && key ? { key, name: seat.title } : undefined
+    }
     for (const seat of read.bundle.seats) {
       const key = botKey(seat.grokBotUrl ?? '')
       if (seat.kind !== 'bot' || seat.status === 'retired' || !key) continue
       const orgs = found.get(key) ?? []
       if (!orgs.includes(orgName)) orgs.push(orgName)
       found.set(key, orgs)
+      if (managers && !managers.has(key)) managers.set(key, { reportsTo: managerOf(seat.reportsTo), alsoReportsTo: (seat.alsoReportsTo ?? []).flatMap((slug) => managerOf(slug) ?? []) })
     }
   }
   return found
