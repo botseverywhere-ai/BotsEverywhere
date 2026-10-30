@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { canDelete } from '../../server/src/grok-requests.ts'
+import type { RequestPart } from '../../server/src/grok-sync.ts'
 import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
 import { Button } from './Button'
 import { DeleteInGrokBot } from './RetiredDrawer'
-import { grokDirection, grokDirectionLabel, isGrokEvent, logLabel, parseStats } from './sync-copy'
+import { grokDirection, grokDirectionLabel, isGrokEvent, logLabel, parseStats, partLine, progressSummary } from './sync-copy'
 
 type LogFilter = 'all' | 'grok' | 'team'
 
@@ -16,6 +17,7 @@ const FILTERS: [LogFilter, string][] = [
 export function LogPanel({
   events,
   waiting,
+  progress,
   stepNames,
   onStep,
   retired,
@@ -23,6 +25,8 @@ export function LogPanel({
   events: FileActivity[]
   /** To Grok Bot lines still waiting for the Connector. They pulse like the Sync drawer's waiting list. */
   waiting?: Set<string>
+  /** Each waiting request's parts and where each stands, by seat, from the writer. */
+  progress?: Record<string, RequestPart[]>
   stepNames: Map<string, { workstream: string; index: number }>
   onStep: (stepId: string) => void
   /** Your own orgs only: retired seats, so a Retired line can offer Delete in Grok Bot like the Retired list does. */
@@ -34,6 +38,15 @@ export function LogPanel({
   const rows = [...events]
     .filter((event) => filter === 'all' || (filter === 'grok') === isGrokEvent(event))
     .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+  // Each request's parts show once, under the newest waiting line for that bot; older lines say only where it stands.
+  const detailed = new Set<string>()
+  const shown = new Set<string>()
+  for (const event of rows) {
+    const seat = event.subjectSeatId
+    if (!seat || !waiting?.has(event.id) || shown.has(seat)) continue
+    shown.add(seat)
+    detailed.add(event.id)
+  }
   return (
     <section className="be-log" aria-label="Log">
       <header>
@@ -66,7 +79,7 @@ export function LogPanel({
                 <span className="be-log-text">
                   {event.summary}
                   {figures ? <small className="be-log-figures"> · {figures}</small> : null}
-                  {waiting?.has(event.id) ? <span className="be-log-syncing be-connecting"><i className="be-pulse" aria-hidden="true" />Syncing with Grok Bot</span> : null}
+                  {waiting?.has(event.id) ? <SyncState parts={progress?.[event.subjectSeatId ?? '']} /> : null}
                   {deletable ? <Button variant="secondary" type="button" className="be-log-delete" onClick={() => setDeleting(deletable)}>Delete in Grok Bot…</Button> : null}
                 </span>
                 {step && event.stepId ? (
@@ -75,6 +88,11 @@ export function LogPanel({
                   </button>
                 ) : null}
               </div>
+              {detailed.has(event.id) && progress?.[event.subjectSeatId ?? '']?.length ? (
+                <ul className="be-log-parts">
+                  {progress[event.subjectSeatId ?? '']!.map((part) => <li key={part.label} className={`is-${part.stage}`}>{partLine(part)}</li>)}
+                </ul>
+              ) : null}
             </li>
           )
         })}
@@ -89,6 +107,13 @@ export function LogPanel({
       ) : null}
     </section>
   )
+}
+
+/** Where a To Grok Bot line stands, in one line. Without progress from the writer, it only says it is syncing. */
+function SyncState({ parts }: { parts?: RequestPart[] }) {
+  if (!parts?.length) return <span className="be-log-syncing be-connecting"><i className="be-pulse" aria-hidden="true" />Syncing with Grok Bot</span>
+  const summary = progressSummary(parts)
+  return <span className={summary.moving ? 'be-log-syncing be-connecting' : 'be-log-syncing'}>{summary.moving ? <i className="be-pulse" aria-hidden="true" /> : null}{summary.text}</span>
 }
 
 function formatWhen(iso: string): string {

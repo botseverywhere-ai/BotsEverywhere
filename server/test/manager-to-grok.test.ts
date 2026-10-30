@@ -241,7 +241,8 @@ test('a To Grok Bot line in Logs waits until the Connector carries it out', () =
 
 test('a To Grok Bot line still waiting ends with Syncing with Grok Bot and the pulse, after its text', () => {
   const panel = readFileSync(new URL('../../src/components/LogPanel.tsx', import.meta.url), 'utf8')
-  assert.match(panel, /\{figures \? <small className="be-log-figures"> · \{figures\}<\/small> : null\}\s*\{waiting\?\.has\(event\.id\) \? <span className="be-log-syncing be-connecting"><i className="be-pulse" aria-hidden="true" \/>Syncing with Grok Bot<\/span> : null\}/)
+  assert.match(panel, /\{figures \? <small className="be-log-figures"> · \{figures\}<\/small> : null\}\s*\{waiting\?\.has\(event\.id\) \? <SyncState parts=\{progress\?\.\[event\.subjectSeatId \?\? ''\]\} \/> : null\}/)
+  assert.match(panel, /if \(!parts\?\.length\) return <span className="be-log-syncing be-connecting"><i className="be-pulse" aria-hidden="true" \/>Syncing with Grok Bot<\/span>/, 'without progress from the writer, the old label')
   assert.doesNotMatch(panel, /Waiting for the Connector/, 'one visible label, after the text')
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.be-log-syncing \{ margin-left: var\(--space-3\); \}/)
@@ -281,7 +282,7 @@ test('Profile keeps Update bot while an update waits, and lists each waiting cha
   assert.match(profile, /\{grokUpdateAt \? \([\s\S]*?Update waiting for the Connector[\s\S]*?updateWaitingLine\(grokUpdateAt, grokUpdateItems\.length\)[\s\S]*?<ul className="profile-update-items">\{grokUpdateItems\.map\(\(item, index\) => <li key=\{index\}><i className="be-pulse" aria-hidden="true" \/>\{item\}<\/li>\)\}<\/ul>[\s\S]*?\) : null\}\s*<Button variant="primary" type="button" onClick=\{onUpdateInGrok\}>\{UPDATE_LABEL\}<\/Button>/, 'one pulsing line per change, and the button stays under them')
   assert.match(profile, /\{grokUpdateItems\.length \? null : <i className="be-pulse" aria-hidden="true" \/>\}<strong>Update waiting for the Connector<\/strong>/, 'the title pulses only when there is no list to pulse')
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
-  assert.match(workspace, /grokUpdateItems=\{waitingUpdate \? updateItems\(waitingUpdate\) : \[\]\}/)
+  assert.match(workspace, /grokUpdateItems=\{waitingUpdate \? updateItems\(waitingUpdate, sync\?\.progress\?\.\[waitingUpdate\.seat\]\) : \[\]\}/)
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.profile-update-items \{ margin: 0; padding-left: 0; color: var\(--color-ink\); font-size: var\(--text-sm\); \}/)
   assert.match(css, /\.panel \.profile-update-items li::before \{ content: none; \}/, 'the pulse replaces the arrow')

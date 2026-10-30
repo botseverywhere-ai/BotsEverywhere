@@ -1,5 +1,5 @@
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import type { GrokAccount, ProjectInfo, SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
+import type { GrokAccount, PartStage, ProjectInfo, RequestPart, SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
 import { canRequest, fulfilledSeats, type GrokRequest } from '../../server/src/grok-requests.ts'
 import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
 import type { NoticeInput } from '../live/notices.ts'
@@ -252,13 +252,65 @@ const KIND_LABELS: Record<string, string> = {
 const TYPE_LABELS: Record<string, string> = { hire: 'Hire', fire: 'Retired', edit: 'Edit', work: 'Work', approval: 'Approval', exception: 'Exception' }
 
 /** The word in front of a log line. Older lines have no kind, so their id says what they were. */
-/** A waiting update, one change per line for Profile and Sync: the new manager, then each skill and routine. */
-export function updateItems(request: Pick<GrokRequest, 'skills' | 'routines' | 'reportsTo' | 'previousReportsTo'>): string[] {
+/**
+ * A waiting update, one change per line for Profile and Sync: the new manager, then each skill and routine. With the
+ * request's progress, each line also says where it stands; the new manager stands where the bot's instructions do.
+ */
+export function updateItems(request: Pick<GrokRequest, 'skills' | 'routines' | 'reportsTo' | 'previousReportsTo'>, parts: RequestPart[] = [], timeZone?: string): string[] {
+  const where = (text: string, label: string) => {
+    const part = parts.find((item) => item.label === label)
+    return part ? `${text}: ${stageWords(part, timeZone)}` : text
+  }
   return [
-    ...(request.reportsTo ? [`Reports to ${request.reportsTo}${request.previousReportsTo ? ` (was ${request.previousReportsTo})` : ''}`] : []),
-    ...(request.skills ?? []).map((item) => `Skill: ${item.name}`),
-    ...(request.routines ?? []).map((item) => `Routine: ${item.name}`),
+    ...(request.reportsTo ? [where(`Reports to ${request.reportsTo}${request.previousReportsTo ? ` (was ${request.previousReportsTo})` : ''}`, 'Instructions')] : []),
+    ...(request.skills ?? []).map((item) => where(`Skill: ${item.name}`, `Skill: ${item.name}`)),
+    ...(request.routines ?? []).map((item) => where(`Routine: ${item.name}`, `Routine: ${item.name}`)),
   ]
+}
+
+/** HH:MM on a 24-hour clock, in this computer's time zone unless one is given. */
+export function clock(iso: string, timeZone?: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return iso
+  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', ...(timeZone ? { timeZone } : {}) }).format(date)
+}
+
+function stageWords(part: RequestPart, timeZone?: string): string {
+  const at = part.at ? clock(part.at, timeZone) : ''
+  switch (part.stage) {
+    case 'waiting': return "waiting for the Connector's next run"
+    case 'you': return 'waiting for you. Tell the Connector in its chat to carry out its to-do list'
+    case 'asked': return `asked at ${at}, waiting for the bot to confirm`
+    case 'done': return `done in Grok Bot at ${at}, confirming on the Connector's next reading`
+    case 'confirmed': return 'confirmed in Grok Bot'
+    case 'retrying': return `failed at ${at} (${part.why || 'no reason given'}), trying again on the next run`
+    case 'stuck': return `stuck. ${part.why || ''}`.trim()
+    case 'after-create': return 'asked for once the bot is created'
+  }
+}
+
+/** One part of a request to Grok Bot and where it stands, for Logs, Profile, and Sync. */
+export function partLine(part: RequestPart, timeZone?: string): string {
+  return `${part.label}: ${stageWords(part, timeZone)}`
+}
+
+/** Furthest from done first: the part that decides a request's one line in Logs. */
+const STAGE_ORDER: PartStage[] = ['stuck', 'retrying', 'waiting', 'you', 'asked', 'done', 'after-create', 'confirmed']
+const SUMMARY: Record<PartStage, string> = {
+  stuck: 'Stuck: needs you',
+  retrying: 'Failed once, trying again',
+  waiting: 'Waiting for the Connector',
+  you: "Waiting for you in the Connector's chat",
+  asked: 'Waiting for the bot to confirm',
+  done: 'Done in Grok Bot, confirming on the next reading',
+  'after-create': 'Done in Grok Bot, confirming on the next reading',
+  confirmed: 'Confirmed in Grok Bot',
+}
+
+/** A request's one line in Logs, from the part furthest from done. It moves until every part is confirmed or one is stuck. */
+export function progressSummary(parts: RequestPart[]): { text: string; moving: boolean } {
+  const stage = STAGE_ORDER.find((item) => parts.some((part) => part.stage === item)) ?? 'confirmed'
+  return { text: SUMMARY[stage], moving: stage !== 'stuck' && stage !== 'confirmed' }
 }
 
 /**

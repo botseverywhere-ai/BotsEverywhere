@@ -1082,7 +1082,7 @@ export function Workspace({
               }}
             />
           ) : null}
-          {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} retired={editable ? { seats: retired, activeElsewhere: sync?.retiredElsewhere ?? {} } : undefined} /> : null}
+          {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} progress={sync?.progress} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} retired={editable ? { seats: retired, activeElsewhere: sync?.retiredElsewhere ?? {} } : undefined} /> : null}
         </main>
         {(view === 'org' || view === 'work') && chartSeat ? (
         <SeatDrawer
@@ -1116,7 +1116,7 @@ export function Workspace({
           onAlsoReportsTo={editable && chartSeat.reportsTo ? (slugs) => { void setAlsoManagers(chartSeat.id, chartSeat.reportsTo!, slugs) } : undefined}
           grokRequestedAt={createRequests.find((item) => item.seat === chartSeat.id)?.requestedAt ?? ''}
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
-          grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate) : []}
+          grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate, sync?.progress?.[waitingUpdate.seat]) : []}
           accountApps={accountApps}
           reportedSkills={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.skills}
           reportedApps={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.apps}

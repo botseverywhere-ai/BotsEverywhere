@@ -1,6 +1,7 @@
 import { copyBlocks, orgBlocks, otherCopyIds, ownerText, sha256, withCopyBlocks } from './bot-blocks.ts'
 import { botForSeat, linkedBotIds, type GrokData, type GrokDataBot } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
+import type { RequestPart } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import type { BotRoutine, OrgBundle } from './org-files.ts'
 
@@ -101,6 +102,11 @@ function confirmationLine(orgId: string, seat: string, routine: BotRoutine): str
   return `BotsEverywhere routine saved: ${orgId} | ${seat} | ${routine.name} | ${start} | ${routine.timeZone || '-'} | ${routine.enabled === false ? 'paused' : 'active'}`
 }
 
+/** The to-do key, before its `#<attempt>`, for creating a requested bot, saving a skill, and asking a bot for a routine. */
+export const createKeyBase = (request: Pick<GrokRequest, 'seat' | 'name' | 'requestedAt'>) => `create:${request.seat}:${short(`${request.name}\u0000${request.requestedAt}`)}`
+export const skillKeyBase = (skill: { name: string; description?: string }) => `skill:${short(norm(skill.name))}:${short(`${skill.name}\u0000${skill.description ?? ''}`)}`
+export const routineKeyBase = (orgId: string, seat: string, routine: BotRoutine) => `routine:${orgId}:${seat}:${short(confirmationLine(orgId, seat, routine))}`
+
 function routineShown(want: BotRoutine, bot: GrokDataBot | undefined): boolean {
   if (!bot?.routinesVisible) return false
   return (bot.routines ?? []).some((have) => norm(have.name) === norm(want.name)
@@ -134,6 +140,61 @@ export function updatedFor(orgId: string, requests: GrokRequest[], data: GrokDat
     if (!(request.skills ?? []).every((skill) => skillInLibrary(skill, data))) return false
     return (request.routines ?? []).every((routine) => routineDone(orgId, request.seat, routine, bot, results))
   }).map((request) => ({ seat: request.seat, requestedAt: request.requestedAt }))
+}
+
+/**
+ * Where each part of one organization's requests stands, by seat: creating the bot, its instructions (its blocks), each
+ * skill, and each routine. Done is the Connector's report after Grok Bot's latest reading; confirmed is that reading
+ * showing it. A done the reading came after but does not show is retried, as the to-do list does.
+ */
+export function requestProgress(input: { orgId: string; requests: GrokRequest[]; data: GrokData; results: ResultsFile; todo: Pick<TodoFile, 'items' | 'stuck'> | null }): Record<string, RequestPart[]> {
+  const { orgId, data, results } = input
+  const readAt = Date.parse(data.dumpedAt)
+  const items = input.todo?.items ?? []
+  // A bot can be stuck for one thing and fine for another: its instructions and its routines are told apart by the reason.
+  const stuckWhy = (bot: string, about?: RegExp) => input.todo?.stuck.find((item) => (item.org === orgId || item.org === '') && item.bot === bot && (!about || about.test(item.why)))?.why
+  const latest = (prefix: string) => results.results.filter((result) => result.key.startsWith(prefix)).sort((a, b) => Date.parse(a.at) - Date.parse(b.at)).at(-1)
+  const failedWhy = (result: ResultsFile['results'][number]) => (result.status === 'done' ? 'reported done, but Grok Bot does not show it' : result.why || 'no reason given')
+  /** One action the Connector carries out itself: create, describe, or skill. */
+  const action = (base: string, shown: boolean, bot: string): Omit<RequestPart, 'label'> => {
+    if (shown) return { stage: 'confirmed' }
+    const last = latest(`${base}#`)
+    if (last?.status === 'done' && Date.parse(last.at) >= readAt) return { stage: 'done', at: last.at }
+    if (items.some((item) => item.key.startsWith(`${base}#`))) return last ? { stage: 'retrying', at: last.at, why: failedWhy(last) } : { stage: 'waiting' }
+    const why = stuckWhy(bot)
+    return why ? { stage: 'stuck', why } : { stage: 'waiting' }
+  }
+  /** A message to a bot: it goes out from the Connector's chat, then the bot confirms. */
+  const ask = (base: string, shown: boolean, bot: string): Omit<RequestPart, 'label'> => {
+    if (shown) return { stage: 'confirmed' }
+    const last = latest(`${base}#`)
+    if (items.some((item) => item.key.startsWith(`${base}#`))) return last?.status === 'failed' ? { stage: 'retrying', at: last.at, why: failedWhy(last) } : { stage: 'you' }
+    const why = stuckWhy(bot, /routine/i)
+    if (why) return { stage: 'stuck', why }
+    return last?.status === 'done' ? { stage: 'asked', at: last.at } : { stage: 'you' }
+  }
+  const progress: Record<string, RequestPart[]> = {}
+  for (const request of input.requests) {
+    const bot = requestBot(request, data)
+    const parts: RequestPart[] = []
+    if (request.kind !== 'update') parts.push({ label: 'Create the bot', ...action(createKeyBase(request), Boolean(bot), request.name) })
+    else if (bot) {
+      // Instructions: confirmed once no change to its blocks is waiting and none was reported after the reading.
+      const pending = items.find((item) => item.kind === 'describe' && item.botId === bot.id)
+      const base = pending ? pending.key.replace(/#\d+$/, '') : ''
+      const recent = latest(`describe:${bot.id}:`)
+      const held = stuckWhy(bot.name, /instructions|block/i)
+      parts.push({ label: 'Instructions', ...(pending ? action(base, false, bot.name) : recent?.status === 'done' && Date.parse(recent.at) >= readAt ? { stage: 'done', at: recent.at } : held ? { stage: 'stuck', why: held } : { stage: 'confirmed' }) })
+    }
+    for (const skill of request.skills ?? []) parts.push({ label: `Skill: ${skill.name}`, ...action(skillKeyBase(skill), skillInLibrary(skill, data), request.name) })
+    for (const routine of request.routines ?? []) {
+      const label = `Routine: ${routine.name}`
+      if (request.kind !== 'update' || !bot) parts.push({ label, stage: 'after-create' })
+      else parts.push({ label, ...ask(routineKeyBase(orgId, request.seat, routine), routineDone(orgId, request.seat, routine, bot, results), bot.name) })
+    }
+    progress[request.seat] = [...(progress[request.seat] ?? []), ...parts]
+  }
+  return progress
 }
 
 /**
@@ -310,10 +371,10 @@ export function computeTodo(input: {
         const seat = org.bundle.seats.find((item) => item.slug === request.seat)
         const prompt = request.prompt.trim() || (seat ? cardPrompt(seat) : '')
         const block = blocks.get(request.seat)
-        add(`create:${request.seat}:${short(`${request.name}\u0000${request.requestedAt}`)}`, { kind: 'create', bot: request.name, org: org.id, description: block ? `${prompt}\n\n${block}` : prompt, section: orgName }, true)
+        add(createKeyBase(request), { kind: 'create', bot: request.name, org: org.id, description: block ? `${prompt}\n\n${block}` : prompt, section: orgName }, true)
       }
       for (const skill of request.skills ?? []) {
-        const base = `skill:${short(norm(skill.name))}:${short(`${skill.name}\u0000${skill.description ?? ''}`)}`
+        const base = skillKeyBase(skill)
         if (skills.has(base) || skillInLibrary(skill, data)) continue
         skills.add(base)
         add(base, { kind: 'skill', bot: request.name, org: org.id, skill: { name: skill.name, description: skill.description ?? '' } }, true)
@@ -322,7 +383,7 @@ export function computeTodo(input: {
       for (const routine of request.routines ?? []) {
         if (routineDone(org.id, request.seat, routine, bot, results)) continue
         const line = confirmationLine(org.id, request.seat, routine)
-        const base = `routine:${org.id}:${request.seat}:${short(line)}`
+        const base = routineKeyBase(org.id, request.seat, routine)
         // Every result counts toward the next attempt: a failed ask is sent again at once, a sent one waits a day.
         const mine = results.results.filter((result) => result.key.startsWith(`${base}#`))
         const sends = mine.filter((result) => result.status === 'done')

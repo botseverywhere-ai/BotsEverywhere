@@ -2,10 +2,10 @@ import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { BACKUPS_DIR, GUIDE_FILE, RESULTS_FILE, TODO_FILE, UNASSIGNED_FILE, readTextFile, writeFileAtomic } from './connector-files.ts'
 import { SNAPSHOT_PATH, connectorGuide } from './connector-prompt.ts'
-import { computeTodo, orgBlocksFromData, parseResults, seatBots, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
+import { computeTodo, orgBlocksFromData, parseResults, requestProgress, seatBots, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
 import { botJson, linkedBotIds, readGrokData, snapshotFromData, snapshotJson, unassignedFromData, type GrokData } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
-import type { ConnectorState } from './grok-sync.ts'
+import type { ConnectorState, RequestPart } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import { grokSeats, type OrgBundle } from './org-files.ts'
 import { profileFileLines } from './profile-files.ts'
@@ -157,6 +157,14 @@ function withRuns(todo: TodoFile, previous: TodoFile | null): TodoFile {
       return { ...item, since: typeof last?.since === 'string' ? last.since : todo.basedOn, runs }
     }),
   }
+}
+
+/** Where each of one organization's requests stands, part by part, from the latest dump, the results, and the to-do list. Empty without a dump. */
+export function requestProgressFor(orgsDir: string, orgId: string, requests: GrokRequest[]): Record<string, RequestPart[]> {
+  const dump = readGrokData(orgsDir)
+  if (!dump.ok || !requests.length) return {}
+  const read = readResults(orgsDir)
+  return requestProgress({ orgId, requests, data: dump.data, results: read.ok ? read.results : { results: [], confirmations: [] }, todo: readTodo(orgsDir) })
 }
 
 /** The items the Connector carries out with SendToAgent, which Grok Bot allows only from a chat. */

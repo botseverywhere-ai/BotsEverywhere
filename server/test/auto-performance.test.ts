@@ -22,6 +22,8 @@ test("a row that changes nothing but Grok Bot's numbers applies on its own; anyt
   assert.equal(performanceOnly(updated({ ...stamp, runs30d: 5, owns: ['Rows'] })), false, 'a card fill')
   assert.equal(performanceOnly(updated({ ...stamp, runs30d: 5, botStatus: 'paused' })), false, 'a run status')
   assert.equal(performanceOnly(updated({ ...stamp, runs30d: 5, grokMissingSince: null })), false, 'a bot that came back after Not in Grok Bot')
+  assert.equal(performanceOnly(updated({ ...stamp, grokBotUrl: 'grokbot://x', grokMissingSince: null }), true), true, 'a bot the app asked to create, marked missing by a Sync that ran before it existed')
+  assert.equal(performanceOnly(updated({ ...stamp, grokBotUrl: 'grokbot://x', grokMissingSince: null })), false, 'the same row for a bot nobody asked for still waits for Sync')
   assert.equal(performanceOnly({ kind: 'unchanged', name: 'Bot', slug: 'bot' }), false)
   assert.equal(performanceOnly({ kind: 'missing', name: 'Bot', slug: 'bot', write: true, patch: { grokSync: 'missing' } }), false)
 })

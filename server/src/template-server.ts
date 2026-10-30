@@ -52,7 +52,7 @@ import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorName } from './connector-pr
 import { everyLabel, scheduleFor } from './connector-timing.js'
 import { CONNECTOR_FILE, ID_CHARS, ensureProjectId, readConnector, readMainBot, readSyncMinutes, writeMainBot, writeRemoveCopy, writeSyncMinutes } from './project.js'
 import { checkConnectorStopped, recordConnectorRun } from './connector-log.js'
-import { connectorState, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
+import { connectorState, requestProgressFor, runConnectorCycle, writeConnectorGuide } from './connector-cycle.js'
 import { RESULTS_FILE, readTextFile } from './connector-files.js'
 import { parseResults } from './connector-todo.js'
 import { botRow, readGrokData, rowsFromDump } from './grok-data.js'
@@ -1545,7 +1545,7 @@ export function syncStatus(root: string, orgId: string, orgsDir = ''): { ok: tru
   const readOrg = orgsDir ? orgReader(orgsDir, resolve(orgsDir, orgId) === folder ? { [orgId]: read } : {}) : undefined
   const project = orgsDir ? projectInfo(orgsDir, orgId, readOrg) : undefined
   const retiredElsewhere = orgsDir ? retiredActiveElsewhere(orgsDir, read.bundle.seats, readOrg) : {}
-  const connector = orgsDir ? { connector: connectorState(orgsDir, orgId) } : {}
+  const connector = orgsDir ? { connector: connectorState(orgsDir, orgId), progress: requestProgressFor(orgsDir, orgId, requests) } : {}
   // Where each greyed seat's bot works, by the organizations' names now, and the main bot.
   const greyed = orgsDir ? { elsewhere: greyedElsewhere(orgsDir, orgId, read.bundle.seats, readOrg), mainBot: readMainBot(orgsDir) } : {}
   const snap = readSnapshot(root)

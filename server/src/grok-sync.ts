@@ -84,6 +84,25 @@ export interface SyncStatus {
   elsewhere?: Record<string, string[]>
   /** The main bot's Grok Bot id, or '' until the owner marks one. */
   mainBot?: string
+  /** Each waiting request's parts and where each stands, by seat. Absent when the writer did not say. */
+  progress?: Record<string, RequestPart[]>
+}
+
+/**
+ * Where one part of a request to Grok Bot stands. waiting: on the Connector's list. you: a message to a bot, which goes out
+ * only when the owner tells the Connector's chat to act. asked: sent; the bot has not confirmed. done: the Connector reported
+ * it after Grok Bot's latest reading. confirmed: the reading shows it. after-create: asked once the bot exists.
+ */
+export type PartStage = 'waiting' | 'you' | 'asked' | 'done' | 'confirmed' | 'retrying' | 'stuck' | 'after-create'
+
+export interface RequestPart {
+  /** Create the bot, Instructions, Skill: <name>, or Routine: <name>. */
+  label: string
+  stage: PartStage
+  /** When the Connector last acted on it. */
+  at?: string
+  /** Why it failed or is stuck. */
+  why?: string
 }
 
 export interface ConnectorState {
@@ -490,7 +509,8 @@ const STAMP_KEYS = new Set<keyof SeatPatch>(['grokSync', 'grokSyncedAt'])
 export function performanceOnly(row: SyncRow, allowLink = false): row is Extract<SyncRow, { kind: 'updated' }> {
   if (row.kind !== 'updated') return false
   const keys = (Object.keys(row.patch) as (keyof SeatPatch)[]).filter((key) => !STAMP_KEYS.has(key))
-  return keys.length > 0 && keys.every((key) => PERFORMANCE_KEYS.has(key) || (allowLink && key === 'grokBotUrl'))
+  // A bot the app asked to create may come back marked missing by a Sync that ran before it existed: finding it is the point.
+  return keys.length > 0 && keys.every((key) => PERFORMANCE_KEYS.has(key) || (allowLink && (key === 'grokBotUrl' || (key === 'grokMissingSince' && row.patch.grokMissingSince === null))))
 }
 
 /** A file name from a name: lowercase, hyphens for anything else. Empty when nothing usable is left. */
