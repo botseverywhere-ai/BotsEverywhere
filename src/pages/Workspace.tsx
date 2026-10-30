@@ -5,6 +5,7 @@ import { OrgTabs } from '../components/OrgTabs'
 import { OrgSwitcher } from '../components/OrgSwitcher'
 import { SiteNav } from '../components/SiteNav'
 import { CompanyOverview } from './CompanyOverview'
+import { MainBotBar } from '../components/MainBotBar'
 import { OrgChart } from '../components/OrgChart'
 import { AccountApps } from '../components/AccountApps'
 import { ProcessChart } from '../components/ProcessChart'
@@ -24,7 +25,7 @@ import { SyncDrawer } from '../components/SyncDrawer'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
-import { activeBotCount, botLimitLine, greyedDone, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
+import { activeBotCount, botLimitLine, greyedDone, mainBotChoices, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
@@ -261,6 +262,8 @@ export function Workspace({
     return map
   }, [runLines, seats, activity, routineBoard])
   const chartSeats = [...active.map((seat) => (seat.type === 'bot' ? { ...seat, shown: metricsById.get(seat.id), ...(seat.elsewhere ? { elsewhere: sync?.elsewhere?.[seat.id] ?? [] } : {}) } : seat)), ...openSeats]
+  // Until a main bot is saved, the org chart asks which greyed bot it is.
+  const mainChoices = mainBotChoices(active, sync?.mainBot)
   const least = leastUsed(bots.map((seat) => ({
     id: seat.id,
     stats: { usageCount30d: metricsById.get(seat.id)?.usage ?? 0 },
@@ -1017,6 +1020,7 @@ export function Workspace({
           ) : null}
           {view === 'org' ? (
             <>
+              {editable && writer === 'up' ? <MainBotBar slug={bundle.id} choices={mainChoices} onSave={(id) => { void greyedAction(id, 'main-bot') }} /> : null}
               <OrgChart
                 seats={chartSeats}
                 selectedId={selected}

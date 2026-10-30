@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import { connectorImportLine, elsewhereTag, greyedLine } from '../../src/components/sync-copy.ts'
+import { MAIN_BOT_LINE, MAIN_BOT_QUESTION, connectorImportLine, elsewhereTag, greyedLine, mainBotChoices } from '../../src/components/sync-copy.ts'
 
 const source = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')
 
@@ -28,4 +28,35 @@ test('the seat panel shows the four choices and the chart greys the card', () =>
   assert.match(workspace, /canMarkMain: !sync\?\.mainBot/)
   assert.match(source('src/components/LinkCompany.tsx'), />Import from the Connector</)
   assert.match(source('src/styles/app.css'), /\.org-card-hit\.is-elsewhere \{/)
+})
+
+test('the main bot question offers the greyed bots, the one most seats report to first', () => {
+  const seats = [
+    { id: 'you', name: 'You', type: 'human' as const },
+    { id: 'overheard', name: 'Overheard', type: 'bot' as const, reportsTo: 'you', elsewhere: [] },
+    { id: 'grok-bot', name: 'Grok Bot', type: 'bot' as const, reportsTo: 'you', elsewhere: [] },
+    { id: 'brand', name: 'Brand', type: 'bot' as const, reportsTo: 'grok-bot', elsewhere: [] },
+    { id: 'research', name: 'Research', type: 'bot' as const, reportsTo: 'grok-bot', elsewhere: [] },
+    { id: 'demo', name: 'Demo', type: 'bot' as const, reportsTo: 'brand', elsewhere: [] },
+    { id: 'connector', name: 'Connector - BotsEverywhere (acn8)', type: 'bot' as const, reportsTo: 'you' },
+    { id: 'old', name: 'Old', type: 'bot' as const, reportsTo: 'you', elsewhere: [], status: 'retired' as const },
+  ]
+  assert.deepEqual(mainBotChoices(seats, '').map((seat) => seat.id), ['grok-bot', 'brand', 'demo', 'overheard', 'research'])
+  assert.deepEqual(mainBotChoices(seats, 'g1'), [], 'a main bot is saved')
+  assert.deepEqual(mainBotChoices(seats, undefined), [], 'the writer has not said yet')
+  assert.deepEqual(mainBotChoices(seats.filter((seat) => !seat.elsewhere), ''), [], 'nothing here is greyed')
+  assert.equal(MAIN_BOT_QUESTION, 'Which bot is your main bot?')
+  assert.equal(MAIN_BOT_LINE, 'Your main bot works in every organization, so it is never greyed. You pick it once.')
+})
+
+test('the org chart asks for the main bot until one is saved', () => {
+  const bar = source('src/components/MainBotBar.tsx')
+  assert.match(bar, /<select/, 'a native select')
+  assert.match(bar, />It's my main bot<\/Button>/)
+  assert.match(bar, />Not now<\/Button>/)
+  assert.match(bar, /localStorage/, 'Not now is remembered in this browser')
+  const workspace = source('src/pages/Workspace.tsx')
+  assert.match(workspace, /mainBotChoices\(active, sync\?\.mainBot\)/)
+  assert.match(workspace, /<MainBotBar[\s\S]*?greyedAction\(id, 'main-bot'\)/)
+  assert.match(source('src/styles/app.css'), /\.main-bot-bar \{/)
 })

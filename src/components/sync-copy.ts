@@ -96,6 +96,28 @@ export function greyedDone(action: 'move-here' | 'publish' | 'main-bot' | 'remov
   return 'Removed from this organization. The bot keeps working where it is.'
 }
 
+/** Above the org chart while no main bot is saved and a bot here is greyed. */
+export const MAIN_BOT_QUESTION = 'Which bot is your main bot?'
+export const MAIN_BOT_LINE = 'Your main bot works in every organization, so it is never greyed. You pick it once.'
+
+/**
+ * The greyed bots the owner can name as the main bot, the one most seats report to first: a main bot usually manages
+ * the others. Empty once a main bot is saved, before the writer says (`mainBot` absent), and when nothing here is greyed.
+ */
+export function mainBotChoices(
+  seats: { id: string; name: string; type: 'human' | 'bot' | 'system'; reportsTo?: string; elsewhere?: string[]; status?: string }[],
+  mainBot: string | undefined,
+): { id: string; name: string }[] {
+  if (mainBot !== '') return []
+  const active = seats.filter((seat) => seat.status !== 'retired')
+  const reports = (id: string) => active.filter((seat) => seat.reportsTo === id).length
+  return active
+    .filter((seat) => seat.type === 'bot' && seat.elsewhere)
+    .map((seat) => ({ id: seat.id, name: seat.name, reports: reports(seat.id) }))
+    .sort((a, b) => b.reports - a.reports || a.name.localeCompare(b.name))
+    .map(({ id, name }) => ({ id, name }))
+}
+
 /** Numbers beside the org chart legend. Open seats are not counted; a bot nothing is known about is in neither Grok Bot count. */
 export function legendCounts(
   seats: ({ id: string; type: 'human' | 'bot' | 'system' } & Pick<SyncSeat, 'grokSync' | 'grokBotUrl'>)[],
