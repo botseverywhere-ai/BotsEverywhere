@@ -52,7 +52,8 @@ A dump without these fields (an older Connector) still reads, and the import the
 - Once the Connector has run, Step 2 on Connect bots imports from its latest dump with one button. Before that, today's prompt stays as the way in.
 - Every bot in the dump comes in. A bot active in another organization comes in greyed. A bot retired elsewhere comes in normally.
 - Every bots-file import works the same way: the one-button import, the pasted file from today's prompt, and the template file (Option 2). None of them skips a bot active elsewhere any more; it comes in greyed. *(Builder's call.)*
-- Each bot goes under the manager its own text names, when that manager comes in active here. Otherwise it goes under You, with a note. A bot never reports to a greyed bot.
+- Each bot goes under the manager its own text names, when that manager comes in active here. Otherwise it goes under You, with a note. A bot that works here never reports to a greyed bot.
+- A bot that comes in greyed keeps the managers it has in the organization it works for, main and extra, matched here by Grok Bot id, when they come in or are already here; a greyed bot may report to a greyed bot, since neither gets a block. Without that, it goes by its own text like any other bot. *(30 October: own text alone left a second organization flat, under You, though the owner had set the structure in the first.)*
 - A seat placed under You because the manager its text names arrived greyed remembers that name. When that manager becomes active here (**Move it here** or **It's my main bot**), the seat moves under it, unless the owner has moved the seat since. *(Builder's call.)*
 - The Connector's seat takes its link from `self` in the dump; without it, from the Connector's seat in another organization; without either, it comes in without a link. *(Builder's call.)*
 - The import still fills an empty organization once, as today (`importLocked`). The main bot does not count toward that lock or toward `orgImportLocked`, as the Connector already does not. *(Builder's call.)*
@@ -70,7 +71,7 @@ Grok Bot has no main-bot setting the Connector can read (it looked, 29 October),
 
 ### Greyed bots
 
-- On the org chart: a greyed card labeled **In <Organization>**, under the manager its own text names when that manager is active here, else under You.
+- On the org chart: a greyed card labeled **In <Organization>**, under the manager it has in that organization when that manager is here, else under the manager its own text names when that manager is active here, else under You.
 - Clicking it opens the seat panel with one box instead of the usual tabs: "<Bot> is used in <Organization>. A bot works for one organization." (the message text from `be4a529`) and the buttons below, plus **It's my main bot** while no main bot is saved.
 - **Move it here.** The bot's seat is retired in every other organization where it is active, and its seat here becomes active with its link. The bots that reported to it there go under its old manager there. The retirement says it moved, and **Delete in Grok Bot** is not offered for it. The Connector swaps the bot's block on its next run.
 - **Rename and publish in Grok Bot.** A name field, filled in with "<Bot> - <Organization>". Publishing renames the seat, drops its link, and sends the existing **Create in Grok Bot** request, so the Connector creates a new bot with that name in the sidebar section named like the organization. The new bot gets the seat's Profile instructions, or else its card, as **Create in Grok Bot** does today. It never gets the original bot's own text, which is about the original's organization (Security's text is about botseverywhere.ai's keys and servers). The original bot is untouched.
