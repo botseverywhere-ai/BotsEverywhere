@@ -280,6 +280,9 @@ export function serializeLogMarkdown(event: FileActivity): string {
   if (event.grok) lines.push(`grok: ${event.grok}`)
   if (event.kind && /^[a-z][a-z-]*$/.test(event.kind)) lines.push(`kind: ${event.kind}`)
   if (event.stats) lines.push(`stats: ${quote(event.stats.replace(/\s+/g, ' ').trim())}`)
+  // One frontmatter line: the rows split on ;, which a row never holds.
+  const runs = (event.runs ?? []).map((row) => row.replace(/;/g, ',').replace(/\s+/g, ' ').trim()).filter(Boolean)
+  if (runs.length) lines.push(`runs: ${quote(runs.join(';'))}`)
   lines.push('---', '', event.summary.trim(), '')
   return lines.join('\n')
 }
@@ -322,6 +325,8 @@ export function parseLogMarkdown(source: string, file = 'log'): { ok: true; even
     kind: data.kind && /^[a-z][a-z-]*$/.test(data.kind) ? data.kind : undefined,
     stats: data.stats?.trim() || undefined,
   }
+  const runs = (data.runs ?? '').split(';').map((row) => row.trim()).filter(Boolean)
+  if (runs.length) event.runs = runs
   return { ok: true, event }
 }
 

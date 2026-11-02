@@ -30,6 +30,16 @@ interface OrgMemory {
   day: string
   runs: number
   firstRunAt: string
+  /** One row per run on that day, as the day line lists them. Absent before runs were listed. */
+  dayRuns?: string[]
+}
+
+/** The most runs one day line lists. A Connector every 15 minutes runs 96 times a day. */
+export const MAX_DAY_RUNS = 200
+
+/** The day's rows with this run added last, keeping only the latest MAX_DAY_RUNS. */
+export function withRun(rows: string[], row: string, max = MAX_DAY_RUNS): string[] {
+  return [...rows, row].slice(-max)
 }
 
 interface Memory {
@@ -326,6 +336,14 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
     const runs = sameDay ? before.runs + 1 : 1
     const firstRunAt = sameDay && before.firstRunAt ? before.firstRunAt : stamp
     const waiting = readRequests(root).requests.length
+    // Every run is a row on the day line, so Logs shows each sync while the folder still gets one file a day.
+    const dayRuns = withRun(sameDay ? before.dayRuns ?? [] : [], stats([
+      ['Run', localTime(at)],
+      ['In Grok Bot', bots ? bots.length : undefined],
+      ['Performance updated', performance || undefined],
+      ['Waiting', waiting],
+      ['No organization', connector.unassigned.length],
+    ]))
     appendActivity(root, event(orgId, `connector-day-${day}`, at, 'connector-run', 'Connector runs today', {
       stats: stats([
         ['Runs today', runs],
@@ -336,8 +354,9 @@ export function recordConnectorRun(orgsDir: string, connectorName: string): void
         ['Waiting', waiting],
         ['No organization', connector.unassigned.length],
       ]),
+      runs: dayRuns,
     }), true)
-    memory.orgs[orgId] = { bots, day, runs, firstRunAt, ...(seenNow ? { seen: seenNow } : {}) }
+    memory.orgs[orgId] = { bots, day, runs, firstRunAt, dayRuns, ...(seenNow ? { seen: seenNow } : {}) }
   }
   if (connector.apps) memory.apps = Object.fromEntries(connector.apps.map((app) => [app.name, app.status]))
   memory.lastStamp = connector.stamp

@@ -4,7 +4,7 @@ import type { RequestPart } from '../../server/src/grok-sync.ts'
 import type { FileActivity, SeatDocument } from '../../server/src/org-files.ts'
 import { Button } from './Button'
 import { DeleteInGrokBot } from './RetiredDrawer'
-import { grokDirection, grokDirectionLabel, isGrokEvent, logLabel, parseStats, partLine, progressSummary } from './sync-copy'
+import { grokDirection, grokDirectionLabel, isGrokEvent, logLabel, parseStats, partLine, progressSummary, runRows } from './sync-copy'
 
 type LogFilter = 'all' | 'grok' | 'team'
 
@@ -88,6 +88,14 @@ export function LogPanel({
                   </button>
                 ) : null}
               </div>
+              {event.runs?.length ? (
+                <details className="be-log-runs">
+                  <summary>Each run ({event.runs.length})</summary>
+                  <ul className="be-log-parts">
+                    {runRows(event).map((row, index) => <li key={`${index}-${row}`}>{row}</li>)}
+                  </ul>
+                </details>
+              ) : null}
               {detailed.has(event.id) && progress?.[event.subjectSeatId ?? '']?.length ? (
                 <ul className="be-log-parts">
                   {progress[event.subjectSeatId ?? '']!.map((part) => <li key={part.label} className={`is-${part.stage}`}>{partLine(part)}</li>)}

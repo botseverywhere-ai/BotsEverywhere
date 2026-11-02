@@ -353,6 +353,16 @@ export function parseStats(text: string | undefined): [string, string][] {
   })
 }
 
+/** The runs listed under a log line, newest first: the time, then its figures, like 12:15 · In Grok Bot 2 · Waiting 0. */
+export function runRows(event: Pick<FileActivity, 'runs'>): string[] {
+  return [...(event.runs ?? [])].reverse().map((row) => {
+    const pairs = parseStats(row)
+    const at = pairs.find(([label]) => label === 'Run')?.[1]
+    const figures = pairs.filter(([label]) => label !== 'Run').map(([label, value]) => `${label} ${value}`)
+    return [at, ...figures].filter(Boolean).join(' · ')
+  })
+}
+
 export type ConnectorState = 'checking' | 'connected' | 'stale' | 'never' | 'broken' | 'unknown'
 
 /** What the connection helpers read: a full sync status, or the Connector's light view from /api/connector. */

@@ -710,7 +710,7 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           <li><strong>Connected</strong>: the first run in this folder, or the first run after a stop, with how long it was down.</li>
           <li><strong>Bot connected</strong>: each bot the Connector reports for the organization for the first time, with its routines and 30-day numbers.</li>
           <li><strong>Bot left</strong>: a bot that was in Grok Bot on the last run and is gone now.</li>
-          <li><strong>Connector</strong>: one line per day, updated on every run: runs today, first and last run, bots in Grok Bot, requests waiting, and bots with no organization.</li>
+          <li><strong>Connector</strong>: one line per day, updated on every run: runs today, first and last run, bots in Grok Bot, requests waiting, and bots with no organization. <strong>Each run</strong> under it lists every run that day, newest first, with its time and figures.</li>
           <li><strong>Stopped</strong>: three of the Connector&apos;s intervals passed without a run, with the time of its last run.</li>
           <li><strong>Error</strong>: the Connector wrote a file the app cannot read, and why.</li>
           <li><strong>Apps</strong>: an app connected to your Grok Bot account, one that needs signing in again, or one that left; and a bot that starts or stops using an app.</li>

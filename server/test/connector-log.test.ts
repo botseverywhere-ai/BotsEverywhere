@@ -5,10 +5,10 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { parseLogMarkdown, serializeLogMarkdown } from '../src/org-markdown.ts'
 import type { FileActivity } from '../src/org-files.ts'
-import { checkConnectorStopped, recordConnectorRun } from '../src/connector-log.ts'
+import { MAX_DAY_RUNS, checkConnectorStopped, recordConnectorRun, withRun } from '../src/connector-log.ts'
 import { CONNECTOR_FILE } from '../src/project.ts'
 import { createOrgFiles } from '../src/template-server.ts'
-import { isGrokEvent, logLabel, parseStats } from '../../src/components/sync-copy.ts'
+import { isGrokEvent, logLabel, parseStats, runRows } from '../../src/components/sync-copy.ts'
 
 function project() {
   const dir = mkdtempSync(join(tmpdir(), 'be-connector-log-'))
@@ -171,4 +171,76 @@ test('a snapshot the app cannot read is logged with the reason, and nothing cras
   } finally {
     p.done()
   }
+})
+
+/** HH:MM on this computer, the way the day line writes a run. */
+const clock = (at: Date) => `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`
+
+test('a log event keeps its list of runs, and an event without one still reads', () => {
+  const event: FileActivity = { id: 'connector-day-2026-10-18', orgId: '', type: 'edit', actorSeatId: 'connector', actorType: 'bot', timestamp: '2026-10-18T15:39:00.000Z', summary: 'Connector runs today', kind: 'connector-run', grok: 'in', stats: 'Runs today=2', runs: ['Run=17:24|In Grok Bot=2|Waiting=0', 'Run=17:39|In Grok Bot=3|Waiting=1'] }
+  const parsed = parseLogMarkdown(serializeLogMarkdown(event))
+  assert.ok(parsed.ok)
+  assert.deepEqual(parsed.ok && parsed.event.runs, event.runs)
+  const old = parseLogMarkdown(serializeLogMarkdown({ ...event, runs: undefined }))
+  assert.ok(old.ok)
+  assert.equal(old.ok && old.event.runs, undefined, 'a day line from before runs were listed reads the same')
+})
+
+test('every Connector run gets its own row on the day line, and the day stays one file', () => {
+  const p = project()
+  try {
+    const ledger = org(p.orgs, 'Ledger')
+    const first = new Date('2026-10-18T12:00:00.000Z')
+    const second = new Date('2026-10-18T12:15:00.000Z')
+    run(p.orgs, first, { [ledger]: [{ name: 'Invoice Bot' }] }, 3)
+    recordConnectorRun(p.orgs, 'Connector')
+    recordConnectorRun(p.orgs, 'Connector')
+    run(p.orgs, second, { [ledger]: [{ name: 'Invoice Bot' }, { name: 'Payment Bot' }] }, 3)
+    recordConnectorRun(p.orgs, 'Connector')
+    const day = byKind(events(p.orgs, ledger), 'connector-run')
+    assert.equal(day.length, 1, 'one file per day, never one per run')
+    const rows = (day[0]!.runs ?? []).map((row) => Object.fromEntries(parseStats(row)))
+    assert.deepEqual(rows.map((row) => row['Run']), [clock(first), clock(second)], 'the same run read twice adds one row')
+    assert.deepEqual(rows.map((row) => row['In Grok Bot']), ['1', '2'])
+    assert.deepEqual(rows.map((row) => row['No organization']), ['3', '3'])
+    assert.equal(Object.fromEntries(parseStats(day[0]!.stats))['Runs today'], '2', 'the day figures stay as they were')
+  } finally {
+    p.done()
+  }
+})
+
+test('the list of runs starts over on a new day, and the day before keeps its own', () => {
+  const p = project()
+  try {
+    const ledger = org(p.orgs, 'Ledger')
+    run(p.orgs, new Date('2026-10-18T12:00:00.000Z'), { [ledger]: [{ name: 'Invoice Bot' }] })
+    recordConnectorRun(p.orgs, 'Connector')
+    run(p.orgs, new Date('2026-10-19T12:00:00.000Z'), { [ledger]: [{ name: 'Invoice Bot' }] })
+    recordConnectorRun(p.orgs, 'Connector')
+    const days = byKind(events(p.orgs, ledger), 'connector-run')
+    assert.equal(days.length, 2)
+    assert.deepEqual(days.map((day) => day.runs?.length), [1, 1])
+  } finally {
+    p.done()
+  }
+})
+
+test('a day keeps at most its latest runs, so the day line stays small', () => {
+  const rows = Array.from({ length: MAX_DAY_RUNS }, (_, i) => `Run=${i}`)
+  const next = withRun(rows, 'Run=last')
+  assert.equal(next.length, MAX_DAY_RUNS)
+  assert.equal(next[0], 'Run=1')
+  assert.equal(next.at(-1), 'Run=last')
+  assert.deepEqual(withRun([], 'Run=12:00'), ['Run=12:00'])
+})
+
+test('Logs lists each run under the day line, newest first, in plain words', () => {
+  assert.deepEqual(runRows({ runs: ['Run=12:00|In Grok Bot=1|Waiting=0|No organization=3', 'Run=12:15|In Grok Bot=2|Performance updated=1|Waiting=0|No organization=3'] }), [
+    '12:15 · In Grok Bot 2 · Performance updated 1 · Waiting 0 · No organization 3',
+    '12:00 · In Grok Bot 1 · Waiting 0 · No organization 3',
+  ])
+  assert.deepEqual(runRows({}), [])
+  const panel = readFileSync(new URL('../../src/components/LogPanel.tsx', import.meta.url), 'utf8')
+  assert.match(panel, /runRows\(event\)/)
+  assert.match(panel, /Each run \(\{event\.runs\.length\}\)/)
 })

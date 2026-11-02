@@ -193,6 +193,8 @@ export interface FileActivity {
   kind?: string
   /** Figures shown as tiles, written as `Label=value|Label=value`. */
   stats?: string
+  /** Rows listed under the line, oldest first, each written like stats. The Connector's day line lists each run here. */
+  runs?: string[]
 }
 
 export interface OrgBundle {
