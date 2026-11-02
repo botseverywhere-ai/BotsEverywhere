@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { CodeBlock } from '../components/CodeBlock.tsx'
 import { GROK_BOTS_PROMPT } from '../content/grok-bots-prompt.ts'
 import { CONNECTOR_BOT_NAME, CONNECTOR_LOG_BOT, connectorBootstrapPrompt } from '../../server/src/connector-prompt.ts'
+import { DEFAULT_SYNC_MINUTES, MAX_SYNC_MINUTES, MIN_SYNC_MINUTES, everyLabel, staleMinutes } from '../../server/src/connector-timing.ts'
 import { HiringGuide } from '../content/HiringGuide.tsx'
 import { GROK_BOT_LIMIT } from '../components/sync-copy.ts'
 import { DESKTOP_MIN_WIDTH } from '../content/screen-notice.ts'
@@ -11,6 +12,13 @@ import MIT_TEXT from '../../LICENSE-MIT?raw'
 import NOTICE_TEXT from '../../NOTICE?raw'
 
 const repoUrl = import.meta.env.VITE_REPO_URL || '<this-repository-url>'
+
+/** The Connector's interval is set on Connect bots. These come from the same rules, so the page never names a fixed rate. */
+const DEFAULT_EVERY = everyLabel(DEFAULT_SYNC_MINUTES)
+const MIN_EVERY = everyLabel(MIN_SYNC_MINUTES)
+const MAX_EVERY = everyLabel(MAX_SYNC_MINUTES)
+const STALE_AT_DEFAULT = everyLabel(staleMinutes(DEFAULT_SYNC_MINUTES))
+const STALE_AT_HOUR = everyLabel(staleMinutes(60))
 
 /** The left menu. Each id is an h2 on this page. */
 const SECTIONS: { group: string; items: [id: string, label: string][] }[] = [
@@ -29,7 +37,8 @@ const SECTIONS: { group: string; items: [id: string, label: string][] }[] = [
     group: 'Using the app',
     items: [
       ['org-chart', 'Org chart'],
-      ['seat-cards', 'Seat cards'],
+      ['one-org', 'One bot, one organization'],
+      ['seat-cards', 'Seat cards and Profile'],
       ['work-chart', 'Work Chart'],
       ['sync', 'Sync with Grok Bot'],
       ['directory', 'Bot directory'],
@@ -187,8 +196,8 @@ export function DocsPage() {
         <header className="docs-head">
           <h1>BotsEverywhere documentation</h1>
           <p className="lede">
-            BotsEverywhere is an open source team management tool for bots. Organizations use it to map their people and bots in one place:
-            an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot.
+            BotsEverywhere is an open source team management tool for bots. It maps your bots in one place: an org chart of who each bot reports to,
+            a work chart of what each bot does and when, and a directory of ready-made bots you can add to Grok Bot.
             It runs on your own computer, and your data stays there.
           </p>
           <p className="docs-head-actions">
@@ -204,13 +213,13 @@ export function DocsPage() {
             <p className="docs-flow-name">Your computer</p>
             <ul>
               <li>The app, at <code>127.0.0.1</code></li>
-              <li>The <code>orgs</code> folder: org charts, seats, processes, logs</li>
+              <li>The <code>orgs</code> folder: org charts, bots, processes, logs</li>
             </ul>
           </div>
           <div className="docs-flow-link" aria-hidden="true">
             <span>Connector</span>
             <span className="docs-flow-arrow" />
-            <span>every 15 minutes</span>
+            <span>on the schedule you set, e.g. {DEFAULT_EVERY}</span>
           </div>
           <div className="docs-flow-side is-grok">
             <p className="docs-flow-name">Grok Bot</p>
@@ -219,7 +228,9 @@ export function DocsPage() {
               <li>Run on your own Grok Bot account</li>
             </ul>
           </div>
-          <figcaption>The Connector is the only link between the two, and you create it yourself.</figcaption>
+          <figcaption>
+            The Connector is the only link between the two, and you create it yourself. It runs every {DEFAULT_EVERY} unless you set another interval on <strong>Connect bots</strong>.
+          </figcaption>
         </figure>
         <p>BotsEverywhere has three parts. Each does one job.</p>
         <ul>
@@ -228,17 +239,18 @@ export function DocsPage() {
             file writer that only this computer can reach. Every change you make is saved as a plain markdown file.
           </li>
           <li>
-            <strong>The <code>orgs</code> folder</strong> holds your organizations, one folder each: the org chart, the seats, the processes, and the logs.
+            <strong>The <code>orgs</code> folder</strong> holds your organizations, one folder each: the org chart, one file per bot, the processes, and the logs.
             Nothing is uploaded. You can open, edit, back up, or commit these files yourself.
           </li>
           <li>
-            <strong>Grok Bot</strong> runs the bots. One bot there, the Connector, reads and writes the <code>orgs</code> folder every 15 minutes.
-            It creates the bots you ask for, keeps their routines in step with your processes, and reports back what each bot did.
+            <strong>Grok Bot</strong> runs the bots. One bot there, the Connector, reports what it sees in Grok Bot to the <code>orgs</code> folder on the schedule you choose:
+            every {DEFAULT_EVERY} by default, and anything from {MIN_EVERY} to {MAX_EVERY}. It then carries out what the app asks: it creates bots, tells each bot who it
+            reports to and how to log its work, and sends skills and routines.
           </li>
         </ul>
         <p>
-          You plan the work in the app; the bots do it in Grok Bot; the Connector carries everything between the two. You can build an org chart
-          before the Connector is set up, but nothing reaches Grok Bot until it runs. The bar at the top of every organization page says whether it is connected.
+          The app decides; the Connector carries it out. You plan the work in the app, the bots do it in Grok Bot, and each bot writes what it did to the run log.
+          You can build an org chart before the Connector is set up, but nothing reaches Grok Bot until it runs. The bar at the top of every organization page says whether it is connected.
         </p>
         <p>There are no accounts, no sign-up, no paid services, and no API keys.</p>
 
@@ -249,15 +261,16 @@ export function DocsPage() {
         </p>
         <ul>
           <li><strong>Local only.</strong> The site and the file writer listen on <code>127.0.0.1</code>, the address only your own computer can reach. The writer refuses to start on any other address, and only lets pages served from this computer read its answers.</li>
-          <li><strong>Plain files you own.</strong> Your org chart, seats, processes, and logs are markdown files in <code>orgs/</code>. You can read every one of them, back them up, or delete them.</li>
+          <li><strong>Plain files you own.</strong> Your org chart, bots, processes, and logs are markdown files in <code>orgs/</code>. You can read every one of them, back them up, or delete them.</li>
           <li><strong>No tracking.</strong> The app has no analytics, no telemetry, and no third-party scripts. Its fonts ship with it, so opening a page loads nothing from the internet.</li>
           <li><strong>No keys.</strong> The app stores no passwords, tokens, or API keys, and never asks for one.</li>
           <li><strong>One connection, and you set it up.</strong> The only link to the outside is the Connector you create in your own Grok Bot account. It reads and writes the <code>orgs</code> folder named in its prompt and nothing outside it.</li>
+          <li><strong>Your bots&apos; own text stays yours.</strong> The app adds one BotsEverywhere block at the end of a bot&apos;s instructions and never changes the text outside it. Before the Connector changes a bot&apos;s instructions, the app keeps the old text in <code>orgs/connector-backups/</code>.</li>
         </ul>
         <h3>What leaves your computer</h3>
         <p>
-          Only what your Connector reads in Grok Bot: the files in <code>orgs/</code> that it needs to run your bots. That data is then handled by Grok Bot under its own terms,
-          the same as anything else you give it. If you never set up a Connector, nothing leaves your computer.
+          Only what your Connector and your bots read in <code>orgs/</code>: the Connector&apos;s rules and to-do list, and each bot&apos;s seat file and process files.
+          That data is then handled by Grok Bot under its own terms, the same as anything else you give it. If you never set up a Connector, nothing leaves your computer.
         </p>
         <h3>What you stay responsible for</h3>
         <ul>
@@ -302,7 +315,8 @@ npm run dev`}</CodeBlock>
           normally <a href="http://127.0.0.1:5199">http://127.0.0.1:5199</a>. To stop it, press <code>Ctrl+C</code> in that window.
         </p>
         <p>
-          Your organizations are saved in <code>orgs/</code> inside the project folder. A fresh clone has none: choose <strong>Open your org</strong> and create your first one, with one seat, <strong>You</strong>.
+          Your organizations are saved in <code>orgs/</code> inside the project folder. A fresh clone has none: choose <strong>Open your org</strong> and create your first one.
+          It starts with one seat, <strong>You</strong>, at the top of the chart, and every bot reports up to you.
           Each new organization gets a folder named by its ID, such as <code>orgs/org-k3f9x2ma/</code>. The ID never changes, so renaming an organization never moves its files
           and your bots always find them. The name lives in <code>org.md</code>, and <strong>Your files</strong> on Organization Overview shows which folder is which.
         </p>
@@ -331,16 +345,27 @@ npm run dev`}</CodeBlock>
           Do this once for each copy of BotsEverywhere. One Connector serves every organization in the copy, so one Grok Bot account needs one Connector.
         </p>
         <ol>
-          <li>Open any organization and choose the <strong>Connect bots</strong> tab. Step 1 shows the Connector name, the folder it uses, and its status.</li>
-          <li>Choose <strong>Copy Connector prompt</strong>.</li>
-          <li>Paste it into Grok Bot. Grok Bot creates the Connector and runs it every 15 minutes.</li>
           <li>
-            Once your organizations are set up it can run less often. On <strong>Connect bots</strong>, choose <strong>Change</strong> next to <strong>Runs every</strong>,
-            type a number and pick minutes, hours, or days (15 minutes to 7 days), and <strong>Save</strong>. The prompt updates; paste it into the Connector again.
-            The Connector reports how often it runs on every run. Until that matches what you saved, Connect bots and the status in the header say to paste the prompt, and the app waits for the interval Grok Bot really uses before it says Disconnected.
+            Open any organization and choose the <strong>Connect bots</strong> tab. Step 1 shows the Connector name, the folder it uses, its <strong>Status file</strong>, and its status.
           </li>
-          <li>Come back to the app. After the first run the bar turns green: <strong>Connected · last run 2 min ago</strong>.</li>
+          <li>Choose <strong>Copy Connector prompt</strong>.</li>
+          <li>
+            Paste it into Grok Bot. Grok Bot creates the Connector and runs it once right away, so you see it connect without waiting. After that it runs on the interval
+            in <strong>Runs every</strong>.
+          </li>
+          <li>Come back to the app. After the first run the status turns green, and <strong>Sync with Grok Bot</strong> starts showing changes.</li>
         </ol>
+        <h3>How often it runs</h3>
+        <p>
+          The Connector runs every {DEFAULT_EVERY} by default. That is only a starting point: set the interval that suits you. On <strong>Connect bots</strong>, choose
+          {' '}<strong>Change</strong> next to <strong>Runs every</strong>, type a number, pick minutes, hours, or days (from {MIN_EVERY} to {MAX_EVERY}), and choose <strong>Save</strong>.
+          A busy organization may want the shortest interval; one whose bots run a few routines a day can use every hour or less often.
+        </p>
+        <p>
+          There is nothing to paste again. The prompt you pasted points the Connector at <code>orgs/CONNECTOR.md</code>, which holds its rules and its schedule, and the app
+          rewrites that file when you save. The Connector reads it on every run and changes its own schedule on its next run. Until it reports the new interval,
+          {' '}<strong>Connect bots</strong> and the status in the header say that Grok Bot still runs the old one.
+        </p>
         <h3>The Connector&apos;s name and folder</h3>
         <p>
           The first time the app starts, it gives the copy a short id, such as <code>k3f9</code>, and saves it in <code>orgs/project.json</code>.
@@ -349,40 +374,62 @@ npm run dev`}</CodeBlock>
         <p>
           The prompt names the full path of this copy&apos;s <code>orgs</code> folder, for example <code>C:\Users\you\botseverywhere\orgs</code>. That folder is the
           only place the Connector reads and writes. The app builds the prompt at the moment you copy it, so every copy hands out its own id and its own folder.
+          <strong> Files the Connector uses</strong>, under the prompt, lists each file it reads or writes, who writes it, and what it holds.
         </p>
         <p>
           Several copies or versions of BotsEverywhere on one computer? Their Connectors have different names in Grok Bot. Copy the prompt from the copy you want Grok Bot
           to use. If you set up an older Connector named only <strong>{CONNECTOR_BOT_NAME}</strong>, delete it in Grok Bot once the new one has run.
         </p>
         <h3>What the Connector does on each run</h3>
-        <p>For every folder in <code>orgs</code> that has an <code>org.md</code> file, the Connector:</p>
+        <p>The Connector moves data and carries out the app&apos;s to-do list. It never decides what to change in a bot.</p>
         <ol>
-          <li>Creates the bots the app asked for in <code>grok/requests.json</code>, with the directory prompt when the bot came from the directory.</li>
           <li>
-            Writes <code>grok/snapshot.json</code> with the bots that belong to that organization, the routines they run, and each bot&apos;s performance from Grok Bot&apos;s own data:
-            chat messages received and routine runs finished in the last 30 days, when it was last active, and each routine&apos;s last run.
+            <strong>It reads Grok Bot.</strong> It writes <code>orgs/grok-data.json</code> with what it can see now: every bot with its id, name, link, and instructions; each bot&apos;s
+            messages in the last 30 days and when it was last active; routines where Grok Bot shows them; the skills in Grok Bot&apos;s shared library; and who each bot&apos;s own
+            instructions say it reports to.
           </li>
-          <li>Reads <code>org.md</code>, <code>seats/</code>, and <code>processes/</code>, keeps one routine per process for the bot on its first step, and tells each bot who its manager is.</li>
-          <li>Tells each bot to read its process file and seat file at the start of every run, and to append one line to <code>log/YYYY-MM-DD.md</code> after every step.</li>
+          <li>
+            <strong>It reports in.</strong> Last, it writes <code>orgs/connector.json</code> with the time of the run, the interval it runs at, and the apps connected to your
+            Grok Bot account, by name and status only. The time this file was written is the Connector&apos;s last run.
+          </li>
+          <li>
+            <strong>The app works out the changes.</strong> From that report and your files, the app writes each organization&apos;s <code>grok/snapshot.json</code>, the list of bots in
+            no organization, and <code>orgs/connector-todo.json</code>: exactly what to send to each bot.
+          </li>
+          <li>
+            <strong>It carries out the to-do list.</strong> It creates the bots you asked for, updates each bot&apos;s BotsEverywhere block, saves skills to Grok Bot&apos;s library, and
+            asks bots to create or change routines. It records every result in <code>orgs/connector-results.json</code>. An item that fails twice shows as stuck in the Sync drawer.
+          </li>
         </ol>
         <p>
-          Then it writes <code>orgs/connector.json</code> with the time of the run, any bots that belong to no organization, and the apps connected to your Grok Bot account, by name and status only. Each bot in a snapshot lists the apps it uses, which show on its card, in Profile, in Performance, and in Logs, with any app Grok Bot wants signed in again marked. Its own log lines use the bot field {CONNECTOR_LOG_BOT}.
+          Each bot gets one BotsEverywhere block per organization at the end of its instructions. The block names its managers, its team, the skills to use, its seat and
+          process files, and how to log. A bot then reads its seat file and process files before each routine, appends one line to <code>log/YYYY-MM-DD.md</code> after every
+          step and every chat, and keeps its own profile file in <code>profiles/</code> with its routines, skills, and the apps it uses. Its own text outside the block is never changed.
+          The Connector&apos;s own log lines use the bot field {CONNECTOR_LOG_BOT}.
+        </p>
+        <p>
+          Grok Bot lets the Connector message a bot only from a chat, never from a scheduled run. When a routine or a profile request waits for that, the Sync drawer and Logs
+          say so: in the Connector&apos;s chat in Grok Bot, say <strong>do YOU now</strong>.
         </p>
         <p>
           A bot belongs to an organization when the Connector created it from that organization&apos;s requests, when its link matches a seat there, or when its name matches a seat title there.
-          Each bot lands in one organization only. The Connector never edits <code>org.md</code>, <code>seats/</code>, <code>processes/</code>, <code>work-chart.md</code>,{' '}
+          The Connector never edits <code>org.md</code>, <code>seats/</code>, <code>processes/</code>, <code>work-chart.md</code>,{' '}
           <code>grok/requests.json</code>, or <code>project.json</code>; the app owns those files.
         </p>
         <h3>Connection status</h3>
         <ul>
-          <li><strong>Connected · last run 4 min ago</strong>: the Connector wrote within three of its intervals, 45 minutes at the default. Grok Bot does not run it on an exact clock, so a run a few minutes late is normal. The header shows the time of that run under <strong>Connected</strong>.</li>
+          <li>
+            <strong>Connected</strong>: the Connector ran within three of its intervals: {STALE_AT_DEFAULT} at the default, {STALE_AT_HOUR} if it runs every hour.
+            Grok Bot does not run it on an exact clock, so a run a few minutes late is normal. The header shows the time of the last run under the state.
+          </li>
           <li><strong>Not connected</strong>: no Connector has written to this folder yet.</li>
-          <li><strong>Connector stopped</strong>: it wrote before but missed two runs.</li>
-          <li>Click the status in the header for how often the Connector runs, its last sync, and when the next one is due.</li>
-          <li><strong>Connector ran, but its snapshot could not be read</strong>: it wrote a file the app cannot read. The organization keeps working.</li>
+          <li><strong>Stopped</strong>, or <strong>Disconnected</strong> in the header: three of its intervals passed without a run.</li>
+          <li><strong>Error</strong>: <code>orgs/connector.json</code> is there but cannot be read.</li>
+          <li>Click the status in the header for <strong>Runs every</strong>, the last sync, and when the next one is due.</li>
         </ul>
         <p>
-          The prompt below shows its shape with placeholders. Copy the real one from <strong>Connect bots</strong>, which has your id and folder filled in.
+          A <code>grok-data.json</code> the app cannot read changes nothing; the Sync drawer says why. The prompt below shows its shape with placeholders and the default interval.
+          Copy the real one from <strong>Connect bots</strong>, which has your id, your folder, and your interval filled in.
         </p>
         <CodeBlock label="Connector prompt">{connectorBootstrapPrompt({ id: '<id>', orgsFolder: '<project folder>/orgs' })}</CodeBlock>
 
@@ -392,11 +439,19 @@ npm run dev`}</CodeBlock>
           On the <strong>Connect bots</strong> tab, Step 2 offers two ways to fill an organization. You can do this before or after Step 1.
         </p>
         <ul>
-          <li><strong>Option 1: Import from your Grok Bot.</strong> Copy a prompt, ask Grok Bot for the bots you already run, and import the file it writes. See <To id="files">Import and export</To>.</li>
-          <li><strong>Option 2: Import from a template .json (build an organization from an interview with an LLM).</strong> Copy the prompt and give it to any AI together with the downloaded template. The AI asks about your organization, shows the bots it proposes, and writes the file once you confirm; then import it. The template carries the same instructions, so an AI given only the file does the same, and it explains every field, so you can also fill it in yourself. Once the organization has bots, <strong>Export bots file</strong> sits in Step 2.</li>
+          <li>
+            <strong>Option 1: Import from your Grok Bot.</strong> Once the Connector has run, <strong>Import from the Connector</strong> brings in every bot it read in Grok Bot,
+            each under the manager its own instructions name. There is nothing to paste. Bots already working in another organization come in greyed; see
+            {' '}<To id="one-org">One bot, one organization</To>. Before the Connector runs, copy the prompt, ask Grok Bot for the bots you already run, and import the file it writes
+            with <strong>Import bots file</strong>. See <To id="files">Import and export</To>.
+          </li>
+          <li><strong>Option 2: Import from a template .json (build an organization from an interview with an LLM).</strong> Copy the prompt and give it to any AI together with the downloaded template. The AI asks about your organization, shows the bots it proposes, and writes the file once you confirm; then import it. The template carries the same instructions, so an AI given only the file does the same, and it explains every field, so you can also fill it in yourself.</li>
         </ul>
+        <p>When you import a file, nothing is written until you confirm, and a bot that already has a file is saved beside it, never over it.</p>
         <p>
-          These options are for an organization with no bots yet. Once it has bots, importing again is off, because it would add a second copy of each bot. New bots from Grok Bot arrive through <strong>Sync with Grok Bot</strong>, and one bot at a time is <strong>Add existing bot</strong> or the directory.
+          These options are for an organization with no bots yet. Once it has bots, importing again is off, because it would add a second copy of each bot. Your main bot and
+          the Connector do not count. Step 2 then offers <strong>Add a seat</strong>, <strong>Bot directory</strong>, <strong>Add existing bot</strong>, and <strong>Export bots file</strong>.
+          New bots from Grok Bot arrive through <strong>Sync with Grok Bot</strong>.
         </p>
         <p>
           To start from a sample, open <a href="#/templates">Templates</a>, pick one, and choose <strong>Use this template</strong>. It is copied into a new folder under <code>orgs/</code>;
@@ -404,25 +459,28 @@ npm run dev`}</CodeBlock>
         </p>
 
         <h2 id="org-chart">Org chart</h2>
-        <p>The org chart shows who owns what: people, bots, and systems, and who each one reports to.</p>
+        <p>The org chart shows your bots and who each one reports to: you, or another bot.</p>
         <ol>
           <li>Open the <strong>Org Chart</strong> tab of your organization.</li>
           <li>
             Choose <strong>Add a seat</strong>. It sits above the chart, next to <strong>Hire from the directory</strong> and <strong>Add existing bot</strong>,
             on every organization of your own.
           </li>
-          <li>Fill in <strong>Short name</strong> (like <strong>Co Founder</strong>; the seat file becomes <code>co-founder.md</code>), <strong>Title</strong>, <strong>Kind</strong> (Human, Bot, or System), and <strong>Reports to</strong>.</li>
+          <li>Fill in <strong>Short name</strong> (like <strong>Invoice Bot</strong>; the seat file becomes <code>invoice-bot.md</code>) and <strong>Title</strong>, set <strong>Kind</strong> to <strong>Bot</strong>, and pick <strong>Reports to</strong>.</li>
           <li>Choose <strong>Add seat</strong>. The seat file is written, and the chart re-reads it from disk.</li>
         </ol>
         <p>
-          Drag the background to move around, use the mouse wheel or the − and + buttons to zoom, and <strong>Fit</strong> to see the whole chart. <strong>Find seat</strong> jumps to a seat by name.
-          The legend counts humans, bots, and systems.
+          Drag the background to move around, use the mouse wheel or the − and + buttons to zoom, and <strong>Fit</strong> to see the whole chart. <strong>Find seat</strong> jumps to a bot by name,
+          and <strong>Download PNG</strong> saves the chart as an image.
         </p>
         <p>
-          <strong>Retired</strong> in the legend lists every seat you retired, human or bot, with the date. Retire takes a seat out of this organization only; the bot keeps
-          running in Grok Bot, where another organization may still use it. Grok Bot does not let the Connector delete bots, so you delete one there: <strong>Delete in Grok Bot</strong> on its row opens the bot,
+          The legend counts your bots. <strong>In Grok Bot</strong> counts every bot in your Grok Bot account, and its list says where each one sits.
+        </p>
+        <p>
+          <strong>Retired</strong> in the legend lists every bot you retired, with the date. Retire takes a bot out of this organization only; it keeps
+          running in Grok Bot. Grok Bot does not let the Connector delete bots, so you delete one there: <strong>Delete in Grok Bot</strong> on its row opens the bot,
           then right-click it in the Grok Bot sidebar, choose Delete, and confirm. The row warns you when another organization still has the bot active, and says <strong>Deleted from Grok Bot</strong>
-          after the Connector&apos;s next run no longer lists it. Retire a bot before you delete it in Grok Bot, or its card shows Not in Grok Bot.
+          {' '}after the Connector&apos;s next run no longer lists it. Retire a bot before you delete it in Grok Bot, or its card shows Not in Grok Bot.
         </p>
         <p>On your own organizations, each bot card shows what the app knows about it in Grok Bot:</p>
         <ul>
@@ -430,20 +488,47 @@ npm run dev`}</CodeBlock>
           <li><strong>New in Grok Bot</strong>: a sync created this seat from a bot in Grok Bot.</li>
           <li><strong>Not in Grok Bot</strong>, dashed: the last snapshot did not include it.</li>
           <li><strong>Not synced yet</strong>, muted: nothing is known yet.</li>
+          <li><strong>Greyed</strong>: the bot works for another organization. See <To id="one-org">One bot, one organization</To>.</li>
         </ul>
-        <p>To move a seat under someone else, open it and change <strong>Reports to</strong>. The app refuses a change that would make a seat report to itself or loop.</p>
+        <p>
+          To move a bot under another manager, open it and change <strong>Reports to</strong>. <strong>Also reports to</strong> adds extra managers, drawn as dotted lines.
+          The app refuses a change that would make a bot report to itself or loop. When the bot is already in Grok Bot, the new manager is sent to it on the Connector&apos;s next run.
+        </p>
 
-        <h2 id="seat-cards">Seat cards</h2>
-        <p>Every seat has a card with four sections. They are what a bot is told, and what a person agrees to.</p>
+        <h2 id="one-org">One bot, one organization</h2>
+        <p>
+          A bot works for one organization. Two bots are the exception and belong in every organization: the Connector, and your main bot.
+          The app tells bots apart by the id in their Grok Bot link, never by name.
+        </p>
+        <p>
+          When an import finds a bot that already works in another organization, the bot comes in <strong>greyed</strong>. It is on the chart, under the managers it has where it
+          works when they are here, but nothing about it is sent to Grok Bot: it gets no block, no Sync row, and no <strong>Create in Grok Bot</strong>. A bot that works here never
+          reports to a greyed one. It waits under You and moves under that bot once it starts working here, unless you moved it since.
+        </p>
+        <p>Open a greyed bot to choose what to do with it:</p>
         <ul>
-          <li><strong>Owns</strong>: what this seat is responsible for.</li>
+          <li><strong>Move it here</strong>: takes it out of the other organization, where it is retired, and makes it work here. The bots that reported to it there move under its manager there.</li>
+          <li><strong>Rename and publish in Grok Bot</strong>: a new bot with a new name works here, and the Connector creates it. The original stays where it is.</li>
+          <li><strong>Remove</strong>: takes the seat off this chart. The bot keeps working where it is.</li>
+          <li><strong>It&apos;s my main bot</strong>: shown while no main bot is saved. Your main bot works in every organization, so it is never greyed.</li>
+        </ul>
+        <p>
+          While no main bot is saved and the organization has a greyed bot, the Org Chart asks <strong>Which bot is your main bot?</strong> above the chart. Pick one and choose
+          {' '}<strong>It&apos;s my main bot</strong>, or choose <strong>Not now</strong> to hide the question for that organization in this browser. The choice is saved in <code>orgs/project.json</code>.
+        </p>
+        <p><strong>Add existing bot</strong> refuses a bot that already works in another organization, and offers <strong>Add anyway</strong>.</p>
+
+        <h2 id="seat-cards">Seat cards and Profile</h2>
+        <p>Every bot has a seat card with four sections. They are what the bot is told about its place in the organization.</p>
+        <ul>
+          <li><strong>Owns</strong>: what this bot is responsible for.</li>
           <li><strong>May</strong>: what it can do without asking.</li>
           <li><strong>Needs approval</strong>: what it must ask before doing.</li>
           <li><strong>Done when</strong>: what finished looks like.</li>
         </ul>
         <p>
           Each seat is one file, <code>orgs/&lt;slug&gt;/seats/&lt;short-name&gt;.md</code>: frontmatter, then those four sections. Saving never deletes a seat file;
-          to remove a seat, retire it from its drawer. Its history stays in the logs.
+          to remove a bot, retire it from its drawer. Its history stays in the logs.
         </p>
         <CodeBlock label="seats/research.md">{`---
 title: Research
@@ -470,26 +555,50 @@ Anything sent outside the organization.
 
 ## Done when
 The brief is filed and linked on the request.`}</CodeBlock>
+        <h3>Profile</h3>
         <p>
-          A bot that is not in Grok Bot yet shows <strong>Create in Grok Bot</strong> in its drawer: the app asks the Connector to create it on its next run.
-          Until then its Performance row and the Sync drawer say it is connecting; when the Connector reports it, its link lands on its own and the request is done.
+          The seat drawer has three tabs: <strong>Seat card</strong> is the bot&apos;s place in the organization, <strong>Profile</strong> is how it works, and
+          {' '}<strong>Performance</strong> is its numbers. What Profile shows depends on where the bot came from:
+        </p>
+        <ul>
+          <li>A bot hired from the directory shows its category, summary, and prompt. You can edit the prompt after hiring.</li>
+          <li>A bot imported from Grok Bot says it is not in the directory and was imported from Grok Bot. Its prompt stays in Grok Bot.</li>
+          <li>A bot added with <strong>Add a seat</strong> gets <strong>Instructions for Grok Bot</strong>: the prompt Grok Bot gets when the bot is added there.</li>
+        </ul>
+        <p>
+          Every bot of your own takes <strong>Skills</strong> and <strong>Routines</strong>. A skill is a name and what it does. A routine is a card: <strong>Name</strong>,
+          {' '}<strong>Description</strong>, <strong>Starts</strong> on a <strong>Schedule</strong> (a cron line, with <strong>Presets</strong> and the schedule in plain words) or on an
+          {' '}<strong>Event</strong> (a short rule, like Mentions in #support), its <strong>Time zone</strong>, and whether it is <strong>Active</strong> or <strong>Paused</strong>.
+          Choose <strong>Done</strong> to close it. A routine&apos;s description is only an outline: keep its full instructions in Grok Bot, and leave tokens and private links out of every rule. <strong>Apps used</strong> lists the connected apps the bot reports it uses.
+        </p>
+        <p>
+          <strong>Update bot</strong>, on a bot already in Grok Bot, sends its skills and routines on the Connector&apos;s next run. Skills go to the library every bot shares.
+          Each waiting change shows on its own line until Grok Bot confirms it. Skills and routines merge by name: Grok Bot updates its own, the ones you added stay, and nothing is dropped.
+        </p>
+        <p>
+          A bot with a public link in Grok Bot shows <strong>Get this bot</strong>. You make public links in Grok Bot; the app and the Connector never make or change one.
+        </p>
+        <h3>Create in Grok Bot</h3>
+        <p>
+          A bot that is not in Grok Bot yet shows <strong>Create in Grok Bot</strong> in its drawer: the app asks the Connector to create it on its next run, with its Profile
+          prompt, skills, and routines. Until then its Performance row and the Sync drawer say it is connecting; when the Connector reports it, its link lands on its own and the request is done.
           To link a bot by hand instead, create it in Grok Bot from the card, copy its share link (<code>https://x.ai/bot/…</code>), and paste it into the seat.
           Leave the link empty until you have a real one.
         </p>
 
         <h2 id="work-chart">Work Chart</h2>
         <p>
-          The Work Chart shows how work moves. Each process is one lane: a trigger, the steps in order, and when the work is done.
+          The Work Chart shows how work moves between your bots. Each process is one lane: a trigger, the steps in order, and when the work is done.
           The folder of process files is the chart; there is no index file.
         </p>
         <p>A trigger is one of three kinds:</p>
         <ul>
           <li><strong>Schedule</strong>: a time, such as <code>Mon 09:00</code>, or a cron line. A schedule that fires more than once an hour shows a warning.</li>
           <li><strong>Event</strong>: email, Slack, GitHub, a webhook, or a form, with a short description.</li>
-          <li><strong>Manual</strong>: someone starts it.</li>
+          <li><strong>Manual</strong>: started by hand.</li>
         </ul>
         <p>
-          Each step names a seat and a short action. An arrow between steps owned by different seats is a handoff. <code>next</code> names the process this one hands off to.
+          Each step names a bot and a short action. An arrow between steps owned by different bots is a handoff. <code>next</code> names the process this one hands off to.
         </p>
         <p>
           A step whose action starts with <code>Needs approval:</code> waits for you. The lane marks it <strong>Needs your approval</strong>, and the bot writes status <code>waiting</code> and asks before it continues.
@@ -511,14 +620,15 @@ doneWhen: The invoice is matched and payment is approved or sent back.
 
 ## Notes
 
-Plain notes for the people reading the file.`}</CodeBlock>
+Plain notes for whoever reads the file.`}</CodeBlock>
         <ul>
           <li><strong>Import processes from Grok Bot</strong> reads the routines and handoffs Grok Bot runs from a JSON file and writes one file per flow. Importing again replaces each flow with Grok Bot&apos;s latest version. An unknown seat name is reported and kept as written.</li>
           <li><strong>Delete</strong> removes a flow from this Work Chart only and never changes Grok Bot. It asks first.</li>
+          <li><strong>Routines without a flow</strong> lists the routines your bots run in Grok Bot that no process on this chart describes.</li>
         </ul>
         <p>
           While bots run, each step shows its latest status, with an activity feed and a <strong>Needs your approval</strong> list. Click a step to open its seat card.
-          On the org chart, <strong>See its work</strong> opens the Work Chart with that seat&apos;s steps highlighted.
+          On the org chart, <strong>See its work</strong> opens the Work Chart with that bot&apos;s steps highlighted.
         </p>
 
         <h2 id="sync">Sync with Grok Bot</h2>
@@ -531,17 +641,23 @@ Plain notes for the people reading the file.`}</CodeBlock>
           <li>New bots become seats marked New.</li>
           <li>
             Matched bots take their link from Grok Bot; their numbers (last active, runs, tasks, routines) apply on their own on every Connector run, so Performance never waits for Sync.
-            Your managers, step assignments, and filled card sections are kept.
+            Your managers, step assignments, and filled card sections are kept. Skills, routines, apps, and public links come from Grok Bot too.
           </li>
           <li>New routines become processes.</li>
           <li>A bot that left Grok Bot is tagged Not in Grok Bot. <strong>A sync never deletes a seat.</strong></li>
           <li>
             <strong>In Grok Bot, no organization</strong> lists bots that run in Grok Bot but belong to no organization in this folder. Tick one to add it to the organization you have open.
           </li>
+          <li>Greyed bots stay out of Sync; they belong to the organization they work for.</li>
         </ul>
         <h3>Going to Grok Bot</h3>
         <ul>
           <li>Every active bot Grok Bot does not have yet is listed, including bots on a template copy or a hand-built chart. Tick the ones to create; the Connector creates them on its next run.</li>
+          <li>Changes waiting for the Connector, such as <strong>Update bot</strong> or a new manager, show one line each.</li>
+          <li>
+            What the Connector could not do shows here too: items stuck after two tries, with the reason; items on their second try; items it has not acted on for more than
+            two runs; a <code>grok-data.json</code> it could not read; and blocks another copy of BotsEverywhere put in your bots, with <strong>Remove them</strong>. Remove them only if that copy is gone.
+          </li>
           <li>
             Grok Bot keeps one bot per name. If another organization in the folder already has a bot with the same name, the drawer says it will be created as, for example,
             {' '}<strong>Invoice Bot · Meridian Ledger Partners</strong>. The next sync matches that name back to the right seat.
@@ -551,6 +667,9 @@ Plain notes for the people reading the file.`}</CodeBlock>
             Grok Bot account, so the drawer counts all of their bots and warns past {GROK_BOT_LIMIT}. It never stops you.
           </li>
         </ul>
+        <p>
+          Do not want to wait for the next run? <strong>Run the Connector now</strong> copies a message: paste it into Grok Bot and the Connector runs right away. The drawer updates when it finishes.
+        </p>
         <p>
           If Grok Bot cannot write the snapshot, open <strong>One-off snapshot without the Connector</strong> in the drawer: copy the prompt into a Grok Bot chat, then import the file it gives you.
         </p>
@@ -570,10 +689,10 @@ Plain notes for the people reading the file.`}</CodeBlock>
 
         <h2 id="performance-logs">Performance and Logs</h2>
         <p>
-          <strong>Performance</strong> lists each bot with when it was created, the times it was used and the automated tasks it finished in the last 30 days, and when it was last active.
-          The Connector briefs these numbers: on every report, a bot whose last-active time moved since the previous report counts one use, and a routine whose last run moved counts one
-          automated task. The app writes each one to the run log, noted <em>seen by the Connector</em>. A bot that logs its own chats (process <code>chat</code>) or routine steps keeps its own,
-          more detailed lines, and the same moment is never counted twice. Several uses between two Connector runs count as one.
+          <strong>Performance</strong> lists each bot with when it was created, the times it was used and the automated tasks it finished in the last 30 days, when it was last active,
+          its skills, and the apps it uses. The Connector briefs these numbers: on every report, a bot whose last-active time moved since the previous report counts one use, and a
+          routine whose last run moved counts one automated task. The app writes each one to the run log, noted <em>seen by the Connector</em>. A bot that logs its own chats
+          (process <code>chat</code>) or routine steps keeps its own, more detailed lines, and the same moment is never counted twice. Several uses between two Connector runs count as one.
           The numbers come from the run log and from Grok Bot; the app never estimates them.
         </p>
         <p>
@@ -581,32 +700,51 @@ Plain notes for the people reading the file.`}</CodeBlock>
           between the app and Grok Bot. Each line has a label, and its figures show as small tiles under it. The <strong>Show</strong> menu narrows it to Grok Bot and the
           Connector, or to team and work. A <strong>From Grok Bot</strong> or <strong>To Grok Bot</strong> badge shows which way a change went; a step chip jumps to that step on the Work Chart.
         </p>
+        <p>
+          A <strong>To Grok Bot</strong> line that is still waiting says where its request stands, and the newest line for that bot lists each part: create the bot, its instructions,
+          each skill, and each routine. A part is waiting for the Connector, waiting for you in the Connector&apos;s chat, waiting for the bot to confirm, done in Grok Bot and confirming
+          on the next reading, confirmed in Grok Bot, failed once and trying again, or stuck and needing you.
+        </p>
         <p>What the Connector does is logged in every organization, while <code>npm run dev</code> is running:</p>
         <ul>
           <li><strong>Connected</strong>: the first run in this folder, or the first run after a stop, with how long it was down.</li>
           <li><strong>Bot connected</strong>: each bot the Connector reports for the organization for the first time, with its routines and 30-day numbers.</li>
           <li><strong>Bot left</strong>: a bot that was in Grok Bot on the last run and is gone now.</li>
           <li><strong>Connector</strong>: one line per day, updated on every run: runs today, first and last run, bots in Grok Bot, requests waiting, and bots with no organization.</li>
-          <li><strong>Stopped</strong>: the Connector missed two runs, with the time of its last run.</li>
-          <li><strong>Error</strong>: the Connector wrote a snapshot the app cannot read, and why.</li>
+          <li><strong>Stopped</strong>: three of the Connector&apos;s intervals passed without a run, with the time of its last run.</li>
+          <li><strong>Error</strong>: the Connector wrote a file the app cannot read, and why.</li>
+          <li><strong>Apps</strong>: an app connected to your Grok Bot account, one that needs signing in again, or one that left; and a bot that starts or stops using an app.</li>
           <li><strong>Request</strong>, <strong>Created</strong>, <strong>Deleted</strong>, <strong>Sync</strong>, and <strong>Added</strong>: bots you sent to Grok Bot, bots it created, retired bots gone from Grok Bot after you deleted them there, confirmed syncs with the bots they changed, and bots added from the no-organization list.</li>
         </ul>
-        <p>The run log is one file per day, <code>log/YYYY-MM-DD.md</code>, starting with <code># Run log YYYY-MM-DD</code>, then one line per step:</p>
+        <p>The run log is one file per day, <code>log/YYYY-MM-DD.md</code>, starting with <code># Run log YYYY-MM-DD</code>, then one line per routine step:</p>
         <p><code>- HH:MM | bot | process | step | done|failed|skipped|waiting|running | note or -</code></p>
+        <p>and one line each time someone uses the bot in a chat:</p>
+        <p><code>- HH:MM | bot | chat | what it was asked, in a few words | done|failed|waiting | note or -</code></p>
         <p>A line that does not fit is skipped. Every other event is its own file in <code>log/</code>.</p>
 
         <h2 id="where">Files and folders</h2>
         <p>Everything lives in plain files in the project folder. Nothing is uploaded.</p>
+        <h3>In each organization, <code>orgs/&lt;slug&gt;/</code></h3>
         <ul>
-          <li><code>orgs/&lt;slug&gt;/org.md</code>: the organization fields, departments, people, and the org chart (who reports to whom).</li>
-          <li><code>orgs/&lt;slug&gt;/seats/&lt;short-name&gt;.md</code>: one file per seat.</li>
-          <li><code>orgs/&lt;slug&gt;/processes/&lt;name&gt;.md</code>: one file per process. <code>work-chart.md</code> is still read when it is present.</li>
-          <li><code>orgs/&lt;slug&gt;/log/</code>: the daily run logs and one file per event.</li>
-          <li><code>orgs/&lt;slug&gt;/grok/</code>: <code>snapshot.json</code>, written by the Connector, and <code>requests.json</code>, written by the app.</li>
-          <li>
-            <code>orgs/project.json</code>: this copy&apos;s id. <code>orgs/connector.json</code>: the Connector&apos;s last run and how often it runs.{' '}
-            <code>orgs/connector-log.json</code>: what the app already logged about the Connector, so no run is logged twice.
-          </li>
+          <li><code>org.md</code>: the organization fields and the org chart (who reports to whom).</li>
+          <li><code>seats/&lt;short-name&gt;.md</code>: one file per bot.</li>
+          <li><code>processes/&lt;name&gt;.md</code>: one file per process. <code>work-chart.md</code> is still read when it is present.</li>
+          <li><code>log/</code>: the daily run logs, which your bots write, and one file per event.</li>
+          <li><code>profiles/</code>: each bot&apos;s own profile file, which the bot writes: its routines, skills, and apps.</li>
+          <li><code>grok/</code>: <code>snapshot.json</code>, the bots Grok Bot has for this organization, and <code>requests.json</code>, what the app asked the Connector to do.</li>
+        </ul>
+        <h3>Beside the organizations, in <code>orgs/</code></h3>
+        <ul>
+          <li><code>project.json</code>: this copy&apos;s id, how often the Connector runs, and your main bot. The app writes it.</li>
+          <li><code>CONNECTOR.md</code>: the Connector&apos;s rules and schedule. The app writes it; the Connector reads it on every run.</li>
+          <li><code>grok-data.json</code> and <code>connector.json</code>: what the Connector saw in Grok Bot, and its last run. The Connector writes them.</li>
+          <li><code>connector-todo.json</code>: what the Connector still has to do, written by the app. <code>connector-results.json</code>: what it did, written by the Connector.</li>
+          <li><code>grok-unassigned.json</code>: bots in Grok Bot that belong to no organization.</li>
+          <li><code>connector-backups/</code>: each bot&apos;s instructions from before the Connector changed them.</li>
+          <li><code>connector-log.json</code>: what the app already logged about the Connector, so no run is logged twice.</li>
+        </ul>
+        <h3>In the project</h3>
+        <ul>
           <li><code>directory/</code>: the shared bot catalog, one file per bot. It is not inside an organization.</li>
           <li><code>samples/</code>: the read-only templates.</li>
         </ul>
@@ -624,13 +762,16 @@ Plain notes for the people reading the file.`}</CodeBlock>
         </p>
         <p>
           <strong>Import bots file</strong> and <strong>Export bots file</strong>, on the <strong>Connect bots</strong> tab, use one JSON file, <code>botseverywhere-bots.json</code>.
-          Export builds it from the seat files; import reads it back into an organization. A name that already exists is saved as a second seat and never overwrites the first.
+          Export builds it from the seat files; import reads it back into an organization with no bots yet. Each bot can name who it reports to, main and extra.
           The format is in <code>docs/bots-file.md</code>.
         </p>
         <p>Paste this into Grok Bot when you want it to write that file for you:</p>
         <CodeBlock label="Bots file prompt">{GROK_BOTS_PROMPT}</CodeBlock>
-        <p>To keep history, commit <code>orgs/</code> with Git in a private repository of your own:</p>
-        <CodeBlock>{`git add orgs
+        <p>
+          To keep history, commit <code>orgs/</code> with Git in a private repository of your own. The project ignores <code>orgs/</code> because it is your own data,
+          so add it with <code>-f</code>:
+        </p>
+        <CodeBlock>{`git add -f orgs
 git commit -m "Update the org chart"`}</CodeBlock>
 
         <h2 id="add-your-own-bot">Add your own bot</h2>
@@ -652,22 +793,22 @@ git commit -m "Update the org chart"`}</CodeBlock>
         </p>
         <p>
           Because the project is open source, you can adapt it now. Everything the app knows lives in plain files with documented formats: seat files, process files,
-          the run log, and the snapshot. A connector for another platform has to do what the Grok Bot Connector does: read those files, run the bots, write a snapshot,
-          and append to the run log. The Grok Bot prompt is in <code>server/src/connector-prompt.ts</code>, and the snapshot format is the one shown in
-          {' '}<To id="connect-grok">Step 1</To>. Contributions are welcome.
+          the run log, and the snapshot. A connector for another platform has to do what the Grok Bot Connector does: report what it sees, carry out the app&apos;s to-do list,
+          and have each bot append to the run log. The Connector&apos;s prompt, its rules, and the snapshot format are in <code>server/src/connector-prompt.ts</code>.
+          Contributions are welcome.
         </p>
 
         <h2 id="example">Worked example</h2>
         <p>
           Open <a href="#/template/botseverywhere/org-chart">botseverywhere</a> under Templates: the project&apos;s own team, read-only.
-          <strong> Miguel Rovira</strong> is at the top, <strong>Grok Bot</strong> reports to Miguel, and thirteen bots report to Grok Bot, from Planning Bot to Design Bot.
+          <strong> Grok Bot</strong> is the main bot, and thirteen bots report to it, from Planning Bot to Design Bot.
         </p>
         <p>
           Its <a href="#/template/botseverywhere/work-chart">Work Chart</a> has four processes: Invoice arrives, New request, Weekly campaign brief, and Daily brief.
           Those lanes use Finance Bot, Product Bot, Marketing Bot, and Planning Bot.
         </p>
         <p>
-          Your own chart starts smaller, with <strong>You</strong> at the top. Add the seats you need, set who they report to, hire bots that already have a prompt from the{' '}
+          Your own chart starts smaller, with <strong>You</strong> at the top. Add the bots you need, set who they report to, hire bots that already have a prompt from the{' '}
           <a href="#/directory">Bot directory</a>, then <To id="connect-grok">connect Grok Bot</To> and <To id="sync">sync</To>.
         </p>
 
@@ -680,20 +821,35 @@ git commit -m "Update the org chart"`}</CodeBlock>
         <p>Reload the page (F5). A change that failed to load can leave the old page in the tab until you do.</p>
         <h3>The bar says Not connected</h3>
         <p>
-          Grok Bot has not written to this folder yet. Check that you pasted the prompt from <strong>Connect bots</strong> of this copy, then wait up to 15 minutes for the first run.
+          Grok Bot has not written to this folder yet. Check that you pasted the prompt from <strong>Connect bots</strong> of this copy. The Connector runs once as soon as it is
+          set up; if you just pasted it, give Grok Bot a minute.
         </p>
         <h3>The bar says Connector stopped</h3>
-        <p>The Connector missed two runs. Check in Grok Bot that it still exists and runs as often as <strong>Runs every</strong> on Connect bots says.</p>
+        <p>
+          Three of its intervals passed without a run. Check in Grok Bot that the Connector still exists and that its routine runs as often as <strong>Runs every</strong> on
+          Connect bots says. <strong>Run the Connector now</strong> in the Sync drawer starts a run by hand.
+        </p>
+        <h3>Something waits for you in the Connector&apos;s chat</h3>
+        <p>Grok Bot sends messages to bots only from a chat. Open the Connector&apos;s chat in Grok Bot and say <strong>do YOU now</strong>.</p>
         <h3>A bot shows Not in Grok Bot</h3>
         <p>The last snapshot did not include it. Open the bot and choose <strong>Create in Grok Bot</strong>, or tick it under Going to Grok Bot in the Sync drawer.</p>
+        <h3>A bot is greyed</h3>
+        <p>It works for another organization. Open it to move it here, publish a renamed copy, remove it, or make it your main bot. See <To id="one-org">One bot, one organization</To>.</p>
 
         <h2 id="faq">FAQ</h2>
         <h3>Is my data uploaded?</h3>
-        <p>No. Everything is written to the <code>orgs</code> folder on the computer running the app. Only the Connector, in your own Grok Bot, reads it.</p>
+        <p>No. Everything is written to the <code>orgs</code> folder on the computer running the app. Only the Connector and your bots, in your own Grok Bot, read it.</p>
         <h3>Do I need an account?</h3>
         <p>No. There is no sign-up and no team to create.</p>
+        <h3>How often does the Connector run?</h3>
+        <p>
+          As often as you set. <strong>Runs every</strong> on Connect bots takes anything from {MIN_EVERY} to {MAX_EVERY}; {DEFAULT_EVERY} is the default. The Connector switches on its
+          next run, with nothing to paste again.
+        </p>
         <h3>Can I have several organizations?</h3>
         <p>Yes. Each is a folder in <code>orgs/</code>, and one Connector serves all of them. Switch with the organization menu on the tab row.</p>
+        <h3>Can one bot work in several organizations?</h3>
+        <p>No. A bot works for one organization; the Connector and your main bot are the exceptions. See <To id="one-org">One bot, one organization</To>.</p>
         <h3>Can I run several copies of BotsEverywhere?</h3>
         <p>Yes. Each copy has its own id, its own folder, and its own Connector. See <To id="connect-grok">Step 1: Connect Grok Bot</To>.</p>
         <h3>Does it work on phones?</h3>
