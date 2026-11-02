@@ -447,7 +447,7 @@ npm run dev`}</CodeBlock>
           </li>
           <li><strong>Option 2: Import from a template .json (build an organization from an interview with an LLM).</strong> Copy the prompt and give it to any AI together with the downloaded template. The AI asks about your organization, shows the bots it proposes, and writes the file once you confirm; then import it. The template carries the same instructions, so an AI given only the file does the same, and it explains every field, so you can also fill it in yourself.</li>
         </ul>
-        <p>When you import a file, nothing is written until you confirm, and a bot that already has a file is saved beside it, never over it.</p>
+        <p>When you import a file, the preview shows who each bot will report to, exactly as it will be saved. Nothing is written until you confirm, and a bot that already has a file is saved beside it, never over it.</p>
         <p>
           These options are for an organization with no bots yet. Once it has bots, importing again is off, because it would add a second copy of each bot. Your main bot and
           the Connector do not count. Step 2 then offers <strong>Add a seat</strong>, <strong>Bot directory</strong>, <strong>Add existing bot</strong>, and <strong>Export bots file</strong>.

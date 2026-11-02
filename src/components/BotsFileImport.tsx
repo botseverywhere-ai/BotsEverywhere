@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { exportBotsFile, parseBotsFile, type BotsFileRow } from '../../server/src/bots-file.ts'
+import { exportBotsFile, parseBotsFile, type BotsFilePreview, type BotsFileRow } from '../../server/src/bots-file.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import { BOTS_FILE_NAME, localTimeZone } from '../content/grok-bots-prompt'
 import { botsFilePrompt } from '../content/bots-file-prompt'
@@ -24,24 +24,51 @@ export function BotsFileImport({
   const [raw, setRaw] = useState('')
   const [notice, setNotice] = useState<SaveNotice | null>(null)
   const [busy, setBusy] = useState(false)
+  // What the import would save, from the writer: a bot that works in another organization keeps its managers there.
+  const [plan, setPlan] = useState<BotsFilePreview | null>(null)
   const ready = rows?.filter((row) => !row.error) ?? []
+
+  function clear() {
+    setRows(null)
+    setRaw('')
+    setPlan(null)
+  }
 
   async function choose(file: File) {
     setNotice(null)
     const text = await file.text()
     const parsed = parseBotsFile(text)
     if (!parsed.ok) {
-      setRows(null)
-      setRaw('')
+      clear()
       setNotice(saveNotice(false, parsed.errors.join(' '), 'Not imported'))
       return
     }
     setRaw(text)
     setRows(parsed.rows)
+    setPlan(null)
+    try {
+      const response = await fetch(`/api/orgs/${slug}/bots-file/preview`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: text,
+      })
+      const answer = await response.text()
+      const body = answer.trimStart().startsWith('{') ? JSON.parse(answer) as Partial<BotsFilePreview> & { error?: string; errors?: unknown } : {}
+      if (!response.ok || !Array.isArray(body.rows)) {
+        const reason = body.error || (Array.isArray(body.errors) ? body.errors.map(String).join(' ') : '') || 'Could not check this file.'
+        clear()
+        setNotice(saveNotice(false, reason, 'Not imported'))
+        return
+      }
+      setPlan({ rows: body.rows, errors: Array.isArray(body.errors) ? body.errors : [] })
+    } catch {
+      clear()
+      setNotice(saveNotice(false, SAVING_OFF, 'Not imported'))
+    }
   }
 
   async function confirm() {
-    if (!raw || busy || ready.length === 0) return
+    if (!raw || busy || !plan || plan.rows.length === 0) return
     setBusy(true)
     setNotice(null)
     try {
@@ -87,8 +114,7 @@ export function BotsFileImport({
         const skipped = problems.map((item) => `Skipped ${item.name}: ${item.error}`).join(' ')
         const detail = [...changed, skipped].filter(Boolean).join(' ')
         setNotice(saveNotice(true, detail ? `${summary}. ${detail}` : summary))
-        setRows(null)
-        setRaw('')
+        clear()
       } else {
         setNotice(saveNotice(false, problems.map((item) => `${item.name}: ${item.error}`).join(' ') || 'Not imported', 'Not imported'))
       }
@@ -102,25 +128,37 @@ export function BotsFileImport({
     <Button variant="secondary" type="button" onClick={() => fileRef.current?.click()}>Import bots file</Button>
   )
 
+  // The file's own notes, such as a status it did not know, beside the writer's notes on where each bot goes.
+  const fileNote = (name: string) => ready.find((row) => row.name === name)?.note ?? ''
+  const count = plan?.rows.length ?? 0
   const preview = rows ? (
           <div className="bots-preview">
             <p className="overview-note">Nothing is written until you confirm. Bots that already have a file are saved beside it, not over it.</p>
-            <p className="overview-note">{readySummary(rows)}</p>
-            <ul>
-              {rows.map((row, index) => (
-                <li key={`${row.name}-${index}`}>
-                  <strong>{row.name}</strong>
-                  <span>reports to {row.reportsTo}</span>
-                  {row.note ? <span className="bots-note">{row.note}</span> : null}
-                  {row.error ? <span className="form-error">{row.error}</span> : null}
-                </li>
-              ))}
-            </ul>
+            {plan ? <p className="overview-note">{readySummary(plan, fileNote)}</p> : <p className="overview-note">Checking where each bot goes…</p>}
+            {plan ? (
+              <ul>
+                {plan.rows.map((row, index) => (
+                  <li key={`${row.name}-${index}`}>
+                    <strong>{row.name}</strong>
+                    <span>reports to {row.reportsTo}</span>
+                    {row.alsoReportsTo.length ? <span>also reports to {row.alsoReportsTo.join(', ')}</span> : null}
+                    {row.worksIn.length ? <span className="bots-note">Works in {row.worksIn.join(', ')}: it comes in greyed, under the managers it has there.</span> : null}
+                    {[fileNote(row.name), ...row.notes].filter(Boolean).map((note) => <span key={note} className="bots-note">{note}</span>)}
+                  </li>
+                ))}
+                {plan.errors.map((item, index) => (
+                  <li key={`error-${item.name}-${index}`}>
+                    <strong>{item.name}</strong>
+                    <span className="form-error">{item.error}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <div className="dir-actions">
-              <Button variant="primary" type="button" disabled={busy || ready.length === 0} onClick={() => void confirm()}>
-                {busy ? 'Importing…' : `Import ${ready.length} ${ready.length === 1 ? 'bot' : 'bots'}`}
+              <Button variant="primary" type="button" disabled={busy || count === 0} onClick={() => void confirm()}>
+                {busy ? 'Importing…' : `Import ${count} ${count === 1 ? 'bot' : 'bots'}`}
               </Button>
-              <Button variant="secondary" type="button" disabled={busy} onClick={() => { setRows(null); setRaw('') }}>Cancel</Button>
+              <Button variant="secondary" type="button" disabled={busy} onClick={clear}>Cancel</Button>
             </div>
           </div>
   ) : null
@@ -167,10 +205,9 @@ function importedLabel(count: number, notes = 0): string {
   return count === 1 ? 'Imported 1 bot' : `Imported ${count} bots`
 }
 
-function readySummary(rows: BotsFileRow[]): string {
-  const ready = rows.filter((row) => !row.error)
-  const notes = ready.filter((row) => row.note).length
-  const bots = ready.length === 1 ? '1 bot' : `${ready.length} bots`
+function readySummary(plan: BotsFilePreview, fileNote: (name: string) => string): string {
+  const notes = plan.rows.filter((row) => fileNote(row.name) || row.notes.length).length
+  const bots = plan.rows.length === 1 ? '1 bot' : `${plan.rows.length} bots`
   if (notes === 0) return `${bots} ready to import.`
   const noteLabel = notes === 1 ? '1 note' : `${notes} notes`
   return `${bots} ready, ${noteLabel}.`

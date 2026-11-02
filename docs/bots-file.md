@@ -6,7 +6,7 @@ Organization Overview → **How to link your organization to BotsEverywhere** us
 
 **Export bots file** downloads `botseverywhere-bots.json` built from `seats/*.md`. Each bot seat is one entry. A directory bot is included, and its `addToGrokBotUrl` is written as `grokBotUrl`. People, including You, are not in the file.
 
-**Import bots file** reads that same file. The page shows a preview and waits for **Import**. Nothing is written before that. One bot at a time is still **Add existing bot** on the org chart.
+**Import bots file** reads that same file. The page shows a preview and waits for **Import**. The preview comes from the writer: it lists each bot with the managers the import will give it. A bot that works in another organization comes in greyed, under the managers it has there, whatever the file says. Nothing is written before **Import**. One bot at a time is still **Add existing bot** on the org chart.
 
 Export, then import into a new empty organization, recreates the same bot seats: name, who they report to, the four card sections, and the Grok Bot link.
 

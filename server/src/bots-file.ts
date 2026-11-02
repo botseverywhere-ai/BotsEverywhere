@@ -44,6 +44,21 @@ export interface BotsFileRow {
   error: string
 }
 
+/** One bot as the import would save it: its managers by name, and the organizations it works in when it comes in greyed. */
+export interface BotsFilePreviewRow {
+  name: string
+  reportsTo: string
+  alsoReportsTo: string[]
+  worksIn: string[]
+  notes: string[]
+}
+
+/** What importing a bots file would save, from the writer. */
+export interface BotsFilePreview {
+  rows: BotsFilePreviewRow[]
+  errors: { name: string; error: string }[]
+}
+
 export const BOTS_FILE_TEMPLATE = `{
   "bots": [
     {

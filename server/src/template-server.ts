@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { readText } from './text-file.ts'
 import type { FileGuide, FileGuideKey, FileGuideRow } from './file-guide.js'
 import { normalizeText } from './normalize-text.ts'
@@ -44,7 +45,7 @@ import { parseProcessesFile, parseProcessMarkdown, serializeProcess, type Proces
 import { createLiveHub, type LiveKind } from './live-hub.js'
 import { isRunLogName } from './run-log.js'
 import { readRunLogDir } from './run-log-files.js'
-import { IMPORT_LOCKED, importLocked, parseBotsFile, resolveManager, type BotsFileRow } from './bots-file.js'
+import { IMPORT_LOCKED, importLocked, parseBotsFile, resolveManager, type BotsFilePreview, type BotsFileRow } from './bots-file.js'
 import { ORG_IMPORT_LOCKED, orgImportLocked, parseOrgFile, plainSlug, type OrgFile } from './org-file.js'
 import { unzipStore, zipStore } from './zip-store.js'
 import { parseSnapshot, performanceOnly, planSync, patchSeatSource, summaryLine, type AccountBot, type ConnectorInfo, type GrokAccount, type ProjectInfo, type Snapshot, type SyncCounts, type SyncPlan, type SyncStatus } from './grok-sync.js'
@@ -792,12 +793,14 @@ function writeAlsoLine(root: string, slug: string, also: string[]): { ok: true }
  * reportsTo at other bots from this same file, which did not exist yet in pass 1.
  * A slug that is already on disk is saved as `<slug>-2` and the first file is left alone.
  * A manager that is not here places the bot under You with a note; extra managers are written last.
+ * `orgsDir` is where the other organizations and the main bot are read; a preview passes it for a copy of the org.
  */
 export function importBotsFile(
   root: string,
   orgId: string,
   rows: BotsFileRow[],
   stamp?: { grokSync: GrokSyncState; grokSyncedAt: string },
+  orgsDir = dirname(root),
 ): BotsFileResult {
   if (!orgExists(root)) return { imported: [], errors: [{ name: 'File', error: 'Org not found.' }], notes: [], greyed: [] }
   const read = readOrgDir(root, orgId)
@@ -807,8 +810,8 @@ export function importBotsFile(
   const errors: { name: string; error: string }[] = []
   const notes: { name: string; note: string }[] = []
   const homes = new Map<string, HomeManagers>()
-  const elsewhere = botsInOtherOrgs(dirname(root), orgId, [], homes)
-  const mainBot = readMainBot(dirname(root))
+  const elsewhere = botsInOtherOrgs(orgsDir, orgId, [], homes)
+  const mainBot = readMainBot(orgsDir)
   // A bot active in another organization comes in greyed. The Connector and the main bot belong in every organization.
   const otherOrgsOf = (row: BotsFileRow): string[] => {
     const key = botKey(row.grokBotUrl ?? '')
@@ -975,6 +978,36 @@ export function importBotsFile(
     if (!written.ok) errors.push({ name: item.row.name, error: written.errors.join(' ') })
   }
   return { imported, errors, notes, greyed }
+}
+
+/**
+ * What importing this file would save, without writing to the organization. The import runs on a throwaway copy of the
+ * organization folder, reading the other organizations where they are, so the preview and the import can never disagree.
+ */
+export function previewBotsFile(orgsDir: string, root: string, orgId: string, rows: BotsFileRow[]): BotsFilePreview {
+  if (!orgExists(root)) return { rows: [], errors: [{ name: 'File', error: 'Org not found.' }] }
+  const scratch = mkdtempSync(resolve(tmpdir(), 'be-bots-preview-'))
+  try {
+    const copy = resolve(scratch, orgId)
+    cpSync(root, copy, { recursive: true })
+    const result = importBotsFile(copy, orgId, rows, undefined, orgsDir)
+    const read = readOrgDir(copy, orgId)
+    const seats = read.ok ? read.bundle.seats : []
+    const title = (slug: string) => seats.find((seat) => seat.slug === slug)?.title ?? slug
+    const previewRows = result.imported.map((item) => {
+      const seat = seats.find((entry) => entry.slug === item.slug)
+      return {
+        name: item.name,
+        reportsTo: seat ? title(seat.reportsTo) : '',
+        alsoReportsTo: (seat?.alsoReportsTo ?? []).map(title),
+        worksIn: result.greyed.find((entry) => entry.slug === item.slug)?.orgs ?? [],
+        notes: result.notes.filter((entry) => entry.name === item.name).map((entry) => entry.note),
+      }
+    })
+    return { rows: previewRows, errors: result.errors }
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+  }
 }
 
 /**
@@ -2843,6 +2876,20 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const current = readOrgDir(root, slug)
       if (current.ok && importLocked(current.bundle.seats, readMainBot(orgsDir))) return send(res, 409, { error: IMPORT_LOCKED })
       send(res, 200, importBotsFile(root, slug, parsed.rows))
+      return
+    }
+    const botsPreviewMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/bots-file\/preview$/.exec(url.pathname)
+    if (botsPreviewMatch && req.method === 'POST') {
+      const slug = botsPreviewMatch[1]!
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const body = await readBody(req)
+      if (body === 'too-big') return send(res, 413, { error: 'Request is too large.' })
+      const parsed = parseBotsFile(body)
+      if (!parsed.ok) return send(res, 422, { errors: parsed.errors })
+      const current = readOrgDir(root, slug)
+      if (current.ok && importLocked(current.bundle.seats, readMainBot(orgsDir))) return send(res, 409, { error: IMPORT_LOCKED })
+      send(res, 200, previewBotsFile(orgsDir, root, slug, parsed.rows))
       return
     }
     const connectorImportMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/connector-import$/.exec(url.pathname)
