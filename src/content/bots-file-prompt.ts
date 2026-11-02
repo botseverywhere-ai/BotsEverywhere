@@ -17,26 +17,25 @@ The organization
 4. What do you want to get done in the next three months?
 
 The team
-5. Who works in the organization, and what does each person do?
-6. Should every bot report to you, or should one lead bot coordinate the others and report to you?
+5. Should every bot report to you, or should one lead bot coordinate the others and report to you?
 
 The work
-7. What work repeats every day or every week?
-8. Which of that work should bots do, and which stays with people?
-9. For each job a bot takes, what does done look like?
-10. On which days and at what times should each recurring job run?
+6. What work repeats every day or every week?
+7. Which of that work should bots take on?
+8. For each job a bot takes, what does done look like?
+9. On which days and at what times should each recurring job run?
 
 Where work comes in
-11. Where does new work arrive: email, a web form, WhatsApp, Slack, GitHub, phone calls, or somewhere else?
-12. Which tools hold your information, such as a CRM, spreadsheets, a calendar, or a website?
+10. Where does new work arrive: email, a web form, WhatsApp, Slack, GitHub, phone calls, or somewhere else?
+11. Which tools hold your information, such as a CRM, spreadsheets, a calendar, or a website?
 
 The limits
-13. What may a bot do on its own, without asking you?
-14. What must a bot never do without your OK, such as spending money, signing or changing a contract, sharing personal data, sending a message to a client, or publishing anything?
+12. What may a bot do on its own, without asking you?
+13. What must a bot never do without your OK, such as spending money, signing or changing a contract, sharing personal data, sending a message to a client, or publishing anything?
 
 The bots
-15. In which languages should the bots work?
-16. How many bots do you want to start with?
+14. In which languages should the bots work?
+15. How many bots do you want to start with?
 
 Then show me the bots you propose as a short list: name, what it owns, and who it reports to. Wait for my OK or my changes. Don't write the file until I confirm.
 

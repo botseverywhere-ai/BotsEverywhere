@@ -571,7 +571,7 @@ test('the bots file template explains itself to a person or any AI, covers every
   const file = JSON.parse(text) as { readme?: unknown; fields?: Record<string, string>; bots?: Record<string, unknown>[] }
   assert.ok(Array.isArray(file.readme) && file.readme.every((line) => typeof line === 'string'), 'readme is a list of lines')
   assert.match((file.readme as string[]).join(' '), /any AI/)
-  assert.match((file.readme as string[]).join(' '), /reportsTo is You, another bot in this file, or a person already in the organization/)
+  assert.match((file.readme as string[]).join(' '), /reportsTo is You or another bot in this file\./)
   const shape = GROK_BOTS_PROMPT.slice(GROK_BOTS_PROMPT.indexOf('{'), GROK_BOTS_PROMPT.indexOf('\n\nThe values above'))
   const promptFields = Object.keys((JSON.parse(shape) as { bots: Record<string, unknown>[] }).bots[0]!)
   assert.deepEqual(Object.keys(file.fields ?? {}), promptFields, 'the field guide matches the Grok Bot import prompt, field for field')
