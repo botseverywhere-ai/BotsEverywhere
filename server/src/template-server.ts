@@ -3150,6 +3150,13 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       }
       const deleted = deleteOrg(orgsDir, orgMatch[1]!, confirm)
       if (!deleted.ok) return send(res, deleted.status, { error: deleted.error })
+      // The watcher does not see a folder move into orgs/.deleted/, so the to-do list would still send this
+      // organization's blocks. Work it out again now, before the page hears back.
+      try {
+        runConnectorCycle(orgsDir, ensureProjectId(orgsDir))
+      } catch (error) {
+        console.error(`Could not work out the Connector's to-do list: ${error instanceof Error ? error.message : 'unknown error'}`)
+      }
       send(res, 200, { next: deleted.next })
       return
     }
