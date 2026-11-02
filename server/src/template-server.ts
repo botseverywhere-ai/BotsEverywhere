@@ -1742,7 +1742,8 @@ export function importFromConnector(orgsDir: string, root: string, orgId: string
   botsInOtherOrgs(orgsDir, orgId, unreadable)
   if (unreadable.length) return { error: `${andList(unreadable)} could not be read, so the import cannot tell which bots already work there. Fix it first.`, status: 422 }
   const copyId = ensureProjectId(orgsDir)
-  const rows = rowsFromDump(dump.data, copyId, orgId)
+  // A bot keeps the managers another copy gave it in an organization with this name, so a new copy keeps the org chart.
+  const rows = rowsFromDump(dump.data, copyId, orgId, read.bundle.org.company.name)
   // A Connector on older rules does not name itself: its link comes from another organization's Connector seat, else none.
   if (!dump.data.self) rows.push(botRow(connectorName(copyId), connectorLinkElsewhere(orgsDir, orgId)))
   const here = new Set(read.bundle.seats.flatMap((seat) => [botKey(seat.grokBotUrl ?? ''), botKey(seat.elsewhereUrl ?? '')]).filter(Boolean))

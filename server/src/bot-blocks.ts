@@ -200,6 +200,11 @@ export function ownerText(description: string): string {
   return description.replace(ANY_BLOCK, '')
 }
 
+/** Every BotsEverywhere block in a description, of this copy or another, in order. */
+export function anyBlocks(description: string): { copy: string; org: string; text: string }[] {
+  return [...description.matchAll(ANY_BLOCK)].map((match) => ({ copy: match[1]!, org: match[2]!, text: match[0].replace(/^\n\n/, '') }))
+}
+
 /** Ids of other copies whose blocks this description carries. */
 export function otherCopyIds(description: string, copyId: string): string[] {
   const ids = [...description.matchAll(START)].map((match) => match[1]!).filter((id) => id !== copyId)

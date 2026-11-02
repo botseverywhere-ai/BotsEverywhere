@@ -1,6 +1,6 @@
 import { statSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { copyBlocks, ownerText } from './bot-blocks.ts'
+import { anyBlocks, copyBlocks, ownerText } from './bot-blocks.ts'
 import type { BotsFileRow } from './bots-file.ts'
 import { GROK_DATA_FILE, readTextFile } from './connector-files.ts'
 import type { AccountApp, Snapshot } from './grok-sync.ts'
@@ -199,9 +199,55 @@ function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[];
   }
 }
 
-/** Every bot in the dump as a bots-file row for one organization, placed by who its own text names, and the Connector itself. */
-export function rowsFromDump(data: GrokData, copyId: string, orgId: string): BotsFileRow[] {
-  const rows = data.bots.map((bot) => rowFor(bot, data, { seats: [], orgId, copyId, apps: undefined, seat: undefined }))
+/**
+ * Someone a block names, as a manager here. A bot is found by its id, so a renamed bot still matches; one the dump no longer
+ * has keeps the name the block gave it. A person is You: the only person an organization of bots has.
+ */
+function blockParty(label: string, data: GrokData): string {
+  const text = label.trim()
+  const byId = /^(.*\S)\s+\(id ([^()]+)\)$/.exec(text)
+  if (byId) {
+    const id = byId[2]!.trim()
+    return [...data.bots, ...(data.self ? [data.self] : [])].find((bot) => bot.id === id)?.name ?? byId[1]!
+  }
+  const waiting = /^(.*\S)\s+\(not in Grok Bot yet\)$/.exec(text)
+  return waiting ? waiting[1]! : 'You'
+}
+
+/**
+ * The managers another copy of BotsEverywhere gave a bot in an organization with this name: the structure the owner built
+ * there. Read from the first such block, so moving to a new copy keeps the org chart instead of what the bot's own text says.
+ */
+function managersFromNamedBlock(description: string, data: GrokData, copyId: string, orgName: string): { main: string; also: string[] } | undefined {
+  const wanted = norm(orgName)
+  if (!wanted) return undefined
+  for (const block of anyBlocks(description)) {
+    if (block.copy === copyId) continue
+    const org = /^Organization: (.+)$/m.exec(block.text)?.[1]
+    const main = /^Main manager: (.+)$/m.exec(block.text)?.[1]
+    if (!org || norm(org) !== wanted || !main) continue
+    const also = /^Also reports to: (.+)$/m.exec(block.text)?.[1]
+    return { main: blockParty(main, data), also: also ? also.split(', ').map((label) => blockParty(label, data)) : [] }
+  }
+  return undefined
+}
+
+/**
+ * Every bot in the dump as a bots-file row for one organization, and the Connector itself. A bot is placed by this copy's
+ * block for the organization; else by another copy's block for an organization with the same name; else by who its own
+ * text names.
+ */
+export function rowsFromDump(data: GrokData, copyId: string, orgId: string, orgName = ''): BotsFileRow[] {
+  const rows = data.bots.map((bot) => {
+    const row = rowFor(bot, data, { seats: [], orgId, copyId, apps: undefined, seat: undefined })
+    if (managerFromBlock(bot.description, copyId, orgId) !== undefined) return row
+    const named = managersFromNamedBlock(bot.description, data, copyId, orgName)
+    if (!named) return row
+    const placed: BotsFileRow = { ...row, reportsTo: named.main }
+    delete placed.alsoReportsTo
+    if (named.also.length) placed.alsoReportsTo = named.also
+    return placed
+  })
   return data.self ? [...rows, botRow(data.self.name, data.self.grokBotUrl)] : rows
 }
 
