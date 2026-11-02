@@ -2511,6 +2511,12 @@ export function startTemplateServer(options?: { port?: number; orgsDir?: string;
     throw new Error('The file writer binds to 127.0.0.1 only.')
   }
   const orgsDir = options?.orgsDir ?? (options?.root ? resolve(options.root) : orgsDirFromEnv())
+  // A fresh clone has no orgs folder. Make it first: the copy id is saved in it, and the watcher can only watch a folder that exists.
+  try {
+    mkdirSync(orgsDir, { recursive: true })
+  } catch (error) {
+    console.error(`Could not create ${orgsDir}: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
   // Name this copy once, so its Connector is told apart from other copies in Grok Bot.
   const projectId = ensureProjectId(orgsDir)
   // Logs what each Connector run changed. The Connector writes connector.json last, so wait for it to finish.
