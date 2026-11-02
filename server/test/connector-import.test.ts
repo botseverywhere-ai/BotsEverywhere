@@ -36,6 +36,25 @@ test("the Connector import brings every bot with its own-text manager", () => {
   }
 })
 
+test("another copy's Connector is neither imported nor listed as a bot in no organization: only this copy's Connector comes in", async () => {
+  const { orgs, org, root, done } = project({
+    bots: [bot('g', 'Grok Bot'), bot('old', 'Connector - BotsEverywhere (ddap)'), bot('b', 'Brand', { reportsTo: 'Grok Bot' })],
+    self: { id: 'c1', name: 'Connector - BotsEverywhere (acn8)', grokBotUrl: link('c1') },
+  })
+  try {
+    const { readGrokData, unassignedFromData } = await import('../src/grok-data.ts')
+    const read = readGrokData(orgs)
+    assert.ok(read.ok)
+    if (!read.ok) return
+    assert.deepEqual(unassignedFromData(read.data, []).map((row) => row.name), ['Grok Bot', 'Brand'], 'the old Connector is not offered as a bot to add')
+    const result = importFromConnector(orgs, root, org)
+    assert.ok(!('status' in result), JSON.stringify(result))
+    assert.deepEqual(readdirSync(join(root, 'seats')).sort(), ['brand.md', 'connector-botseverywhere-acn8.md', 'grok-bot.md', 'you.md'])
+  } finally {
+    done()
+  }
+})
+
 test('an older dump without managers or self still imports, under You', () => {
   const { orgs, org, root, seat, done } = project({ bots: [bot('g', 'Grok Bot'), bot('s', 'Security')] })
   try {

@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { anyBlocks, copyBlocks, ownerText } from './bot-blocks.ts'
 import type { BotsFileRow } from './bots-file.ts'
 import { GROK_DATA_FILE, readTextFile } from './connector-files.ts'
+import { CONNECTOR_BOT_NAME } from './connector-prompt.ts'
 import type { AccountApp, Snapshot } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
 import { cleanRoutines, type BotRoutine, type OrgBundle, type SeatDocument } from './org-files.ts'
@@ -235,10 +236,10 @@ function managersFromNamedBlock(description: string, data: GrokData, copyId: str
 /**
  * Every bot in the dump as a bots-file row for one organization, and the Connector itself. A bot is placed by this copy's
  * block for the organization; else by another copy's block for an organization with the same name; else by who its own
- * text names.
+ * text names. Another copy's Connector is left out: it works for that copy, not for any organization here.
  */
 export function rowsFromDump(data: GrokData, copyId: string, orgId: string, orgName = ''): BotsFileRow[] {
-  const rows = data.bots.map((bot) => {
+  const rows = data.bots.filter((bot) => !isOtherConnector(bot, data)).map((bot) => {
     const row = rowFor(bot, data, { seats: [], orgId, copyId, apps: undefined, seat: undefined })
     if (managerFromBlock(bot.description, copyId, orgId) !== undefined) return row
     const named = managersFromNamedBlock(bot.description, data, copyId, orgName)
@@ -249,6 +250,14 @@ export function rowsFromDump(data: GrokData, copyId: string, orgId: string, orgN
     return placed
   })
   return data.self ? [...rows, botRow(data.self.name, data.self.grokBotUrl)] : rows
+}
+
+/**
+ * A Connector in the dump that is not this copy's own. The dump lists every bot but the Connector writing it, so a bot named
+ * like a Connector belongs to another copy of BotsEverywhere, such as an older one not deleted yet in Grok Bot.
+ */
+export function isOtherConnector(bot: { id: string; name: string }, data: GrokData): boolean {
+  return bot.name.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()) && bot.id !== data.self?.id
 }
 
 /** A bot row with a name and a link and nothing else, under You. */
@@ -326,5 +335,5 @@ export function snapshotJson(snapshot: Snapshot): string {
 /** Bots in no organization of this copy. */
 export function unassignedFromData(data: GrokData, orgs: { bundle: OrgBundle; orgName: string; created: string[] }[]): BotsFileRow[] {
   const placed = new Set(orgs.flatMap((org) => orgBots(data, org.bundle, org.orgName, org.created).map((bot) => bot.id)))
-  return data.bots.filter((bot) => !placed.has(bot.id)).map((bot) => rowFor(bot, data, { seats: [], orgId: '', copyId: data.copy, apps: undefined, seat: undefined }))
+  return data.bots.filter((bot) => !placed.has(bot.id) && !isOtherConnector(bot, data)).map((bot) => rowFor(bot, data, { seats: [], orgId: '', copyId: data.copy, apps: undefined, seat: undefined }))
 }
