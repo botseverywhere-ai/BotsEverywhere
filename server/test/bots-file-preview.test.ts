@@ -103,11 +103,15 @@ test('POST /bots-file/preview answers with the plan and writes nothing; a locked
   }
 })
 
-test('the bots file preview on Connect bots comes from the writer, so it shows what will be saved', () => {
+test('the bots file preview on Connect bots comes from the writer; the Grok Bot file lists the bots without who reports to whom', () => {
   const page = readFileSync(new URL('../../src/components/BotsFileImport.tsx', import.meta.url), 'utf8')
   assert.match(page, /fetch\(`\/api\/orgs\/\$\{slug\}\/bots-file\/preview`/)
-  assert.match(page, /<span>reports to \{row\.reportsTo\}<\/span>/)
-  assert.match(page, /also reports to \{row\.alsoReportsTo\.join\(', '\)\}/)
-  assert.match(page, /Works in \{row\.worksIn\.join\(', '\)\}: it comes in greyed, under the managers it has there\./)
+  assert.match(page, /const showManagers = mode === 'template'/, 'only Option 2, an organization the owner designed, shows managers')
+  assert.match(page, /\{showManagers \? <span>reports to \{row\.reportsTo\}<\/span> : null\}/)
+  assert.match(page, /\{showManagers && row\.alsoReportsTo\.length \? <span>also reports to \{row\.alsoReportsTo\.join\(', '\)\}<\/span> : null\}/)
+  assert.equal((page.match(/reports to \{row\./g) ?? []).length, 2, 'no other line names a manager')
+  assert.match(page, /\{showManagers && row\.worksIn\.length \? <span className="bots-note">Works in \{row\.worksIn\.join\(', '\)\}: it comes in greyed, under the managers it has there\.<\/span> : null\}/, 'Option 1 shows the names alone')
+  assert.match(page, /\{showManagers \? \[fileNote\(row\.name\), \.\.\.row\.notes\]/)
+  assert.match(page, /readySummary\(plan, fileNote, namesOnly\)/, 'no note count where no note is shown')
   assert.match(page, /Checking where each bot goes…/)
 })

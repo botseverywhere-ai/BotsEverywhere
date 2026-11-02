@@ -131,19 +131,23 @@ export function BotsFileImport({
   // The file's own notes, such as a status it did not know, beside the writer's notes on where each bot goes.
   const fileNote = (name: string) => ready.find((row) => row.name === name)?.note ?? ''
   const count = plan?.rows.length ?? 0
+  // A Grok Bot file only names the managers each bot's own text names, so Option 1 lists the bots' names alone. Option 2's
+  // file is an organization the owner designed, so it shows who reports to whom and each note.
+  const showManagers = mode === 'template'
+  const namesOnly = !showManagers
   const preview = rows ? (
           <div className="bots-preview">
             <p className="overview-note">Nothing is written until you confirm. Bots that already have a file are saved beside it, not over it.</p>
-            {plan ? <p className="overview-note">{readySummary(plan, fileNote)}</p> : <p className="overview-note">Checking where each bot goes…</p>}
+            {plan ? <p className="overview-note">{readySummary(plan, fileNote, namesOnly)}</p> : <p className="overview-note">Checking where each bot goes…</p>}
             {plan ? (
               <ul>
                 {plan.rows.map((row, index) => (
                   <li key={`${row.name}-${index}`}>
                     <strong>{row.name}</strong>
-                    <span>reports to {row.reportsTo}</span>
-                    {row.alsoReportsTo.length ? <span>also reports to {row.alsoReportsTo.join(', ')}</span> : null}
-                    {row.worksIn.length ? <span className="bots-note">Works in {row.worksIn.join(', ')}: it comes in greyed, under the managers it has there.</span> : null}
-                    {[fileNote(row.name), ...row.notes].filter(Boolean).map((note) => <span key={note} className="bots-note">{note}</span>)}
+                    {showManagers ? <span>reports to {row.reportsTo}</span> : null}
+                    {showManagers && row.alsoReportsTo.length ? <span>also reports to {row.alsoReportsTo.join(', ')}</span> : null}
+                    {showManagers && row.worksIn.length ? <span className="bots-note">Works in {row.worksIn.join(', ')}: it comes in greyed, under the managers it has there.</span> : null}
+                    {showManagers ? [fileNote(row.name), ...row.notes].filter(Boolean).map((note) => <span key={note} className="bots-note">{note}</span>) : null}
                   </li>
                 ))}
                 {plan.errors.map((item, index) => (
@@ -205,8 +209,8 @@ function importedLabel(count: number, notes = 0): string {
   return count === 1 ? 'Imported 1 bot' : `Imported ${count} bots`
 }
 
-function readySummary(plan: BotsFilePreview, fileNote: (name: string) => string): string {
-  const notes = plan.rows.filter((row) => fileNote(row.name) || row.notes.length).length
+function readySummary(plan: BotsFilePreview, fileNote: (name: string) => string, namesOnly = false): string {
+  const notes = namesOnly ? 0 : plan.rows.filter((row) => fileNote(row.name) || row.notes.length).length
   const bots = plan.rows.length === 1 ? '1 bot' : `${plan.rows.length} bots`
   if (notes === 0) return `${bots} ready to import.`
   const noteLabel = notes === 1 ? '1 note' : `${notes} notes`
