@@ -85,11 +85,10 @@ export function LinkCompany({
         <>
           <p className="overview-note">Pick one way to fill this organization. You can do this before or after Step 1.</p>
           <Panel id="import-from-grok" option={1} title="Import from your Grok Bot" open={open === 'grok'} onPick={(event) => pick('grok', event)}>
-            {connectorRan ? <ConnectorImport slug={slug} onImported={onImported} onNotice={onNotice} /> : null}
-            <BotsFileImport slug={slug} mode="grok" onImported={onImported} />
+            <ConnectorImport slug={slug} ready={connectorRan} onImported={onImported} onNotice={onNotice} />
           </Panel>
           <Panel id="import-from-template" option={2} title="Import from a template .json" badge="build an organization from an interview with an LLM" open={open === 'template'} onPick={(event) => pick('template', event)}>
-            <BotsFileImport slug={slug} mode="template" onImported={onImported} />
+            <BotsFileImport slug={slug} onImported={onImported} />
           </Panel>
         </>
       )}
@@ -97,8 +96,11 @@ export function LinkCompany({
   )
 }
 
-/** Import from the Connector: every bot it read in Grok Bot, with who each reports to. Nothing to paste. */
-function ConnectorImport({ slug, onImported, onNotice }: { slug: string; onImported: () => Promise<void>; onNotice?: (ok: boolean, message: string) => void }) {
+/**
+ * Import from the Connector: every bot it read in Grok Bot, with who each reports to. Nothing to paste. Until the
+ * Connector's first run there is nothing to import, so the button waits and says why.
+ */
+function ConnectorImport({ slug, ready, onImported, onNotice }: { slug: string; ready: boolean; onImported: () => Promise<void>; onNotice?: (ok: boolean, message: string) => void }) {
   const [state, setState] = useState<{ busy: boolean; ok: boolean; message: string } | null>(null)
   async function run() {
     setState({ busy: true, ok: true, message: '' })
@@ -120,8 +122,18 @@ function ConnectorImport({ slug, onImported, onNotice }: { slug: string; onImpor
   }
   return (
     <div className="connector-import">
-      <Button variant="primary" type="button" disabled={state?.busy} aria-busy={state?.busy || undefined} onClick={() => void run()}>Import from the Connector</Button>
-      <p className="overview-note">Every bot comes in with who it reports to. Bots already in another organization come in greyed.</p>
+      <p className="overview-note">
+        <strong>Import from the Connector</strong> brings in every bot the Connector read in Grok Bot on its last run. There is nothing to paste or download.
+      </p>
+      <p className="overview-note">
+        Each bot comes in under the managers you gave it in BotsEverywhere, which the Connector keeps in a BotsEverywhere block in its instructions, also from an
+        earlier copy of BotsEverywhere for an organization with the same name. A bot without one goes under the manager its own instructions name, or under You.
+      </p>
+      <p className="overview-note">A bot already working in another organization here comes in greyed.</p>
+      {ready ? null : <p className="overview-note">The button works after the Connector&apos;s first run. Do Step 1 first: copy the Connector prompt and paste it into Grok Bot.</p>}
+      <div className="dir-actions">
+        <Button variant="primary" type="button" disabled={!ready || state?.busy} aria-busy={state?.busy || undefined} onClick={() => void run()}>Import from the Connector</Button>
+      </div>
       {state?.message ? <SaveAlert kind={state.ok ? 'ok' : 'bad'}>{state.message}</SaveAlert> : null}
     </div>
   )

@@ -6,7 +6,6 @@ import test from 'node:test'
 import { parseSeatMarkdown, serializeExistingSeat, serializeSeat } from '../src/org-files.ts'
 import { clearFulfilledRequests, clearHandledUpdates, createExistingBot, createHiredSeat, createOrgFiles, importBotsFile, readOrgDir, readRequests, requestGrokBot, requestGrokUpdate, startTemplateServer, updateSeatProfile } from '../src/template-server.ts'
 import { SNAPSHOT_FORMAT, connectorPrompt } from '../src/connector-prompt.ts'
-import { GROK_BOTS_PROMPT } from '../../src/content/grok-bots-prompt.ts'
 import { parseBotsFile } from '../src/bots-file.ts'
 import { parseSnapshot, patchSeatSource, performanceOnly, planSync } from '../src/grok-sync.ts'
 
@@ -263,8 +262,6 @@ test('the Connector adds the skills and routines, and reports skills and the pub
   assert.match(SNAPSHOT_FORMAT, /"publicUrl":/)
   assert.match(SNAPSHOT_FORMAT, /Include publicUrl only for a bot that has a public link in Grok Bot/)
   assert.match(SNAPSHOT_FORMAT, /never invent skills/)
-  assert.match(GROK_BOTS_PROMPT, /"publicUrl":/, 'importing asks for the public link')
-  assert.match(GROK_BOTS_PROMPT, /"skills": \[/)
 })
 
 const FULL_ROUTINES = [
@@ -297,7 +294,7 @@ test('Profile saves the routine details', async () => {
 })
 
 test('the Connector and the import ask for each routine\'s start, event, time zone, and pause, and create routines with them', () => {
-  for (const format of [SNAPSHOT_FORMAT, GROK_BOTS_PROMPT]) {
+  for (const format of [SNAPSHOT_FORMAT]) {
     assert.match(format, /"trigger": "schedule, or the product an event comes from/)
     assert.match(format, /"event":/)
     assert.match(format, /"timeZone":/)

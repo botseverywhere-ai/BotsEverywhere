@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CodeBlock } from '../components/CodeBlock.tsx'
-import { GROK_BOTS_PROMPT } from '../content/grok-bots-prompt.ts'
 import { CONNECTOR_BOT_NAME, CONNECTOR_LOG_BOT, connectorBootstrapPrompt } from '../../server/src/connector-prompt.ts'
 import { DEFAULT_SYNC_MINUTES, MAX_SYNC_MINUTES, MIN_SYNC_MINUTES, everyLabel, staleMinutes } from '../../server/src/connector-timing.ts'
 import { HiringGuide } from '../content/HiringGuide.tsx'
@@ -440,10 +439,10 @@ npm run dev`}</CodeBlock>
         </p>
         <ul>
           <li>
-            <strong>Option 1: Import from your Grok Bot.</strong> Once the Connector has run, <strong>Import from the Connector</strong> brings in every bot it read in Grok Bot,
-            each under the manager its own instructions name. There is nothing to paste. Bots already working in another organization come in greyed; see
-            {' '}<To id="one-org">One bot, one organization</To>. Before the Connector runs, copy the prompt, ask Grok Bot for the bots you already run, and import the file it writes
-            with <strong>Import bots file</strong>. See <To id="files">Import and export</To>.
+            <strong>Option 1: Import from your Grok Bot.</strong> After the Connector&apos;s first run, <strong>Import from the Connector</strong> brings in every bot it read in Grok Bot.
+            There is nothing to paste or download. Each bot comes in under the managers you gave it in BotsEverywhere, which the Connector keeps in a BotsEverywhere block in its
+            instructions, also from an earlier copy of BotsEverywhere for an organization with the same name. A bot without one goes under the manager its own instructions name,
+            or under You. Bots already working in another organization come in greyed; see <To id="one-org">One bot, one organization</To>.
           </li>
           <li><strong>Option 2: Import from a template .json (build an organization from an interview with an LLM).</strong> Copy the prompt and give it to any AI together with the downloaded template. The AI asks about your organization, shows the bots it proposes, and writes the file once you confirm; then import it. The template carries the same instructions, so an AI given only the file does the same, and it explains every field, so you can also fill it in yourself.</li>
         </ul>
@@ -761,12 +760,10 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           A zip exported by an older version has no processes or run logs; importing it keeps the ones you have.
         </p>
         <p>
-          <strong>Import bots file</strong> and <strong>Export bots file</strong>, on the <strong>Connect bots</strong> tab, use one JSON file, <code>botseverywhere-bots.json</code>.
-          Export builds it from the seat files; import reads it back into an organization with no bots yet. Each bot can name who it reports to, main and extra.
-          The format is in <code>docs/bots-file.md</code>.
+          <strong>Export bots file</strong>, on the <strong>Connect bots</strong> tab once an organization has bots, and <strong>Import bots file</strong>, in Option 2, use one
+          JSON file, <code>botseverywhere-bots.json</code>. Export builds it from the seat files; import reads it back into an organization with no bots yet. Each bot can name
+          who it reports to, main and extra. The format is in <code>docs/bots-file.md</code>.
         </p>
-        <p>Paste this into Grok Bot when you want it to write that file for you:</p>
-        <CodeBlock label="Bots file prompt">{GROK_BOTS_PROMPT}</CodeBlock>
         <p>
           To keep history, commit <code>orgs/</code> with Git in a private repository of your own. The project ignores <code>orgs/</code> because it is your own data,
           so add it with <code>-f</code>:

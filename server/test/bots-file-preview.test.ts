@@ -103,15 +103,34 @@ test('POST /bots-file/preview answers with the plan and writes nothing; a locked
   }
 })
 
-test('the bots file preview on Connect bots comes from the writer; the Grok Bot file lists the bots without who reports to whom', () => {
+test('the bots file preview in Option 2 comes from the writer and shows each bot\'s managers as they will be saved', () => {
   const page = readFileSync(new URL('../../src/components/BotsFileImport.tsx', import.meta.url), 'utf8')
   assert.match(page, /fetch\(`\/api\/orgs\/\$\{slug\}\/bots-file\/preview`/)
-  assert.match(page, /const showManagers = mode === 'template'/, 'only Option 2, an organization the owner designed, shows managers')
-  assert.match(page, /\{showManagers \? <span>reports to \{row\.reportsTo\}<\/span> : null\}/)
-  assert.match(page, /\{showManagers && row\.alsoReportsTo\.length \? <span>also reports to \{row\.alsoReportsTo\.join\(', '\)\}<\/span> : null\}/)
-  assert.equal((page.match(/reports to \{row\./g) ?? []).length, 2, 'no other line names a manager')
-  assert.match(page, /\{showManagers && row\.worksIn\.length \? <span className="bots-note">Works in \{row\.worksIn\.join\(', '\)\}: it comes in greyed, under the managers it has there\.<\/span> : null\}/, 'Option 1 shows the names alone')
-  assert.match(page, /\{showManagers \? \[fileNote\(row\.name\), \.\.\.row\.notes\]/)
-  assert.match(page, /readySummary\(plan, fileNote, namesOnly\)/, 'no note count where no note is shown')
+  assert.match(page, /<span>reports to \{row\.reportsTo\}<\/span>/)
+  assert.match(page, /\{row\.alsoReportsTo\.length \? <span>also reports to \{row\.alsoReportsTo\.join\(', '\)\}<\/span> : null\}/)
+  assert.match(page, /Works in \{row\.worksIn\.join\(', '\)\}: it comes in greyed, under the managers it has there\./)
   assert.match(page, /Checking where each bot goes…/)
+})
+
+test('Option 1 is only Import from the Connector, explains what the button does, and waits for the Connector\'s first run', async () => {
+  // tsx compiles JSX in src/ with the classic runtime here, so React must be a global.
+  const React = await import('react')
+  Object.assign(globalThis, { React })
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { LinkCompany } = await import('../../src/components/LinkCompany.tsx')
+  const render = (connectorRan: boolean) => renderToStaticMarkup(React.createElement(LinkCompany, {
+    slug: 'org-test', seats: [], onImported: async () => undefined, onAddSeat: () => undefined, onAddExisting: () => undefined, connectorRan, defaultOpen: 'grok',
+  }))
+  const optionOne = (html: string) => /<details[^>]*id="import-from-grok"[^>]*>([\s\S]*?)<\/details>/.exec(html)?.[1] ?? ''
+  for (const ran of [false, true]) {
+    const panel = optionOne(render(ran))
+    assert.match(panel, /<strong>Import from the Connector<\/strong> brings in every bot the Connector read in Grok Bot on its last run\. There is nothing to paste or download\./)
+    assert.match(panel, /Each bot comes in under the managers you gave it in BotsEverywhere/)
+    assert.match(panel, /A bot already working in another organization here comes in greyed\./)
+    assert.doesNotMatch(panel, /Import bots file|Paste this prompt|\.json/, 'no prompt and no file in Option 1')
+  }
+  assert.match(optionOne(render(false)), /<button[^>]*disabled=""[^>]*>Import from the Connector<\/button>/, 'nothing to import before the first run')
+  assert.match(optionOne(render(false)), /The button works after the Connector&#x27;s first run\. Do Step 1 first: copy the Connector prompt and paste it into Grok Bot\./)
+  assert.doesNotMatch(optionOne(render(true)), /disabled=""|The button works after/)
+  assert.match(render(true), /<details[^>]*id="import-from-template"[\s\S]*Import bots file/, 'the file import is Option 2')
 })

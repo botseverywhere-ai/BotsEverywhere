@@ -1,27 +1,24 @@
 import { useState, type ReactNode } from 'react'
-import { grokBotsPrompt, localTimeZone } from '../content/grok-bots-prompt'
 import { CopyPromptButton } from '../directory/prompt-actions'
 
-/** Paste a prompt, then import the file it brings back. Option 1 by default; Option 2 passes its own prompt for any AI. */
+/** Paste a prompt, then import the file it brings back. Option 2 passes its prompt for any AI and its own titles. */
 export function GrokBotsPrompt({
   importAction,
   children,
-  prompt: given,
-  pasteTitle = 'Step 1. Paste this prompt into Grok Bot',
-  importTitle = 'Step 2. Import the Grok Bot .json file',
+  prompt,
+  pasteTitle,
+  importTitle,
   copyActions,
 }: {
   importAction?: ReactNode
   children?: ReactNode
-  prompt?: string
-  pasteTitle?: string
-  importTitle?: string
+  prompt: string
+  pasteTitle: string
+  importTitle: string
   /** Buttons beside Copy prompt, such as the template download. */
   copyActions?: ReactNode
 }) {
   const [notice, setNotice] = useState('')
-  // Times in the file come back in this computer's own time zone.
-  const prompt = given ?? grokBotsPrompt(localTimeZone())
   return (
     <div className="grok-steps">
       <section className="grok-step">

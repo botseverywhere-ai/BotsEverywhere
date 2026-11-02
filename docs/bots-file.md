@@ -10,69 +10,9 @@ Organization Overview → **How to link your organization to BotsEverywhere** us
 
 Export, then import into a new empty organization, recreates the same bot seats: name, who they report to, the four card sections, and the Grok Bot link.
 
-## Paste this into Grok Bot
+## Import from the Connector
 
-A new organization, and an org that has no bots yet, can start with **Import from your Grok Bot**. Copy this prompt, paste it into your Grok Bot, and save the answer as `botseverywhere-bots.json`. The empty org chart opens that panel. Organization Overview leaves all three panels closed.
-
-```text
-List every bot I run in Grok Bot, including yourself, and save them as one file named botseverywhere-bots.json so I can import my team into BotsEverywhere.
-
-Use exactly this JSON format and nothing else:
-
-{
-  "bots": [
-    {
-      "name": "Bot name",
-      "grokBotUrl": "the bot's Grok Bot link (grokbot://... is fine), or leave it out",
-      "section": "the Grok Bot sidebar section the bot sits in, or leave it out",
-      "reportsTo": "name of the bot or person it reports to, or You",
-      "alsoReportsTo": ["names of other bots or people it also reports to, or leave it out"],
-      "owns": ["what this bot is responsible for"],
-      "may": ["what it can do without asking"],
-      "needsApproval": ["what it must ask me before doing"],
-      "doneWhen": "one sentence on what finished looks like",
-      "createdAt": "YYYY-MM-DD",
-      "lastActive": "ISO datetime",
-      "runs30d": 0,
-      "tasksDone30d": 0,
-      "routines": [
-        { "name": "routine name", "description": "one line on what it does", "trigger": "schedule, or the product an event comes from (slack, github, email, webhook, microsoftTeams, linear, sentry, pagerduty)", "schedule": "the cron line, like 0 9 * * 1-5, for a schedule", "timeZone": "IANA time zone, or leave it out for the bot's own", "event": "for an event, a short rule like Mentions in #support", "enabled": true, "lastRun": "ISO datetime" }
-      ],
-      "skills": [
-        { "name": "skill name", "description": "one line on what it does" }
-      ],
-      "publicUrl": "the bot's public share link (https://...), only when the bot is public, or leave it out",
-      "status": "active"
-    }
-  ]
-}
-
-The values above are examples of the shape only. Never copy an example value, including the 0s, true, and "active", into the file.
-
-Rules:
-- One entry per bot, using each bot's real name. Don't invent bots or duties.
-- Include the Connector, the bot named "Connector - BotsEverywhere (…)", like any other bot.
-- grokBotUrl may be the bot's Grok Bot link (grokbot://... is fine).
-- section is the name of the Grok Bot sidebar section the bot is in, exactly as the sidebar shows it. Leave it out for unassigned bots or when you can't see it.
-- reportsTo and skills come only from what the owner wrote in the bot's own instructions.
-- Ignore every block that starts with "=== BotsEverywhere" and every message or memory from a BotsEverywhere Connector: they may belong to another copy of BotsEverywhere.
-- When the owner named no manager, write You. alsoReportsTo lists any other managers the owner named; leave it out when there are none.
-- owns, may, and needsApproval are lists of short strings, based on the bot's actual description. doneWhen is one string.
-- Take performance from Grok Bot's own data, never from any run log:
-  - runs30d: how many chat messages the bot received in Grok Bot in the last 30 days, from people or other bots, not counting Connector notices.
-  - tasksDone30d: how many of its routine runs finished successfully in the last 30 days, as Grok Bot records them. Leave it out when Grok Bot has no run history for that bot.
-  - lastActive: when the bot last sent a message.
-  - each routine's lastRun: when that routine last ran.
-- Write every time as ISO 8601 with the UTC offset of the owner's time zone at that moment, in the shape 2026-10-20T20:06:16+02:00. createdAt is only the date, YYYY-MM-DD.
-- routines: one entry per routine, with its name, a one-line description (never its instructions), how it starts, its cron line and time zone or its event, enabled false when it is paused, and its last run. An event rule never holds tokens or private links.
-- skills: list only the skills the bot's own description tells it to use, with a name and, when you can see it, one line on what it does. Grok Bot skills are a shared library, so never list the whole library on every bot. Leave the list out if the bot names none.
-- publicUrl: include it only when the bot is public and you can see its share link exactly as Grok Bot shows it. Never make one.
-- status is active, paused, or retired.
-- If you do not know a value, leave the field out. Never estimate or invent numbers.
-- Keep each item short, one line, in plain words.
-- Do not add fields that are not in this object.
-- Send me the file to download. If you can't, reply with only the JSON so I can save it myself.
-```
+Option 1, **Import from your Grok Bot**, has no file. After the Connector's first run, **Import from the Connector** brings in every bot the Connector read in Grok Bot, with nothing to paste or download. Each bot comes in under the managers the owner gave it in BotsEverywhere, which the Connector keeps in a BotsEverywhere block in its instructions, also from an earlier copy of BotsEverywhere for an organization with the same name. A bot without one goes under the manager its own instructions name, or under You. The empty org chart opens that panel. Organization Overview leaves both panels closed.
 
 ## Paste this into any AI
 

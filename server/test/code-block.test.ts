@@ -14,7 +14,7 @@ test('every docs code block has a copy button', () => {
   const css = readFileSync(path.join(root, 'src/styles/app.css'), 'utf8')
 
   assert.equal(docs.includes('<pre'), false)
-  assert.equal(docs.match(/<CodeBlock/g)?.length, 8)
+  assert.equal(docs.match(/<CodeBlock/g)?.length, 7)
   assert.match(docs, /<this-repository-url>/)
   assert.match(block, /navigator\.clipboard\.writeText\(children\)/)
   assert.match(block, /Copied/)
