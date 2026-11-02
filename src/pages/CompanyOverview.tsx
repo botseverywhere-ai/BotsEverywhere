@@ -25,7 +25,6 @@ export function CompanyOverview({
   onOrg,
   onImported,
   onAddSeat,
-  onAddExisting,
   onNotice,
   sync = null,
   onSyncChanged,
@@ -44,7 +43,6 @@ export function CompanyOverview({
   onImported: () => Promise<void>
   /** Opens Add a seat, the same dialog as on the org chart. */
   onAddSeat: () => void
-  onAddExisting: () => void
   /** Tells the page's notices, for results that outlive Step 2. */
   onNotice?: (ok: boolean, message: string) => void
   /** Re-reads the sync status after the Connector interval is saved. */
@@ -168,7 +166,6 @@ export function CompanyOverview({
         seats={seats}
         onImported={async () => { await onImported(); await reloadProfile() }}
         onAddSeat={onAddSeat}
-        onAddExisting={onAddExisting}
         connectorRan={Boolean(sync?.project?.connector?.syncedAt)}
         mainBot={sync?.mainBot ?? ''}
         onNotice={onNotice}

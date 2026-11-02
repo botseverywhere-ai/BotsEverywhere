@@ -706,7 +706,6 @@ test('Step 2 shows the LLM ways in as a badge after the title, not in parenthese
     seats: [],
     onImported: async () => undefined,
     onAddSeat: () => undefined,
-    onAddExisting: () => undefined,
     onCompanyFields: () => undefined,
   }))
   const summary = (id: string) => new RegExp(String.raw`<details[^>]*id="${id}"[^>]*><summary>([\s\S]*?)</summary>`).exec(html)?.[1] ?? ''

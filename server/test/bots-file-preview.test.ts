@@ -119,7 +119,7 @@ test('Option 1 is only Import from the Connector, explains what the button does,
   const { renderToStaticMarkup } = await import('react-dom/server')
   const { LinkCompany } = await import('../../src/components/LinkCompany.tsx')
   const render = (connectorRan: boolean) => renderToStaticMarkup(React.createElement(LinkCompany, {
-    slug: 'org-test', seats: [], onImported: async () => undefined, onAddSeat: () => undefined, onAddExisting: () => undefined, connectorRan, defaultOpen: 'grok',
+    slug: 'org-test', seats: [], onImported: async () => undefined, onAddSeat: () => undefined, connectorRan, defaultOpen: 'grok',
   }))
   const optionOne = (html: string) => /<details[^>]*id="import-from-grok"[^>]*>([\s\S]*?)<\/details>/.exec(html)?.[1] ?? ''
   for (const ran of [false, true]) {

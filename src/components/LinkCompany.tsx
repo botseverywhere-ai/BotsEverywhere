@@ -15,7 +15,6 @@ export function LinkCompany({
   seats,
   onImported,
   onAddSeat,
-  onAddExisting,
   defaultOpen = null,
   connectorRan = false,
   mainBot = '',
@@ -26,7 +25,6 @@ export function LinkCompany({
   onImported: () => Promise<void>
   /** Add a seat, as on the org chart: a person or a bot. */
   onAddSeat: () => void
-  onAddExisting: () => void
   /** Organization Overview leaves every panel closed. The empty-organization start screen opens the first. */
   defaultOpen?: LinkPanel | null
   /** The Connector has reported: Option 1 can import from what it read, with nothing to paste. */
@@ -77,7 +75,6 @@ export function LinkCompany({
           <div className="dir-actions">
             <Button variant="primary" type="button" onClick={onAddSeat}>Add a seat</Button>
             <Button variant="secondary" href="#/directory">Bot directory</Button>
-            <Button variant="secondary" type="button" onClick={onAddExisting}>Add existing bot</Button>
             <Button variant="secondary" type="button" onClick={() => downloadBotsFile(seats)}>Export bots file</Button>
           </div>
         </>

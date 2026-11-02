@@ -449,7 +449,7 @@ npm run dev`}</CodeBlock>
         <p>When you import a file, the preview shows who each bot will report to, exactly as it will be saved. Nothing is written until you confirm, and a bot that already has a file is saved beside it, never over it.</p>
         <p>
           These options are for an organization with no bots yet. Once it has bots, importing again is off, because it would add a second copy of each bot. Your main bot and
-          the Connector do not count. Step 2 then offers <strong>Add a seat</strong>, <strong>Bot directory</strong>, <strong>Add existing bot</strong>, and <strong>Export bots file</strong>.
+          the Connector do not count. Step 2 then offers <strong>Add a seat</strong>, <strong>Bot directory</strong>, and <strong>Export bots file</strong>.
           New bots from Grok Bot arrive through <strong>Sync with Grok Bot</strong>.
         </p>
         <p>
@@ -462,8 +462,7 @@ npm run dev`}</CodeBlock>
         <ol>
           <li>Open the <strong>Org Chart</strong> tab of your organization.</li>
           <li>
-            Choose <strong>Add a seat</strong>. It sits above the chart, next to <strong>Hire from the directory</strong> and <strong>Add existing bot</strong>,
-            on every organization of your own.
+            Choose <strong>Add a seat</strong>. It sits above the chart, next to <strong>Hire from the directory</strong>, on every organization of your own.
           </li>
           <li>Fill in <strong>Short name</strong> (like <strong>Invoice Bot</strong>; the seat file becomes <code>invoice-bot.md</code>) and <strong>Title</strong>, set <strong>Kind</strong> to <strong>Bot</strong>, and pick <strong>Reports to</strong>.</li>
           <li>Choose <strong>Add seat</strong>. The seat file is written, and the chart re-reads it from disk.</li>
@@ -515,7 +514,6 @@ npm run dev`}</CodeBlock>
           While no main bot is saved and the organization has a greyed bot, the Org Chart asks <strong>Which bot is your main bot?</strong> above the chart. Pick one and choose
           {' '}<strong>It&apos;s my main bot</strong>, or choose <strong>Not now</strong> to hide the question for that organization in this browser. The choice is saved in <code>orgs/project.json</code>.
         </p>
-        <p><strong>Add existing bot</strong> refuses a bot that already works in another organization, and offers <strong>Add anyway</strong>.</p>
 
         <h2 id="seat-cards">Seat cards and Profile</h2>
         <p>Every bot has a seat card with four sections. They are what the bot is told about its place in the organization.</p>

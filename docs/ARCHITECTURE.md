@@ -48,7 +48,7 @@ A computer can hold many orgs, each in its own `orgs/<slug>/` folder. Hiring ask
 
 `samples/` holds the read-only template organizations. Copying one creates a new folder under `orgs/`. It does not edit the sample.
 
-**Import bots file**, on the Connect bots tab, reads one JSON file and writes one `source: existing` seat file per bot. The format is in [bots-file.md](bots-file.md). A name whose file already exists is saved as `<slug>-2.md` and does not overwrite the first file. `reportsTo` is a seat name. It defaults to You. Bots in the same file can report to each other: the writer creates every file first, then links those reports. The seat card shows **Open in Grok Bot** when `grokBotUrl` is set. **Add existing bot** on the org chart writes one of these seats at a time.
+**Import bots file**, on the Connect bots tab, reads one JSON file and writes one `source: existing` seat file per bot. The format is in [bots-file.md](bots-file.md). A name whose file already exists is saved as `<slug>-2.md` and does not overwrite the first file. `reportsTo` is a seat name. It defaults to You. Bots in the same file can report to each other: the writer creates every file first, then links those reports. The seat card shows **Open in Grok Bot** when `grokBotUrl` is set. **Add existing bot** (`POST /api/orgs/<slug>/seats/existing`) writes one of these seats at a time; its button is off on the org chart for now.
 
 ## 4. Navigation
 

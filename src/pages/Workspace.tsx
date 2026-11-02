@@ -991,7 +991,6 @@ export function Workspace({
               onImported={rereadOrg}
               onNotice={(ok, message) => tell(ok ? saveNotice(true, message) : saveNotice(false, message))}
               onAddSeat={() => setAdding(true)}
-              onAddExisting={() => setExistingBot(true)}
               sync={sync}
               onSyncChanged={loadSync}
               chartHref={hrefFor(bundle.id, sample, 'org')}
@@ -1045,7 +1044,7 @@ export function Workspace({
                 account={editable ? sync?.project?.account ?? null : null}
                 accountApps={accountApps}
                 retired={editable ? { count: retiredGroups(retired).length, onOpen: () => { setRetiredOpen(true); void loadSync() } } : undefined}
-                actions={editable ? <SeatActions onAdd={() => setAdding(true)} onExisting={() => setExistingBot(true)} /> : undefined}
+                actions={editable ? <SeatActions onAdd={() => setAdding(true)} /> : undefined}
                 png={editable ? { orgName: company.org.name } : undefined}
               />
               {editable && soloYou ? <p className="be-caption">No bots yet. Import them from <a href={hrefFor(bundle.id, sample, 'connect')}>Connect bots</a>.</p> : null}
@@ -1277,12 +1276,12 @@ function RetireStats({ seatId, events }: { seatId: string; events: FileActivity[
   return <p>{related.length} events on file · {tasks} work events. The seat file stays on disk with status retired.</p>
 }
 
-function SeatActions({ onAdd, onExisting }: { onAdd: () => void; onExisting: () => void }) {
+// Add existing bot is off for now; ExistingBotDrawer and its route stay for when it comes back.
+function SeatActions({ onAdd }: { onAdd: () => void }) {
   return (
     <>
       <Button variant="primary" type="button" onClick={onAdd}>Add a seat</Button>
       <Button variant="secondary" href="#directory">Hire from the directory</Button>
-      <Button variant="secondary" type="button" onClick={onExisting}>Add existing bot</Button>
     </>
   )
 }

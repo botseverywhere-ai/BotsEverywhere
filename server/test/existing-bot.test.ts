@@ -15,11 +15,17 @@ const card = {
 
 const link = 'https://example.com/grok/invoice-bot'
 
-test('the org chart offers Add existing bot and the seat card opens the link', () => {
+test('Add existing bot is off on the org chart and Connect bots for now; its drawer stays, and the seat card opens the link', () => {
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   const drawer = readFileSync(new URL('../../src/components/ExistingBotDrawer.tsx', import.meta.url), 'utf8')
   const seat = readFileSync(new URL('../../src/components/SeatDrawer.tsx', import.meta.url), 'utf8')
-  assert.match(workspace, /Add existing bot/)
+  const link = readFileSync(new URL('../../src/components/LinkCompany.tsx', import.meta.url), 'utf8')
+  const overview = readFileSync(new URL('../../src/pages/CompanyOverview.tsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(workspace, />Add existing bot</, 'no button on the org chart')
+  assert.doesNotMatch(link, /Add existing bot|onAddExisting/, 'no button in Step 2')
+  assert.doesNotMatch(overview, /onAddExisting/)
+  assert.match(workspace, /function SeatActions\(\{ onAdd \}: \{ onAdd: \(\) => void \}\) \{\s*return \(\s*<>\s*<Button variant="primary" type="button" onClick=\{onAdd\}>Add a seat<\/Button>\s*<Button variant="secondary" href="#directory">Hire from the directory<\/Button>\s*<\/>/)
+  assert.match(workspace, /<ExistingBotDrawer /, 'the drawer stays for when it comes back')
   assert.match(workspace, /\/api\/orgs\/\$\{bundle\.id\}\/seats\/existing/)
   assert.match(workspace, /Bot added/)
   assert.match(drawer, /Bot name/)
