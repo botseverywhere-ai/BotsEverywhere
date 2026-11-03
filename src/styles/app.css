@@ -1576,7 +1576,7 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .be-meter span { display: block; height: 3px; background: var(--color-ink); }
 /* A bot's name on Performance: plain text with a line under it, never a button. */
 /* Same weight as .be-performance button:not(.btn) above, and later, so the table's button look does not apply. */
-.be-performance button.be-seat-link { height: auto; padding: 0; border: 0; border-radius: var(--control-radius); background: none; font: inherit; color: inherit; white-space: normal; text-align: left; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-line); cursor: pointer; }
+.be-performance button.be-seat-link { height: auto; padding: 0; border: 0; border-radius: var(--control-radius); background: none; font: inherit; font-weight: var(--weight-semibold); color: inherit; white-space: normal; text-align: left; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-line); cursor: pointer; }
 .be-performance button.be-seat-link:hover { text-decoration-color: currentColor; }
 .be-performance button.be-seat-link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); }
 .be-least { margin-left: 8px; padding: 1px 6px; background: var(--color-stone); font-style: normal; font-size: 11px; }
