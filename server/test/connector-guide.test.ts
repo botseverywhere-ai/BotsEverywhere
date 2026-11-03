@@ -82,7 +82,7 @@ test('Connect bots and Docs show the short prompt; a new interval needs no paste
 test('the Connector asks for profiles, keeps each one exactly as the bot sent it, and says so in its report', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
   assert.match(guide, /YOU \(after each run, when the owner writes "Send the waiting items" or "do YOU now" in this chat, and when a bot sends you a line starting "BotsEverywhere routine saved:" or "BotsEverywhere profile:"\)/)
-  assert.match(guide, /\n   - profile: SendToAgent to botId with priority true and exactly the item's message\.\n/)
   assert.match(guide, /When a bot sends you a message with a line starting "BotsEverywhere profile:" or "BotsEverywhere routines:", add it to confirmations too: line \(that line and every line after it, exactly\), from, and at\./)
   for (const line of ['Asked for profiles: <bot names>', 'Profiles received: <bot names>']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
+  assert.match(guide, /\n   - profile: SendToAgent to botId with priority true and exactly the item's message\. A bot answers by writing its profile file, which the app reads itself: expect no line back, and never ask the owner about asks that got no reply\.\n/, 'the Connector does not mistake silent file writes for a loop')
 })

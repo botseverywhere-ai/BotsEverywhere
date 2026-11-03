@@ -1784,8 +1784,9 @@ export function importFromConnector(orgsDir: string, root: string, orgId: string
   const connectorHere = read.bundle.seats.some((seat) => isConnectorName(seat.title))
   const fresh = rows.filter((row) => !here.has(botKey(row.grokBotUrl)) && !(connectorHere && isConnectorName(row.name)))
   const result = importBotsFile(root, orgId, fresh, { grokSync: 'synced', grokSyncedAt: dump.data.dumpedAt })
-  // The bots' own reports fill the rest of Performance: ask for them now, so nobody has to find the button.
-  if (!('status' in result)) writeProfileAsk(root, new Date().toISOString())
+  // The bots' own reports fill the rest of Performance: ask for them now, so nobody has to find the button. An import
+  // that brings no new bot asks nobody: every round is one message per bot, and the bots already reported.
+  if (!('status' in result) && fresh.length) writeProfileAsk(root, new Date().toISOString())
   return result
 }
 

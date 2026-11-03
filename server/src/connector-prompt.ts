@@ -131,7 +131,7 @@ YOU (after each run, when the owner writes "Send the waiting items" or "do YOU n
    - create: if a bot named exactly the item's bot exists, record done with its botId. Otherwise call CreateAgent with name the item's bot, description exactly the item's description, and section_id the id of the section whose name matches the item's section, ignoring capital letters (ListSections), or no section. Record done with the new bot's botId.
    - skill: call UpdateSkill with the item's skill name and description.
    - routine: SendToAgent to botId with priority true and exactly the item's message.
-   - profile: SendToAgent to botId with priority true and exactly the item's message.
+   - profile: SendToAgent to botId with priority true and exactly the item's message. A bot answers by writing its profile file, which the app reads itself: expect no line back, and never ask the owner about asks that got no reply.
    - cleanup: SendToAgent to botId with exactly the item's message, without priority.
 3. Write one result per item into connector-results.json: key, status (done, failed, or changed), at, why for failed, and botId for create.
 4. When a bot sends you a line starting "BotsEverywhere routine saved:", add it to confirmations in connector-results.json: line exactly, from (the bot's name), and at. When a bot sends you a message with a line starting "BotsEverywhere profile:" or "BotsEverywhere routines:", add it to confirmations too: line (that line and every line after it, exactly), from, and at.

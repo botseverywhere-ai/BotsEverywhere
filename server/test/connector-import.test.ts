@@ -104,3 +104,22 @@ test('the main bot does not lock the import', () => {
     done()
   }
 })
+
+test('an import that brings no new bot asks nobody for a profile: every round is one message per bot', async () => {
+  // Only the main bot is here, so the import stays open; the dump holds nothing new.
+  const { orgs, org, root, done } = project({ bots: [bot('g', 'Grok Bot')], self: { id: 'c1', name: 'Connector - BotsEverywhere (acn8)', grokBotUrl: link('c1') } })
+  try {
+    const projectFile = join(orgs, 'project.json')
+    writeFileSync(projectFile, JSON.stringify({ ...(existsSync(projectFile) ? JSON.parse(readFileSync(projectFile, 'utf8')) as object : { id: 'acn8' }), mainBot: 'g' }))
+    const { readProfileAsk } = await import('../src/profile-asks.ts')
+    const first = importFromConnector(orgs, root, org)
+    assert.ok(!('status' in first), JSON.stringify(first))
+    const asked = readProfileAsk(root)
+    assert.ok(Number.isFinite(Date.parse(asked)), 'the first import brought Grok Bot, so it asks')
+    const again = importFromConnector(orgs, root, org)
+    assert.ok(!('status' in again), JSON.stringify(again))
+    assert.equal(readProfileAsk(root), asked, 'nothing new came in, so nobody is asked again')
+  } finally {
+    done()
+  }
+})
