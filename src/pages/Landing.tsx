@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { AppFooter } from '../components/AppFooter'
 import { DemoBanner } from '../components/DemoBanner'
 import { Logo } from '../components/Logo'
@@ -74,7 +75,7 @@ export function Landing() {
               </p>
               <div className="ld-clone">
                 <span>{clone}</span>
-                <Button variant="primary"  href={primaryHref}>{primary}</Button>
+                <CopyButton text={clone} />
               </div>
               <p className="ld-more"><a href={github}>See how it works on GitHub →</a></p>
             </div>
@@ -239,5 +240,30 @@ export function Landing() {
       </section>
       <AppFooter />
     </div>
+  )
+}
+
+const COPY_RESET_MS = 2000
+
+/** Copies the clone command beside it. Says Copied for a moment, then is ready again. */
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  useEffect(() => {
+    if (!copied) return
+    const id = window.setTimeout(() => setCopied(false), COPY_RESET_MS)
+    return () => window.clearTimeout(id)
+  }, [copied])
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      return
+    }
+    setCopied(true)
+  }
+  return (
+    <Button variant="primary" type="button" aria-label="Copy the clone command" onClick={() => void copy()}>
+      {copied ? 'Copied' : 'Copy'}
+    </Button>
   )
 }

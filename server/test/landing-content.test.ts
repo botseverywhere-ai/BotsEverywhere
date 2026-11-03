@@ -85,3 +85,11 @@ test("the homepage follows the article's blueprint in its own order and words, a
   assert.ok(workspace.includes('Org chart = who owns capability. Work chart = how work moves.'), "the same idea as the app's own caption")
   assert.doesNotMatch(landing, /Org chart for bots|keep the approve/)
 })
+
+test('the home page clone box has a Copy button that copies the clone command; Open your org stays in the header and the closing section', () => {
+  const landing = read('../../src/pages/Landing.tsx')
+  assert.match(landing, /<div className="ld-clone">\s*<span>\{clone\}<\/span>\s*<CopyButton text=\{clone\} \/>\s*<\/div>/)
+  assert.match(landing, /navigator\.clipboard\.writeText\(text\)/)
+  assert.match(landing, /\{copied \? 'Copied' : 'Copy'\}/)
+  assert.equal((landing.match(/href=\{primaryHref\}/g) ?? []).length, 1, 'the closing section keeps the Open your org button')
+})
