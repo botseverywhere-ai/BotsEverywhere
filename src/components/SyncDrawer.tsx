@@ -11,7 +11,7 @@ import { DEFAULT_SYNC_MINUTES, everyLabel } from '../../server/src/connector-tim
 import type { SeatDocument } from '../../server/src/org-files.ts'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then sync again.'
-const STALE = 'The snapshot changed. Review it again.'
+const STALE = 'The Connector rewrote the snapshot while you looked. The plan above is now the fresh one: click Sync with Grok Bot again.'
 
 export function SyncDrawer({
   orgSlug,
