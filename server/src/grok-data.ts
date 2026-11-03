@@ -6,7 +6,7 @@ import { GROK_DATA_FILE, readTextFile } from './connector-files.ts'
 import { CONNECTOR_BOT_NAME } from './connector-prompt.ts'
 import type { AccountApp, Snapshot } from './grok-sync.ts'
 import { normalizeText } from './normalize-text.ts'
-import { cleanRoutines, type BotRoutine, type OrgBundle, type SeatDocument } from './org-files.ts'
+import { cleanRoutines, type BotRoutine, type BotSkill, type OrgBundle, type SeatDocument } from './org-files.ts'
 import { EVENT_SOURCES, type EventSource, type ProcessImportRow, type ProcessTrigger } from './processes.ts'
 
 /**
@@ -28,6 +28,8 @@ export interface GrokDataBot {
   routines?: BotRoutine[]
   tasksDone30d?: number
   publicUrl?: string
+  /** The skills turned on for the bot, by name, as Grok Bot shows them. Absent from a Connector on older rules. */
+  skills?: string[]
   /** For a bot new to the app: a card summed up from its description, used only to fill a new seat. */
   card?: { owns: string[]; may: string[]; needsApproval: string[]; doneWhen: string }
   /** Who the bot's own text, outside every BotsEverywhere block, says it reports to, by its name in Grok Bot. */
@@ -93,6 +95,7 @@ export function parseGrokData(text: string): { ok: true; data: GrokData } | { ok
       ...(routinesVisible ? { routines: cleanRoutines(item.routines) } : {}),
       ...(routinesVisible && count(item.tasksDone30d) !== undefined ? { tasksDone30d: count(item.tasksDone30d) } : {}),
       ...(publicUrl ? { publicUrl } : {}),
+      ...(Array.isArray(item.skills) ? { skills: strings(item.skills) } : {}),
       ...(card ? { card } : {}),
       // A manager that does not read is dropped, never the dump: it only places a new seat.
       ...(str(item.reportsTo) ? { reportsTo: str(item.reportsTo) } : {}),
@@ -170,6 +173,19 @@ function managerFromOwnerText(own: string, seats: SeatDocument[]): string | unde
   return named ? seats.find((seat) => norm(seat.title) === norm(named))?.title : undefined
 }
 
+/**
+ * The skills Grok Bot shows turned on for the bot, with the library's description when it has one. A Connector on older
+ * rules reports none per bot: then a library skill the bot's own text names is taken as its.
+ */
+function skillsFor(bot: GrokDataBot, own: string, data: GrokData): BotSkill[] {
+  const describe = (name: string): BotSkill => {
+    const description = data.skills.find((skill) => norm(skill.name) === norm(name))?.description
+    return { name, ...(description ? { description } : {}) }
+  }
+  if (bot.skills) return bot.skills.map(describe)
+  return data.skills.filter((skill) => mentions(own, skill.name)).map((skill) => describe(skill.name))
+}
+
 function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[]; orgId: string; copyId: string; apps: AccountApp[] | undefined; seat: SeatDocument | undefined }): BotsFileRow {
   const own = ownerText(bot.description)
   const routines = bot.routinesVisible ? bot.routines ?? [] : []
@@ -190,7 +206,7 @@ function rowFor(bot: GrokDataBot, data: GrokData, args: { seats: SeatDocument[];
     ...(bot.runs30d !== undefined ? { runs30d: bot.runs30d } : {}),
     ...(bot.tasksDone30d !== undefined ? { tasksDone30d: bot.tasksDone30d } : {}),
     routines,
-    skills: data.skills.filter((skill) => mentions(own, skill.name)).map((skill) => ({ name: skill.name, ...(skill.description ? { description: skill.description } : {}) })),
+    skills: skillsFor(bot, own, data),
     // Unknown account apps never clear a seat's apps, and neither do routines Grok Bot does not show.
     apps: args.apps ? appsFor(args.apps.filter((app) => mentions(own, app.name) || mentions(routineText, app.name)).map((app) => app.name), bot.routinesVisible ? [] : args.seat?.apps ?? []) : args.seat?.apps ?? [],
     publicUrl: bot.publicUrl ?? '',

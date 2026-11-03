@@ -74,6 +74,32 @@ test("apps come only from the owner's own text, never from blocks; the manager o
   assert.deepEqual(row('inner').skills, [], 'skills in a block are not read back')
 })
 
+test("each bot's skills are the ones Grok Bot shows turned on for it; a Connector that reports none for a bot leaves the guess from its own text", () => {
+  const dump: GrokData = { ...DUMP, bots: DUMP.bots.map((bot) => {
+    if (bot.id === 'res') return { ...bot, skills: ['GitHub sweep', 'The Court one-pager'] }
+    if (bot.id === 'grok') return { ...bot, skills: [] }
+    if (bot.id === 'new') return { ...bot, description: 'Helps with the GitHub sweep. Reports to Inner Loop.' }
+    return bot
+  }) }
+  const snapshot = snapshotFromData(dump, desk(), 'Desk', '3s53', APPS, ['New Helper'])
+  const row = (id: string) => snapshot.bots.find((bot) => bot.grokBotUrl.endsWith(`id=${id}`))!
+  assert.deepEqual(row('res').skills, [{ name: 'GitHub sweep', description: 'Sweeps issues.' }, { name: 'The Court one-pager' }], 'a skill turned on but not in the library list still counts, without a description')
+  assert.deepEqual(row('grok').skills, [], 'an empty list is none')
+  assert.deepEqual(row('new').skills, [{ name: 'GitHub sweep', description: 'Sweeps issues.' }], 'no skills field: an older Connector, so the name in its own text still counts')
+})
+
+test('parseGrokData reads the skills turned on for a bot as names, dropping blanks and non-strings; absent stays absent', () => {
+  const text = JSON.stringify({ dumpedAt: '2026-11-03T13:00:00+01:00', copy: 'vuk7', bots: [
+    { id: 'a', name: 'A', description: '', routinesVisible: false, skills: ['issue-triage', ' ', 7, { name: 'x' }, 'release-notes'] },
+    { id: 'b', name: 'B', description: '', routinesVisible: false, skills: [] },
+    { id: 'c', name: 'C', description: '', routinesVisible: false },
+    { id: 'd', name: 'D', description: '', routinesVisible: false, skills: 'not a list' },
+  ], skills: [] })
+  const parsed = parseGrokData(text)
+  assert.ok(parsed.ok)
+  assert.deepEqual(parsed.data.bots.map((bot) => bot.skills), [['issue-triage', 'release-notes'], [], undefined, undefined])
+})
+
 test('a value Grok Bot does not show stays missing, and unknown account apps never clear a seat', () => {
   const snapshot = snapshotFromData(DUMP, desk(), 'Desk', '3s53', undefined, [])
   const inner = snapshot.bots.find((bot) => bot.name === 'Inner Loop')!

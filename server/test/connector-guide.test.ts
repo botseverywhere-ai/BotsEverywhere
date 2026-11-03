@@ -24,6 +24,12 @@ test('the prompt to paste names the interval, leaves later changes to CONNECTOR.
   assert.ok(connectorBootstrapPrompt({ ...WIN, syncMinutes: 10080 }).length < 1200)
 })
 
+test('THE RUN asks for the skills turned on for each bot, so Performance shows what Grok Bot shows', () => {
+  const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
+  assert.match(guide, /\n   - skills: the names of the skills turned on for it, as Grok Bot shows them for that bot\. Leave it out when you cannot see them; an empty list means none\.\n/)
+  assert.match(guide, /"routinesVisible": false, "skills": \[""\], "routines":/, 'the format line shows where it goes')
+})
+
 test('after every run the Connector reports in its chat what it read and did, and says when there was nothing to change', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
   assert.match(guide, /\n5\. Then, after every run and every time you act, reply in this chat with a short report, so the owner always knows what you did in Grok Bot:\n   BotsEverywhere sync at HH:MM\n   - Read from Grok Bot: <N> bots, <N> skills, <N> apps\n/)
