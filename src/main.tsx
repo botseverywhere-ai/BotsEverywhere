@@ -7,12 +7,9 @@ import './styles/tokens.css'
 import './styles/landing.css'
 import './styles/app.css'
 import App from './App.tsx'
-import { SessionProvider } from './session.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <SessionProvider>
-      <App />
-    </SessionProvider>
+    <App />
   </StrictMode>,
 )

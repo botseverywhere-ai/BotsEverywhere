@@ -1,13 +1,8 @@
-import { eq } from 'drizzle-orm'
-import * as schema from './schema.js'
-import { randomToken, sealSecret, sha256 } from './crypto.js'
-import type { DB } from './db.js'
-
-/** Fixed ids so a second run does not create another organization. */
-export const ORG_ID = 'org-bot-company-x'
-export const TEAM_ID = 'team-bot-company-x'
-export const GOAL_ID = 'goal-release-2-0'
-
+/**
+ * Bot Company X, the fictional owner organization in the sample data: one maintainer and the bots that keep an open
+ * source toolkit for bots and AI agents healthy. Every bot, issue, contributor, and number here is made up.
+ * build-preview-seed.ts turns it into src/data/mock-companies.json.
+ */
 export type CardProvenance = {
   owns: string
   may: string
@@ -171,159 +166,10 @@ export const QA_RUN = {
   seatId: 'seat-benchmark-bot',
 } as const
 
-const MILESTONES = [
+export const MILESTONES = [
   'release plan approved',
   'open pull requests reviewed',
   'benchmarks green on the candidate',
   'release notes approved',
   'version 2.0 tagged',
 ] as const
-
-export type SeedResult = { created: false } | { created: true; ownerUrl: string; ownerToken: string }
-
-export function seedBotseverywhere(db: DB, input: { origin: string; now?: number }): SeedResult {
-  const existing = db.select().from(schema.organizations).where(eq(schema.organizations.id, ORG_ID)).get()
-  if (existing) return { created: false }
-
-  const now = input.now ?? Date.now()
-  const ownerToken = randomToken(32)
-  const editToken = randomToken(32)
-  const viewToken = randomToken(32)
-  const origin = input.origin.replace(/\/$/, '')
-
-  for (const [index, seat] of SEEDED_SEATS.entries()) {
-    db.insert(schema.seats)
-      .values({
-        id: seat.id,
-        teamId: TEAM_ID,
-        name: seat.name,
-        role: seat.role,
-        botSlug: null,
-        humanOwner: 'Sam Rivera',
-        sortOrder: index,
-        kind: seat.kind,
-        reportsTo: seat.reportsTo,
-        owns: seat.card.owns,
-        may: seat.card.may,
-        mustAskBefore: seat.card.mustAskBefore,
-        doneWhen: seat.card.doneWhen,
-        cardProvenance: seat.card.provenance.owns ? JSON.stringify(seat.card.provenance) : '',
-      })
-      .run()
-  }
-
-  db.insert(schema.workstreams)
-    .values({
-      id: 'ws-release',
-      teamId: TEAM_ID,
-      outcome: 'Version 2.0 release',
-      ownerSeatId: 'seat-sam',
-      kind: 'main',
-      triggerSource: 'management',
-      triggerLabel: 'Version 2.0 release',
-    })
-    .run()
-
-  const steps = [
-    { id: 'step-plan', name: 'Write the release plan', executorSeatId: 'seat-roadmap-bot' },
-    { id: 'step-review', name: 'Review the pull requests', executorSeatId: 'seat-review-bot' },
-    { id: 'step-bench', name: 'Run the agent benchmarks', executorSeatId: 'seat-benchmark-bot' },
-    { id: 'step-notes', name: 'Draft the release notes', executorSeatId: 'seat-docs-bot' },
-  ]
-  steps.forEach((step, index) => {
-    db.insert(schema.steps)
-      .values({
-        id: step.id,
-        workstreamId: 'ws-release',
-        name: step.name,
-        level: 2,
-        executorSeatId: step.executorSeatId,
-        sortOrder: index,
-      })
-      .run()
-  })
-
-  const edges = [
-    ['hand-plan-review', 'step-plan', 'step-review'],
-    ['hand-review-bench', 'step-review', 'step-bench'],
-    ['hand-bench-notes', 'step-bench', 'step-notes'],
-    ['hand-bench-review', 'step-bench', 'step-review'],
-  ] as const
-  for (const [id, fromStepId, toStepId] of edges) {
-    db.insert(schema.handoffs).values({ id, workstreamId: 'ws-release', fromStepId, toStepId }).run()
-  }
-
-  db.insert(schema.checkpoints)
-    .values({
-      id: 'cp-owner-merge',
-      stepId: 'step-review',
-      rule: 'The maintainer approves every merge and every release.',
-      approverSeatId: 'seat-sam',
-      required: 1,
-    })
-    .run()
-
-  db.insert(schema.goals)
-    .values({
-      id: GOAL_ID,
-      organizationId: ORG_ID,
-      title: 'Version 2.0 release',
-      dueOn: '2026-11-30',
-      sortOrder: 0,
-    })
-    .run()
-  MILESTONES.forEach((title, index) => {
-    db.insert(schema.milestones)
-      .values({
-        id: `ms-release-${index}`,
-        goalId: GOAL_ID,
-        title,
-        done: 0,
-        dueOn: null,
-        sortOrder: index,
-      })
-      .run()
-  })
-
-  for (const event of ACTIVITY) {
-    db.insert(schema.activityLog)
-      .values({
-        id: `act-${event.ref}`,
-        organizationId: ORG_ID,
-        at: event.at,
-        summary: event.summary,
-        commitSha: event.ref,
-      })
-      .run()
-  }
-
-  db.insert(schema.teams)
-    .values({
-      id: TEAM_ID,
-      name: 'Bot Company X',
-      slackTeamId: null,
-      slackTeamName: null,
-      isSample: 0,
-      createdAt: now,
-      editTokenHash: sha256(editToken),
-      viewTokenHash: sha256(viewToken),
-      organizationId: ORG_ID,
-      linkSeal: sealSecret(ownerToken, JSON.stringify({ editToken, viewToken })),
-    })
-    .run()
-
-  db.insert(schema.organizations)
-    .values({
-      id: ORG_ID,
-      name: 'Bot Company X',
-      ownerTokenHash: sha256(ownerToken),
-      createdAt: now,
-    })
-    .run()
-
-  return {
-    created: true,
-    ownerToken,
-    ownerUrl: `${origin}/#owner/${ownerToken}`,
-  }
-}

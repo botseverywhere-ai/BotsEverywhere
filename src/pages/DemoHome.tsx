@@ -1,12 +1,8 @@
-import { lazy, Suspense } from 'react'
 import { mainCta } from '../nav-target'
-const SampleCompanyPicker = lazy(() => import('../components/SampleCompanyPicker').then((mod) => ({ default: mod.SampleCompanyPicker })))
 import { sampleCards } from '../org/sample-cards'
 import { APP_MODE } from '../mode'
-import { useSession } from '../sessionContext'
 
 export function DemoHome() {
-  const { authEnabled } = useSession()
   const showcase = APP_MODE === 'showcase'
   const countsVary = new Set(sampleCards.map((sample) => sample.label)).size > 1
   return (
@@ -22,11 +18,6 @@ export function DemoHome() {
         {showcase ? (
           <p className="home-note">
             <a href="#docs">Get the open source copy</a>. This site only shows templates and the bot directory.
-          </p>
-        ) : APP_MODE === 'sqlite' ? (
-          <p className="home-note">
-            <a href="#organization">Create an organization</a> or <a href="#teams">create a private team</a>.
-            {authEnabled ? <> <a href="#signin">Sign in</a> is optional.</> : null}
           </p>
         ) : (
           <p className="home-note">
@@ -58,7 +49,6 @@ export function DemoHome() {
             ))}
         </ul>
       </section>
-      {APP_MODE === 'sqlite' ? <Suspense fallback={<p className="auth-note">Loading…</p>}><SampleCompanyPicker /></Suspense> : null}
     </main>
   )
 }

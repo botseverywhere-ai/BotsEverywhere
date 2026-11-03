@@ -3,7 +3,7 @@
  * Ten fictional companies plus the owner org, Bot Company X, which is fictional too. Run: npx tsx scripts/build-preview-seed.ts
  */
 import { writeFileSync } from 'node:fs'
-import { ACTIVITY, QA_RUN, SEEDED_SEATS } from '../server/src/seed-botseverywhere.ts'
+import { ACTIVITY, QA_RUN, SEEDED_SEATS } from './owner-org.ts'
 import type { CompanySeed, DemoActivity, LogEvent, MockSeed, Seat, SeatType } from '../src/data/mock-companies.ts'
 import { displayCardText } from '../src/preview/card-text.ts'
 

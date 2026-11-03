@@ -1,15 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { AccountMenu } from './components/AccountMenu'
 import { Logo } from './components/Logo'
 import { Landing } from './pages/Landing'
-import { LiveTeam } from './pages/LiveTeam'
-import { IntakePage } from './pages/IntakePage'
-import { SignIn } from './pages/SignIn'
-import { TeamsPage } from './pages/TeamsPage'
-import { InvitePage } from './pages/InvitePage'
-import { ShareTeam } from './pages/ShareTeam'
-import { CreateOrganization } from './pages/CreateOrganization'
-import { OwnerDashboard } from './pages/OwnerDashboard'
 import { OrgPicker } from './pages/OrgPicker'
 import { DemoBanner } from './components/DemoBanner'
 import { AppFooter } from './components/AppFooter'
@@ -20,13 +11,10 @@ import type { OrgBundle } from '../server/src/org-files.ts'
 const DocsPage = lazy(() => import('./pages/DocsPage').then((mod) => ({ default: mod.DocsPage })))
 const DemoHome = lazy(() => import('./pages/DemoHome').then((mod) => ({ default: mod.DemoHome })))
 const Workspace = lazy(() => import('./pages/Workspace').then((mod) => ({ default: mod.Workspace })))
-const SampleCompany = lazy(() => import('./pages/SampleCompany').then((mod) => ({ default: mod.SampleCompany })))
 import { APP_MODE } from './mode'
 import { showsShowcaseNotice } from './content/showcase-notice'
 import { parseHash, titleFor, type AppRoute, type OrgTab } from './routing'
 import type { SampleChart } from './data/mock-companies'
-import { useSession } from './sessionContext'
-import { Button } from './components/Button'
 import { NoticeStack } from './components/NoticeStack'
 import { ScreenNotice } from './components/ScreenNotice'
 
@@ -43,15 +31,6 @@ export default function App() {
       window.removeEventListener('popstate', sync)
     }
   }, [])
-
-  const { authEnabled, loading } = useSession()
-
-  useEffect(() => {
-    if (loading || authEnabled) return
-    if (parseHash(hash).view === 'signin') {
-      window.location.hash = APP_MODE === 'sqlite' ? 'teams' : APP_MODE === 'showcase' ? 'how' : 'work'
-    }
-  }, [loading, authEnabled, hash])
 
   useEffect(() => {
     const current = parseHash(hash)
@@ -79,42 +58,21 @@ export default function App() {
   )
 }
 
-function AppShell({
-  route,
-}: {
-  route: Exclude<AppRoute, { view: 'landing'; anchor?: string }>
-}) {
-  const { user, activeTeamId, authEnabled, loading } = useSession()
-  const team =
-    route.view === 'org' ||
-    route.view === 'work' ||
-    route.view === 'seat' ||
-    route.view === 'share' ||
-    route.view === 'sample'
-  const privateChart = (route.view === 'org' || route.view === 'work') && activeTeamId !== '' && activeTeamId !== 'sample'
-  const liveTeam = (route.view === 'org' || route.view === 'work') && Boolean(user) && activeTeamId !== '' && activeTeamId !== 'sample'
+type ShellRoute = Exclude<AppRoute, { view: 'landing'; anchor?: string }>
+
+function AppShell({ route }: { route: ShellRoute }) {
+  const team = route.view === 'org' || route.view === 'work' || route.view === 'seat' || route.view === 'sample'
   return (
     <div className={team ? 'team-shell' : 'product-shell'}>
-      {route.view === 'share' || route.view === 'owner' || route.view === 'organization' || privateChart ? (
-        <meta name="robots" content="noindex, nofollow" />
-      ) : null}
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       {APP_MODE === 'showcase' && !showsShowcaseNotice(APP_MODE, showcasePage(route)) ? <DemoBanner /> : null}
-      {APP_MODE !== 'sqlite' && isFileWorkspace(route) ? null : team ? <TeamHeader /> : <ProductHeader />}
+      {isFileWorkspace(route) ? null : <ProductHeader />}
       <Suspense fallback={<RouteFallback />}>
       {route.view === 'home' ? <DemoHome /> : null}
       {route.view === 'orgs' ? <OrgPicker /> : null}
       {route.view === 'docs' ? <DocsPage /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'intake' ? <IntakePage /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'signin' && authEnabled ? <SignIn /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'signin' && !authEnabled && loading ? <main id="main" className="app-main"><p className="auth-note">Loading…</p></main> : null}
-      {APP_MODE === 'sqlite' && route.view === 'teams' ? <TeamsPage /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'organization' ? <CreateOrganization /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'owner' ? <OwnerDashboard token={route.token} /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'invite' ? <InvitePage token={route.token} /> : null}
-      {APP_MODE === 'sqlite' && route.view === 'share' ? <ShareTeam token={route.token} chart={route.chart} /> : null}
       {route.view === 'invalid' ? (
         <main id="main" className="app-main">
           <div className="card auth-card">
@@ -130,20 +88,15 @@ function AppShell({
       {route.view === 'directory' ? <Workspace bundle={templateBundle} view="directory" directorySlug={route.slug} /> : null}
       {route.view === 'performance' ? <Workspace bundle={templateBundle} view="performance" /> : null}
       {route.view === 'log' ? <Workspace bundle={templateBundle} view="log" /> : null}
-      {liveTeam && (route.view === 'org' || route.view === 'work') ? (
-        <LiveTeam key={activeTeamId} mode={route.view} />
-      ) : null}
-      {!liveTeam && (route.view === 'org' || route.view === 'work') ? (
-        <Workspace bundle={templateBundle} view={route.view} />
-      ) : null}
+      {route.view === 'org' || route.view === 'work' ? <Workspace bundle={templateBundle} view={route.view} /> : null}
       </Suspense>
-      {APP_MODE === 'sqlite' ? null : <AppFooter variant={publicFooter(route) ? 'public' : 'compact'} />}
+      <AppFooter variant={publicFooter(route) ? 'public' : 'compact'} />
       {APP_MODE === 'template' ? <NoticeStack /> : null}
     </div>
   )
 }
 
-function publicFooter(route: Exclude<AppRoute, { view: 'landing'; anchor?: string }>): boolean {
+function publicFooter(route: ShellRoute): boolean {
   return route.view === 'home' || route.view === 'docs' || route.view === 'directory'
 }
 
@@ -155,7 +108,7 @@ function RouteFallback() {
   )
 }
 
-function showcasePage(route: Exclude<AppRoute, { view: 'landing'; anchor?: string }>): { sample?: boolean; view: string } {
+function showcasePage(route: ShellRoute): { sample?: boolean; view: string } {
   if (route.view === 'sample') return { sample: true, view: route.chart }
   if (route.view === 'org-area') return { sample: route.template, view: viewForTab(route.tab) }
   if (route.view === 'opened') return { sample: false, view: route.chart }
@@ -163,26 +116,14 @@ function showcasePage(route: Exclude<AppRoute, { view: 'landing'; anchor?: strin
   return { sample: false, view: route.view }
 }
 
-function isFileWorkspace(route: Exclude<AppRoute, { view: 'landing'; anchor?: string }>): boolean {
+function isFileWorkspace(route: ShellRoute): boolean {
   return route.view === 'org' || route.view === 'work' || route.view === 'seat' || route.view === 'sample' || route.view === 'directory' || route.view === 'performance' || route.view === 'log' || route.view === 'opened' || route.view === 'org-area'
-}
-
-function TeamHeader() {
-  return (
-    <header className="app-header">
-      <Logo />
-      <AppNav />
-      <div className="hr">
-        <AccountMenu context="team" />
-      </div>
-    </header>
-  )
 }
 
 function SampleRoute({ slug, chart }: { slug: string; chart: SampleChart }) {
   const sample = useLoadedSample(slug)
   if (sample === undefined) return <RouteFallback />
-  if (!sample) return APP_MODE === 'sqlite' ? <SampleCompany slug={slug} chart={chart} /> : <Workspace bundle={templateBundle} view="work" />
+  if (!sample) return <Workspace bundle={templateBundle} view="work" />
   const view = chart === 'org' ? 'org' : chart === 'directory' ? 'directory' : chart === 'performance' ? 'performance' : chart === 'log' || chart === 'activity' || chart === 'history' ? 'log' : 'work'
   return <Workspace key={slug} bundle={sample} view={view} sample />
 }
@@ -352,24 +293,11 @@ function WriterDown({ slug }: { slug: string }) {
   )
 }
 
-function AppNav() {
-  if (APP_MODE === 'sqlite') return null
-  return <SiteNav />
-}
-
 function ProductHeader() {
   return (
     <header className="app-header product">
       <Logo href="/" />
-      <AppNav />
-      {APP_MODE === 'sqlite' ? (
-        <div className="hr">
-          <AccountMenu context="product" />
-          <Button variant="secondary"  href="#intake">
-            Start from intake
-          </Button>
-        </div>
-      ) : null}
+      <SiteNav />
     </header>
   )
 }

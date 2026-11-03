@@ -20,7 +20,6 @@ test('the notice renders in showcase and not in template mode', () => {
   assert.match(showcase, />How saving works</)
 
   assert.equal(renderToStaticMarkup(createElement(ShowcaseNotice, { mode: 'template' })), '')
-  assert.equal(renderToStaticMarkup(createElement(ShowcaseNotice, { mode: 'sqlite' })), '')
 })
 
 test('showcase shows the notice on charts and sample pages only', () => {

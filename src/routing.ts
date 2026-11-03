@@ -10,13 +10,6 @@ export type AppRoute =
   | { view: 'org' }
   | { view: 'work' }
   | { view: 'seat'; seatId: string }
-  | { view: 'intake' }
-  | { view: 'signin' }
-  | { view: 'teams' }
-  | { view: 'organization' }
-  | { view: 'owner'; token: string }
-  | { view: 'invite'; token: string }
-  | { view: 'share'; access: 'edit' | 'view'; token: string; chart: 'org' | 'work' }
   | { view: 'invalid' }
   | { view: 'sample'; slug: string; chart: SampleChart }
   | { view: 'docs' }
@@ -55,7 +48,7 @@ export function parseHash(hash: string): AppRoute {
   }
   if (bare === 'templates' || bare === 'demos' || bare === 'home') return { view: 'home' }
   if (bare === 'orgs') return { view: 'orgs' }
-  if (bare === 'org' || bare === 'work' || bare === 'intake' || bare === 'signin' || bare === 'teams' || bare === 'organization' || bare === 'docs' || bare === 'performance' || bare === 'log') {
+  if (bare === 'org' || bare === 'work' || bare === 'docs' || bare === 'performance' || bare === 'log') {
     return { view: bare }
   }
   const opened = /^o\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/(work|org|directory|performance|log))?\/?$/.exec(bare)
@@ -65,29 +58,14 @@ export function parseHash(hash: string): AppRoute {
   if (directoryPath.startsWith('directory/') && SEAT_SLUG.test(directoryPath.slice('directory/'.length))) {
     return { view: 'directory', slug: directoryPath.slice('directory/'.length) }
   }
-  if (path.startsWith('owner/') && path.length > 'owner/'.length + 16) {
-    return { view: 'owner', token: path.slice('owner/'.length) }
-  }
   if (path === 'seat') return { view: 'seat', seatId: 'you' }
   if (path.startsWith('seat-')) {
     const id = path.slice(5)
     if (SEAT_SLUG.test(id)) return { view: 'seat', seatId: id }
     return { view: 'home' }
   }
-  if (path.startsWith('invite-') && path.length > 'invite-'.length) {
-    return { view: 'invite', token: path.slice('invite-'.length) }
-  }
   if (bare.startsWith('sample/') && bare.length > 'sample/'.length && !bare.slice('sample/'.length).includes('/')) {
     return { view: 'sample', slug: bare.slice('sample/'.length), chart: sampleChart(raw) }
-  }
-  if ((path.startsWith('edit-') || path.startsWith('view-')) && path.length > 'edit-'.length + 16) {
-    const access = path.startsWith('edit-') ? 'edit' : 'view'
-    return {
-      view: 'share',
-      access,
-      token: path.slice(access.length + 1),
-      chart: chartFrom(raw),
-    }
   }
   return { view: 'home' }
 }
@@ -103,11 +81,6 @@ function queryValue(raw: string, key: string): string | null {
   return new URLSearchParams(query).get(key)
 }
 
-function chartFrom(raw: string): 'org' | 'work' {
-  const query = raw.includes('?') ? raw.slice(raw.indexOf('?') + 1) : ''
-  return new URLSearchParams(query).get('chart') === 'work' ? 'work' : 'org'
-}
-
 export function titleFor(route: AppRoute): string {
   switch (route.view) {
     case 'landing':
@@ -121,20 +94,6 @@ export function titleFor(route: AppRoute): string {
     case 'org':
     case 'work':
       return 'BotsEverywhere — Your team'
-    case 'intake':
-      return 'BotsEverywhere — Start from work intake'
-    case 'signin':
-      return 'BotsEverywhere — Sign in'
-    case 'teams':
-      return 'BotsEverywhere — Your teams'
-    case 'organization':
-      return 'BotsEverywhere — Create an organization'
-    case 'owner':
-      return 'BotsEverywhere — Organization'
-    case 'invite':
-      return 'BotsEverywhere — Join a team'
-    case 'share':
-      return 'BotsEverywhere — Private team'
     case 'invalid':
       return 'BotsEverywhere — Link not valid'
     case 'sample':
@@ -157,9 +116,6 @@ export function titleFor(route: AppRoute): string {
 export function routeKey(route: AppRoute): string {
   if (route.view === 'landing') return `landing:${route.anchor ?? ''}`
   if (route.view === 'seat') return `seat:${route.seatId}`
-  if (route.view === 'invite') return `invite:${route.token}`
-  if (route.view === 'owner') return `owner:${route.token}`
-  if (route.view === 'share') return `share:${route.access}:${route.token}:${route.chart}`
   if (route.view === 'sample') return `sample:${route.slug}:${route.chart}`
   if (route.view === 'directory') return `directory:${route.slug}`
   if (route.view === 'opened') return `opened:${route.slug}:${route.chart}`

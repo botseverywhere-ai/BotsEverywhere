@@ -31,8 +31,3 @@ test('a converted template still passes the template rules, with bots that manag
   assert.match(seat('david').card.owns[0]!, /hands each step to the right bot on its team/)
   assert.equal(JSON.stringify(rowan).includes('David Chen'), false, 'no trace of the person it replaced')
 })
-
-test("a template's hire form starts with the founder as manager", () => {
-  const page = readFileSync(new URL('../../src/pages/SampleCompany.tsx', import.meta.url), 'utf8')
-  assert.match(page, /reportsTo: seats\.find\(\(seat\) => seat\.type === 'human' && !seat\.reportsTo\)\?\.id \?\? '',/)
-})
