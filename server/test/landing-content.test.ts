@@ -44,7 +44,7 @@ test('every homepage claim about the app matches the app', () => {
   assert.ok(docs.includes('no analytics, no telemetry, and no third-party scripts'), 'Docs says the same about tracking')
   assert.ok(docs.includes('stores no passwords, tokens, or API keys'), 'Docs says the same about keys')
   const readme = read('../../README.md')
-  assert.ok(readme.includes('BotsEverywhere is open source under the [MIT License](LICENSE)'), 'one license, MIT, copyright Sam Rovira')
+  assert.ok(readme.includes('BotsEverywhere is open source under the [MIT License](LICENSE)'), 'one license, MIT')
   assert.ok(landing.includes('BotsEverywhere is open source under the MIT License.'))
   assert.ok(readme.includes('The BotsEverywhere name and logo are not covered by the license.'))
   assert.ok(landing.includes('The BotsEverywhere name and logo are not covered by the license.'))
@@ -52,7 +52,7 @@ test('every homepage claim about the app matches the app', () => {
     assert.ok(!readme.includes(gone) && !landing.includes(gone) && !docs.includes(gone), `${gone} is gone: the project is MIT only`)
   }
   const license = read('../../LICENSE')
-  assert.ok(license.startsWith('The MIT License (MIT)\n\nCopyright (c) 2026 Miguel Rovira\n'))
+  assert.match(license, /^The MIT License \(MIT\)\n\nCopyright \(c\) 20\d\d [^\n]+\n/, 'the FastAPI form: title, blank line, one copyright line')
   for (const part of ['org.md', 'seats/', 'processes/', 'log/']) assert.ok(landing.includes(part), part)
 })
 

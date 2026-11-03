@@ -1,12 +1,10 @@
 # Status
 
-Where the app stands as of 3 November 2026, written for whoever picks it up next. Facts about a running organization describe the maintainer's own `orgs/` folders, which are uncommitted user data.
+Where the app stands as of 3 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
 
 ## Branch
 
-The main branch is `main`. All of the work since the initial commit sits on `feature/performance-work-chart-review`, which holds every earlier branch (`feat/connector-v2`, `feat/bot-profile`, `feat/org-folder-ids`, and the rest). It is not merged into `main` yet; that merge is the maintainer's call and happens through a pull request on GitHub, after the branch protection on `main` is set. Never push to `main` without the maintainer's OK.
-
-Two fresh clones of the branch were checked on 3 November 2026: `botseverywhere-v8` (a full run with a new Connector, see Fresh clone below) and `botseverywhere-v9` (a spare, untouched).
+The main branch is `main`. All of the work since the initial commit sits on `feature/documentation-updated-v8`, which holds every earlier branch. It is not merged into `main` yet; that merge happens through a pull request on GitHub, after the branch protection on `main` is set. Never push to `main` without the maintainer's OK.
 
 The rules for working on the code are in `AGENTS.md`.
 
@@ -25,7 +23,7 @@ The rules for working on the code are in `AGENTS.md`.
 ## How to verify
 
 ```bash
-npm test          # expect 1 skipped on Windows: org-node-layout.test.ts needs Chrome at a Linux path
+npm test          # expect 1 skipped without Chrome at /usr/bin/google-chrome or CHROME_PATH: org-node-layout.test.ts
 npm run build
 npx playwright test e2e/org-chart-scroll.spec.ts e2e/owner-org-chart.spec.ts   # needs npm run dev running
 ```
@@ -47,7 +45,7 @@ The Connector suites are `server/test/connector-*.test.ts`, `connector-guide.tes
 
 ## Fresh clone (checked 3 November 2026)
 
-`botseverywhere-v8`, cloned from the branch with no `orgs/` folder. `npm install`, `npm run dev`, **Open your org**, create the organization, paste the Connector prompt into Grok Bot: the new Connector (`jetr`) ran, the import brought 21 seats with their managers from the older copy's blocks, the Work Chart import brought 24 routines and 4 handoffs, and on the Connector's next run every bot got its block and wrote its report at the new path, so Performance filled in without a click. The older copy's blocks showed under **Old instructions from other copies** and were queued for removal with one click. Two manual flows that existed only as files in the older copy (Go public, README first screen) did not come across, as expected: manual flows live in the app, not in Grok Bot.
+A fresh clone of the branch with no `orgs/` folder, on a computer whose Grok Bot account already had an older copy's Connector. `npm install`, `npm run dev`, **Open your org**, create the organization, paste the Connector prompt into Grok Bot: the new Connector ran, the import brought every bot with its managers from the older copy's blocks, the Work Chart import brought the routines and handoffs the bots run, and on the Connector's next run every bot got its block and wrote its report at the new path, so Performance filled in without a click. The older copy's blocks showed under **Old instructions from other copies** and were queued for removal with one click. Manual flows that existed only as files in the older copy did not come across, as expected: manual flows live in the app, not in Grok Bot.
 
 ## Next
 
@@ -55,4 +53,4 @@ Not built, raised today:
 
 - The import could read the "Skills to use" line from an older copy's block and put those skills on the seat, so an upgrade shows skills at import instead of after the reports.
 - Apply a sync automatically instead of on Confirm.
-- Writer load items from the speed audit of 23 October 2026: React StrictMode doubles mount requests in dev; each org tab polls the run log every 2 s; Overview opens a second live connection for Your files; `recordConnectorRun` reads every org on each run.
+- Writer load items from an earlier speed audit: React StrictMode doubles mount requests in dev; each org tab polls the run log every 2 s; Overview opens a second live connection for Your files; `recordConnectorRun` reads every org on each run.

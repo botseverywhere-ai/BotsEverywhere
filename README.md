@@ -25,7 +25,7 @@ To update, run `git pull` and `npm install` in this same folder. Do not clone a 
 
 ## Where your data lives
 
-Each org you create is a folder on this computer:
+Each org you create is a folder on your own computer:
 
 ```
 orgs/<slug>/org.md
