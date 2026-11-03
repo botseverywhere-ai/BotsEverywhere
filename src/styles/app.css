@@ -2277,6 +2277,8 @@ a.site-nav-cta:focus {
 .connect-badge i { width: 8px; height: 8px; border-radius: var(--control-radius); background: var(--color-amber-700); }
 .connect-badge.is-connected { border-color: var(--color-green-200); background: var(--color-green-50); color: var(--color-green-700); }
 .connect-badge.is-connected i { background: var(--color-green-400); }
+.connect-badge.is-waiting i { animation: be-pulse 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .connect-badge.is-waiting i { animation: none; } }
 .connect-badge.is-broken { border-color: var(--color-red-700); background: var(--color-red-50); color: var(--color-red-700); }
 .connect-badge.is-broken i { background: var(--color-red-700); }
 .connect-badge.is-checking { border-color: var(--color-line); background: var(--color-white); color: var(--color-muted); }

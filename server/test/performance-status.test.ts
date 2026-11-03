@@ -33,7 +33,7 @@ test("Bot reports counts the bots that have written their profile, amber until a
 
 test("while asks are queued, Bot reports says they go out on the Connector's next run; nothing waits for the owner", async () => {
   const waiting = await render({ waitingAsks: 21 })
-  assert.match(waiting, /<span class="connect-badge"><i aria-hidden="true"><\/i>2 of 21 bots reported<\/span><span class="connect-status-detail">21 asks go out on the Connector&#x27;s next run\. Automated tasks done and Skills come from each bot&#x27;s own report\./)
+  assert.match(waiting, /<span class="connect-badge is-waiting"><i aria-hidden="true"><\/i>2 of 21 bots reported<\/span><span class="connect-status-detail">21 asks go out on the Connector&#x27;s next run\. Automated tasks done and Skills come from each bot&#x27;s own report\./)
   assert.doesNotMatch(waiting, /Waiting for you|do YOU now|Send the waiting items|Copy:/)
   assert.doesNotMatch(waiting, /<button[^>]*>Sync bots<\/button>/, 'no second click while asks are queued')
   assert.match(await render({ waitingAsks: 1 }), /1 ask goes out on the Connector&#x27;s next run\./)
@@ -59,4 +59,22 @@ test('Performance renders the status block above the table, from the sync status
   assert.match(workspace, /reported=\{[^}]*source === 'bot'[^}]*\}/)
   assert.doesNotMatch(workspace, /Skills counts the skills turned on for the bot in Grok Bot/, 'Grok Bot keeps no such setting')
   assert.match(workspace, /Skills counts the skills the bot reports it uses and the ones set on its profile here\./)
+})
+
+test("while asks wait, the Bot reports badge pulses, and a link opens this copy's Connector in Grok Bot to watch it work", async () => {
+  const connector = { connectorName: 'Connector - BotsEverywhere (jetr)', connectorUrl: 'grokbot://app/v1/agent?id=c1' }
+  const waiting = await render({ waitingAsks: 20, reported: 0, total: 20, ...connector })
+  assert.match(waiting, /<span class="connect-badge is-waiting"><i aria-hidden="true"><\/i>0 of 20 bots reported<\/span>/, 'the dot pulses while the Connector has asks to send')
+  assert.match(waiting, /<a target="_blank" rel="noreferrer" class="btn btn-secondary" href="grokbot:\/\/app\/v1\/agent\?id=c1">Open Connector - BotsEverywhere \(jetr\)<\/a>/, 'its chat shows the report of each run')
+  const idle = await render({ waitingAsks: 0, ...connector })
+  assert.doesNotMatch(idle, /is-waiting/, 'nothing to send: the dot is still')
+  assert.match(idle, /Open Connector - BotsEverywhere \(jetr\)/, 'the link stays, since the Connector reports after every run')
+  const unknown = await render({ waitingAsks: 20 })
+  assert.doesNotMatch(unknown, /<a class="btn/, 'no link before the Connector has a seat with its Grok Bot link')
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.connect-badge\.is-waiting i \{ animation: be-pulse 1\.2s ease-in-out infinite; \}/)
+  assert.match(css, /\.connect-badge\.is-waiting i \{ animation: none; \}/, 'still for reduced motion')
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /connectorName=\{connectorSeat\?\.title\}/)
+  assert.match(workspace, /connectorUrl=\{connectorSeat\?\.grokBotUrl\}/)
 })

@@ -11,6 +11,8 @@ export function PerformanceStatus({
   total,
   waitingAsks,
   onAsk,
+  connectorName,
+  connectorUrl,
 }: {
   orgSlug: string
   /** The Connector has written connector.json at least once. */
@@ -22,8 +24,13 @@ export function PerformanceStatus({
   /** Profile asks on the Connector's list, which only go out from its chat. */
   waitingAsks: number
   onAsk: () => void
+  /** This copy's Connector seat, when it has a Grok Bot link: its chat shows the report of every run. */
+  connectorName?: string
+  connectorUrl?: string
 }) {
   const all = total > 0 && reported >= total
+  // The dot pulses while the Connector still has asks to send: something is on its way.
+  const badge = all ? 'connect-badge is-connected' : waitingAsks ? 'connect-badge is-waiting' : 'connect-badge'
   return (
     <section className="connect-grok performance-status" aria-label="Where these numbers come from">
       <dl className="connect-facts">
@@ -43,9 +50,10 @@ export function PerformanceStatus({
         </dd>
         <dt>Bot reports</dt>
         <dd className="connect-status">
-          <span className={all ? 'connect-badge is-connected' : 'connect-badge'}><i aria-hidden="true" />{all ? `All ${total} bots reported` : `${reported} of ${total} bots reported`}</span>
+          <span className={badge}><i aria-hidden="true" />{all ? `All ${total} bots reported` : `${reported} of ${total} bots reported`}</span>
           <span className="connect-status-detail">{waitingAsks ? `${waitingAsks === 1 ? '1 ask goes' : `${waitingAsks} asks go`} out on the Connector's next run. ` : ''}Automated tasks done and Skills come from each bot&apos;s own report. Bots report on their own when they next run; Sync bots asks all of them now.</span>
           {waitingAsks ? null : <Button variant="secondary" type="button" onClick={onAsk}>Sync bots</Button>}
+          {connectorUrl ? <Button variant="secondary" href={connectorUrl} target="_blank" rel="noreferrer">Open {connectorName || 'the Connector'}</Button> : null}
         </dd>
       </dl>
     </section>

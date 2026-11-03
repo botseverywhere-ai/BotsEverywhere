@@ -135,6 +135,8 @@ export function Workspace({
   const active = company.seats.filter((seat) => seat.status !== 'retired')
   const openSeats = useMemo(() => openOrgSeats(company.steps, company.seats, company.org.id), [company])
   const bots = active.filter((seat) => seat.type === 'bot' && !seat.elsewhere)
+  /** This copy's Connector seat, for the link that opens its chat in Grok Bot. */
+  const connectorSeat = seats.find((seat) => seat.kind === 'bot' && seat.status !== 'retired' && seat.title.trim().toLowerCase().startsWith('connector - botseverywhere'))
   const retired = seats.filter((seat) => seat.status === 'retired')
   const chartSeat = selected ? byId.get(selected) ?? null : null
   const workOwners = useMemo(
@@ -1089,6 +1091,8 @@ export function Workspace({
               total={bots.filter((seat) => !seat.name.trim().toLowerCase().startsWith('connector - botseverywhere')).length}
               waitingAsks={sync?.connector?.waiting?.profiles ?? 0}
               onAsk={() => void askProfiles()}
+              connectorName={connectorSeat?.title}
+              connectorUrl={connectorSeat?.grokBotUrl}
             />
           ) : null}
           {view === 'performance' ? (
