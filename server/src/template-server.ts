@@ -3047,7 +3047,9 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       // The items go on the Connector's list at once, so the Sync drawer says what waits for the owner's chat.
       runConnectorCycle(orgsDir, ensureProjectId(orgsDir))
       const bots = grokSeats(read.bundle.seats).filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !isConnectorName(seat.title)).length
-      send(res, 200, { askedAt, bots })
+      // Greyed bots work for another organization and are never asked here: the page says so when that leaves none.
+      const greyed = read.bundle.seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && isGreyed(seat)).length
+      send(res, 200, { askedAt, bots, greyed })
       return
     }
     const updatesMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/grok\/updates$/.exec(url.pathname)

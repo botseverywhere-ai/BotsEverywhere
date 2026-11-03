@@ -25,7 +25,7 @@ import { SyncDrawer } from '../components/SyncDrawer'
 import { RetiredDrawer } from '../components/RetiredDrawer'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { rememberOrgFolder } from '../org/folder-path'
-import { activeBotCount, botLimitLine, greyedDone, mainBotChoices, outgoing, overBotLimit, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
+import { activeBotCount, botLimitLine, greyedDone, mainBotChoices, outgoing, overBotLimit, profilesAskedLine, syncButtonLabel, retiredGroups, updateItems, waitingLogIds, type ConnectionView } from '../components/sync-copy'
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
@@ -628,13 +628,12 @@ export function Workspace({
   async function askProfiles() {
     try {
       const response = await fetch(`/api/orgs/${bundle.id}/grok/profile-asks`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
-      const body = (await response.json().catch(() => ({}))) as { bots?: number; error?: string; errors?: string[] }
+      const body = (await response.json().catch(() => ({}))) as { bots?: number; greyed?: number; error?: string; errors?: string[] }
       if (!response.ok) {
         pushNotice({ kind: 'bad', message: body.error || body.errors?.join(' ') || 'Could not ask the bots.' })
         return
       }
-      const count = body.bots ?? 0
-      pushNotice({ kind: 'ok', message: `Asked ${count} ${count === 1 ? 'bot' : 'bots'} for ${count === 1 ? 'its' : 'their'} profile. The Connector sends the asks on its next run; Run the Connector now in the Sync drawer sends them sooner. Skills, Apps used, and Automated tasks done fill in as each profile lands.` })
+      pushNotice({ kind: body.bots ? 'ok' : 'bad', message: profilesAskedLine(body.bots ?? 0, body.greyed ?? 0) })
     } catch {
       pushNotice({ kind: 'bad', message: SAVING_OFF })
     }

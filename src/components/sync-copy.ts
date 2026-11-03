@@ -535,6 +535,16 @@ export function connectorChangeNotice(before: ConnectorState | null, after: Conn
 }
 
 /** Not an official Grok Bot number; the count we recommend staying under per account. */
+/** The notice after Get the bots' profiles: how many were asked, or why none could be. */
+export function profilesAskedLine(bots: number, greyed: number): string {
+  if (bots === 0) {
+    if (greyed === 0) return 'This organization has no bot of its own to ask. Add bots on Connect bots first.'
+    return `This organization has no bot of its own to ask: ${greyed} ${greyed === 1 ? 'is' : 'are'} greyed, working for another organization, and the Connector is never asked. Move a bot here, or add one, first.`
+  }
+  const one = bots === 1
+  return `Asked ${bots} ${one ? 'bot' : 'bots'} for ${one ? 'its' : 'their'} profile. The Connector sends the ${one ? 'ask' : 'asks'} on its next run; Run the Connector now in the Sync drawer sends ${one ? 'it' : 'them'} sooner. Skills, Apps used, and Automated tasks done fill in as each profile lands.`
+}
+
 /** What Remove all old instructions takes: copies whose Connector is gone from Grok Bot and whose blocks are not on their way out yet. */
 export function oldCopies(copies: { copy: string; removing: boolean; connectorGone?: boolean }[]): string[] {
   return copies.filter((item) => item.connectorGone === true && !item.removing).map((item) => item.copy)

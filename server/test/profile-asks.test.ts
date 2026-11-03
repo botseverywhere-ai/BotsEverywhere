@@ -83,8 +83,31 @@ test("Performance's Apps used shows the bot's own report, else what the Connecto
   assert.deepEqual(appsShown(undefined, undefined), [])
 })
 
+test('the ask answers how many greyed bots there are, and with no bot of its own the page says why nothing was asked', async () => {
+  const t = project()
+  const greyed = createExistingBot(t.root, t.org, { name: 'Visitor', grokBotUrl: 'grokbot://app/v1/agent?id=visitor', reportsTo: 'you', allowEmptyCard: true, greyed: true })
+  assert.ok(greyed.ok, greyed.ok ? '' : greyed.errors.join(' '))
+  const started = await startTemplateServer({ port: 0, orgsDir: t.orgs, host: '127.0.0.1' })
+  try {
+    const response = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/grok/profile-asks`, { method: 'POST', headers: { 'content-type': 'application/json', origin: `http://127.0.0.1:${started.port}` }, body: '{}' })
+    const body = (await response.json()) as { bots: number; greyed: number }
+    assert.equal(body.bots, 2, 'the greyed one is not asked')
+    assert.equal(body.greyed, 1)
+  } finally {
+    await started.close()
+    t.done()
+  }
+  const { profilesAskedLine } = await import('../../src/components/sync-copy.ts')
+  assert.equal(profilesAskedLine(21, 0), "Asked 21 bots for their profile. The Connector sends the asks on its next run; Run the Connector now in the Sync drawer sends them sooner. Skills, Apps used, and Automated tasks done fill in as each profile lands.")
+  assert.equal(profilesAskedLine(1, 3), "Asked 1 bot for its profile. The Connector sends the ask on its next run; Run the Connector now in the Sync drawer sends it sooner. Skills, Apps used, and Automated tasks done fill in as each profile lands.")
+  assert.equal(profilesAskedLine(0, 21), 'This organization has no bot of its own to ask: 21 are greyed, working for another organization, and the Connector is never asked. Move a bot here, or add one, first.')
+  assert.equal(profilesAskedLine(0, 1), 'This organization has no bot of its own to ask: 1 is greyed, working for another organization, and the Connector is never asked. Move a bot here, or add one, first.')
+  assert.equal(profilesAskedLine(0, 0), 'This organization has no bot of its own to ask. Add bots on Connect bots first.')
+})
+
 test("Performance has a Get the bots' profiles button that posts the ask and says what to tell the Connector", () => {
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /profilesAskedLine\(body\.bots \?\? 0, body\.greyed \?\? 0\)/)
   assert.match(workspace, /\/grok\/profile-asks`/)
   assert.match(workspace, /appsUsed: appsShown\(/)
   const status = readFileSync(new URL('../../src/components/PerformanceStatus.tsx', import.meta.url), 'utf8')
