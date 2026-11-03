@@ -19,6 +19,8 @@ npm run dev       # site on http://127.0.0.1:5199 and the file writer on http://
 
 Open [http://127.0.0.1:5199](http://127.0.0.1:5199) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together.
 
+To update, run `git pull` and `npm install` in this same folder. Do not clone a fresh copy into a new folder: it starts a new copy with a new Connector, and your bots keep the old copy's instructions. See [SETUP.md](SETUP.md#update-to-a-newer-version).
+
 ## Where your data lives
 
 Each org you create is a folder on this computer:

@@ -81,7 +81,7 @@ test('sync status lists stuck items with reasons, a first failure, a dump error,
     assert.equal(connector.pending, 1, 'Grok Bot\'s block has waited through three dumps; Inner Loop is on its second attempt')
     assert.equal(connector.pendingSince, '2026-10-28T10:00:00+01:00')
     assert.deepEqual(connector.waiting, { routines: 0, profiles: 0, notes: 0 }, 'bots write their own profiles, and no one-time note goes out: nothing waits for the owner')
-    assert.deepEqual(connector.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: false }])
+    assert.deepEqual(connector.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: false, connectorGone: true }], "uft5's Connector is not in the dump")
     assert.equal(connector.dumpError, '')
 
     writeFileSync(join(t.orgs, GROK_DATA_FILE), '{"dumpedAt":"2026-10-28T11:00:00+01:00","bots":[{"name":"No id"}]}')
@@ -113,7 +113,7 @@ test('POST /api/connector/remove-copy stores the copy, keeps the rest of project
     assert.deepEqual((JSON.parse(readFileSync(join(t.orgs, PROJECT_FILE), 'utf8')) as { removeCopies?: string[] }).removeCopies, ['uft5'], 'a new interval keeps the copies to remove')
     const read = syncStatus(t.root, t.org, t.orgs)
     assert.ok(read.ok)
-    assert.deepEqual(read.status.connector!.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: true }])
+    assert.deepEqual(read.status.connector!.otherCopies, [{ copy: 'uft5', bots: ['Security'], removing: true, connectorGone: true }])
   } finally {
     await started.close()
     t.done()

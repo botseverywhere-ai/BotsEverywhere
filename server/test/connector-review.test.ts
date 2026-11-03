@@ -203,6 +203,22 @@ test("messages to bots wait for the owner from the start; only work a scheduled 
   }
 })
 
+test("another copy whose Connector is no longer in Grok Bot is marked gone: that copy cannot reach the bots any more", () => {
+  const t = project()
+  try {
+    const todo = { basedOn: 'x', items: [], stuck: [], otherCopies: [{ copy: 'acn8', bots: ['Lead'] }, { copy: 'k7m2', bots: ['Lead'] }], ledger: [] }
+    writeFileSync(join(t.orgs, TODO_FILE), JSON.stringify(todo))
+    assert.deepEqual(connectorState(t.orgs, t.org).otherCopies.map((item) => item.connectorGone), [false, false], 'without a dump nothing is known, so nothing is called gone')
+    writeFileSync(join(t.orgs, GROK_DATA_FILE), JSON.stringify(data([bot('lead', 'Lead', 'Leads.'), bot('c2', 'connector - botseverywhere (K7M2) ', 'Rules.')])))
+    assert.deepEqual(connectorState(t.orgs, t.org).otherCopies, [
+      { copy: 'acn8', bots: ['Lead'], removing: false, connectorGone: true },
+      { copy: 'k7m2', bots: ['Lead'], removing: false, connectorGone: false },
+    ], "k7m2's Connector is still in the account, whatever its letters and spaces")
+  } finally {
+    t.done()
+  }
+})
+
 test('the drawer learns how many items the Connector carried out since the oldest late one, so a slow Connector is not called stopped', () => {
   const t = project()
   try {

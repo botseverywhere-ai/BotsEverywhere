@@ -88,3 +88,24 @@ test("each other copy's blocks take one short line; the bots' names open on a cl
   assert.match(html, /<li class="sync-copy"><details><summary>Copy 87xp · 1 bot<\/summary><p class="overview-note">Overheard<\/p><\/details><span class="overview-note">Removing on the Connector&#x27;s next run<\/span><\/li>/)
   assert.doesNotMatch(html, /Blocks from copy/)
 })
+
+test('a copy whose Connector is gone from Grok Bot says so, and two or more such copies can be removed with one button', async () => {
+  const gone = (copy: string, removing = false) => ({ copy, bots: ['Overheard'], removing, connectorGone: true })
+  const html = await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8'), gone('6kb7'), { copy: 'k7m2', bots: ['Overheard'], removing: false, connectorGone: false }] } })
+  assert.match(html, /<summary>Copy acn8 · 1 bot · its Connector is no longer in Grok Bot<\/summary>/)
+  assert.match(html, /<summary>Copy k7m2 · 1 bot<\/summary>/, 'a copy whose Connector is still there may still be in use')
+  assert.match(html, /<button[^>]*>Remove all old copies<\/button>/)
+  assert.doesNotMatch(await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8')] } }), /Remove all old copies/, 'one old copy has its own Remove them')
+  assert.doesNotMatch(await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8', true), gone('6kb7', true)] } }), /Remove all old copies/, 'already on their way out')
+})
+
+test('Remove all old copies takes the copies whose Connector is gone and that are not being removed yet, and nothing else', async () => {
+  const { oldCopies } = await import('../../src/components/sync-copy.ts')
+  assert.deepEqual(oldCopies([
+    { copy: 'acn8', bots: ['A'], removing: false, connectorGone: true },
+    { copy: '6kb7', bots: ['A'], removing: true, connectorGone: true },
+    { copy: 'k7m2', bots: ['A'], removing: false, connectorGone: false },
+    { copy: 'f3sr', bots: ['A'], removing: false },
+    { copy: 'ddap', bots: ['A'], removing: false, connectorGone: true },
+  ]), ['acn8', 'ddap'], 'an older writer that sends no connectorGone removes nothing on its own')
+})

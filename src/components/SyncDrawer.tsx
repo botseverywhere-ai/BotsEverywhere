@@ -6,7 +6,7 @@ import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import { activeBotCount, botLimitLine, connectorState, outgoing, overBotLimit, rowLine, statusLine } from './sync-copy'
+import { activeBotCount, botLimitLine, connectorState, oldCopies, outgoing, overBotLimit, rowLine, statusLine } from './sync-copy'
 import { DEFAULT_SYNC_MINUTES, everyLabel } from '../../server/src/connector-timing.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 
@@ -155,25 +155,32 @@ export function SyncDrawer({
     }
   }
 
-  /** Asks the Connector to take another copy's blocks out of every bot, on its next run. */
-  async function removeCopy(copy: string) {
+  /** Asks the Connector to take other copies' blocks out of every bot, on its next run. */
+  async function removeCopies(copies: string[]) {
     setBusy(true)
     setNotice(null)
+    const asked: string[] = []
+    let error = ''
     try {
-      const response = await fetch('/api/connector/remove-copy', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ copy }),
-      })
-      const result = (await response.json()) as { error?: string }
-      if (!response.ok) setNotice(saveNotice(false, result.error || 'Could not ask for that.'))
-      else {
-        setNotice(saveNotice(true, `The Connector removes the blocks of copy ${copy} on its next run.`))
-        await onRefresh()
+      for (const copy of copies) {
+        const response = await fetch('/api/connector/remove-copy', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ copy }),
+        })
+        const result = (await response.json()) as { error?: string }
+        if (!response.ok) {
+          error = result.error || 'Could not ask for that.'
+          break
+        }
+        asked.push(copy)
       }
     } catch {
-      setNotice(saveNotice(false, SAVING_OFF))
+      error = SAVING_OFF
     }
+    const named = asked.length === 1 ? `copy ${asked[0]}` : `copies ${asked.slice(0, -1).join(', ')} and ${asked.at(-1)}`
+    setNotice(error ? saveNotice(false, error) : saveNotice(true, `The Connector removes the blocks of ${named} on its next run.`))
+    if (asked.length) await onRefresh()
     setBusy(false)
   }
 
@@ -225,7 +232,7 @@ export function SyncDrawer({
           </section>
           <section className="sync-side" aria-labelledby="sync-out">
             <h3 id="sync-out" className="sync-side-title">Going to Grok Bot</h3>
-            {status?.connector ? <ConnectorTrouble state={status.connector} busy={busy} onRemove={(copy) => void removeCopy(copy)} /> : null}
+            {status?.connector ? <ConnectorTrouble state={status.connector} busy={busy} onRemove={(copies) => void removeCopies(copies)} /> : null}
             {limitOver ? <p className="save-off" role="alert">{limitLine}</p> : null}
             {going.waiting.length === 0 && going.ready.length === 0 ? <p className="overview-note">{activeBotCount(seats) ? 'Every bot in the org chart is in Grok Bot.' : 'This organization has no bots yet.'}</p> : null}
             {going.waiting.length ? (
@@ -274,7 +281,8 @@ export function SyncDrawer({
 }
 
 /** What the Connector could not do: a dump it could not read, items it has not acted on, stuck and failed items, and other copies' blocks. */
-function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; busy: boolean; onRemove: (copy: string) => void }) {
+function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; busy: boolean; onRemove: (copies: string[]) => void }) {
+  const old = oldCopies(state.otherCopies)
   const items = (count: number) => (count === 1 ? '1 item' : `${count} items`)
   const bots = (count: number) => (count === 1 ? '1 bot' : `${count} bots`)
   // A writer started before this field sends none.
@@ -310,14 +318,19 @@ function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; bu
         <section className="sync-group">
           <h3>{`Blocks from other copies of BotsEverywhere (${state.otherCopies.length})`}</h3>
           <p className="overview-note">Another copy of BotsEverywhere put these blocks in your bots. Remove them only if that copy is gone.</p>
+          {old.length > 1 ? (
+            <div className="sync-remove-all">
+              <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove(old)}>Remove all old copies</Button>
+            </div>
+          ) : null}
           <ul className="sync-picks">
             {state.otherCopies.map((item) => (
               <li key={item.copy} className="sync-copy">
                 <details>
-                  <summary>{`Copy ${item.copy} · ${bots(item.bots.length)}`}</summary>
+                  <summary>{`Copy ${item.copy} · ${bots(item.bots.length)}${item.connectorGone ? ' · its Connector is no longer in Grok Bot' : ''}`}</summary>
                   <p className="overview-note">{item.bots.join(', ')}</p>
                 </details>
-                {item.removing ? <span className="overview-note">Removing on the Connector&apos;s next run</span> : <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove(item.copy)}>Remove them</Button>}
+                {item.removing ? <span className="overview-note">Removing on the Connector&apos;s next run</span> : <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove([item.copy])}>Remove them</Button>}
               </li>
             ))}
           </ul>

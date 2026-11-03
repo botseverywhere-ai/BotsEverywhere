@@ -1891,6 +1891,7 @@ a.site-nav-cta:focus {
 .sync-copy details { min-width: 0; }
 .sync-copy summary { cursor: pointer; }
 .sync-copy details p { margin-top: var(--space-1); overflow-wrap: anywhere; }
+.sync-remove-all { margin: var(--space-2) 0; }
 .be-drawer .sync-picks label { flex-direction: row; align-items: center; gap: var(--space-2); width: auto; margin-top: 0; font-size: var(--text-sm); color: var(--color-ink); cursor: pointer; }
 .be-drawer .sync-picks input { flex: none; width: auto; height: auto; margin: 0; }
 .overview { display: grid; gap: var(--space-4); max-width: 640px; margin-top: var(--space-4); }

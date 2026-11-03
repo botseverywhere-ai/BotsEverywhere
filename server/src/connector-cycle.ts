@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { BACKUPS_DIR, GUIDE_FILE, RESULTS_FILE, TODO_FILE, UNASSIGNED_FILE, readTextFile, writeFileAtomic } from './connector-files.ts'
-import { SNAPSHOT_PATH, connectorGuide } from './connector-prompt.ts'
+import { SNAPSHOT_PATH, connectorGuide, connectorName } from './connector-prompt.ts'
 import { computeTodo, orgBlocksFromData, parseResults, requestProgress, seatBots, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
 import { botJson, linkedBotIds, readGrokData, snapshotFromData, snapshotJson, unassignedFromData, type GrokData } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
@@ -195,6 +195,9 @@ export function connectorState(orgsDir: string, orgId: string): ConnectorState {
   const late = items.filter((item) => !MESSAGE_KINDS.includes(item.kind) && (item.runs ?? 0) > 2)
   const pendingSince = late.map((item) => item.since ?? '').filter(Boolean).sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? ''
   const since = Date.parse(pendingSince)
+  // The dump lists every bot in the account but this copy's own Connector. Without a dump nothing is known, so no copy is called gone.
+  const account = new Set(dump.ok ? dump.data.bots.map((bot) => bot.name.trim().toLowerCase()) : [])
+  const connectorGone = (copy: string) => dump.ok && !account.has(connectorName(copy).toLowerCase())
   return {
     stuck: (todo?.stuck ?? []).filter((item) => here(item.org)).map((item) => ({ bot: item.bot, why: item.why })),
     failed,
@@ -203,6 +206,6 @@ export function connectorState(orgsDir: string, orgId: string): ConnectorState {
     actedSince: Number.isNaN(since) ? 0 : results.results.filter((result) => Date.parse(result.at) >= since).length,
     waiting: { routines: count('routine'), profiles: count('profile'), notes: count('cleanup') },
     dumpError,
-    otherCopies: (todo?.otherCopies ?? []).map((item) => ({ copy: item.copy, bots: item.bots, removing: removing.includes(item.copy) })),
+    otherCopies: (todo?.otherCopies ?? []).map((item) => ({ copy: item.copy, bots: item.bots, removing: removing.includes(item.copy), connectorGone: connectorGone(item.copy) })),
   }
 }

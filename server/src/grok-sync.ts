@@ -119,8 +119,11 @@ export interface ConnectorState {
   waiting: { routines: number; profiles: number; notes: number }
   /** Why the Connector's data could not be read, or ''. */
   dumpError: string
-  /** Blocks other copies of BotsEverywhere left in bots. removing: the owner asked to remove them. */
-  otherCopies: { copy: string; bots: string[]; removing: boolean }[]
+  /**
+   * Blocks other copies of BotsEverywhere left in bots. removing: the owner asked to remove them. connectorGone: that copy's
+   * Connector is not in the Grok Bot account any more, so the copy cannot reach the bots; absent from an older writer.
+   */
+  otherCopies: { copy: string; bots: string[]; removing: boolean; connectorGone?: boolean }[]
 }
 
 export interface ProjectInfo {

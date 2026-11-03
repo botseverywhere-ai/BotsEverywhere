@@ -319,6 +319,16 @@ npm run dev`}</CodeBlock>
           Each new organization gets a folder named by its ID, such as <code>orgs/org-k3f9x2ma/</code>. The ID never changes, so renaming an organization never moves its files
           and your bots always find them. The name lives in <code>org.md</code>, and <strong>Your files</strong> on Organization Overview shows which folder is which.
         </p>
+        <h3>Update to a newer version</h3>
+        <p>
+          Stop <code>npm run dev</code> with <code>Ctrl+C</code>, then in the same project folder run <code>git pull</code>, <code>npm install</code>, and <code>npm run dev</code> again.
+        </p>
+        <p>
+          Do not clone a fresh copy into a new folder to update. Your organizations and this copy&apos;s ID live in <code>orgs/</code>, which git does not track. A new folder
+          starts with no organizations and a new ID, so you would set up a second Connector, and your bots would keep the old copy&apos;s instructions until you remove them
+          in <To id="sync">Sync with Grok Bot</To>. If you must move to another folder, move <code>orgs/</code> with it, then paste the Connector prompt from Connect bots
+          into Grok Bot once more: the prompt names the folder, and the Connector replaces its own instructions.
+        </p>
 
         <h2 id="ports">Ports and addresses</h2>
         <p><code>npm run dev</code> starts two things on your computer, and prints both addresses when it starts:</p>
@@ -654,6 +664,7 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           <li>
             What the Connector could not do shows here too: items stuck after two tries, with the reason; items on their second try; items it has not acted on for more than
             two runs; a <code>grok-data.json</code> it could not read; and blocks another copy of BotsEverywhere put in your bots, with <strong>Remove them</strong>. Remove them only if that copy is gone.
+            A copy whose Connector is no longer in Grok Bot says so, and <strong>Remove all old copies</strong> removes every such copy at once.
           </li>
           <li>
             Grok Bot keeps one bot per name. If another organization in the folder already has a bot with the same name, the drawer says it will be created as, for example,

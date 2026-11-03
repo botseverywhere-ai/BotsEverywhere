@@ -36,6 +36,22 @@ Leave that window open. `npm run dev` starts the site and the file writer togeth
 
 The web server listens on port 5199. The dev API listens on 127.0.0.1 port 8787 and Vite proxies `/api` to it. The file writer refuses any other host and refuses to start when `NODE_ENV=production`.
 
+## Update to a newer version
+
+Update in the folder you already use. Stop `npm run dev` with `Ctrl+C`, then:
+
+```bash
+git pull
+npm install
+npm run dev
+```
+
+PowerShell uses the same three commands.
+
+Do not clone a fresh copy into a new folder to update. Your organizations live in `orgs/`, which git does not track, and so does this copy's ID (`orgs/project.json`). A new folder starts with no organizations and a new ID, so you would set up a second Connector, and your bots would keep the old copy's instructions until you remove them under **Blocks from other copies of BotsEverywhere** in **Sync with Grok Bot**.
+
+If you must move to another folder, move `orgs/` with it. Then copy the Connector prompt from Connect bots and paste it into Grok Bot once more: the prompt names the folder, and the Connector replaces its own instructions.
+
 ## Edit the org and commit
 
 A fresh clone has no organization yet. Open http://127.0.0.1:5199, choose **Open your org**, and create your first one: it gets a folder under `orgs/` named by its ID, with one person, You. `samples/` holds the read-only organizations, including botseverywhere. They are not your organization.
