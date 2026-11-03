@@ -39,6 +39,16 @@ test('while asks wait for the owner, the block shows the one line to say in the 
   assert.match(await render({ waitingAsks: 1 }), /1 ask is ready\./)
 })
 
+test("a bot's name on Performance opens its seat card, the same drawer as on the org chart", () => {
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /<button type="button" className="text-button be-seat-link" onClick=\{\(\) => onOpen\(seat\.id\)\}>\{seat\.name\}<\/button>/, 'plain text with a line under it, never a button look')
+  assert.match(workspace, /onOpen=\{setSelected\}/)
+  assert.match(workspace, /\(view === 'org' \|\| view === 'work' \|\| view === 'performance'\) && chartSeat \? \(\s*<SeatDrawer/, 'the drawer renders on Performance too')
+  assert.match(workspace, /className=\{\(view === 'org' \|\| view === 'work' \|\| view === 'performance'\) && chartSeat \? 'be-body be-with-panel' : 'be-body'\}/, 'and the page makes room for it')
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.be-seat-link \{[^}]*border-radius: var\(--control-radius\)/, 'square, like every other corner')
+})
+
 test('Performance renders the status block above the table, from the sync status and the routine board', () => {
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(workspace, /<PerformanceStatus\s/)

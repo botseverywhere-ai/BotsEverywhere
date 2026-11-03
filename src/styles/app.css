@@ -1574,6 +1574,10 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .be-inline, .be-add { color: var(--color-ink); font-size: 14px; }
 .be-meter { height: 3px; background: var(--color-stone); }
 .be-meter span { display: block; height: 3px; background: var(--color-ink); }
+/* A bot's name on Performance: plain text with a line under it, never a button. */
+.be-seat-link { padding: 0; border: 0; border-radius: var(--control-radius); background: none; font: inherit; color: inherit; text-align: left; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-line); cursor: pointer; }
+.be-seat-link:hover { text-decoration-color: currentColor; }
+.be-seat-link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); }
 .be-least { margin-left: 8px; padding: 1px 6px; background: var(--color-stone); font-style: normal; font-size: 11px; }
 .be-modal { position: fixed; inset: 12vh auto auto 50%; transform: translateX(-50%); width: min(440px, calc(100% - 32px)); background: var(--color-white); border: var(--border-strong); padding: var(--space-5); z-index: var(--z-modal); display: flex; flex-direction: column; gap: var(--space-3); box-shadow: var(--shadow-dialog); }
 .be-modal label { display: flex; flex-direction: column; gap: var(--space-2); }

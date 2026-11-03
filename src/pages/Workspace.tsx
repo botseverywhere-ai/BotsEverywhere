@@ -993,7 +993,7 @@ export function Workspace({
           }}
         />
       ) : null}
-      <div className={(view === 'org' || view === 'work') && chartSeat ? 'be-body be-with-panel' : 'be-body'}>
+      <div className={(view === 'org' || view === 'work' || view === 'performance') && chartSeat ? 'be-body be-with-panel' : 'be-body'}>
         <TabBoundary key={view}>
         <main id="main">
           {view === 'overview' || view === 'connect' || view === 'backup' ? (
@@ -1107,11 +1107,12 @@ export function Workspace({
                 setRetireSlug(id)
                 setReason('')
               }}
+              onOpen={setSelected}
             />
           ) : null}
           {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} progress={sync?.progress} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} retired={editable ? { seats: retired, activeElsewhere: sync?.retiredElsewhere ?? {} } : undefined} /> : null}
         </main>
-        {(view === 'org' || view === 'work') && chartSeat ? (
+        {(view === 'org' || view === 'work' || view === 'performance') && chartSeat ? (
         <SeatDrawer
           seat={{ ...chartSeat, shown: metricsById.get(chartSeat.id) }}
           reportsTo={chartSeat.reportsTo ? byId.get(chartSeat.reportsTo)?.name : undefined}
@@ -1244,6 +1245,7 @@ function PerformanceTable({
   accountApps,
   canRetire,
   onRetire,
+  onOpen,
 }: {
   bots: { id: string; name: string; apps?: string[]; appsUsed?: AppUse[]; skills?: number | null; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
@@ -1253,6 +1255,8 @@ function PerformanceTable({
   accountApps?: AccountApp[]
   canRetire: boolean
   onRetire: (id: string) => void
+  /** Opens the bot's seat card, the same drawer as on the org chart. */
+  onOpen: (id: string) => void
 }) {
   const rows = [...bots].sort((a, b) => (a.shown?.usage ?? 0) - (b.shown?.usage ?? 0) || a.name.localeCompare(b.name))
   if (!rows.length) return <p className="be-empty">No bots hired yet.</p>
@@ -1268,7 +1272,7 @@ function PerformanceTable({
             const waiting = requests.find((item) => item.seat === seat.id)
             return (
               <tr key={seat.id}>
-                <td>{seat.name}{seat.id === leastId ? <em className="be-least">Least used</em> : null}</td>
+                <td><button type="button" className="text-button be-seat-link" onClick={() => onOpen(seat.id)}>{seat.name}</button>{seat.id === leastId ? <em className="be-least">Least used</em> : null}</td>
                 {waiting ? (
                   <td colSpan={4} className="be-connecting"><i className="be-pulse" aria-hidden="true" />Connecting to Grok Bot… asked {formatShortDate(waiting.requestedAt)}. Its numbers appear after the Connector&apos;s next run.</td>
                 ) : (
