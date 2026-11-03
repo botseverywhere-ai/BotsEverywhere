@@ -52,7 +52,8 @@ export function blockText(input: BlockInput): string {
   if (input.also.length) lines.push(`Also reports to: ${input.also.map((party) => label(party)).join(', ')}`)
   if (input.team.length) lines.push(`Your team: ${input.team.map((item) => label(item.party, item.main ? 'main manager: you' : 'also reports to you')).join(', ')}`)
   lines.push(
-    `Skills to use: ${input.skills.length ? input.skills.join(', ') : 'none'}`,
+    // No skills set in the app is not an instruction to use none: the bot keeps what Grok Bot has turned on for it.
+    `Skills to use: ${input.skills.length ? input.skills.join(', ') : 'the skills turned on for you in Grok Bot'}`,
     `Processes: ${input.processFiles.length ? input.processFiles.join(', ') : 'none'}`,
     'Take work only from your managers above. Send each result to the manager who gave you the work. When that is not your main manager, also send your main manager one line on what you did.',
   )

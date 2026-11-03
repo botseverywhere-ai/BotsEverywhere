@@ -10,7 +10,7 @@ Organization: Desk
 Seat file: C:\\Users\\me\\orgs\\org-test\\seats\\security.md
 Main manager: Inner Loop (id inner)
 Also reports to: Outer Loop (id outer)
-Skills to use: none
+Skills to use: the skills turned on for you in Grok Bot
 Processes: none
 Take work only from your managers above. Send each result to the manager who gave you the work. When that is not your main manager, also send your main manager one line on what you did.
 When a manager is a person, keep the result in your chat for them.
@@ -85,6 +85,8 @@ test('orgBlocks gives every active bot one block; managers list their team; peop
   assert.match(inner, /\nMain manager: Miguel Rovira\n/)
   assert.match(inner, /\nYour team: Security \(id security, main manager: you\), UX \(not in Grok Bot yet, main manager: you\)\n/)
   assert.match(inner, /\nSkills to use: Review, Plan\n/)
+  assert.match(blocks.get('security')!, /\nSkills to use: the skills turned on for you in Grok Bot\n/, 'no skills set here never tells the bot to use none')
+  assert.doesNotMatch(blocks.get('security')!, /Skills to use: none/)
   assert.match(inner, /\nProcesses: C:\\Users\\me\\orgs\\org-test\\processes\\weekly-check\.md\n/)
   assert.match(inner, /\nBrief your team with SendToAgent\. Give work only to bots in your team\.\n/)
   assert.match(blocks.get('outer-loop')!, /\nYour team: Security \(id security, also reports to you\)\n/)
