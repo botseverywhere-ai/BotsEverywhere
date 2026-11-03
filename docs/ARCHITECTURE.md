@@ -1,6 +1,6 @@
 # Architecture
 
-Plain-English map of BotsEverywhere: what it is, the two builds, where files live, and what is still a plan. Documentation updated 3 November 2026.
+Plain-English map of BotsEverywhere: what it is, the two builds, where files live, and what is still a plan. Documentation updated 4 November 2026.
 
 ## 1. What it is
 

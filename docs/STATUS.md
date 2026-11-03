@@ -1,6 +1,6 @@
 # Status
 
-Where the app stands as of 3 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
+Where the app stands as of 4 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
 
 ## Branch
 
@@ -28,7 +28,7 @@ npm run build
 npx playwright test e2e/org-chart-scroll.spec.ts e2e/owner-org-chart.spec.ts   # needs npm run dev running
 ```
 
-On 3 November 2026: 628 tests, 627 pass, 1 skipped, 0 fail; build clean.
+On 4 November 2026: 603 tests, 602 pass, 1 skipped, 0 fail; build clean.
 
 The Connector suites are `server/test/connector-*.test.ts`, `connector-guide.test.ts` (the rules file), `connector-todo.test.ts` (the list), `profile-asks.test.ts`, and `request-progress.test.ts`. Performance and Profile are `performance-status.test.ts`, `profile-skills.test.ts`, `routine-board*.test.ts`, and `auto-performance.test.ts`.
 
@@ -43,7 +43,7 @@ The Connector suites are `server/test/connector-*.test.ts`, `connector-guide.tes
 - A failed hot reload leaves the old module in the browser tab until a hard reload (F5).
 - VS Code marks the imports in `server/test/*.ts` as errors because no tsconfig includes `server/test/`. The tests run.
 
-## Fresh clone (checked 3 November 2026)
+## Fresh clone (checked 4 November 2026)
 
 A fresh clone of the branch with no `orgs/` folder, on a computer whose Grok Bot account already had an older copy's Connector. `npm install`, `npm run dev`, **Open your org**, create the organization, paste the Connector prompt into Grok Bot: the new Connector ran, the import brought every bot with its managers from the older copy's blocks, the Work Chart import brought the routines and handoffs the bots run, and on the Connector's next run every bot got its block and wrote its report at the new path, so Performance filled in without a click. The older copy's blocks showed under **Old instructions from other copies** and were queued for removal with one click. Manual flows that existed only as files in the older copy did not come across, as expected: manual flows live in the app, not in Grok Bot.
 

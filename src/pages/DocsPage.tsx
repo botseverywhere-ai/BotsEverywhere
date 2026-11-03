@@ -195,7 +195,7 @@ export function DocsPage() {
           <p className="lede">
             BotsEverywhere is an open source team management tool for bots. It maps your bots in one place: an org chart of who each bot reports to,
             a work chart of what each bot does and when, and a directory of ready-made bots you can add to Grok Bot.
-            It runs on your own computer, and your data stays there. Documentation updated 3 November 2026.
+            It runs on your own computer, and your data stays there. Documentation updated 4 November 2026.
           </p>
           <p className="docs-head-actions">
             <To id="install">Install it</To>

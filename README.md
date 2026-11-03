@@ -1,5 +1,7 @@
 # BotsEverywhere
 
+![BotsEverywhere: the open source team management tool for bots. An organization with a person and two bots under it.](docs/images/hero.png)
+
 BotsEverywhere is an open source team management tool for bots.
 
 Organizations copy it to map their team of bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
@@ -8,7 +10,29 @@ There are no API keys in the frontend. BotsEverywhere is open source under the [
 
 Full install steps, including Windows PowerShell and an optional static host, are in [SETUP.md](SETUP.md). How the two builds, the folders, and the Connector fit together is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Where the work stands is in [docs/STATUS.md](docs/STATUS.md).
 
-Documentation updated 3 November 2026.
+Documentation updated 4 November 2026.
+
+## What it is
+
+One tool, four parts: an org chart of one person and their bots, a work chart of how work moves from a trigger to an outcome with human checkpoints, a directory of ready-made bots with seat cards, and plain files on your own computer that you can commit with git.
+
+![One tool, four parts: org chart, work chart, bot directory, stored on your computer.](docs/images/four-parts.png)
+
+## How work moves
+
+Bots do the steps. Humans approve. Every workstream starts from a trigger, and every checkpoint names a human.
+
+![A work chart: when a lead arrives, Sales Bot qualifies the lead, Scheduler Bot books a call, and a human approves the reply.](docs/images/work-chart-idea.png)
+
+The work chart of a sample organization, Bot Company E: four workstreams, each a row of bots with the owner's approval where the money or the message leaves.
+
+![Bot Company E work chart: weekly report, new lead follow-up, support ticket, and monthly invoices, each a row of bot steps ending in the owner's approval.](docs/images/work-chart-example.png)
+
+## Private by design
+
+It runs on your computer. The app and its file writer listen on an address only your own computer can reach. Your org chart, seats, processes, and logs are markdown files in one folder. No accounts, no keys, no tracking. Nothing leaves your computer unless you connect a bot to the folder yourself.
+
+![Private by design: local only, plain files you own, no accounts, no keys, no tracking, you decide what connects.](docs/images/private-by-design.png)
 
 ## Dependencies
 
@@ -32,6 +56,8 @@ npm run dev       # site on http://127.0.0.1:5199 and the file writer on http://
 ```
 
 Open [http://127.0.0.1:5199](http://127.0.0.1:5199) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together.
+
+![Map your team. Staff the seats. Open source. Runs on your computer.](docs/images/map-your-team.png)
 
 To update, run `git pull` and `npm install` in this same folder. Do not clone a fresh copy into a new folder: it starts a new copy with a new Connector, and your bots keep the old copy's instructions. See [SETUP.md](SETUP.md#update-to-a-newer-version).
 

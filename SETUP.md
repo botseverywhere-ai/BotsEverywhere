@@ -8,7 +8,7 @@ No accounts, no paid services, and no API keys. BotsEverywhere is open source un
 
 You need Node.js 22 and npm.
 
-Documentation updated 3 November 2026.
+Documentation updated 4 November 2026.
 
 ## Clone and run (template mode)
 
