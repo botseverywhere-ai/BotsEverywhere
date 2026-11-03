@@ -31,9 +31,10 @@ test("Bot reports counts the bots that have written their profile, amber until a
   assert.match(one, /0 of 1 bots reported/)
 })
 
-test('while asks wait for the owner, the block shows the one line to say in the Connector chat, with a Copy button', async () => {
+test('while asks wait for the owner, the block shows the one sentence to say in the Connector chat, in plain words and with no button', async () => {
   const waiting = await render({ waitingAsks: 21 })
-  assert.match(waiting, /<dt>Waiting for you<\/dt><dd class="connect-status"><span class="connect-status-detail">21 asks are ready\. Grok Bot sends them only from a chat: in the Connector&#x27;s chat in Grok Bot, say <code>do YOU now<\/code>\.<\/span><button[^>]*>Copy: do YOU now<\/button><\/dd>/)
+  assert.match(waiting, /<dt>Waiting for you<\/dt><dd class="connect-status"><span class="connect-status-detail">21 asks are ready\. Grok Bot sends them only from a chat: in the Connector&#x27;s chat in Grok Bot, say: <strong>Send the waiting items<\/strong><\/span><\/dd>/)
+  assert.doesNotMatch(waiting, /do YOU now|Copy:/)
   assert.doesNotMatch(waiting, /<button[^>]*>Get the bots&#x27; profiles<\/button>/, 'no second click while the first waits')
   assert.doesNotMatch(await render({ waitingAsks: 0 }), /Waiting for you/)
   assert.match(await render({ waitingAsks: 1 }), /1 ask is ready\./)

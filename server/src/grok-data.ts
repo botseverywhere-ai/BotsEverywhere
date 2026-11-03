@@ -42,8 +42,8 @@ export interface GrokData {
   copy: string
   bots: GrokDataBot[]
   skills: { name: string; description: string }[]
-  /** The Connector itself, which the bots list leaves out. Absent from a Connector on older rules. */
-  self?: { id: string; name: string; grokBotUrl: string }
+  /** The Connector itself, which the bots list leaves out. Absent from a Connector on older rules; its dates and count from one on the newest. */
+  self?: { id: string; name: string; grokBotUrl: string; createdAt?: string; lastActive?: string; runs30d?: number }
 }
 
 type Rec = Record<string, unknown>
@@ -104,7 +104,14 @@ export function parseGrokData(text: string): { ok: true; data: GrokData } | { ok
   }
   const skills = Array.isArray(raw.skills) ? raw.skills.filter(isRecord).map((skill) => ({ name: str(skill.name), description: str(skill.description) })).filter((skill) => skill.name) : []
   const self = isRecord(raw.self) && str(raw.self.id) && str(raw.self.name)
-    ? { id: str(raw.self.id), name: str(raw.self.name), grokBotUrl: str(raw.self.grokBotUrl) || `grokbot://app/v1/agent?id=${str(raw.self.id)}` }
+    ? {
+      id: str(raw.self.id),
+      name: str(raw.self.name),
+      grokBotUrl: str(raw.self.grokBotUrl) || `grokbot://app/v1/agent?id=${str(raw.self.id)}`,
+      ...(date(raw.self.createdAt) ? { createdAt: date(raw.self.createdAt) } : {}),
+      ...(date(raw.self.lastActive) ? { lastActive: date(raw.self.lastActive) } : {}),
+      ...(count(raw.self.runs30d) !== undefined ? { runs30d: count(raw.self.runs30d) } : {}),
+    }
     : undefined
   return { ok: true, data: { dumpedAt, copy: str(raw.copy), bots, skills, ...(self ? { self } : {}) } }
 }
@@ -303,11 +310,13 @@ export function snapshotFromData(data: GrokData, bundle: OrgBundle, orgName: str
     notes: [],
     error: '',
   })))
-  return {
-    syncedAt: data.dumpedAt,
-    bots: bots.map((bot) => rowFor(bot, data, { seats: bundle.seats, orgId: bundle.id, copyId, apps, seat: seatForBot(bot, bundle.seats, orgName) })),
-    processes,
+  const rows = bots.map((bot) => rowFor(bot, data, { seats: bundle.seats, orgId: bundle.id, copyId, apps, seat: seatForBot(bot, bundle.seats, orgName) }))
+  // The Connector's own seat: its numbers only, from self, so its row on Performance has a created date and times used.
+  const self = data.self
+  if (self && seatForBot(self, bundle.seats, orgName)) {
+    rows.push({ ...botRow(self.name, self.grokBotUrl), createdAt: self.createdAt ?? '', lastActive: self.lastActive ?? '', ...(self.runs30d !== undefined ? { runs30d: self.runs30d } : {}) })
   }
+  return { syncedAt: data.dumpedAt, bots: rows, processes }
 }
 
 /** A bot row in the bots-file format, which snapshots and the unassigned list are read back with. */

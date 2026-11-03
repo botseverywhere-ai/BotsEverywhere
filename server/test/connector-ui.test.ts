@@ -147,7 +147,7 @@ test('the drawer shows each of these under Going to Grok Bot', async () => {
   assert.match(going, /<strong>Inner Loop<\/strong> · failed once, trying again on the next run: UpdateAgent timed out/)
   assert.match(going, /The Connector&#x27;s data could not be read: Bot 1 has no id\./)
   assert.match(going, /The Connector has not acted on 3 items since /)
-  assert.match(going, /18 profile requests, 1 routine request and 2 one-time notes wait for you\. Grok Bot sends messages to bots only from a chat, never from the Connector&#x27;s scheduled runs\. In the Connector&#x27;s chat in Grok Bot, say: do YOU now/)
+  assert.match(going, /18 profile requests, 1 routine request and 2 one-time notes wait for you\. Grok Bot sends messages to bots only from a chat, never from the Connector&#x27;s scheduled runs\. In the Connector&#x27;s chat in Grok Bot, say: Send the waiting items/)
   assert.match(going, /<summary>Copy uft5 · in 2 bots<\/summary><p class="overview-note">Security, Outer Loop<\/p>/)
   assert.match(going, /<button[^>]*>Remove old instructions<\/button>/)
   assert.match(going, /<summary>Copy k7m2 · in 1 bot<\/summary><p class="overview-note">Grok Bot<\/p><\/details><span class="overview-note">Removing, bot by bot<\/span>/)

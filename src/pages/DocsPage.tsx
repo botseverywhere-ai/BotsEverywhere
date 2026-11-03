@@ -418,7 +418,7 @@ npm run dev`}</CodeBlock>
         </p>
         <p>
           Grok Bot lets the Connector message a bot only from a chat, never from a scheduled run. When a routine or a profile request waits for that, the Sync drawer and Logs
-          say so: in the Connector&apos;s chat in Grok Bot, say <strong>do YOU now</strong>.
+          say so: in the Connector&apos;s chat in Grok Bot, say <strong>Send the waiting items</strong>.
         </p>
         <p>
           A bot belongs to an organization when the Connector created it from that organization&apos;s requests, when its link matches a seat there, or when its name matches a seat title there.
@@ -705,7 +705,7 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           Grok Bot shows a bot&apos;s routines only to that bot, so <strong>Automated tasks done</strong> and the apps and skills a bot reports come from a profile file each bot writes
           into the organization&apos;s folder on its own runs. The status block at the top of Performance says whether the Connector runs and how many bots have reported.
           <strong>Import from the Connector</strong> asks every bot for its report by itself, and <strong>Get the bots&apos; profiles</strong> asks again at any time: the Connector sends
-          each ask from its chat, so the block shows the one line to say there, <em>do YOU now</em>, with a Copy button, and the columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
+          each ask from its chat, so the block shows the one line to say there, <em>Send the waiting items</em>, and the columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
         </p>
         <p>
           <strong>Logs</strong> lists every event of the organization, newest first: hires, retirements, edits, work, approvals, and exceptions, and everything that passes
@@ -840,7 +840,7 @@ git commit -m "Update the org chart"`}</CodeBlock>
           Connect bots says. <strong>Run the Connector now</strong> in the Sync drawer starts a run by hand.
         </p>
         <h3>Something waits for you in the Connector&apos;s chat</h3>
-        <p>Grok Bot sends messages to bots only from a chat. Open the Connector&apos;s chat in Grok Bot and say <strong>do YOU now</strong>.</p>
+        <p>Grok Bot sends messages to bots only from a chat. Open the Connector&apos;s chat in Grok Bot and say <strong>Send the waiting items</strong>.</p>
         <h3>A bot shows Not in Grok Bot</h3>
         <p>The last snapshot did not include it. Open the bot and choose <strong>Create in Grok Bot</strong>, or tick it under Going to Grok Bot in the Sync drawer.</p>
         <h3>A bot is greyed</h3>

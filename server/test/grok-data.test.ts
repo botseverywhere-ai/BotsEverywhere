@@ -88,6 +88,24 @@ test("each bot's skills are the ones Grok Bot shows turned on for it; a Connecto
   assert.deepEqual(row('new').skills, [{ name: 'GitHub sweep', description: 'Sweeps issues.' }], 'no skills field: an older Connector, so the name in its own text still counts')
 })
 
+test("the Connector's own seat gets a row with its created date, last active time, and times used, from self", () => {
+  const connector = seat('connector', 'title: Connector - BotsEverywhere (3s53)\nkind: bot\nreportsTo: you\ngrokBotUrl: "grokbot://app/v1/agent?id=c1"')
+  const base = desk()
+  const withConnector = { ...base, seats: [...base.seats, connector] }
+  const self = { id: 'c1', name: 'Connector - BotsEverywhere (3s53)', grokBotUrl: 'grokbot://app/v1/agent?id=c1', createdAt: '2026-11-02', lastActive: '2026-11-03T13:16:00+01:00', runs30d: 7 }
+  const row = snapshotFromData({ ...DUMP, self }, withConnector, 'Desk', '3s53', APPS, []).bots.find((bot) => bot.name === self.name)
+  assert.ok(row, 'a row for the Connector seat')
+  assert.equal(row.createdAt, '2026-11-02')
+  assert.equal(row.lastActive, '2026-11-03T13:16:00+01:00')
+  assert.equal(row.runs30d, 7)
+  assert.deepEqual([row.owns, row.may, row.routines, row.skills], [[], [], [], []], 'numbers only: nothing to fill on its card')
+  assert.equal(snapshotFromData({ ...DUMP, self }, base, 'Desk', '3s53', APPS, []).bots.some((bot) => bot.name === self.name), false, 'no Connector seat here: no row')
+  assert.equal(snapshotFromData(DUMP, withConnector, 'Desk', '3s53', APPS, []).bots.some((bot) => bot.name === self.name), false, 'an older Connector reports no self')
+  const parsed = parseGrokData(JSON.stringify({ dumpedAt: '2026-11-03T13:00:00+01:00', copy: '3s53', bots: [], skills: [], self: { ...self, runs30d: -1 } }))
+  assert.ok(parsed.ok)
+  assert.deepEqual(parsed.data.self, { id: 'c1', name: self.name, grokBotUrl: self.grokBotUrl, createdAt: '2026-11-02', lastActive: '2026-11-03T13:16:00+01:00' }, 'a bad count is left out, like a bot\'s')
+})
+
 test('parseGrokData reads the skills turned on for a bot as names, dropping blanks and non-strings; absent stays absent', () => {
   const text = JSON.stringify({ dumpedAt: '2026-11-03T13:00:00+01:00', copy: 'vuk7', bots: [
     { id: 'a', name: 'A', description: '', routinesVisible: false, skills: ['issue-triage', ' ', 7, { name: 'x' }, 'release-notes'] },

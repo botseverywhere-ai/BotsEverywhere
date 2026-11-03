@@ -24,6 +24,13 @@ test('the prompt to paste names the interval, leaves later changes to CONNECTOR.
   assert.ok(connectorBootstrapPrompt({ ...WIN, syncMinutes: 10080 }).length < 1200)
 })
 
+test('YOU also runs when the owner says Send the waiting items in the chat, and THE RUN reports the Connector\'s own dates and count', () => {
+  const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
+  assert.match(guide, /\nYOU \(after each run, when the owner writes "Send the waiting items" or "do YOU now" in this chat, and when a bot sends you a line starting/)
+  assert.match(guide, /\n   - self: your own id, name, link, createdAt, lastActive, and runs30d, read the same way as for the other bots\.\n/)
+  assert.match(guide, /"self": \{ "id": "", "name": "", "grokBotUrl": "", "createdAt": "YYYY-MM-DD", "lastActive": "ISO datetime", "runs30d": 0 \}/)
+})
+
 test('THE RUN asks for the skills turned on for each bot, so Performance shows what Grok Bot shows', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
   assert.match(guide, /\n   - skills: the names of the skills turned on for it, as Grok Bot shows them for that bot\. Leave it out when you cannot see them; an empty list means none\.\n/)
@@ -69,7 +76,7 @@ test('Connect bots and Docs show the short prompt; a new interval needs no paste
 
 test('the Connector asks for profiles, keeps each one exactly as the bot sent it, and says so in its report', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
-  assert.match(guide, /YOU \(after each run, and when a bot sends you a line starting "BotsEverywhere routine saved:" or "BotsEverywhere profile:"\)/)
+  assert.match(guide, /YOU \(after each run, when the owner writes "Send the waiting items" or "do YOU now" in this chat, and when a bot sends you a line starting "BotsEverywhere routine saved:" or "BotsEverywhere profile:"\)/)
   assert.match(guide, /\n   - profile: SendToAgent to botId with priority true and exactly the item's message\.\n/)
   assert.match(guide, /When a bot sends you a message with a line starting "BotsEverywhere profile:" or "BotsEverywhere routines:", add it to confirmations too: line \(that line and every line after it, exactly\), from, and at\./)
   for (const line of ['Asked for profiles: <bot names>', 'Profiles received: <bot names>']) assert.ok(guide.includes(`\n   - ${line}\n`), line)
