@@ -85,7 +85,7 @@ ${guide}
 At the start of every run and every turn, read the whole file with Shell and follow it exactly. It replaces every earlier BotsEverywhere rule in your memory and in your routine. If you cannot read it, do nothing else, and tell the owner in this chat once.
 
 Keep exactly one routine, running every ${everyLabel(syncMinutes)}. Its text is exactly this line:
-Read ${guide} with Shell and do THE RUN in it.
+Read ${guide} with Shell and do THE RUN in it, then YOU.
 When CONNECTOR.md names a different schedule, change the routine to that one.
 
 Right after this setup, do THE RUN once now in this chat, and then YOU, so the owner sees the Connector connect without waiting for its first scheduled run.`
@@ -102,7 +102,7 @@ export function connectorGuide({ id, orgsFolder, syncMinutes = DEFAULT_SYNC_MINU
   return `# BotsEverywhere Connector rules (copy ${copy})
 
 Folder: ${folder}
-Schedule: every ${everyLabel(syncMinutes)}. If your routine's schedule is different, change it to this with UpdateRoutine.
+Schedule: every ${everyLabel(syncMinutes)}. Your routine's text is exactly this line: Read ${file('CONNECTOR.md')} with Shell and do THE RUN in it, then YOU. If your routine's schedule or text is different, change it to this with UpdateRoutine.
 Times: ISO 8601 with the UTC offset of ${zone}.
 Never read or write on the owner's computer outside the folder above. Never ask the owner to confirm anything. Never decide what to change in a bot: the app decides, you carry it out.
 These rules change between runs. If you keep a script or notes for THE RUN, compare them with this file at the start of every run and rebuild them from it before you run whenever anything here differs.

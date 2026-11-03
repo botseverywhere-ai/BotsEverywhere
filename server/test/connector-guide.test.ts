@@ -9,7 +9,7 @@ test('the prompt to paste is short, names the rules file, and has nothing a chat
   const prompt = connectorBootstrapPrompt(WIN)
   assert.match(prompt, /^Create a bot named Connector - BotsEverywhere \(3s53\)\./)
   assert.ok(prompt.includes('C:\\Users\\me\\botseverywhere\\orgs\\CONNECTOR.md'))
-  assert.match(prompt, /Read C:\\Users\\me\\botseverywhere\\orgs\\CONNECTOR\.md with Shell and do THE RUN in it\./)
+  assert.match(prompt, /Read C:\\Users\\me\\botseverywhere\\orgs\\CONNECTOR\.md with Shell and do THE RUN in it, then YOU\./, 'the routine itself names YOU, so a scheduled run never stops after the reading')
   assert.doesNotMatch(prompt, /`/)
   assert.ok(prompt.length < 1200, `${prompt.length} characters`)
   assert.ok(connectorBootstrapPrompt({ id: '3s53', orgsFolder: '/home/me/orgs' }).includes('/home/me/orgs/CONNECTOR.md'))
@@ -63,7 +63,7 @@ test('the rules keep the run to files, leave every decision to the app, and give
 })
 
 test('the schedule follows Runs every, and Windows writing is named only on Windows', () => {
-  assert.match(connectorGuide({ ...WIN, syncMinutes: 15, timeZone: '', windows: true }), /\nSchedule: every 15 minutes\. If your routine's schedule is different/)
+  assert.match(connectorGuide({ ...WIN, syncMinutes: 15, timeZone: '', windows: true }), /\nSchedule: every 15 minutes\. Your routine's text is exactly this line: Read C:\\Users\\me\\botseverywhere\\orgs\\CONNECTOR\.md with Shell and do THE RUN in it, then YOU\. If your routine's schedule or text is different, change it to this with UpdateRoutine\./, 'an older Connector whose routine says only THE RUN fixes it from the rules')
   assert.match(connectorGuide({ ...WIN, syncMinutes: 120, timeZone: '', windows: true }), /\nSchedule: every 2 hours\./)
   assert.match(connectorGuide({ ...WIN, syncMinutes: 15, timeZone: '', windows: true }), /System\.IO\.File/)
   assert.doesNotMatch(connectorGuide({ id: '3s53', orgsFolder: '/home/me/orgs', syncMinutes: 15, timeZone: '', windows: false }), /System\.IO\.File/)
