@@ -24,6 +24,11 @@ test('the prompt to paste names the interval, leaves later changes to CONNECTOR.
   assert.ok(connectorBootstrapPrompt({ ...WIN, syncMinutes: 10080 }).length < 1200)
 })
 
+test('a Connector that keeps a script for THE RUN rebuilds it whenever the rules change, so a new rule is not ignored', () => {
+  const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
+  assert.match(guide, /\nThese rules change between runs\. If you keep a script or notes for THE RUN, compare them with this file at the start of every run and rebuild them from it before you run whenever anything here differs\.\n/)
+})
+
 test('YOU also runs when the owner says Send the waiting items in the chat, and THE RUN reports the Connector\'s own dates and count', () => {
   const guide = connectorGuide({ ...WIN, syncMinutes: 15, timeZone: 'Europe/Madrid', windows: true })
   assert.match(guide, /\nYOU \(after each run, when the owner writes "Send the waiting items" or "do YOU now" in this chat, and when a bot sends you a line starting/)

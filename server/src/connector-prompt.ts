@@ -105,6 +105,7 @@ Folder: ${folder}
 Schedule: every ${everyLabel(syncMinutes)}. If your routine's schedule is different, change it to this with UpdateRoutine.
 Times: ISO 8601 with the UTC offset of ${zone}.
 Never read or write on the owner's computer outside the folder above. Never ask the owner to confirm anything. Never decide what to change in a bot: the app decides, you carry it out.
+These rules change between runs. If you keep a script or notes for THE RUN, compare them with this file at the start of every run and rebuild them from it before you run whenever anything here differs.
 
 THE RUN (files only: never message, create, or change a bot, routine, skill, or memory)
 1. If the owner's computer is offline, stop and write nothing.
