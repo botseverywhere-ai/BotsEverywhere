@@ -5,7 +5,7 @@ integrations:
   - Grok Bot
   - Web search
   - Notion
-contributor: miguel
+contributor: botseverywhere
 added_at: 2026-10-01
 ---
 

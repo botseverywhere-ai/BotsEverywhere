@@ -14,7 +14,7 @@ async function render(component: unknown, props: Record<string, unknown>): Promi
 const RAN = () => ({ stamp: `${Date.now() - 60_000}:537`, syncedAt: new Date(Date.now() - 60_000).toISOString(), error: '', syncMinutes: 15 })
 
 function project(connector: ProjectInfo['connector'], bots = 21): ProjectInfo {
-  return { id: 'vuk7', connectorName: 'Connector - BotsEverywhere (vuk7)', orgsFolder: 'C:\\Users\\migue\\botseverywhere-v7\\orgs', connector, unassigned: [], bots, renamed: {}, syncMinutes: 15 }
+  return { id: 'vuk7', connectorName: 'Connector - BotsEverywhere (vuk7)', orgsFolder: 'C:\\Users\\you\\botseverywhere\\orgs', connector, unassigned: [], bots, renamed: {}, syncMinutes: 15 }
 }
 
 const QUIET: ConnectorState = { stuck: [], failed: [], pending: 0, pendingSince: '', waiting: { routines: 0, profiles: 0, notes: 0 }, dumpError: '', otherCopies: [] }
@@ -25,7 +25,7 @@ function status(over: Partial<SyncStatus> = {}): SyncStatus {
     error: '',
     plan: { syncedAt: '2026-11-03T12:18:12+01:00', rows: [], counts: { new: 0, missing: 0, updated: 0, processes: 0, warnings: 0, unchanged: 21 }, writes: 0 },
     lastConfirmed: '2026-11-03T11:58:00+01:00',
-    folder: 'C:\\Users\\migue\\botseverywhere-v7\\orgs\\org-trav3fcs',
+    folder: 'C:\\Users\\you\\botseverywhere\\orgs\\org-trav3fcs',
     requests: [],
     project: project(RAN()),
     connector: QUIET,

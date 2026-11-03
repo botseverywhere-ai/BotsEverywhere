@@ -65,7 +65,7 @@ export const seats: Record<SeatId, Seat> = {
     landingDoes: [],
     landingBlurb: 'Owns the approve',
     approve: 'Nothing ships without your yes. You keep the call.',
-    now: 'Launch post for Grok Bot Alicante is waiting on you.',
+    now: 'Launch post for Grok Bot launch is waiting on you.',
     status: 'human',
     addable: false,
     integrations: [{ name: 'You', hint: 'approve gate' }],
@@ -117,7 +117,7 @@ export const seats: Record<SeatId, Seat> = {
     landingDoes: ['X posts and threads', 'Launch copy drafts'],
     landingBlurb: 'Turns ideas into posts that sound like you.',
     approve: 'Nothing gets posted until you say yes.',
-    now: 'Launch post for Grok Bot Alicante is ready for you.',
+    now: 'Launch post for Grok Bot launch is ready for you.',
     status: 'review',
     addable: true,
     integrations: [
@@ -134,7 +134,7 @@ export const seats: Record<SeatId, Seat> = {
     accent: '#111111',
     canvasMeta: 'Pages and fixes',
     orgMeta: 'Bot · Drafts → publish path',
-    workMeta: 'Bot + Claude path · Publish',
+    workMeta: 'Bot + human path · Publish',
     reportsTo: 'Reports to you · Founder / PM',
     role: 'Seat on work chart · Drafts → publish path',
     purpose:
@@ -144,12 +144,12 @@ export const seats: Record<SeatId, Seat> = {
     landingDoes: ['Landing page updates', 'Copy and layout fixes'],
     landingBlurb: 'Keeps your pages fresh and shipped.',
     approve: 'Nothing goes live until you say yes.',
-    now: 'Landing update for the Nov 7 demo is in progress.',
+    now: 'Landing update for the launch demo is in progress.',
     status: 'staffed',
     addable: true,
     integrations: [
       { name: 'Grok Bot', hint: 'draft seat' },
-      { name: 'Claude path', hint: 'publish handoff' },
+      { name: 'Human path', hint: 'publish handoff' },
     ],
   },
   ops: {

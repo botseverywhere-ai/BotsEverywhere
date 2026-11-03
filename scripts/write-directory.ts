@@ -46,7 +46,7 @@ const seats: {
     mustAskBefore: 'Merging | Shipping | Changing the product lock',
     doneWhen: 'The build matches the prompt and is ready for QA.',
     tools: 'The repo | The prompt',
-    matches: 'builds via Cursor | Build Bot',
+    matches: 'builds | Build Bot',
     prompt: 'You are the Build Bot seat. Build what the prompt says. Do not merge or ship until a person approves.',
   },
   {

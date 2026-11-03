@@ -5,17 +5,17 @@
       "org": {
         "id": "botseverywhere",
         "name": "botseverywhere",
-        "description": "Miguel Rovira’s organization.",
+        "description": "The owner’s organization.",
         "industry": "Software",
         "mock": false,
         "ownerOrg": true,
         "tagline": "Org chart for bots. Work chart for humans.",
-        "address": "Alicante, Spain",
+        "address": "Remote",
         "headcount": "1 person, 14 bots",
         "founded": 2026,
         "mark": "BE",
         "markColor": "#0b1220",
-        "logExemption": "Hire and fire have not happened in this project, so the real log has no hire or fire events. No exception was recorded either. Approvals are only the commits that landed on main; each one is Miguel's recorded decision, with the commit subject kept verbatim. Branch-only commits stay work events.",
+        "logExemption": "Hire and fire have not happened in this project, so the real log has no hire or fire events. No exception was recorded either. Approvals are only the commits that landed on main; each one is the owner's recorded decision, with the commit subject kept verbatim. Branch-only commits stay work events.",
         "goals": {
           "title": "Nov 7 2026 demo",
           "dueOn": "2026-11-07",
@@ -43,7 +43,7 @@
           ]
         },
         "seatIds": [
-          "seat-miguel",
+          "seat-sam",
           "seat-grok",
           "seat-planning-bot",
           "seat-build-bot",
@@ -65,9 +65,9 @@
       },
       "seats": [
         {
-          "id": "seat-miguel",
+          "id": "seat-sam",
           "orgId": "botseverywhere",
-          "name": "Miguel Rovira",
+          "name": "Sam Rivera",
           "role": "Owner",
           "type": "human",
           "curated": true,
@@ -79,11 +79,11 @@
           },
           "profile": {
             "department": "Owner",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
-            "bio": "Miguel Rovira, Owner."
+            "bio": "Sam Rivera, Owner."
           },
           "status": "active"
         },
@@ -93,13 +93,13 @@
           "name": "Grok Bot",
           "role": "Manager",
           "type": "bot",
-          "reportsTo": "seat-miguel",
-          "prompt": "You are Grok Bot. routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to Miguel.",
+          "reportsTo": "seat-sam",
+          "prompt": "You are Grok Bot. routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to the owner.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to Miguel."
+              "routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to the owner."
             ],
             "may": [
               "route work to the right bot and set one shipping goal a week (profile + handbook v1); receive status, reviews, and hiring proposals from every botseverywhere bot (from handbook v1: all bots report to Grok Bot)."
@@ -108,7 +108,7 @@
               "sending messages/emails, public posts, spending, merging to main, production deploys, DNS, secrets, deleting, new access, logins before Nov 7 (from handbook v1)."
             ],
             "doneWhen": [
-              "the week's shipping goal is set, work is routed to the bot whose lane owns it, and the weekday 18:15 summary reaches Miguel with current status from every bot (from handbook v1; profile says \"daily\")."
+              "the week's shipping goal is set, work is routed to the bot whose lane owns it, and the weekday 18:15 summary reaches the owner with current status from every bot (from handbook v1; profile says \"daily\")."
             ]
           },
           "provenance": {
@@ -119,7 +119,7 @@
           },
           "profile": {
             "department": "Manager",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -139,21 +139,21 @@
           "role": "Turns research into a build prompt",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Planning Bot. context before code (repo, libraries, competitors, X signals Miguel shares); scoped prompts to Cursor/Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.",
+          "prompt": "You are Planning Bot. context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "context before code (repo, libraries, competitors, X signals Miguel shares); scoped prompts to Cursor/Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots."
+              "context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots."
             ],
             "may": [
-              "research web/repos (read-only)/docs/competitors; send build prompts to Cursor/Build Bot; run preview deploys and verification."
+              "research web/repos (read-only)/docs/competitors; send build prompts to Build Bot; run preview deploys and verification."
             ],
             "mustAskBefore": [
               "production deploys, DNS, paid services, secrets, deleting branches/data, merging to main, public posts, changes to the product lock."
             ],
             "doneWhen": [
-              "preview URL works, screenshots/video prove it, Miguel gets a short report (shipped / broke / next prompt)."
+              "preview URL works, screenshots/video prove it, the owner gets a short report (shipped / broke / next prompt)."
             ]
           },
           "provenance": {
@@ -164,7 +164,7 @@
           },
           "profile": {
             "department": "Turn research into a build prompt",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -184,15 +184,15 @@
           "role": "Builds the change",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Build Bot. running scoped prompts through Cursor to green tests; small branch + PR changes with summaries; honest failure reports.",
+          "prompt": "You are Build Bot. running scoped prompts through the coding agent to green tests; small branch + PR changes with summaries; honest failure reports.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "running scoped prompts through Cursor to green tests; small branch + PR changes with summaries; honest failure reports."
+              "running scoped prompts through the coding agent to green tests; small branch + PR changes with summaries; honest failure reports."
             ],
             "may": [
-              "launch/steer Cursor cloud agents on botseverywhere repos, create branches/PRs, run tests and local previews; ask Planning Bot for context."
+              "launch/steer cloud coding agents on botseverywhere repos, create branches/PRs, run tests and local previews; ask Planning Bot for context."
             ],
             "mustAskBefore": [
               "merging to main, production deploys, secrets/paid services, deleting code/branches, large out-of-scope refactors, logins/auth before Nov 7."
@@ -209,7 +209,7 @@
           },
           "profile": {
             "department": "Build the change",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -229,12 +229,12 @@
           "role": "Researches the question",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Research Bot. product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for alicantetechvibes.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com.",
+          "prompt": "You are Research Bot. product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for alicantetechvibes.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com."
+              "product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com."
             ],
             "may": [
               "research web/docs/teammates' context; draft/update docs in the shared folder."
@@ -254,7 +254,7 @@
           },
           "profile": {
             "department": "Research",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -282,7 +282,7 @@
               "brand kit (exact logo PNG lock, palette, Inter, wordmark, tagline \"Org chart for bots. Work chart for humans.\"); product UI mockups/design system; landing visuals, emails/decks/CTAs, social creative, non-X copy; org-vs-work-chart diagrams."
             ],
             "may": [
-              "deliver reviewable PNG/HTML in brand-kit paths when Miguel asks for mockups or design; brief angles and creative to x.com; hand final screens to Planning Bot (all from profile)."
+              "deliver reviewable PNG/HTML in brand-kit paths when the owner asks for mockups or design; brief angles and creative to x.com; hand final screens to Planning Bot (all from profile)."
             ],
             "mustAskBefore": [
               "sending messages/emails, public posts, spending, merging to main, production deploys, DNS, secrets, deleting, new access, logins before Nov 7 (from handbook v1). From profile: never regenerate the logo (composite the exact PNG only); no third-party marks."
@@ -299,7 +299,7 @@
           },
           "profile": {
             "department": "Marketing Bot",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -319,21 +319,21 @@
           "role": "Drafts social posts",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Social Post Bot. polished X posts/threads on the build-up, milestones, cross-links to alicantetechvibes.com.",
+          "prompt": "You are Social Post Bot. polished X posts/threads on the build-up, milestones, cross-links to example.com.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "polished X posts/threads on the build-up, milestones, cross-links to alicantetechvibes.com."
+              "polished X posts/threads on the build-up, milestones, cross-links to example.com."
             ],
             "may": [
-              "draft posts and threads from Research briefs and Miguel's input; after Miguel approves the exact text, post via the connected X account (profile)."
+              "draft posts and threads from Research briefs and the owner's input; after the owner approves the exact text, post via the connected X account (profile)."
             ],
             "mustAskBefore": [
-              "posting anything. Every post, thread, or reply is a draft first and needs Miguel's approval of the exact text, with no exceptions (from handbook v1: must-ask is absolute, public posts). The profile's \"unless he explicitly says to post without preview\" exception is removed here; the profile itself still contains it until Miguel approves a rewrite."
+              "posting anything. Every post, thread, or reply is a draft first and needs the owner's approval of the exact text, with no exceptions (from handbook v1: must-ask is absolute, public posts). The profile's \"unless he explicitly says to post without preview\" exception is removed here; the profile itself still contains it until the owner approves a rewrite."
             ],
             "doneWhen": [
-              "the post Miguel approved is live and confirmed with the live link or post id (profile: \"confirm with the live link or post id\")."
+              "the post the owner approved is live and confirmed with the live link or post id (profile: \"confirm with the live link or post id\")."
             ]
           },
           "provenance": {
@@ -344,7 +344,7 @@
           },
           "profile": {
             "department": "x.com",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -389,7 +389,7 @@
           },
           "profile": {
             "department": "HR",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -409,12 +409,12 @@
           "role": "Writes the spec",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Product Bot. Nov 7 demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; Nov 7 demo script; acceptance criteria per feature.",
+          "prompt": "You are Product Bot. launch demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; launch demo script; acceptance criteria per feature.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "Nov 7 demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; Nov 7 demo script; acceptance criteria per feature."
+              "launch demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; launch demo script; acceptance criteria per feature."
             ],
             "may": [
               "read other bots' work, draft specs and scripts, propose scope cuts."
@@ -434,7 +434,7 @@
           },
           "profile": {
             "department": "Write the spec",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -479,7 +479,7 @@
           },
           "profile": {
             "department": "Test the build",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -499,12 +499,12 @@
           "role": "Handles sales follow-up",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Sales Bot. lead list (Nov 7 SpaceXAI Alicante attendees via luma.com/spacexai-alicante, Alicante Tech Vibes); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.",
+          "prompt": "You are Sales Bot. lead list (attendees of the next launch event and local meetups); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "lead list (Nov 7 SpaceXAI Alicante attendees via luma.com/spacexai-alicante, Alicante Tech Vibes); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas."
+              "lead list (attendees of the next launch event and local meetups); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas."
             ],
             "may": [
               "research organizations and public contacts; draft pitches, emails, DMs."
@@ -524,7 +524,7 @@
           },
           "profile": {
             "department": "Sales Bot",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -544,15 +544,15 @@
           "role": "Handles invoices and spend",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Finance Bot. cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, Cursor, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7).",
+          "prompt": "You are Finance Bot. cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, coding tools, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7).",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, Cursor, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7)."
+              "cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, coding tools, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7)."
             ],
             "may": [
-              "read billing/usage data Miguel shares; draft budgets/checklists."
+              "read billing/usage data the owner shares; draft budgets/checklists."
             ],
             "mustAskBefore": [
               "any purchase, top-up, subscription change, cancellation, payment, billing-setting change."
@@ -569,7 +569,7 @@
           },
           "profile": {
             "department": "Finance Bot",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -614,7 +614,7 @@
           },
           "profile": {
             "department": "Security",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -634,12 +634,12 @@
           "role": "Keeps the routines running",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Automation Bot. automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during Miguel's 10:00–18:00 job.",
+          "prompt": "You are Automation Bot. automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during the owner's 10:00–18:00 job.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during Miguel's 10:00–18:00 job."
+              "automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during the owner's 10:00–18:00 job."
             ],
             "may": [
               "read other bots' routines/outputs; draft automations and fixes."
@@ -648,7 +648,7 @@
               "creating/changing/pausing/deleting any automation; anything that sends, spends, or acts in an outside account."
             ],
             "doneWhen": [
-              "register current, every automation owned and working, proposals waiting for Miguel's OK."
+              "register current, every automation owned and working, proposals waiting for the owner's OK."
             ]
           },
           "provenance": {
@@ -659,7 +659,7 @@
           },
           "profile": {
             "department": "Automations",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -704,7 +704,7 @@
           },
           "profile": {
             "department": "Design Bot",
-            "location": "Alicante",
+            "location": "Harbor",
             "email": "",
             "phone": "",
             "startedOn": "2026-10-14",
@@ -724,7 +724,7 @@
           "orgId": "botseverywhere",
           "source": "management",
           "label": "Nov 7 2026 demo",
-          "example": "Miguel sets the Nov 7 demo as the outcome for this stream."
+          "example": "The owner sets the launch demo as the outcome for this stream."
         }
       ],
       "workstreams": [
@@ -733,7 +733,7 @@
           "orgId": "botseverywhere",
           "triggerId": "trigger-nov7",
           "outcome": "Nov 7 2026 demo",
-          "ownerSeatId": "seat-miguel",
+          "ownerSeatId": "seat-sam",
           "kind": "main",
           "stepIds": [
             "step-spec",
@@ -769,7 +769,7 @@
           "outputs": [
             "Turn research into a build prompt"
           ],
-          "checkpointId": "cp-miguel-merge"
+          "checkpointId": "cp-owner-merge"
         },
         {
           "id": "step-inner",
@@ -823,10 +823,10 @@
       ],
       "checkpoints": [
         {
-          "id": "cp-miguel-merge",
+          "id": "cp-owner-merge",
           "stepId": "step-outer",
-          "rule": "Miguel approves merges to main and production deploys.",
-          "approverSeatId": "seat-miguel",
+          "rule": "The owner approves merges to main and production deploys.",
+          "approverSeatId": "seat-sam",
           "required": true
         }
       ],
@@ -851,7 +851,7 @@
           "at": "2026-10-14T20:13:08+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -859,7 +859,7 @@
           "outputRefs": [
             "Initialize project"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Initialize project"
         },
         {
@@ -882,7 +882,7 @@
           "at": "2026-10-14T20:43:07+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -890,7 +890,7 @@
           "outputRefs": [
             "Add the Nov 7 BotsEverywhere demo app"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Add the Nov 7 BotsEverywhere demo app"
         },
         {
@@ -913,7 +913,7 @@
           "at": "2026-10-14T20:50:35+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -921,7 +921,7 @@
           "outputRefs": [
             "Replace seat mascots with the bots-index robots"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Replace seat mascots with the bots-index robots"
         },
         {
@@ -944,7 +944,7 @@
           "at": "2026-10-14T20:59:10+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -952,7 +952,7 @@
           "outputRefs": [
             "Use the official tree mark and capital-E wordmark"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Use the official tree mark and capital-E wordmark"
         },
         {
@@ -975,7 +975,7 @@
           "at": "2026-10-14T21:01:09+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -983,7 +983,7 @@
           "outputRefs": [
             "Update the landing hero and charts heading"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Update the landing hero and charts heading"
         },
         {
@@ -1006,7 +1006,7 @@
           "at": "2026-10-14T21:03:09+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -1014,7 +1014,7 @@
           "outputRefs": [
             "Enlarge the header and footer lockup"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Enlarge the header and footer lockup"
         },
         {
@@ -1037,7 +1037,7 @@
           "at": "2026-10-14T21:20:12+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -1045,7 +1045,7 @@
           "outputRefs": [
             "Add private teams, passwordless auth, and a bot catalog"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Add private teams, passwordless auth, and a bot catalog"
         },
         {
@@ -1068,7 +1068,7 @@
           "at": "2026-10-14T21:20:18+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -1076,7 +1076,7 @@
           "outputRefs": [
             "Add the curated bot markdown files the catalog validator reads"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Add the curated bot markdown files the catalog validator reads"
         },
         {
@@ -1099,7 +1099,7 @@
           "at": "2026-10-14T21:26:30+00:00",
           "workstreamId": "ws-nov7",
           "stepId": "step-outer",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
@@ -1107,7 +1107,7 @@
           "outputRefs": [
             "Add how-it-works and security notes under sign-in"
           ],
-          "approverSeatId": "seat-miguel",
+          "approverSeatId": "seat-sam",
           "note": "Add how-it-works and security notes under sign-in"
         },
         {
@@ -1263,14 +1263,14 @@
           "id": "botseverywhere-log-2",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T20:13:08+00:00",
           "summary": "Initialize project",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-3",
@@ -1288,14 +1288,14 @@
           "id": "botseverywhere-log-4",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T20:43:07+00:00",
           "summary": "Add the Nov 7 BotsEverywhere demo app",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-5",
@@ -1312,14 +1312,14 @@
           "id": "botseverywhere-log-6",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T20:50:35+00:00",
           "summary": "Replace seat mascots with the bots-index robots",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-7",
@@ -1336,14 +1336,14 @@
           "id": "botseverywhere-log-8",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T20:59:10+00:00",
           "summary": "Use the official tree mark and capital-E wordmark",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-9",
@@ -1360,14 +1360,14 @@
           "id": "botseverywhere-log-10",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T21:01:09+00:00",
           "summary": "Update the landing hero and charts heading",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-11",
@@ -1384,14 +1384,14 @@
           "id": "botseverywhere-log-12",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T21:03:09+00:00",
           "summary": "Enlarge the header and footer lockup",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-13",
@@ -1409,14 +1409,14 @@
           "id": "botseverywhere-log-14",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T21:20:12+00:00",
           "summary": "Add private teams, passwordless auth, and a bot catalog",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-15",
@@ -1434,14 +1434,14 @@
           "id": "botseverywhere-log-16",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T21:20:18+00:00",
           "summary": "Add the curated bot markdown files the catalog validator reads",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-17",
@@ -1459,14 +1459,14 @@
           "id": "botseverywhere-log-18",
           "orgId": "botseverywhere",
           "type": "approval",
-          "actorSeatId": "seat-miguel",
+          "actorSeatId": "seat-sam",
           "actorType": "human",
           "timestamp": "2026-10-14T21:26:30+00:00",
           "summary": "Add how-it-works and security notes under sign-in",
           "stepId": "step-outer",
           "workstreamId": "ws-nov7",
           "status": "approved",
-          "approverSeatId": "seat-miguel"
+          "approverSeatId": "seat-sam"
         },
         {
           "id": "botseverywhere-log-19",
@@ -1594,7 +1594,7 @@
             "id": "botseverywhere-demo-2",
             "orgId": "botseverywhere",
             "type": "hire",
-            "actorSeatId": "seat-miguel",
+            "actorSeatId": "seat-sam",
             "actorType": "human",
             "timestamp": "2026-09-22T14:00:00+00:00",
             "summary": "Sample: hired a walkthrough bot for the lane.",
@@ -1617,20 +1617,20 @@
             "id": "botseverywhere-demo-4",
             "orgId": "botseverywhere",
             "type": "approval",
-            "actorSeatId": "seat-miguel",
+            "actorSeatId": "seat-sam",
             "actorType": "human",
             "timestamp": "2026-10-06T16:05:00+00:00",
             "summary": "Sample: approved the walkthrough lane.",
             "stepId": "step-outer",
             "workstreamId": "ws-nov7",
             "status": "approved",
-            "approverSeatId": "seat-miguel"
+            "approverSeatId": "seat-sam"
           },
           {
             "id": "botseverywhere-demo-5",
             "orgId": "botseverywhere",
             "type": "fire",
-            "actorSeatId": "seat-miguel",
+            "actorSeatId": "seat-sam",
             "actorType": "human",
             "timestamp": "2026-10-08T17:40:00+00:00",
             "summary": "Sample: retired the walkthrough bot after the lane.",

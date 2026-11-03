@@ -57,7 +57,7 @@ describe('owner link', () => {
     const seat = await app.request(`/api/teams/${teamId}/seats`, {
       method: 'POST',
       headers: { ...jsonHeaders(anon.csrf, anon.cookie), 'x-owner-token': ownerToken },
-      body: JSON.stringify({ name: 'Research', role: 'Briefs', humanOwner: 'Miguel', botSlug: 'research' }),
+      body: JSON.stringify({ name: 'Research', role: 'Briefs', humanOwner: 'Sam', botSlug: 'research' }),
     })
     assert.equal(seat.status, 201)
   })

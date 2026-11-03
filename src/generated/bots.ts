@@ -21,7 +21,7 @@ export const catalogBots: CatalogBot[] = [
       "Grok Bot",
       "Intake chips"
     ],
-    "contributor": "miguel",
+    "contributor": "botseverywhere",
     "addedAt": "2026-10-01",
     "summary": "Handles the busywork that keeps things moving. Classifies intake and keeps follow-ups on track.",
     "kind": "ops",
@@ -36,7 +36,7 @@ export const catalogBots: CatalogBot[] = [
       "Web search",
       "Notion"
     ],
-    "contributor": "miguel",
+    "contributor": "botseverywhere",
     "addedAt": "2026-10-01",
     "summary": "Finds the facts so you don’t have to. Turns signals into a brief the other seats can use.",
     "kind": "research",
@@ -47,10 +47,9 @@ export const catalogBots: CatalogBot[] = [
     "name": "Site",
     "category": "site",
     "integrations": [
-      "Grok Bot",
-      "Claude path"
+      "Grok Bot"
     ],
-    "contributor": "miguel",
+    "contributor": "botseverywhere",
     "addedAt": "2026-10-01",
     "summary": "Keeps pages fresh and shipped. Drafts the page, then waits for a human yes before anything goes live.",
     "kind": "site",
@@ -64,7 +63,7 @@ export const catalogBots: CatalogBot[] = [
       "Grok Bot",
       "X"
     ],
-    "contributor": "miguel",
+    "contributor": "botseverywhere",
     "addedAt": "2026-10-01",
     "summary": "Turns ideas into posts that sound like you. Short, warm, and direct. Nothing is posted until a human says yes.",
     "kind": "writing",

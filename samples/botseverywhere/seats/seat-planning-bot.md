@@ -10,13 +10,13 @@ personId: person-seat-planning-bot
 ---
 
 ## Owns
-context before code (repo, libraries, competitors, X signals Miguel shares); scoped prompts to Cursor/Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.
+context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.
 
 ## May
-research web/repos (read-only)/docs/competitors; send build prompts to Cursor/Build Bot; run preview deploys and verification.
+research web/repos (read-only)/docs/competitors; send build prompts to Build Bot; run preview deploys and verification.
 
 ## Needs approval
 production deploys, DNS, paid services, secrets, deleting branches/data, merging to main, public posts, changes to the product lock.
 
 ## Done when
-preview URL works, screenshots/video prove it, Miguel gets a short report (shipped / broke / next prompt).
+preview URL works, screenshots/video prove it, the owner gets a short report (shipped / broke / next prompt).

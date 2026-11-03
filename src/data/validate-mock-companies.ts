@@ -80,8 +80,8 @@ function validateCompany(company: CompanySeed): string[] {
 
   if (org.ownerOrg) {
     if (org.mock) errors.push(`${where}: owner org is not a sample`)
-    if (!company.seats.some((seat) => seat.name === 'Miguel Rovira' && seat.type === 'human')) {
-      errors.push(`${where}: owner seat Miguel Rovira is missing`)
+    if (!company.seats.some((seat) => seat.name === 'Sam Rivera' && seat.type === 'human')) {
+      errors.push(`${where}: owner seat Sam Rivera is missing`)
     }
     const bots = company.seats.filter((seat) => seat.type === 'bot')
     for (const bot of bots) {

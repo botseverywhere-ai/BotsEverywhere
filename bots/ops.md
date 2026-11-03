@@ -4,7 +4,7 @@ category: ops
 integrations:
   - Grok Bot
   - Intake chips
-contributor: miguel
+contributor: botseverywhere
 added_at: 2026-10-01
 ---
 

@@ -15,7 +15,7 @@ function project(dump?: Record<string, unknown>) {
   const dir = mkdtempSync(join(tmpdir(), 'be-connector-import-'))
   const orgs = join(dir, 'orgs')
   mkdirSync(orgs)
-  const made = createOrgFiles(orgs, 'Alicante Tech Vibes', 'You')
+  const made = createOrgFiles(orgs, 'Northwind Events', 'You')
   assert.ok(made.ok)
   if (dump) writeFileSync(join(orgs, GROK_DATA_FILE), JSON.stringify({ dumpedAt: '2026-10-29T14:00:00+01:00', copy: 'acn8', skills: [], ...dump }))
   const seat = (slug: string) => readFileSync(join(orgs, made.slug, 'seats', `${slug}.md`), 'utf8')

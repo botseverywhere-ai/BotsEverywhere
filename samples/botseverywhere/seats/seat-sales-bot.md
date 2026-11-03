@@ -10,7 +10,7 @@ personId: person-seat-sales-bot
 ---
 
 ## Owns
-lead list (Nov 7 SpaceXAI Alicante attendees via luma.com/spacexai-alicante, Alicante Tech Vibes); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.
+lead list (attendees of the next launch event and local meetups); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.
 
 ## May
 research organizations and public contacts; draft pitches, emails, DMs.

@@ -53,7 +53,7 @@ test('Connect bots shows Step 2 in a box like Step 1 once the organization has b
   const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
   assert.match(css, /\.link-company\.connect-grok \.dir-actions \{ margin-top: 0; \}/)
   const { seatsFolder } = await import('../../src/org/folder-path.ts')
-  assert.equal(seatsFolder('C:\\Users\\migue\\app\\orgs\\your-company'), 'C:\\Users\\migue\\app\\orgs\\your-company\\seats')
+  assert.equal(seatsFolder('C:\\Users\\you\\app\\orgs\\your-company'), 'C:\\Users\\you\\app\\orgs\\your-company\\seats')
   assert.equal(seatsFolder('/home/ana/app/orgs/desk'), '/home/ana/app/orgs/desk/seats')
   const { botsLine } = await import('../../src/components/file-guide-copy.ts')
   const bot = (title: string, status = 'active') => ({ kind: 'bot' as const, title, status })

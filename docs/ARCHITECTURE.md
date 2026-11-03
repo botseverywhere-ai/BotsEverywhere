@@ -111,7 +111,7 @@ More detail is in [design-tokens.md](design-tokens.md) and [STYLEGUIDE.md](STYLE
 
 ## 8. Recommendations after the demo (not built)
 
-These are recommendations for after the Nov 7 demo. None of them are built. Do not switch stacks before Nov 7.
+These are recommendations for after the launch demo. None of them are built. Do not switch stacks before Nov 7.
 
 1. **Keep React, Vite, and TypeScript.** On a PC, `npm run dev` starts the site and the local writer. The writer saves plain markdown files in `orgs/`. There is no database and there are no accounts. The EC2 version is the same code, built as static files, with saving off.
 

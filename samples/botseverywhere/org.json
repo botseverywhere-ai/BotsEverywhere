@@ -20,7 +20,7 @@
       "name": "Turn research into a build prompt"
     },
     {
-      "id": "builds-via-cursor",
+      "id": "builds",
       "name": "Build the change"
     },
     {
@@ -70,14 +70,14 @@
   ],
   "people": [
     {
-      "id": "person-seat-miguel",
-      "name": "Miguel Rovira",
+      "id": "person-seat-sam",
+      "name": "Sam Rivera",
       "title": "Owner",
       "department": "owner",
       "email": "",
       "phone": "",
-      "location": "Alicante",
-      "bio": "Miguel Rovira, Owner.",
+      "location": "Harbor",
+      "bio": "Sam Rivera, Owner.",
       "startedOn": "2026-10-14"
     },
     {
@@ -87,7 +87,7 @@
       "department": "manager",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Manager.",
       "startedOn": "2026-10-14"
     },
@@ -98,7 +98,7 @@
       "department": "research-to-prompts-approves",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Turns research into a build prompt.",
       "startedOn": "2026-10-14"
     },
@@ -106,10 +106,10 @@
       "id": "person-seat-build-bot",
       "name": "Build Bot",
       "title": "Builds the change",
-      "department": "builds-via-cursor",
+      "department": "builds",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Builds the change.",
       "startedOn": "2026-10-14"
     },
@@ -120,7 +120,7 @@
       "department": "research",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Researches the question.",
       "startedOn": "2026-10-14"
     },
@@ -131,7 +131,7 @@
       "department": "brand-and-marketing",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Drafts brand and marketing.",
       "startedOn": "2026-10-14"
     },
@@ -142,7 +142,7 @@
       "department": "x-com",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Drafts social posts.",
       "startedOn": "2026-10-14"
     },
@@ -153,7 +153,7 @@
       "department": "hr",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Handles hiring and the roster.",
       "startedOn": "2026-10-14"
     },
@@ -164,7 +164,7 @@
       "department": "Write the spec",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Writes the spec.",
       "startedOn": "2026-10-14"
     },
@@ -175,7 +175,7 @@
       "department": "Test the build",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Tests the build.",
       "startedOn": "2026-10-14"
     },
@@ -186,7 +186,7 @@
       "department": "sales-and-partnerships",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Handles sales follow-up.",
       "startedOn": "2026-10-14"
     },
@@ -197,7 +197,7 @@
       "department": "finance-and-ops",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Handles invoices and spend.",
       "startedOn": "2026-10-14"
     },
@@ -208,7 +208,7 @@
       "department": "security",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Checks for security issues.",
       "startedOn": "2026-10-14"
     },
@@ -219,7 +219,7 @@
       "department": "automations",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Keeps the routines running.",
       "startedOn": "2026-10-14"
     },
@@ -230,19 +230,19 @@
       "department": "ux-ui",
       "email": "",
       "phone": "",
-      "location": "Alicante",
+      "location": "Harbor",
       "bio": "Designs the screens.",
       "startedOn": "2026-10-14"
     }
   ],
   "seats": [
     {
-      "slug": "seat-miguel",
+      "slug": "seat-sam",
       "reportsTo": null
     },
     {
       "slug": "seat-grok",
-      "reportsTo": "seat-miguel"
+      "reportsTo": "seat-sam"
     },
     {
       "slug": "seat-planning-bot",

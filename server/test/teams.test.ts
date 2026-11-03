@@ -28,7 +28,7 @@ describe('private teams', () => {
     const created = await app.request('/api/teams', {
       method: 'POST',
       headers: jsonHeaders(owner.csrf, owner.jar.header()),
-      body: JSON.stringify({ name: 'Alicante' }),
+      body: JSON.stringify({ name: 'Harbor' }),
     })
     assert.equal(created.status, 201)
     const team = (await readJson(created)).team as { id: string }
@@ -95,7 +95,7 @@ describe('private teams', () => {
     const renamed = await app.request(`/api/teams/${team.id}`, {
       method: 'PATCH',
       headers: jsonHeaders(owner.csrf, owner.jar.header()),
-      body: JSON.stringify({ name: 'Alicante crew' }),
+      body: JSON.stringify({ name: 'Harbor crew' }),
     })
     assert.equal(renamed.status, 200)
 

@@ -44,7 +44,7 @@ describe('share-link teams', () => {
 
   it('creates a team with no account and stores only token hashes', async () => {
     const { app, sqlite } = createTestApp()
-    const created = await createTeam(app, 'Alicante')
+    const created = await createTeam(app, 'Harbor')
     const editToken = tokenFrom(created.links.editUrl, 'edit-')
     const viewToken = tokenFrom(created.links.viewUrl, 'view-')
     assert.ok(Buffer.from(editToken, 'base64url').length >= 16)

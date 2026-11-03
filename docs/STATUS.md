@@ -1,14 +1,14 @@
 # Status
 
-Where the app stands as of 3 November 2026, written for whoever picks it up next. Facts about a running organization describe Miguel's own `orgs/` folders, which are uncommitted user data.
+Where the app stands as of 3 November 2026, written for whoever picks it up next. Facts about a running organization describe the maintainer's own `orgs/` folders, which are uncommitted user data.
 
 ## Branch
 
-The main branch is `main`. All of the work since the initial commit sits on `feature/performance-work-chart-review`, which holds every earlier branch (`feat/connector-v2`, `feat/bot-profile`, `feat/org-folder-ids`, and the rest). It is not merged into `main` yet; that merge is Miguel's call and happens through a pull request on GitHub, after the branch protection on `main` is set. Never push to `main` without his OK.
+The main branch is `main`. All of the work since the initial commit sits on `feature/performance-work-chart-review`, which holds every earlier branch (`feat/connector-v2`, `feat/bot-profile`, `feat/org-folder-ids`, and the rest). It is not merged into `main` yet; that merge is the maintainer's call and happens through a pull request on GitHub, after the branch protection on `main` is set. Never push to `main` without the maintainer's OK.
 
 Two fresh clones of the branch were checked on 3 November 2026: `botseverywhere-v8` (a full run with a new Connector, see Fresh clone below) and `botseverywhere-v9` (a spare, untouched).
 
-Design docs: `docs/superpowers/specs/` and `docs/superpowers/plans/`. The rules for working on the code are in `AGENTS.md`.
+The rules for working on the code are in `AGENTS.md`.
 
 ## What works
 

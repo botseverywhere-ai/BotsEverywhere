@@ -152,7 +152,7 @@ test('the main bot is never greyed or refused', () => {
     assert.ok(file.ok)
     if (!file.ok) return
     assert.deepEqual(importBotsFile(join(dir, b), b, file.rows).greyed, [])
-    const other = createOrgFiles(dir, 'techiewithmiguel', 'You')
+    const other = createOrgFiles(dir, 'northwind-test', 'You')
     assert.ok(other.ok)
     if (other.ok) assert.ok(add(other.slug, 'Grok Bot', 'main').ok, 'Add existing bot lets the main bot in too')
   } finally {

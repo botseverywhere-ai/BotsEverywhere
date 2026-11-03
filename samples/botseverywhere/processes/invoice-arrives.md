@@ -9,7 +9,7 @@ doneWhen: The invoice is matched and payment is approved or sent back.
 ## Steps
 
 - seat-finance-bot | Match the invoice to the open bill
-- seat-miguel | Approve payment
+- seat-sam | Approve payment
 
 ## Notes
 

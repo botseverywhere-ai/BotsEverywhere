@@ -7,10 +7,10 @@ const TRIGGERS = ['Directive', 'Objective', 'Problem', 'Event'] as const
 type Trigger = (typeof TRIGGERS)[number]
 
 const EXAMPLES: Record<Trigger, string> = {
-  Directive: '“Ship the Nov 7 Grok Bot Alicante demo narrative with Research, Writing, and Site seats.”',
+  Directive: '“Ship the Nov 7 Grok Bot launch demo narrative with Research, Writing, and Site seats.”',
   Objective: '“Have a human-approved demo narrative live before Nov 7.”',
-  Problem: '“Org seats exist but work is not moving toward the Alicante demo.”',
-  Event: '“Grok Bot Alicante · November 07, 2026 — need narrative + site + X thread.”',
+  Problem: '“Org seats exist but work is not moving toward the Harbor demo.”',
+  Event: '“Grok Bot launch · November 07, 2026 — need narrative + site + X thread.”',
 }
 
 export function IntakePage() {

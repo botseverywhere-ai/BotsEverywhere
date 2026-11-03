@@ -1,6 +1,6 @@
 /**
  * Writes src/data/mock-companies.json for the 15 Oct preview.
- * Ten fictional companies plus Miguel's owner org. Run: npx tsx scripts/build-preview-seed.ts
+ * Ten fictional companies plus the owner org. Run: npx tsx scripts/build-preview-seed.ts
  */
 import { writeFileSync } from 'node:fs'
 import { ACTIVITY, QA_RUN, SEEDED_SEATS } from '../server/src/seed-botseverywhere.ts'
@@ -420,7 +420,7 @@ function ownerDemoActivity(orgId: string): DemoActivity {
   })
   push({
     type: 'hire',
-    actorSeatId: 'seat-miguel',
+    actorSeatId: 'seat-sam',
     actorType: 'human',
     timestamp: '2026-09-22T14:00:00+00:00',
     summary: 'Sample: hired a walkthrough bot for the lane.',
@@ -439,18 +439,18 @@ function ownerDemoActivity(orgId: string): DemoActivity {
   })
   push({
     type: 'approval',
-    actorSeatId: 'seat-miguel',
+    actorSeatId: 'seat-sam',
     actorType: 'human',
     timestamp: '2026-10-06T16:05:00+00:00',
     summary: 'Sample: approved the walkthrough lane.',
     stepId: 'step-outer',
     workstreamId: 'ws-nov7',
     status: 'approved',
-    approverSeatId: 'seat-miguel',
+    approverSeatId: 'seat-sam',
   })
   push({
     type: 'fire',
-    actorSeatId: 'seat-miguel',
+    actorSeatId: 'seat-sam',
     actorType: 'human',
     timestamp: '2026-10-08T17:40:00+00:00',
     summary: 'Sample: retired the walkthrough bot after the lane.',
@@ -512,7 +512,7 @@ function ownerCompany(): CompanySeed {
     provenance: seat.kind === 'bot' ? { ...seat.card.provenance } : undefined,
     profile: {
       department: seat.role,
-      location: 'Alicante',
+      location: 'Harbor',
       email: '',
       phone: '',
       startedOn: '2026-10-14',
@@ -552,14 +552,14 @@ function ownerCompany(): CompanySeed {
     if (event.onMain) {
       pushLog({
         type: 'approval',
-        actorSeatId: 'seat-miguel',
+        actorSeatId: 'seat-sam',
         actorType: 'human',
         timestamp: event.at,
         summary: event.summary,
         stepId: 'step-outer',
         workstreamId: 'ws-nov7',
         status: 'approved',
-        approverSeatId: 'seat-miguel',
+        approverSeatId: 'seat-sam',
       })
     }
   }
@@ -587,18 +587,18 @@ function ownerCompany(): CompanySeed {
     org: {
       id: orgId,
       name: 'botseverywhere',
-      description: 'Miguel Rovira’s organization.',
+      description: 'The owner’s organization.',
       industry: 'Software',
       mock: false,
       ownerOrg: true,
       tagline: 'Org chart for bots. Work chart for humans.',
-      address: 'Alicante, Spain',
+      address: 'Remote',
       headcount: '1 person, 14 bots',
       founded: 2026,
       mark: 'BE',
       markColor: '#0b1220',
       logExemption:
-        'Hire and fire have not happened in this project, so the real log has no hire or fire events. No exception was recorded either. Approvals are only the commits that landed on main; each one is Miguel\'s recorded decision, with the commit subject kept verbatim. Branch-only commits stay work events.',
+        'Hire and fire have not happened in this project, so the real log has no hire or fire events. No exception was recorded either. Approvals are only the commits that landed on main; each one is the owner\'s recorded decision, with the commit subject kept verbatim. Branch-only commits stay work events.',
       goals: {
         title: 'Nov 7 2026 demo',
         dueOn: '2026-11-07',
@@ -619,14 +619,14 @@ function ownerCompany(): CompanySeed {
       orgId,
       source: 'management',
       label: 'Nov 7 2026 demo',
-      example: 'Miguel sets the Nov 7 demo as the outcome for this stream.',
+      example: 'The owner sets the launch demo as the outcome for this stream.',
     }],
     workstreams: [{
       id: 'ws-nov7',
       orgId,
       triggerId: 'trigger-nov7',
       outcome: 'Nov 7 2026 demo',
-      ownerSeatId: 'seat-miguel',
+      ownerSeatId: 'seat-sam',
       kind: 'main',
       stepIds: steps.map((step) => step.id),
     }],
@@ -638,7 +638,7 @@ function ownerCompany(): CompanySeed {
       executorSeatId: step.exec,
       inputs: ['The current preview branch'],
       outputs: [step.name],
-      checkpointId: step.id === 'step-outer' ? 'cp-miguel-merge' : undefined,
+      checkpointId: step.id === 'step-outer' ? 'cp-owner-merge' : undefined,
     })),
     handoffs: [
       { id: 'hand-spec-outer', fromStepId: 'step-spec', toStepId: 'step-outer' },
@@ -647,10 +647,10 @@ function ownerCompany(): CompanySeed {
       { id: 'hand-qa-outer', fromStepId: 'step-qa', toStepId: 'step-outer', condition: 'report back' },
     ],
     checkpoints: [{
-      id: 'cp-miguel-merge',
+      id: 'cp-owner-merge',
       stepId: 'step-outer',
-      rule: 'Miguel approves merges to main and production deploys.',
-      approverSeatId: 'seat-miguel',
+      rule: 'The owner approves merges to main and production deploys.',
+      approverSeatId: 'seat-sam',
       required: true,
     }],
     activity: log.map((event, index) => ({

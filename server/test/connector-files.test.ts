@@ -6,19 +6,19 @@ import { CONNECTOR_FILES_NOTE, connectorFiles, lastRunShort } from '../../src/co
 import { FILE_WHAT, connectorStatusFile } from '../../src/components/file-guide-copy.ts'
 
 test('Files the Connector uses names each real file, who writes it, and what it holds', () => {
-  const rows = connectorFiles('C:\\Users\\miguel\\app\\orgs', 'C:\\Users\\miguel\\app\\orgs\\your-company', 'uft5')
+  const rows = connectorFiles('C:\\Users\\youl\\app\\orgs', 'C:\\Users\\youl\\app\\orgs\\your-company', 'uft5')
   assert.deepEqual(rows.map((row) => row.path), [
-    'C:\\Users\\miguel\\app\\orgs\\CONNECTOR.md',
-    'C:\\Users\\miguel\\app\\orgs\\grok-data.json',
-    'C:\\Users\\miguel\\app\\orgs\\connector.json',
-    'C:\\Users\\miguel\\app\\orgs\\connector-todo.json',
-    'C:\\Users\\miguel\\app\\orgs\\connector-results.json',
-    'C:\\Users\\miguel\\app\\orgs\\your-company\\grok\\snapshot.json',
-    'C:\\Users\\miguel\\app\\orgs\\your-company\\log\\',
-    'C:\\Users\\miguel\\app\\orgs\\project.json',
-    'C:\\Users\\miguel\\app\\orgs\\your-company\\grok\\requests.json',
-    'C:\\Users\\miguel\\app\\orgs\\connector-backups\\',
-    'C:\\Users\\miguel\\app\\orgs\\connector-log.json',
+    'C:\\Users\\youl\\app\\orgs\\CONNECTOR.md',
+    'C:\\Users\\youl\\app\\orgs\\grok-data.json',
+    'C:\\Users\\youl\\app\\orgs\\connector.json',
+    'C:\\Users\\youl\\app\\orgs\\connector-todo.json',
+    'C:\\Users\\youl\\app\\orgs\\connector-results.json',
+    'C:\\Users\\youl\\app\\orgs\\your-company\\grok\\snapshot.json',
+    'C:\\Users\\youl\\app\\orgs\\your-company\\log\\',
+    'C:\\Users\\youl\\app\\orgs\\project.json',
+    'C:\\Users\\youl\\app\\orgs\\your-company\\grok\\requests.json',
+    'C:\\Users\\youl\\app\\orgs\\connector-backups\\',
+    'C:\\Users\\youl\\app\\orgs\\connector-log.json',
   ])
   assert.deepEqual(rows.map((row) => row.writer), [
     'This app',
@@ -62,10 +62,10 @@ test('Status file names connector.json in the orgs folder and tells it the way Y
   const now = Date.parse('2026-10-21T13:30:00.000Z')
   const written = Date.parse('2026-10-21T12:56:00.000Z')
   const project = (orgsFolder: string, connector: { stamp: string; syncedAt: string; error: string } | null) => ({ project: { orgsFolder, connector } })
-  const ran = connectorStatusFile(project('C:\\Users\\miguel\\app\\orgs', { stamp: `${written}:120`, syncedAt: '2026-10-21T12:50:00.000Z', error: '' }), now)
+  const ran = connectorStatusFile(project('C:\\Users\\youl\\app\\orgs', { stamp: `${written}:120`, syncedAt: '2026-10-21T12:50:00.000Z', error: '' }), now)
   assert.deepEqual(ran, {
     name: 'connector.json',
-    path: 'C:\\Users\\miguel\\app\\orgs\\connector.json',
+    path: 'C:\\Users\\youl\\app\\orgs\\connector.json',
     what: 'When the Connector last ran',
     fact: `Last run ${lastRunShort(written, now)}`,
   }, 'the time is the file time the Status line reads, not the date inside the file')

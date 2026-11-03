@@ -20,7 +20,7 @@ function project() {
   const orgs = join(dir, 'orgs')
   mkdirSync(orgs)
   const a = createOrgFiles(orgs, 'BotsEverywhere', 'You')
-  const b = createOrgFiles(orgs, 'Alicante Tech Vibes', 'You')
+  const b = createOrgFiles(orgs, 'Northwind Events', 'You')
   assert.ok(a.ok && b.ok)
   const rootA = join(orgs, a.slug)
   const rootB = join(orgs, b.slug)
@@ -73,7 +73,7 @@ test('C2: a manager loop in the imported file never makes the organization unrea
     const file = parseBotsFile(JSON.stringify({ bots: [{ name: 'Alpha', grokBotUrl: link('al'), reportsTo: 'Beta' }, { name: 'Beta', grokBotUrl: link('be'), reportsTo: 'Alpha' }] }))
     assert.ok(file.ok)
     if (!file.ok) return
-    const fresh = createOrgFiles(orgs, 'techiewithmiguel', 'You')
+    const fresh = createOrgFiles(orgs, 'northwind-test', 'You')
     assert.ok(fresh.ok)
     if (!fresh.ok) return
     const result = importBotsFile(join(orgs, fresh.slug), fresh.slug, file.rows)
@@ -125,7 +125,7 @@ test('I5: while another organization cannot be read, no bot moves and the Connec
     assert.equal(moved.ok, false)
     if (!moved.ok) assert.match(moved.errors.join(' '), new RegExp(a))
     writeFileSync(join(orgs, GROK_DATA_FILE), JSON.stringify({ dumpedAt: '2026-10-29T14:00:00+01:00', copy: 'acn8', skills: [], bots: [{ id: 's1', name: 'Security', grokBotUrl: link('s1'), description: 'x', routinesVisible: false }] }))
-    const fresh = createOrgFiles(orgs, 'techiewithmiguel', 'You')
+    const fresh = createOrgFiles(orgs, 'northwind-test', 'You')
     assert.ok(fresh.ok)
     if (!fresh.ok) return
     const result = importFromConnector(orgs, join(orgs, fresh.slug), fresh.slug)

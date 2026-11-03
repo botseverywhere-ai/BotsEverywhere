@@ -15,7 +15,7 @@ function project() {
   const orgs = join(dir, 'orgs')
   mkdirSync(orgs)
   const a = createOrgFiles(orgs, 'BotsEverywhere', 'You')
-  const b = createOrgFiles(orgs, 'Alicante Tech Vibes', 'You')
+  const b = createOrgFiles(orgs, 'Northwind Events', 'You')
   assert.ok(a.ok && b.ok)
   const rootA = join(orgs, a.slug)
   const rootB = join(orgs, b.slug)
@@ -61,10 +61,10 @@ test('a seat the owner moved stays where the owner put it', () => {
 test('Rename and publish renames the seat and asks the Connector to create it', () => {
   const { orgs, b, rootB, seat, done } = project()
   try {
-    assert.deepEqual(publishCopy(orgs, b, 'research', 'Research - Alicante Tech Vibes'), { ok: true })
-    assert.equal(readRequests(rootB).requests[0]?.name, 'Research - Alicante Tech Vibes')
+    assert.deepEqual(publishCopy(orgs, b, 'research', 'Research - Northwind Events'), { ok: true })
+    assert.equal(readRequests(rootB).requests[0]?.name, 'Research - Northwind Events')
     assert.doesNotMatch(seat(rootB, 'research'), /^elsewhereUrl:/m)
-    assert.match(seat(rootB, 'research'), /^name: "?Research - Alicante Tech Vibes"?$/m)
+    assert.match(seat(rootB, 'research'), /^name: "?Research - Northwind Events"?$/m)
   } finally {
     done()
   }
@@ -98,7 +98,7 @@ test('Remove deletes only the greyed seat', () => {
 test("It's my main bot saves the id and activates its greyed seats everywhere", () => {
   const { orgs, b, rootB, seat, done } = project()
   try {
-    const c = createOrgFiles(orgs, 'techiewithmiguel', 'You')
+    const c = createOrgFiles(orgs, 'northwind-test', 'You')
     assert.ok(c.ok)
     if (!c.ok) return
     const rootC = join(orgs, c.slug)
@@ -121,7 +121,7 @@ test('the routes: publish takes JSON, DELETE removes only a greyed seat, and ano
   const base = `http://127.0.0.1:${started.port}/api/orgs/${b}/seats`
   try {
     assert.equal((await fetch(`${base}/inner-loop/move-here`, { method: 'POST', headers: { origin: 'https://example.com' } })).status, 403)
-    const published = await fetch(`${base}/research/publish`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Research - Alicante Tech Vibes' }) })
+    const published = await fetch(`${base}/research/publish`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Research - Northwind Events' }) })
     assert.equal(published.status, 200, await published.clone().text())
     assert.equal((await fetch(`${base}/research`, { method: 'DELETE' })).status, 422, 'no longer greyed')
     assert.equal((await fetch(`${base}/inner-loop/main-bot`, { method: 'POST' })).status, 200)

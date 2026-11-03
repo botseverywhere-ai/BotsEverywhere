@@ -36,14 +36,14 @@ test('a bot new to this copy keeps the managers another copy gave it in an organ
       skills: [],
       self: { id: 'c1', name: 'Connector - BotsEverywhere (k3f9)', grokBotUrl: link('c1') },
       bots: [
-        bot('g', 'Grok Bot', [old(person('Miguel'))]),
+        bot('g', 'Grok Bot', [old(person('Sam'))]),
         bot('b', 'Brand', [old(grok)]),
         // The block names the manager by its old name; its id finds the bot as Grok Bot calls it now.
         bot('d', 'Demo', [old(botParty('Old Brand Name', 'b'))], { reportsTo: 'Grok Bot' }),
         bot('s', 'Security', [old(botParty('Inner Loop', 'i'), [botParty('Outer Loop', 'o')])], { reportsTo: 'Grok Bot' }),
         bot('i', 'Inner Loop', [old(grok)], { reportsTo: 'Grok Bot' }),
         bot('o', 'Outer Loop', [old(grok)], { reportsTo: 'Grok Bot' }),
-        bot('r', 'Research', [old(grok, [person('Miguel')])]),
+        bot('r', 'Research', [old(grok, [person('Sam')])]),
         // A block for an organization with another name says nothing about this one.
         bot('t', 'Tester', [block('acn8', 'org-x', 'Testing new org', botParty('Inner Loop', 'i'))], { reportsTo: 'Grok Bot' }),
         // This copy's own block for this organization still comes first.

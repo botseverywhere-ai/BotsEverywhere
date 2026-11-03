@@ -3,8 +3,7 @@ name: Site
 category: site
 integrations:
   - Grok Bot
-  - Claude path
-contributor: miguel
+contributor: botseverywhere
 added_at: 2026-10-01
 ---
 

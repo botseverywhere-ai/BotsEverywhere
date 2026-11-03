@@ -18,7 +18,7 @@ export function greyedProject() {
   const orgs = join(dir, 'orgs')
   mkdirSync(orgs)
   const a = createOrgFiles(orgs, 'BotsEverywhere', 'You')
-  const b = createOrgFiles(orgs, 'Alicante Tech Vibes', 'You')
+  const b = createOrgFiles(orgs, 'Northwind Events', 'You')
   assert.ok(a.ok && b.ok)
   assert.ok(createExistingBot(join(orgs, a.slug), a.slug, { name: 'Security', grokBotUrl: link('s1'), reportsTo: 'you', allowEmptyCard: true }).ok)
   assert.ok(createExistingBot(join(orgs, b.slug), b.slug, { name: 'Security', grokBotUrl: '', reportsTo: 'you', allowEmptyCard: true }).ok)

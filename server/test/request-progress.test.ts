@@ -104,8 +104,8 @@ test('the words for each stage, and the one line in Logs', () => {
 
 test('Profile and the Sync drawer say where each waiting change stands', () => {
   const parts = [{ label: 'Instructions', stage: 'done' as const, at: ACTED_AT }, { label: 'Skill: daily-status', stage: 'confirmed' as const }, { label: 'Routine: botseverywhere daily summary', stage: 'waiting' as const }]
-  assert.deepEqual(updateItems({ reportsTo: 'You', previousReportsTo: 'Miguel', skills: [status], routines: [daily] }, parts, 'Europe/Madrid'), [
-    "Reports to You (was Miguel): done in Grok Bot at 18:17, confirming on the Connector's next reading",
+  assert.deepEqual(updateItems({ reportsTo: 'You', previousReportsTo: 'Sam', skills: [status], routines: [daily] }, parts, 'Europe/Madrid'), [
+    "Reports to You (was Sam): done in Grok Bot at 18:17, confirming on the Connector's next reading",
     'Skill: daily-status: confirmed in Grok Bot',
     "Routine: botseverywhere daily summary: waiting for the Connector's next run",
   ])

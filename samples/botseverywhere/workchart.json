@@ -4,7 +4,7 @@
       "id": "trigger-nov7",
       "source": "management",
       "label": "Nov 7 2026 demo",
-      "example": "Miguel sets the Nov 7 demo as the outcome for this stream."
+      "example": "The owner sets the launch demo as the outcome for this stream."
     }
   ],
   "workstreams": [
@@ -12,7 +12,7 @@
       "id": "ws-nov7",
       "triggerId": "trigger-nov7",
       "outcome": "Nov 7 2026 demo",
-      "ownerSeatId": "seat-miguel",
+      "ownerSeatId": "seat-sam",
       "kind": "main",
       "stepIds": [
         "step-spec",
@@ -48,7 +48,7 @@
       "outputs": [
         "Turn research into a build prompt"
       ],
-      "checkpointId": "cp-miguel-merge"
+      "checkpointId": "cp-owner-merge"
     },
     {
       "id": "step-inner",
@@ -102,10 +102,10 @@
   ],
   "checkpoints": [
     {
-      "id": "cp-miguel-merge",
+      "id": "cp-owner-merge",
       "stepId": "step-outer",
-      "rule": "Miguel approves merges to main and production deploys.",
-      "approverSeatId": "seat-miguel",
+      "rule": "The owner approves merges to main and production deploys.",
+      "approverSeatId": "seat-sam",
       "required": true
     }
   ]

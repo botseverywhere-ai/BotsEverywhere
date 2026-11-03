@@ -29,12 +29,12 @@ const empty = { owns: '', may: '', mustAskBefore: '', doneWhen: '', provenance: 
  * The handbook tag stays in the stored text. The screen strips it.
  */
 const cards = {
-  miguel: empty,
+  sam: empty,
   grok: {
-    owns: 'routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to Miguel.',
+    owns: 'routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to the owner.',
     may: 'route work to the right bot and set one shipping goal a week (profile + handbook v1); receive status, reviews, and hiring proposals from every botseverywhere bot (from handbook v1: all bots report to Grok Bot).',
     mustAskBefore: 'sending messages/emails, public posts, spending, merging to main, production deploys, DNS, secrets, deleting, new access, logins before Nov 7 (from handbook v1).',
-    doneWhen: 'the week\'s shipping goal is set, work is routed to the bot whose lane owns it, and the weekday 18:15 summary reaches Miguel with current status from every bot (from handbook v1; profile says "daily").',
+    doneWhen: 'the week\'s shipping goal is set, work is routed to the bot whose lane owns it, and the weekday 18:15 summary reaches the owner with current status from every bot (from handbook v1; profile says "daily").',
     provenance: {
       owns: 'profile',
       may: 'profile + handbook v1',
@@ -43,21 +43,21 @@ const cards = {
     },
   },
   outer: {
-    owns: 'context before code (repo, libraries, competitors, X signals Miguel shares); scoped prompts to Cursor/Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.',
-    may: 'research web/repos (read-only)/docs/competitors; send build prompts to Cursor/Build Bot; run preview deploys and verification.',
+    owns: 'context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.',
+    may: 'research web/repos (read-only)/docs/competitors; send build prompts to Build Bot; run preview deploys and verification.',
     mustAskBefore: 'production deploys, DNS, paid services, secrets, deleting branches/data, merging to main, public posts, changes to the product lock.',
-    doneWhen: 'preview URL works, screenshots/video prove it, Miguel gets a short report (shipped / broke / next prompt).',
+    doneWhen: 'preview URL works, screenshots/video prove it, the owner gets a short report (shipped / broke / next prompt).',
     provenance: profileSource,
   },
   inner: {
-    owns: 'running scoped prompts through Cursor to green tests; small branch + PR changes with summaries; honest failure reports.',
-    may: 'launch/steer Cursor cloud agents on botseverywhere repos, create branches/PRs, run tests and local previews; ask Planning Bot for context.',
+    owns: 'running scoped prompts through the coding agent to green tests; small branch + PR changes with summaries; honest failure reports.',
+    may: 'launch/steer cloud coding agents on botseverywhere repos, create branches/PRs, run tests and local previews; ask Planning Bot for context.',
     mustAskBefore: 'merging to main, production deploys, secrets/paid services, deleting code/branches, large out-of-scope refactors, logins/auth before Nov 7.',
     doneWhen: 'tests pass, PR open with summary, Planning Bot can verify and preview-deploy.',
     provenance: profileSource,
   },
   research: {
-    owns: 'product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for alicantetechvibes.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com.',
+    owns: 'product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com.',
     may: "research web/docs/teammates' context; draft/update docs in the shared folder.",
     mustAskBefore: 'publishing, posting publicly, naming real people, changing the product lock.',
     doneWhen: 'each milestone has an accurate, sourced draft in the shared folder and a brief for X.',
@@ -65,7 +65,7 @@ const cards = {
   },
   brand: {
     owns: 'brand kit (exact logo PNG lock, palette, Inter, wordmark, tagline "Org chart for bots. Work chart for humans."); product UI mockups/design system; landing visuals, emails/decks/CTAs, social creative, non-X copy; org-vs-work-chart diagrams.',
-    may: 'deliver reviewable PNG/HTML in brand-kit paths when Miguel asks for mockups or design; brief angles and creative to x.com; hand final screens to Planning Bot (all from profile).',
+    may: 'deliver reviewable PNG/HTML in brand-kit paths when the owner asks for mockups or design; brief angles and creative to x.com; hand final screens to Planning Bot (all from profile).',
     mustAskBefore: 'sending messages/emails, public posts, spending, merging to main, production deploys, DNS, secrets, deleting, new access, logins before Nov 7 (from handbook v1). From profile: never regenerate the logo (composite the exact PNG only); no third-party marks.',
     doneWhen: 'finished work is returned (from handbook v1): reviewable PNG/HTML in brand-kit paths, final screens handed to Planning Bot (profile), status kept current for the 18:15 summary (from handbook v1).',
     provenance: {
@@ -76,10 +76,10 @@ const cards = {
     },
   },
   x: {
-    owns: 'polished X posts/threads on the build-up, milestones, cross-links to alicantetechvibes.com.',
-    may: "draft posts and threads from Research briefs and Miguel's input; after Miguel approves the exact text, post via the connected X account (profile).",
-    mustAskBefore: 'posting anything. Every post, thread, or reply is a draft first and needs Miguel\'s approval of the exact text, with no exceptions (from handbook v1: must-ask is absolute, public posts). The profile\'s "unless he explicitly says to post without preview" exception is removed here; the profile itself still contains it until Miguel approves a rewrite.',
-    doneWhen: 'the post Miguel approved is live and confirmed with the live link or post id (profile: "confirm with the live link or post id").',
+    owns: 'polished X posts/threads on the build-up, milestones, cross-links to example.com.',
+    may: "draft posts and threads from Research briefs and the owner's input; after the owner approves the exact text, post via the connected X account (profile).",
+    mustAskBefore: 'posting anything. Every post, thread, or reply is a draft first and needs the owner\'s approval of the exact text, with no exceptions (from handbook v1: must-ask is absolute, public posts). The profile\'s "unless he explicitly says to post without preview" exception is removed here; the profile itself still contains it until the owner approves a rewrite.',
+    doneWhen: 'the post the owner approved is live and confirmed with the live link or post id (profile: "confirm with the live link or post id").',
     provenance: {
       owns: 'profile',
       may: 'profile',
@@ -95,7 +95,7 @@ const cards = {
     provenance: profileSource,
   },
   product: {
-    owns: 'Nov 7 demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; Nov 7 demo script; acceptance criteria per feature.',
+    owns: 'launch demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; launch demo script; acceptance criteria per feature.',
     may: "read other bots' work, draft specs and scripts, propose scope cuts.",
     mustAskBefore: 'changing the product lock, adding scope after 31 Oct, publishing.',
     doneWhen: 'every in-scope feature has spec + criteria, dummy orgs ready, demo script approved.',
@@ -109,15 +109,15 @@ const cards = {
     provenance: profileSource,
   },
   sales: {
-    owns: 'lead list (Nov 7 SpaceXAI Alicante attendees via luma.com/spacexai-alicante, Alicante Tech Vibes); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.',
+    owns: 'lead list (attendees of the next launch event and local meetups); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.',
     may: 'research organizations and public contacts; draft pitches, emails, DMs.',
     mustAskBefore: 'sending any message; offering prices/discounts/terms; naming a partner publicly.',
     doneWhen: 'each lead has status + next step; all follow-up drafts ready within a day of the demo.',
     provenance: profileSource,
   },
   finance: {
-    owns: 'cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, Cursor, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7).',
-    may: 'read billing/usage data Miguel shares; draft budgets/checklists.',
+    owns: 'cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, coding tools, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7).',
+    may: 'read billing/usage data the owner shares; draft budgets/checklists.',
     mustAskBefore: 'any purchase, top-up, subscription change, cancellation, payment, billing-setting change.',
     doneWhen: 'tracker current, weekly summary delivered, nothing renews/runs out unwarned.',
     provenance: profileSource,
@@ -130,10 +130,10 @@ const cards = {
     provenance: profileSource,
   },
   automations: {
-    owns: "automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during Miguel's 10:00–18:00 job.",
+    owns: "automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during the owner's 10:00–18:00 job.",
     may: "read other bots' routines/outputs; draft automations and fixes.",
     mustAskBefore: 'creating/changing/pausing/deleting any automation; anything that sends, spends, or acts in an outside account.',
-    doneWhen: "register current, every automation owned and working, proposals waiting for Miguel's OK.",
+    doneWhen: "register current, every automation owned and working, proposals waiting for the owner's OK.",
     provenance: profileSource,
   },
   ux: {
@@ -162,8 +162,8 @@ interface SeatSeed {
 }
 
 export const SEEDED_SEATS: SeatSeed[] = [
-  { id: 'seat-miguel', name: 'Miguel Rovira', role: 'Owner', kind: 'human', reportsTo: null, card: cards.miguel },
-  { id: 'seat-grok', name: 'Grok Bot', role: 'Manager', kind: 'bot', reportsTo: 'seat-miguel', card: cards.grok },
+  { id: 'seat-sam', name: 'Sam Rivera', role: 'Owner', kind: 'human', reportsTo: null, card: cards.sam },
+  { id: 'seat-grok', name: 'Grok Bot', role: 'Manager', kind: 'bot', reportsTo: 'seat-sam', card: cards.grok },
   { id: 'seat-planning-bot', name: 'Planning Bot', role: 'Turns research into a build prompt', kind: 'bot', reportsTo: 'seat-grok', card: cards.outer },
   { id: 'seat-build-bot', name: 'Build Bot', role: 'Builds the change', kind: 'bot', reportsTo: 'seat-grok', card: cards.inner },
   { id: 'seat-research-bot', name: 'Research Bot', role: 'Researches the question', kind: 'bot', reportsTo: 'seat-grok', card: cards.research },
@@ -181,7 +181,7 @@ export const SEEDED_SEATS: SeatSeed[] = [
 
 /**
  * Commit subjects and timestamps, mapped to the seat that did the work.
- * onMain is true only when that commit is on main. Those are Miguel's recorded
+ * onMain is true only when that commit is on main. Those are the owner's recorded
  * approvals to land the work. Branch-only commits are not approvals.
  */
 export const ACTIVITY = [
@@ -239,7 +239,7 @@ export function seedBotseverywhere(db: DB, input: { origin: string; now?: number
         name: seat.name,
         role: seat.role,
         botSlug: null,
-        humanOwner: 'Miguel Rovira',
+        humanOwner: 'Sam Rivera',
         sortOrder: index,
         kind: seat.kind,
         reportsTo: seat.reportsTo,
@@ -257,7 +257,7 @@ export function seedBotseverywhere(db: DB, input: { origin: string; now?: number
       id: 'ws-nov7',
       teamId: TEAM_ID,
       outcome: 'Nov 7 2026 demo',
-      ownerSeatId: 'seat-miguel',
+      ownerSeatId: 'seat-sam',
       kind: 'main',
       triggerSource: 'management',
       triggerLabel: 'Nov 7 2026 demo',
@@ -295,10 +295,10 @@ export function seedBotseverywhere(db: DB, input: { origin: string; now?: number
 
   db.insert(schema.checkpoints)
     .values({
-      id: 'cp-miguel-merge',
+      id: 'cp-owner-merge',
       stepId: 'step-outer',
-      rule: 'Miguel approves merges to main and production deploys.',
-      approverSeatId: 'seat-miguel',
+      rule: 'The owner approves merges to main and production deploys.',
+      approverSeatId: 'seat-sam',
       required: 1,
     })
     .run()

@@ -57,9 +57,9 @@ export interface Org {
   name: string
   description?: string
   industry: string
-  /** Sample companies are fictional. The owner org is Miguel's real team. */
+  /** Sample companies are fictional. The owner org is the example team. */
   mock: boolean
-  /** Miguel's organization. Not a sample company. */
+  /** The owner's organization. Not a sample company. */
   ownerOrg?: boolean
   tagline?: string
   address?: string

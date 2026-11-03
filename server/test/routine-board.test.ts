@@ -41,7 +41,7 @@ test("each bot's routines come from its own report first, then Grok Bot's files,
     bundle,
     data,
     confirmations: [
-      { line: 'BotsEverywhere profile: org-a | x-com\nRoutines:\n- Inner Loop milestone check | 0 9,21 * * * | Europe/Madrid | active | 2026-10-28T09:00:12+01:00 | 58\nSkills:\n- graph-skill | Export the team\nApps used:\n- Buffer | Posts after approval\nSends:\n- Miguel | Post drafts for approval | After each run\nReceives:\n- Inner Loop - botseverywhere | What shipped | Twice a day', from: 'x.com', at: '2026-10-28T14:10:00+01:00' },
+      { line: 'BotsEverywhere profile: org-a | x-com\nRoutines:\n- Inner Loop milestone check | 0 9,21 * * * | Europe/Madrid | active | 2026-10-28T09:00:12+01:00 | 58\nSkills:\n- graph-skill | Export the team\nApps used:\n- Buffer | Posts after approval\nSends:\n- Sam | Post drafts for approval | After each run\nReceives:\n- Inner Loop - botseverywhere | What shipped | Twice a day', from: 'x.com', at: '2026-10-28T14:10:00+01:00' },
       { line: 'BotsEverywhere routines: org-a | lead\n- Weekly review | 0 9 * * 1 | Europe/Madrid | paused | never', from: 'Lead', at: '2026-10-28T14:12:00+01:00' },
       { line: 'BotsEverywhere routines: org-b | helper\n- Elsewhere | 0 9 * * * | Europe/Madrid | active | never', from: 'Helper', at: '2026-10-28T14:13:00+01:00' },
     ],
@@ -56,7 +56,7 @@ test("each bot's routines come from its own report first, then Grok Bot's files,
   assert.equal(x!.routines[0]!.nextRun, '2026-10-28T20:00:00.000Z', 'next run at 21:00 Madrid')
   assert.deepEqual(x!.skills, [{ name: 'graph-skill', description: 'Export the team' }])
   assert.deepEqual(x!.apps, [{ name: 'Buffer', use: 'Posts after approval' }])
-  assert.deepEqual(x!.sends, [{ who: 'Miguel', what: 'Post drafts for approval', when: 'After each run' }])
+  assert.deepEqual(x!.sends, [{ who: 'Sam', what: 'Post drafts for approval', when: 'After each run' }])
   assert.deepEqual(x!.receives, [{ who: 'Inner Loop - botseverywhere', what: 'What shipped', when: 'Twice a day' }])
   assert.equal(lead!.skills, undefined, 'a routines-only list from the earlier form says nothing about skills')
   assert.equal(x!.routineRuns30d, 58, 'the times its routines ran in the last 30 days, as the bot counted them')

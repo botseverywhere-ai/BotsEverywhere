@@ -88,7 +88,7 @@ describe('member emails', () => {
     const created = await app.request('/api/teams', {
       method: 'POST',
       headers: jsonHeaders(owner.csrf, owner.jar.header()),
-      body: JSON.stringify({ name: 'Alicante' }),
+      body: JSON.stringify({ name: 'Harbor' }),
     })
     assert.equal(created.status, 201)
     const createdBody = await readJson(created)

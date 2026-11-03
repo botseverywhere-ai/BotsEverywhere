@@ -44,7 +44,7 @@ test('every homepage claim about the app matches the app', () => {
   assert.ok(docs.includes('no analytics, no telemetry, and no third-party scripts'), 'Docs says the same about tracking')
   assert.ok(docs.includes('stores no passwords, tokens, or API keys'), 'Docs says the same about keys')
   const readme = read('../../README.md')
-  assert.ok(readme.includes('BotsEverywhere is open source under the [MIT License](LICENSE)'), 'one license, MIT, copyright Miguel Rovira')
+  assert.ok(readme.includes('BotsEverywhere is open source under the [MIT License](LICENSE)'), 'one license, MIT, copyright Sam Rovira')
   assert.ok(landing.includes('BotsEverywhere is open source under the MIT License.'))
   assert.ok(readme.includes('The BotsEverywhere name and logo are not covered by the license.'))
   assert.ok(landing.includes('The BotsEverywhere name and logo are not covered by the license.'))

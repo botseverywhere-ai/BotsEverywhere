@@ -14,7 +14,7 @@ routines: "[{\"name\":\"New request\",\"schedule\":\"event\"},{\"name\":\"Triage
 ---
 
 ## Owns
-Nov 7 demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; Nov 7 demo script; acceptance criteria per feature.
+launch demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; launch demo script; acceptance criteria per feature.
 
 ## May
 read other bots' work, draft specs and scripts, propose scope cuts.

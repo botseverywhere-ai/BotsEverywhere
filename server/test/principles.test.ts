@@ -97,7 +97,7 @@ test('seat card still gates a hire, and must-ask accepts the list or a tick', ()
   )
 })
 
-const MIGUEL_GUIDE = [
+const HIRING_GUIDE = [
   'Hire a job, not a task. One sentence of ownership that stays true next month.',
   'Make the first job boring. Frequent enough to test, cheap enough to undo.',
   'Run the trial in text. Ask what it would do before letting it do anything.',
@@ -108,9 +108,9 @@ const MIGUEL_GUIDE = [
   'Review every week. And fire the routines nobody would miss.',
 ]
 
-test('how to hire a bot uses Miguel’s guide in the drawer and in docs', () => {
+test('how to hire a bot uses the hiring guide in the drawer and in docs', () => {
   const guide = readFileSync(path.join(root, 'src/content/hiring-guide.ts'), 'utf8')
-  for (const line of MIGUEL_GUIDE) assert.ok(guide.includes(line), line)
+  for (const line of HIRING_GUIDE) assert.ok(guide.includes(line), line)
   assert.match(guide, /How to hire a bot/)
   assert.match(guide, /Pick where this bot works in your Work chart\. You can change it later\./)
   const drawer = readFileSync(path.join(root, 'src/components/HireDrawer.tsx'), 'utf8')

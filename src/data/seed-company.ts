@@ -57,7 +57,7 @@ export const SEED_COMPANY: CompanySeed = {
       orgId: ORG,
       source: 'management',
       label: 'Announce the demo',
-      example: 'Grok Bot Alicante · November 07, 2026',
+      example: 'Grok Bot launch · November 07, 2026',
     },
   ],
   workstreams: [

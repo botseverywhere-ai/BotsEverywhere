@@ -687,7 +687,7 @@ test('Export writes every routine detail, so export then import gives back the s
 
 test('a list item with a semicolon stays one line; a single string is still split on "; "', () => {
   const parsed = parseBotsFile(JSON.stringify({ bots: [
-    { name: 'CTV2 Captación Alicante', owns: ['Crear una línea base en la primera ejecución; en ejecuciones posteriores identificar anuncios nuevos.'], may: 'Read the inbox; flag a mismatch' },
+    { name: 'CTV2 Captación Harbor', owns: ['Crear una línea base en la primera ejecución; en ejecuciones posteriores identificar anuncios nuevos.'], may: 'Read the inbox; flag a mismatch' },
   ] }))
   assert.ok(parsed.ok)
   if (!parsed.ok) return

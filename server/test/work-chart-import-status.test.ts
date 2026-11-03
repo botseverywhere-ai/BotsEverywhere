@@ -85,7 +85,7 @@ test('an imported Work Chart can still copy the prompt and import a file again: 
 })
 
 test("the processes folder keeps the separator of the organization's own path", () => {
-  assert.equal(processesFolder('C:\\Users\\migue\\botseverywhere-v7\\orgs\\org-trav3fcs'), 'C:\\Users\\migue\\botseverywhere-v7\\orgs\\org-trav3fcs\\processes')
+  assert.equal(processesFolder('C:\\Users\\you\\botseverywhere\\orgs\\org-trav3fcs'), 'C:\\Users\\you\\botseverywhere\\orgs\\org-trav3fcs\\processes')
   assert.equal(processesFolder('/home/ana/botseverywhere/orgs/org-abcd2345/'), '/home/ana/botseverywhere/orgs/org-abcd2345/processes')
   assert.equal(processesFolder('orgs/org-abcd2345'), 'orgs/org-abcd2345/processes')
 })

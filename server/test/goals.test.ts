@@ -84,14 +84,14 @@ describe('organization goals and botseverywhere seed', () => {
     assert.deepEqual(seats.map((seat) => seat.name), SEEDED_SEATS.map((seat) => seat.name))
     assert.equal(seats[0]?.kind, 'human')
     assert.equal(seats[1]?.name, 'Grok Bot')
-    assert.equal(seats[1]?.reports_to, 'seat-miguel')
+    assert.equal(seats[1]?.reports_to, 'seat-sam')
     assert.equal(seats.filter((seat) => seat.reports_to === 'seat-grok').length, 13)
 
     const ux = seats.find((seat) => seat.name === 'Design Bot')
     assert.equal(ux?.owns, 'user flows, information architecture, wireframes, interaction and usability specs, accessibility and mobile checks, UX acceptance criteria for each screen (profile).')
     assert.match(ux?.must_ask_before ?? '', /from handbook v1/)
     const outer = seats.find((seat) => seat.name === 'Planning Bot')
-    assert.equal(outer?.owns, 'context before code (repo, libraries, competitors, X signals Miguel shares); scoped prompts to Cursor/Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.')
+    assert.equal(outer?.owns, 'context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.')
     const hr = seats.find((seat) => seat.name === 'HR Bot')
     assert.equal(hr?.done_when, 'every bot on the roster has a current seat card, new hires have an approved card and onboarding note, and the weekly review is delivered (profile).')
     const brand = seats.find((seat) => seat.name === 'Marketing Bot')
@@ -127,8 +127,8 @@ describe('organization goals and botseverywhere seed', () => {
     const back = sqlite.prepare('SELECT from_step_id, to_step_id FROM handoffs WHERE id = ?').get('hand-qa-outer') as { from_step_id: string; to_step_id: string }
     assert.deepEqual(back, { from_step_id: 'step-qa', to_step_id: 'step-outer' })
     const checkpoint = sqlite.prepare('SELECT rule, approver_seat_id, required FROM checkpoints').get() as { rule: string; approver_seat_id: string; required: number }
-    assert.equal(checkpoint.rule, 'Miguel approves merges to main and production deploys.')
-    assert.equal(checkpoint.approver_seat_id, 'seat-miguel')
+    assert.equal(checkpoint.rule, 'The owner approves merges to main and production deploys.')
+    assert.equal(checkpoint.approver_seat_id, 'seat-sam')
     assert.equal(checkpoint.required, 1)
 
     assert.equal(seedBotseverywhere(db, { origin: 'http://127.0.0.1:5199' }).created, false)

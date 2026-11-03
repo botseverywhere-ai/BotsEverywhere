@@ -1,5 +1,5 @@
 /**
- * Miguel's hiring guide. One copy for the hire drawer and the Docs page.
+ * The hiring guide. One copy for the hire drawer and the Docs page.
  */
 
 export const HIRING_GUIDE_TITLE = 'How to hire a bot'

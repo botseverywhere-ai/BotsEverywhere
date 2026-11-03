@@ -1,12 +1,12 @@
 ---
-title: Miguel Rovira
+title: Sam Rivera
 department: owner
 reportsTo: ""
 addToGrokBotUrl: ""
 status: active
 kind: human
 role: Owner
-personId: person-seat-miguel
+personId: person-seat-sam
 ---
 
 ## Owns

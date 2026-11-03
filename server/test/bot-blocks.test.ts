@@ -70,7 +70,7 @@ function desk() {
   const bundle = bundleFromState('org-test', {
     company: { name: 'Desk' },
     departments: [],
-    people: [{ id: 'person-you', name: 'Miguel Rovira' }],
+    people: [{ id: 'person-you', name: 'Sam Rivera' }],
     seats: seats.map((item) => ({ slug: item.slug, reportsTo: item.reportsTo || null })),
   }, seats, { triggers: [], workstreams: [], steps: [], handoffs: [], checkpoints: [] })
   bundle.processes = [{ slug: 'weekly-check', name: 'Weekly check', trigger: { type: 'schedule', schedule: '0 9 * * 1', description: '' }, steps: [{ seat: 'inner-loop', action: 'Check' }], doneWhen: '', next: '', notes: '' }]
@@ -82,7 +82,7 @@ test('orgBlocks gives every active bot one block; managers list their team; peop
   const blocks = desk()
   assert.deepEqual([...blocks.keys()].sort(), ['inner-loop', 'outer-loop', 'security', 'ux'])
   const inner = blocks.get('inner-loop')!
-  assert.match(inner, /\nMain manager: Miguel Rovira\n/)
+  assert.match(inner, /\nMain manager: Sam Rivera\n/)
   assert.match(inner, /\nYour team: Security \(id security, main manager: you\), UX \(not in Grok Bot yet, main manager: you\)\n/)
   assert.match(inner, /\nSkills to use: Review, Plan\n/)
   assert.match(blocks.get('security')!, /\nSkills to use: the skills turned on for you in Grok Bot\n/, 'no skills set here never tells the bot to use none')

@@ -9,7 +9,7 @@ doneWhen: The brief is drafted and posting is approved or held.
 ## Steps
 
 - seat-marketing-bot | Draft the campaign brief
-- seat-miguel | Approve posting
+- seat-sam | Approve posting
 
 ## Notes
 

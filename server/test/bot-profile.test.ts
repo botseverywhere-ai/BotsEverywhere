@@ -9,7 +9,7 @@ import { SNAPSHOT_FORMAT, connectorPrompt } from '../src/connector-prompt.ts'
 import { parseBotsFile } from '../src/bots-file.ts'
 import { parseSnapshot, patchSeatSource, performanceOnly, planSync } from '../src/grok-sync.ts'
 
-const INSTRUCTIONS = 'Sort new leads against the ideal-customer points.\nNever contact a lead: say "ask Miguel" instead.'
+const INSTRUCTIONS = 'Sort new leads against the ideal-customer points.\nNever contact a lead: say "ask Sam" instead.'
 const SKILLS = [{ name: 'Lead sort', description: 'Match a new lead to the ideal-customer points.' }, { name: 'Weekly recap' }]
 const ROUTINES = [{ name: 'Weekday lead sweep', schedule: 'Weekdays 09:00', description: 'Sweep new leads each morning.' }]
 

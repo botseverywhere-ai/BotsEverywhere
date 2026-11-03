@@ -9,8 +9,8 @@ doneWhen: The request has an owner.
 ## Steps
 
 - seat-product-bot | Classify the request
-- seat-miguel | Receive the request
+- seat-sam | Receive the request
 
 ## Notes
 
-Request Bot is in the directory, and it is not a seat on this sample. Product Bot is the closest seated bot, so it classifies the request and Miguel receives it.
+Request Bot is in the directory, and it is not a seat on this sample. Product Bot is the closest seated bot, so it classifies the request and the owner receives it.

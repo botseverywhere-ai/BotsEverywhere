@@ -4,7 +4,7 @@ category: writing
 integrations:
   - Grok Bot
   - X
-contributor: miguel
+contributor: botseverywhere
 added_at: 2026-10-01
 ---
 

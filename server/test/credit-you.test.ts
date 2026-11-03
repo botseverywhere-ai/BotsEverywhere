@@ -16,7 +16,7 @@ test('a change is credited to You, even when another person comes first by name'
     assert.ok(made.ok)
     const root = join(orgs, made.slug)
     // angel sorts before you, which is how Grok Bot was told Angel made a change.
-    assert.ok(createHiredSeat(root, made.slug, { name: 'Angel Rodriguez', kind: 'human', slug: 'angel', directorySlug: '', reportsTo: 'you', addToGrokBotUrl: '', ...card }).ok)
+    assert.ok(createHiredSeat(root, made.slug, { name: 'Alex Rivera', kind: 'human', slug: 'angel', directorySlug: '', reportsTo: 'you', addToGrokBotUrl: '', ...card }).ok)
     const brand = createExistingBot(root, made.slug, { name: 'Brand Bot', grokBotUrl: 'grokbot://app/v1/agent?id=brand', reportsTo: 'you', allowEmptyCard: true, grokSync: 'synced', grokSyncedAt: '2026-10-26T10:00:00.000Z' })
     assert.ok(brand.ok)
     assert.ok(createHiredSeat(root, made.slug, { name: 'New Bot', kind: 'bot', slug: 'new-bot', directorySlug: '', reportsTo: 'you', addToGrokBotUrl: '', ...card }).ok)
@@ -36,7 +36,7 @@ test('a change is credited to You, even when another person comes first by name'
     for (const summary of [
       'Asked the Connector to create New Bot in Grok Bot',
       'Asked the Connector to update Brand Bot in Grok Bot',
-      'Moved Brand Bot under Angel Rodriguez',
+      'Moved Brand Bot under Alex Rivera',
       'Updated in Grok Bot: Brand Bot',
     ]) {
       const event = byPeople.find((item) => item.summary === summary)
@@ -57,9 +57,9 @@ test('no change in the writer is credited to the first person in name order', ()
 test('a new seat reports to You by default, even when another person comes first by name', async () => {
   const { defaultManager } = await import('../../src/org/manager-choices.ts')
   const person = (slug: string, title: string, extra: Record<string, string> = {}) => ({ slug, title, kind: 'human' as const, status: 'active', reportsTo: '', ...extra })
-  assert.equal(defaultManager([person('angel', 'Angel Rodriguez'), person('you', 'You')])?.slug, 'you')
-  assert.equal(defaultManager([person('angel', 'Angel Rodriguez', { reportsTo: 'maria' }), person('maria', 'Maria')])?.slug, 'maria', 'no You seat: the person at the top')
-  assert.equal(defaultManager([person('you', 'You', { status: 'retired' }), person('angel', 'Angel Rodriguez')])?.slug, 'angel', 'never a retired seat')
+  assert.equal(defaultManager([person('angel', 'Alex Rivera'), person('you', 'You')])?.slug, 'you')
+  assert.equal(defaultManager([person('angel', 'Alex Rivera', { reportsTo: 'maria' }), person('maria', 'Maria')])?.slug, 'maria', 'no You seat: the person at the top')
+  assert.equal(defaultManager([person('you', 'You', { status: 'retired' }), person('angel', 'Alex Rivera')])?.slug, 'angel', 'never a retired seat')
   const hire = readFileSync(new URL('../../src/components/HireDrawer.tsx', import.meta.url), 'utf8')
   assert.match(hire, /const root = defaultManager\(seats\)/)
   assert.match(hire, /const nextRoot = defaultManager\(bundle\.seats\)/)
@@ -68,7 +68,7 @@ test('a new seat reports to You by default, even when another person comes first
 test('empty chart boxes for unstaffed steps hang under You', async () => {
   const { openOrgSeats } = await import('../../src/org/open-seats.ts')
   const seats = [
-    { id: 'angel', orgId: 'o', name: 'Angel Rodriguez', role: 'Sales', type: 'human', status: 'active' },
+    { id: 'angel', orgId: 'o', name: 'Alex Rivera', role: 'Sales', type: 'human', status: 'active' },
     { id: 'you', orgId: 'o', name: 'You', role: 'Founder', type: 'human', status: 'active' },
   ]
   const open = openOrgSeats([{ id: 'step-1', name: 'Check invoices', executorSeatId: '' }] as never, seats as never, 'o')
