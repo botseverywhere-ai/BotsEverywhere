@@ -57,7 +57,7 @@ const cards = {
     provenance: profileSource,
   },
   research: {
-    owns: 'product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com.',
+    owns: 'product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in the shared folder; milestone briefs for x.com.',
     may: "research web/docs/teammates' context; draft/update docs in the shared folder.",
     mustAskBefore: 'publishing, posting publicly, naming real people, changing the product lock.',
     doneWhen: 'each milestone has an accurate, sourced draft in the shared folder and a brief for X.',

@@ -10,7 +10,7 @@ personId: person-seat-research-bot
 ---
 
 ## Owns
-product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for alicantetechvibes.com; drafts in Shared-Grokbot-ClaudeCode; milestone briefs for x.com.
+product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in the shared folder; milestone briefs for x.com.
 
 ## May
 research web/docs/teammates' context; draft/update docs in the shared folder.
