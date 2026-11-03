@@ -33,6 +33,12 @@ export interface BoardBot {
   routineRuns30d?: number
   /** From the bot's own profile. Absent when it has not reported them. */
   skills?: BotSkill[]
+  /**
+   * The skills in Grok Bot for this bot, from the Connector's reading: the names on the "Skills to use" line of its block
+   * for this organization that are saved in the library, each with the library's description. Absent until the dump
+   * shows that block.
+   */
+  grokSkills?: BotSkill[]
   apps?: AppUse[]
   sends?: Handoff[]
   receives?: Handoff[]

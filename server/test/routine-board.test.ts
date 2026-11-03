@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import type { GrokData, GrokDataBot } from '../src/grok-data.ts'
 import { bundleFromState, parseSeatMarkdown, type SeatDocument } from '../src/org-files.ts'
@@ -65,6 +66,22 @@ test("each bot's routines come from its own report first, then Grok Bot's files,
   assert.equal(aura!.routines[0]!.lastRun, '2026-09-18T09:12:52+02:00')
   assert.equal(aura!.routines[0]!.nextRun, '2026-10-29T08:00:00.000Z')
   assert.deepEqual(connector!.routines, [{ name: 'BotsEverywhere sync', schedule: '*/20 * * * *', trigger: 'schedule', timeZone: 'Europe/Madrid', enabled: true, lastRun: '2026-10-28T13:45:12.000Z', nextRun: '2026-10-28T14:05:12.000Z' }], "the Connector's own run, from the app")
+})
+
+test("a bot's skills in Grok Bot are the ones the Connector saved and wrote into its instructions for this organization, whatever the bot reports", () => {
+  const block = (org: string, skills: string) => `You are a bot.\n\n=== BotsEverywhere 3s53 ${org} ===\nOrganization: Desk\nSkills to use: ${skills}\n=== end BotsEverywhere 3s53 ${org} ===`
+  const withBlocks: GrokData = {
+    ...data,
+    skills: [{ name: 'x-build-log', description: 'Posts.' }, { name: 'launch-thread', description: 'Thread.' }],
+    bots: [bot('lead', 'Lead', { description: block('org-b', 'x-build-log') }), bot('x', 'x.com', { description: block('org-a', 'x-build-log, launch-thread, ghost-skill') }), bot('helper', 'Helper'), bot('aura', 'Aura')],
+  }
+  const board = routineBoard({ orgId: 'org-a', bundle, data: withBlocks, confirmations: [], connector: null, timeZone: 'Europe/Madrid', now: new Date('2026-10-28T13:50:00.000Z') })
+  const by = new Map(board.bots.map((item) => [item.slug, item]))
+  assert.deepEqual(by.get('x-com')!.grokSkills, [{ name: 'x-build-log', description: 'Posts.' }, { name: 'launch-thread', description: 'Thread.' }], 'named in the block and saved in the library, with the library description; a name not in the library is not in Grok Bot')
+  assert.equal(by.get('helper')!.grokSkills, undefined, 'no block yet: nothing is known')
+  assert.equal(by.get('lead')!.grokSkills, undefined, "another organization's block says nothing about this one")
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /reportedSkills=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.grokSkills\}/, 'Profile locks a skill from the Connector\'s reading, not from what the bot says it uses')
 })
 
 test('with no Connector data yet, every bot says nothing is known and the Connector has not run', () => {

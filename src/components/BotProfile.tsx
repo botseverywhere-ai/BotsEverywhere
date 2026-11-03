@@ -28,7 +28,7 @@ export function BotProfile({ seat, grokRequestedAt, grokUpdateAt = '', grokUpdat
   grokRequestedAt: string
   /** Apps connected to the Grok Bot account, for each app's status. */
   accountApps?: AccountApp[]
-  /** Skills turned on for this bot in Grok Bot, as the bot itself reported them. Absent until it does. */
+  /** Skills in Grok Bot for this bot, from the Connector's reading: saved in the library and named in its instructions. Absent until the Connector shows them. */
   reportedSkills?: BotSkill[]
   /** Apps this bot says it uses, from its own profile. Absent until it reports them. */
   reportedApps?: AppUse[]
@@ -191,9 +191,10 @@ export function ProfileLists({ seat, inGrok }: { seat: Pick<Seat, 'skills' | 'ro
 }
 
 /**
- * One list of the bot's skills. A skill the bot has in Grok Bot (it reported it) is locked, as a bot is once it exists
- * there: shown with its name and what it does, removed only in Grok Bot. A skill added here is a name and what it does
- * with a remove button, until the bot reports it. The seat keeps every locked skill it added, so its block still names it.
+ * One list of the bot's skills. A skill the bot has in Grok Bot is locked, as a bot is once it exists there: shown with
+ * its name and what it does, removed only in Grok Bot. `inGrok` is the Connector's reading: the skills saved in the
+ * library and named in this bot's instructions. A skill added here is a name and what it does with a remove button,
+ * until the Connector has carried it there. The seat keeps every locked skill it added, so its block still names it.
  */
 function SkillEditor({ initial, inGrok, onSave }: { initial: Skill[]; inGrok?: BotSkill[]; onSave: (skills: Skill[]) => void }) {
   const [skills, setSkills] = useState<Skill[]>(initial)

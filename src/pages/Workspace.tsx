@@ -1144,7 +1144,7 @@ export function Workspace({
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
           grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate, sync?.progress?.[waitingUpdate.seat]) : []}
           accountApps={accountApps}
-          reportedSkills={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.skills}
+          reportedSkills={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.grokSkills}
           reportedApps={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.apps}
           onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}

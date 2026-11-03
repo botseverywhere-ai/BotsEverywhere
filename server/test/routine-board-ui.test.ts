@@ -270,7 +270,7 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   assert.match(workspace, /appsUsed: appsShown\(routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps, seats\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps\)/, "the bot's own report, else what the Connector read onto the seat")
   assert.match(workspace, /reportedApps=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.apps\}/)
   assert.equal(workspace.includes('<th>Apps</th>'), false)
-  assert.match(workspace, /reportedSkills=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.skills\}/)
+  assert.match(workspace, /reportedSkills=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.grokSkills\}/, "Profile locks what the Connector's reading shows in Grok Bot, not what the bot says it uses")
   const profile = readFileSync(new URL('../../src/components/BotProfile.tsx', import.meta.url), 'utf8')
   assert.match(profile, /<h3 className="card-label">Apps used<\/h3>/)
   assert.match(profile, /<AccountApps apps=\{account\} \/>/, 'the same badges as Performance')
