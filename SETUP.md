@@ -48,7 +48,7 @@ npm run dev
 
 PowerShell uses the same three commands.
 
-Do not clone a fresh copy into a new folder to update. Your organizations live in `orgs/`, which git does not track, and so does this copy's ID (`orgs/project.json`). A new folder starts with no organizations and a new ID, so you would set up a second Connector, and your bots would keep the old copy's instructions until you remove them under **Blocks from other copies of BotsEverywhere** in **Sync with Grok Bot**.
+Do not clone a fresh copy into a new folder to update. Your organizations live in `orgs/`, which git does not track, and so does this copy's ID (`orgs/project.json`). A new folder starts with no organizations and a new ID, so you would set up a second Connector, and your bots would keep the old copy's instructions until you remove them under **Old instructions from other copies of BotsEverywhere** in **Sync with Grok Bot**.
 
 If you must move to another folder, move `orgs/` with it. Then copy the Connector prompt from Connect bots and paste it into Grok Bot once more: the prompt names the folder, and the Connector replaces its own instructions.
 

@@ -663,8 +663,9 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           <li>Changes waiting for the Connector, such as <strong>Update bot</strong> or a new manager, show one line each.</li>
           <li>
             What the Connector could not do shows here too: items stuck after two tries, with the reason; items on their second try; items it has not acted on for more than
-            two runs; a <code>grok-data.json</code> it could not read; and blocks another copy of BotsEverywhere put in your bots, with <strong>Remove them</strong>. Remove them only if that copy is gone.
-            A copy whose Connector is no longer in Grok Bot says so, and <strong>Remove all old copies</strong> removes every such copy at once.
+            two runs; a <code>grok-data.json</code> it could not read; and instructions another copy of BotsEverywhere added to your bots, with <strong>Remove old instructions</strong>.
+            Remove them only if that copy is gone. It changes only those instructions, bot by bot: your bots, and your own text in them, stay as they are.
+            A copy whose Connector is no longer in Grok Bot says so, and <strong>Remove all old instructions</strong> cleans every such copy at once.
           </li>
           <li>
             Grok Bot keeps one bot per name. If another organization in the folder already has a bot with the same name, the drawer says it will be created as, for example,

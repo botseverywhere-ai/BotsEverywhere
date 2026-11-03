@@ -179,7 +179,7 @@ export function SyncDrawer({
       error = SAVING_OFF
     }
     const named = asked.length === 1 ? `copy ${asked[0]}` : `copies ${asked.slice(0, -1).join(', ')} and ${asked.at(-1)}`
-    setNotice(error ? saveNotice(false, error) : saveNotice(true, `The Connector removes the blocks of ${named} on its next run.`))
+    setNotice(error ? saveNotice(false, error) : saveNotice(true, `The Connector removes the old instructions of ${named}, bot by bot. Your bots stay in Grok Bot.`))
     if (asked.length) await onRefresh()
     setBusy(false)
   }
@@ -316,21 +316,21 @@ function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; bu
       ) : null}
       {state.otherCopies.length ? (
         <section className="sync-group">
-          <h3>{`Blocks from other copies of BotsEverywhere (${state.otherCopies.length})`}</h3>
-          <p className="overview-note">Another copy of BotsEverywhere put these blocks in your bots. Remove them only if that copy is gone.</p>
+          <h3>{`Old instructions from other copies of BotsEverywhere (${state.otherCopies.length})`}</h3>
+          <p className="overview-note">Another copy of BotsEverywhere added these instructions to your bots. Remove them only if that copy is gone. Your bots, and your own text in them, stay as they are.</p>
           {old.length > 1 ? (
             <div className="sync-remove-all">
-              <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove(old)}>Remove all old copies</Button>
+              <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove(old)}>Remove all old instructions</Button>
             </div>
           ) : null}
           <ul className="sync-picks">
             {state.otherCopies.map((item) => (
               <li key={item.copy} className="sync-copy">
                 <details>
-                  <summary>{`Copy ${item.copy} · ${bots(item.bots.length)}${item.connectorGone ? ' · its Connector is no longer in Grok Bot' : ''}`}</summary>
+                  <summary>{`Copy ${item.copy} · in ${bots(item.bots.length)}${item.connectorGone ? ' · its Connector is no longer in Grok Bot' : ''}`}</summary>
                   <p className="overview-note">{item.bots.join(', ')}</p>
                 </details>
-                {item.removing ? <span className="overview-note">Removing on the Connector&apos;s next run</span> : <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove([item.copy])}>Remove them</Button>}
+                {item.removing ? <span className="overview-note">Removing, bot by bot</span> : <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove([item.copy])}>Remove old instructions</Button>}
               </li>
             ))}
           </ul>

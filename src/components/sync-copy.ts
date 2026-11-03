@@ -535,7 +535,7 @@ export function connectorChangeNotice(before: ConnectorState | null, after: Conn
 }
 
 /** Not an official Grok Bot number; the count we recommend staying under per account. */
-/** What Remove all old copies takes: copies whose Connector is gone from Grok Bot and whose blocks are not on their way out yet. */
+/** What Remove all old instructions takes: copies whose Connector is gone from Grok Bot and whose blocks are not on their way out yet. */
 export function oldCopies(copies: { copy: string; removing: boolean; connectorGone?: boolean }[]): string[] {
   return copies.filter((item) => item.connectorGone === true && !item.removing).map((item) => item.copy)
 }

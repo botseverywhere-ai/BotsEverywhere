@@ -79,27 +79,35 @@ test('a Connector that carried out items since the late ones is still working, n
   assert.match(idle, /<p class="save-off" role="alert">The Connector has not acted on 9 items since [^<]+\. Check that it still runs in Grok Bot\.<\/p>/)
 })
 
-test("each other copy's blocks take one short line; the bots' names open on a click", async () => {
+test("each other copy's old instructions take one short line; the bots' names open on a click", async () => {
   const html = await drawer({ connector: { ...QUIET, otherCopies: [
     { copy: 'acn8', bots: ['Overheard', 'Events - botseverywhere', 'Grok Bot'], removing: false },
     { copy: '87xp', bots: ['Overheard'], removing: true },
   ] } })
-  assert.match(html, /<li class="sync-copy"><details><summary>Copy acn8 · 3 bots<\/summary><p class="overview-note">Overheard, Events - botseverywhere, Grok Bot<\/p><\/details><button[^>]*>Remove them<\/button><\/li>/)
-  assert.match(html, /<li class="sync-copy"><details><summary>Copy 87xp · 1 bot<\/summary><p class="overview-note">Overheard<\/p><\/details><span class="overview-note">Removing on the Connector&#x27;s next run<\/span><\/li>/)
+  assert.match(html, /<li class="sync-copy"><details><summary>Copy acn8 · in 3 bots<\/summary><p class="overview-note">Overheard, Events - botseverywhere, Grok Bot<\/p><\/details><button[^>]*>Remove old instructions<\/button><\/li>/)
+  assert.match(html, /<li class="sync-copy"><details><summary>Copy 87xp · in 1 bot<\/summary><p class="overview-note">Overheard<\/p><\/details><span class="overview-note">Removing, bot by bot<\/span><\/li>/, 'it takes many runs, not the next one')
   assert.doesNotMatch(html, /Blocks from copy/)
 })
 
-test('a copy whose Connector is gone from Grok Bot says so, and two or more such copies can be removed with one button', async () => {
-  const gone = (copy: string, removing = false) => ({ copy, bots: ['Overheard'], removing, connectorGone: true })
-  const html = await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8'), gone('6kb7'), { copy: 'k7m2', bots: ['Overheard'], removing: false, connectorGone: false }] } })
-  assert.match(html, /<summary>Copy acn8 · 1 bot · its Connector is no longer in Grok Bot<\/summary>/)
-  assert.match(html, /<summary>Copy k7m2 · 1 bot<\/summary>/, 'a copy whose Connector is still there may still be in use')
-  assert.match(html, /<button[^>]*>Remove all old copies<\/button>/)
-  assert.doesNotMatch(await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8')] } }), /Remove all old copies/, 'one old copy has its own Remove them')
-  assert.doesNotMatch(await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8', true), gone('6kb7', true)] } }), /Remove all old copies/, 'already on their way out')
+test('the old copies section says it removes instructions, never bots', async () => {
+  const html = await drawer({ connector: { ...QUIET, otherCopies: [{ copy: 'acn8', bots: ['Overheard'], removing: false }] } })
+  assert.match(html, /<h3>Old instructions from other copies of BotsEverywhere \(1\)<\/h3>/)
+  assert.match(html, /Another copy of BotsEverywhere added these instructions to your bots\. Remove them only if that copy is gone\. Your bots, and your own text in them, stay as they are\./)
+  assert.doesNotMatch(html, />Remove them</, 'a button named Remove them reads as removing bots')
+  assert.doesNotMatch(html, /Blocks from other copies/)
 })
 
-test('Remove all old copies takes the copies whose Connector is gone and that are not being removed yet, and nothing else', async () => {
+test('a copy whose Connector is gone from Grok Bot says so, and two or more such copies can be cleaned with one button', async () => {
+  const gone = (copy: string, removing = false) => ({ copy, bots: ['Overheard'], removing, connectorGone: true })
+  const html = await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8'), gone('6kb7'), { copy: 'k7m2', bots: ['Overheard'], removing: false, connectorGone: false }] } })
+  assert.match(html, /<summary>Copy acn8 · in 1 bot · its Connector is no longer in Grok Bot<\/summary>/)
+  assert.match(html, /<summary>Copy k7m2 · in 1 bot<\/summary>/, 'a copy whose Connector is still there may still be in use')
+  assert.match(html, /<button[^>]*>Remove all old instructions<\/button>/)
+  assert.doesNotMatch(await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8')] } }), /Remove all old instructions/, 'one old copy has its own button')
+  assert.doesNotMatch(await drawer({ connector: { ...QUIET, otherCopies: [gone('acn8', true), gone('6kb7', true)] } }), /Remove all old instructions/, 'already on their way out')
+})
+
+test('Remove all old instructions takes the copies whose Connector is gone and that are not being removed yet, and nothing else', async () => {
   const { oldCopies } = await import('../../src/components/sync-copy.ts')
   assert.deepEqual(oldCopies([
     { copy: 'acn8', bots: ['A'], removing: false, connectorGone: true },
