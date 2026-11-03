@@ -445,49 +445,7 @@ button.seat.empty svg { opacity: 0.72; }
 .auth-lead { color: var(--muted); margin-bottom: 18px; }
 .auth-note { color: var(--muted); font-size: 13px; margin: 12px 0; }
 .auth-card .btn { margin-top: 14px; }
-.signin-extra { max-width: 960px; margin: 8px auto 0; }
-.signin-extra h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; margin: 22px 0 12px; }
-.signin-steps, .signin-secure { display: grid; gap: 12px; list-style: none; }
-.signin-steps { grid-template-columns: repeat(3, 1fr); }
-.signin-secure { grid-template-columns: repeat(4, 1fr); }
-.signin-box { padding: 14px 16px; }
-.signin-box .n {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  color: var(--color-white);
-  font-size: 13px;
-  font-weight: 700;
-  background: var(--color-ink);
-  margin-bottom: 10px;
-}
-.signin-box p { font-size: 13px; line-height: 1.45; color: var(--muted); margin: 0; }
-.auth-or { text-align: center; color: var(--muted); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin: 16px 0 4px; }
 .form-error { color: var(--color-amber-700); background: var(--color-orange-50); border: 1px solid var(--color-orange-300); border-radius: 8px; padding: 8px 10px; font-size: 13px; margin-bottom: 12px; }
-.team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.team-card { padding: 22px; }
-.team-card h2 { font-size: 18px; margin-bottom: 12px; }
-.team-card .btn { margin-top: 12px; }
-.team-list { list-style: none; display: grid; gap: 8px; }
-.team-pick { width: 100%; text-align: left; border: 1px solid var(--border); background: var(--color-white); border-radius: var(--control-radius); padding: 10px 12px; display: flex; justify-content: space-between; gap: 8px; color: inherit; font: inherit; }
-.team-pick.active { border-color: var(--blue); background: var(--color-blue-25); }
-.team-admin { margin-top: 16px; }
-.inline-form { margin-bottom: 16px; }
-.invite-link { font-size: 13px; word-break: break-all; margin-top: 12px; }
-.share-links h2 { font-size: 16px; margin: 4px 0 10px; }
-.share-warning {
-  background: var(--color-orange-50);
-  border: 1px solid var(--color-orange-300);
-  color: var(--color-orange-800);
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
-  margin: 0 0 14px;
-}
 .copy-field { margin-bottom: 12px; }
 .link-row { display: flex; gap: 8px; align-items: center; }
 .link-row .text-input { margin: 0; flex: 1; min-width: 0; }
@@ -948,8 +906,6 @@ select.text-input.slim {
 }
 .panel form .btn { margin-top: 8px; }
 @media (max-width: 800px) {
-  .team-grid { grid-template-columns: 1fr; }
-  .signin-secure { grid-template-columns: 1fr 1fr; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -991,7 +947,6 @@ select.text-input.slim {
   .panel { padding: 20px 16px; }
   .app-main { padding: 18px 14px 48px; }
   .home-hero { padding: 28px 16px 24px; }
-  .signin-steps, .signin-secure { grid-template-columns: 1fr; }
   .link-row { flex-wrap: wrap; }
   .link-row .btn { width: 100%; }
   .work-seats { grid-template-columns: 1fr; }

@@ -104,7 +104,7 @@ orgs/<slug>/work-chart.md
 orgs/<slug>/processes/<slug>.md
 orgs/<slug>/log/<event>.md
 orgs/<slug>/grok/snapshot.json
-samples/<company>/        read-only templates (copied into orgs/<slug>/)
+samples/<slug>/           read-only sample organizations (copied into orgs/<slug>/)
 directory/                bot prompts, one markdown file per bot, plus PUBLISH-QUEUE.md
 ```
 

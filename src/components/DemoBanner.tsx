@@ -1,4 +1,6 @@
-const repo = import.meta.env.VITE_REPO_URL || ''
+import { REPO_URL } from '../repo-url'
+
+const repo = REPO_URL
 
 export function DemoBanner() {
   return (

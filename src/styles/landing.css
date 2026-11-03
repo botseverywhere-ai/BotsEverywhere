@@ -22,8 +22,6 @@
 .landing-header nav { display: flex; gap: 28px; font-size: 14px; font-weight: 500; }
 .landing-header nav a { color: var(--muted); }
 .landing-header nav a:hover { color: var(--navy); }
-.landing .header-ctas { display: flex; align-items: center; gap: 10px; }
-.landing .header-signin { font-size: 14px; font-weight: 600; color: var(--navy); white-space: nowrap; }
 .landing .hero {
   padding: 72px 0 56px;
   background: var(--color-white);

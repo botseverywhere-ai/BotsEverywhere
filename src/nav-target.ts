@@ -1,7 +1,9 @@
 import { APP_MODE } from './mode'
 import { userOrgs } from './org/load'
 
-const repo = import.meta.env.VITE_REPO_URL || ''
+import { REPO_URL } from './repo-url'
+
+const repo = REPO_URL
 
 export function mainCta(): { href: string; label: string } {
   if (APP_MODE === 'showcase') return { href: repo || '#docs', label: 'Get it on GitHub' }

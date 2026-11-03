@@ -2,8 +2,9 @@ import { createElement } from 'react'
 import { Button } from './Button'
 import type { AppMode } from '../mode'
 import { SHOWCASE_NOTICE } from '../content/showcase-notice'
+import { REPO_URL } from '../repo-url'
 
-const github = import.meta.env?.VITE_REPO_URL || '#docs'
+const github = REPO_URL
 
 export function ShowcaseNotice({ mode }: { mode: AppMode }) {
   if (mode !== 'showcase') return null

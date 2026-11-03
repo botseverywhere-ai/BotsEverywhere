@@ -7,8 +7,9 @@ import { GROK_BOT_LIMIT } from '../components/sync-copy.ts'
 import { DESKTOP_MIN_WIDTH } from '../content/screen-notice.ts'
 // The same file that ships with the project, so the page and the license never disagree.
 import MIT_TEXT from '../../LICENSE?raw'
+import { REPO_URL } from '../repo-url'
 
-const repoUrl = import.meta.env.VITE_REPO_URL || '<this-repository-url>'
+const repoUrl = REPO_URL
 
 /** The Connector's interval is set on Connect bots. These come from the same rules, so the page never names a fixed rate. */
 const DEFAULT_EVERY = everyLabel(DEFAULT_SYNC_MINUTES)

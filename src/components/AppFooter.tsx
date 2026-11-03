@@ -1,6 +1,8 @@
 import { Logo } from './Logo'
 
-const repo = import.meta.env.VITE_REPO_URL || ''
+import { REPO_URL } from '../repo-url'
+
+const repo = REPO_URL
 // Docs sections, so each link lands on what it names instead of the top of Docs.
 const docs = '#/docs'
 const license = '#/docs?section=license'
@@ -17,7 +19,6 @@ export function AppFooter({ hidden = false, variant = 'public' }: { hidden?: boo
           <span>BotsEverywhere · open source · <a href={license}>LICENSE</a> · v1.0.0</span>
         </p>
         <p className="be-footer-links">
-          {/* GitHub shows only once the repository address is set (VITE_REPO_URL). */}
           {repo ? <a href={repo}>GitHub</a> : null}
           <a href={docs}>Docs</a>
           <a href={settings}>Settings</a>

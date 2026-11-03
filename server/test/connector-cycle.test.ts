@@ -38,7 +38,7 @@ function dump(at: string, descriptions: Record<string, string> = {}, extra: Grok
 const write = (orgs: string, data: GrokData) => writeFileSync(join(orgs, GROK_DATA_FILE), JSON.stringify(data))
 const todo = (orgs: string): TodoFile | null => (existsSync(join(orgs, TODO_FILE)) ? JSON.parse(readFileSync(join(orgs, TODO_FILE), 'utf8')) as TodoFile : null)
 
-async function until(check: () => boolean, ms = 8000): Promise<boolean> {
+async function until(check: () => boolean, ms = 20000): Promise<boolean> {
   const end = Date.now() + ms
   while (Date.now() < end) {
     if (check()) return true

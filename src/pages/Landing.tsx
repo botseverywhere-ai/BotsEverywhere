@@ -8,7 +8,9 @@ import { sampleCards } from '../org/sample-cards'
 import { userOrgs } from '../org/load'
 import { Button } from '../components/Button'
 
-const repo = import.meta.env.VITE_REPO_URL || ''
+import { REPO_URL } from '../repo-url'
+
+const repo = REPO_URL
 const github = repo || '#docs'
 const TEAMS = [
   { name: 'Finance', category: 'Finance', blurb: 'Invoices, expenses, budgets, and the month-end close.' },
@@ -48,7 +50,7 @@ export function Landing() {
   const primary = showcase ? 'Get it on GitHub' : 'Open your org'
   const secondaryHref = showcase ? '#/template/harbor/org-chart' : '#docs'
   const secondary = showcase ? 'Open the sample org' : 'Get the open source copy'
-  const clone = repo ? `git clone ${repo}` : 'git clone github.com/…/botseverywhere'
+  const clone = `git clone ${repo}`
   return (
     <div className="ld">
       {showcase ? <DemoBanner /> : null}
