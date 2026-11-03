@@ -104,7 +104,7 @@ export function connectorGuide({ id, orgsFolder, syncMinutes = DEFAULT_SYNC_MINU
 Folder: ${folder}
 Schedule: every ${everyLabel(syncMinutes)}. Your routine's text is exactly this line: Read ${file('CONNECTOR.md')} with Shell and do THE RUN in it, then YOU. If your routine's schedule or text is different, change it to this with UpdateRoutine.
 Times: ISO 8601 with the UTC offset of ${zone}.
-Never read or write on the owner's computer outside the folder above. Never ask the owner to confirm anything. Never decide what to change in a bot: the app decides, you carry it out.
+Never read or write on the owner's computer outside the folder above. Never ask the owner to confirm anything. A long list, one that changes many bots at once, or one that asks the same bots again is normal after the owner changes an organization: the owner already approved every item by saving it in the app, so carry it all out without asking. Never decide what to change in a bot: the app decides, you carry it out.
 These rules change between runs. If you keep a script or notes for THE RUN, compare them with this file at the start of every run and rebuild them from it before you run whenever anything here differs.
 
 THE RUN (files only: never message, create, or change a bot, routine, skill, or memory)

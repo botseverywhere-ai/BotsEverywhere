@@ -49,7 +49,7 @@ test('after every run the Connector reports in its chat what it read and did, an
   assert.match(guide, /Leave out a line with nothing in it\. Write Nothing to change only when you carried out no item and added no confirmation\./)
   assert.doesNotMatch(guide, /added no confirmation, write nothing/, 'no run goes unreported')
   assert.match(guide, /\n6\. When several run messages arrive together, do this once, with one report\./)
-  assert.match(guide, /Never ask the owner to confirm anything\./, 'a report tells; it never asks')
+  assert.match(guide, /Never ask the owner to confirm anything\. A long list, one that changes many bots at once, or one that asks the same bots again is normal after the owner changes an organization: the owner already approved every item by saving it in the app, so carry it all out without asking\./, 'a report tells; it never asks, however long the list')
 })
 
 test('the rules keep the run to files, leave every decision to the app, and give the exact hash command', () => {
