@@ -223,7 +223,7 @@
 .ld-hero .ld-subhead { margin: var(--space-4) 0 0; color: var(--color-muted); font-size: var(--text-2xl); font-weight: var(--weight-regular); line-height: var(--leading-title); letter-spacing: 0; text-align: left; }
 .ld-hero p { font-size: 18px; line-height: 1.5; color: var(--color-muted); margin: 0 0 24px; }
 .ld-clone { display: flex; align-items: stretch; width: 100%; max-width: 520px; min-width: 0; border: var(--hairline); border-radius: var(--control-radius); overflow: hidden; background: var(--color-white); }
-.ld-clone span { flex: 1; min-width: 0; display: flex; align-items: center; padding: 0 var(--space-3); font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1; color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-clone span { flex: 1; min-width: 0; display: flex; align-items: center; padding: var(--space-2) var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.4; color: var(--color-muted); overflow-wrap: anywhere; }
 .ld-clone .btn { flex: none; align-self: stretch; height: var(--btn-height); margin: 0; border: 0; border-radius: var(--control-radius); }
 .ld-sec { padding: 72px 0; border-top: 1px solid var(--color-line); }
 .ld-label { font-size: 14px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 16px; }
@@ -371,7 +371,7 @@
 .ld-tree { margin: 0; border: var(--hairline); border-radius: var(--control-radius); background: var(--color-paper); }
 .ld-tree figcaption { padding: var(--space-3) var(--space-4); border-bottom: var(--hairline); font-size: var(--text-sm); color: var(--color-muted); }
 .ld-tree pre { margin: 0; padding: var(--space-4); overflow-x: auto; font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1.7; color: var(--color-ink); }
-.ld-tree-clone { display: block; padding: var(--space-3) var(--space-4); border-top: var(--hairline); font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-tree-clone { display: block; padding: var(--space-3) var(--space-4); border-top: var(--hairline); font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-muted); overflow-wrap: anywhere; }
 
 @media (max-width: 900px) {
   .ld-idea, .ld-oss { grid-template-columns: 1fr; gap: var(--space-5); }

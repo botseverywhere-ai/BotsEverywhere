@@ -35,7 +35,7 @@ The Connector suites are `server/test/connector-*.test.ts`, `connector-guide.tes
 ## Known quirks
 
 - The writer is `tsx` without a watcher. Any change under `server/src/` needs `npm run dev` restarted. Restarting while a file is half-written loads that half-written file; restart again.
-- `server/test/connector-cycle.test.ts` "a new manager reaches the to-do list within seconds" is a timing test and can fail under full-suite load; it passes alone.
+- `server/test/connector-cycle.test.ts` "a new manager reaches the to-do list within seconds" waits on the file watcher, up to 20 seconds. Under heavy load on Windows it can still miss; it passes alone and on CI.
 - A Connector may still stop and ask the owner before a list that changes many bots at once, despite the rule. Answer "do all" in its chat; the rules now say a long list is normal.
 - An older Connector keeps a run script and may ignore a new rule until told once to rebuild it from `CONNECTOR.md`; the rules now ask for that at every run.
 - The Connector counts profile answers as missing because bots answer by writing a file, not a chat line; the rules now say so. The app reads the files.
