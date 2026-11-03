@@ -23,8 +23,8 @@ test('Performance says where its numbers come from: Not connected with a link un
 test("Bot reports counts the bots that have written their profile, amber until all have, green when every bot has", async () => {
   const some = await render({ reported: 2, total: 21 })
   assert.match(some, /<dt>Bot reports<\/dt><dd class="connect-status"><span class="connect-badge"><i aria-hidden="true"><\/i>2 of 21 bots reported<\/span>/)
-  assert.match(some, /Automated tasks done and Skills come from each bot&#x27;s own report\. Bots report on their own when they next run; Get the bots&#x27; profiles asks all of them now\./)
-  assert.match(some, /<button[^>]*>Get the bots&#x27; profiles<\/button>/)
+  assert.match(some, /Automated tasks done and Skills come from each bot&#x27;s own report\. Bots report on their own when they next run; Sync bots asks all of them now\./)
+  assert.match(some, /<button[^>]*>Sync bots<\/button>/)
   const all = await render({ reported: 21, total: 21 })
   assert.match(all, /<span class="connect-badge is-connected"><i aria-hidden="true"><\/i>All 21 bots reported<\/span>/)
   const one = await render({ reported: 0, total: 1 })
@@ -35,11 +35,11 @@ test("while asks are queued, Bot reports says they go out on the Connector's nex
   const waiting = await render({ waitingAsks: 21 })
   assert.match(waiting, /<span class="connect-badge"><i aria-hidden="true"><\/i>2 of 21 bots reported<\/span><span class="connect-status-detail">21 asks go out on the Connector&#x27;s next run\. Automated tasks done and Skills come from each bot&#x27;s own report\./)
   assert.doesNotMatch(waiting, /Waiting for you|do YOU now|Send the waiting items|Copy:/)
-  assert.doesNotMatch(waiting, /<button[^>]*>Get the bots&#x27; profiles<\/button>/, 'no second click while asks are queued')
+  assert.doesNotMatch(waiting, /<button[^>]*>Sync bots<\/button>/, 'no second click while asks are queued')
   assert.match(await render({ waitingAsks: 1 }), /1 ask goes out on the Connector&#x27;s next run\./)
   const none = await render({ waitingAsks: 0 })
   assert.doesNotMatch(none, /go(es)? out on the Connector/)
-  assert.match(none, /<button[^>]*>Get the bots&#x27; profiles<\/button>/)
+  assert.match(none, /<button[^>]*>Sync bots<\/button>/)
 })
 
 test("a bot's name on Performance opens its seat card, the same drawer as on the org chart", () => {

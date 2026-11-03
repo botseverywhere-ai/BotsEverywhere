@@ -535,7 +535,7 @@ export function connectorChangeNotice(before: ConnectorState | null, after: Conn
 }
 
 /** Not an official Grok Bot number; the count we recommend staying under per account. */
-/** The notice after Get the bots' profiles: how many were asked, or why none could be. */
+/** The notice after Sync bots: how many were asked, or why none could be. */
 export function profilesAskedLine(bots: number, greyed: number): string {
   if (bots === 0) {
     if (greyed === 0) return 'This organization has no bot of its own to ask. Add bots on Connect bots first.'

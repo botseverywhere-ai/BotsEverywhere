@@ -44,8 +44,8 @@ export function PerformanceStatus({
         <dt>Bot reports</dt>
         <dd className="connect-status">
           <span className={all ? 'connect-badge is-connected' : 'connect-badge'}><i aria-hidden="true" />{all ? `All ${total} bots reported` : `${reported} of ${total} bots reported`}</span>
-          <span className="connect-status-detail">{waitingAsks ? `${waitingAsks === 1 ? '1 ask goes' : `${waitingAsks} asks go`} out on the Connector's next run. ` : ''}Automated tasks done and Skills come from each bot&apos;s own report. Bots report on their own when they next run; Get the bots&apos; profiles asks all of them now.</span>
-          {waitingAsks ? null : <Button variant="secondary" type="button" onClick={onAsk}>Get the bots&apos; profiles</Button>}
+          <span className="connect-status-detail">{waitingAsks ? `${waitingAsks === 1 ? '1 ask goes' : `${waitingAsks} asks go`} out on the Connector's next run. ` : ''}Automated tasks done and Skills come from each bot&apos;s own report. Bots report on their own when they next run; Sync bots asks all of them now.</span>
+          {waitingAsks ? null : <Button variant="secondary" type="button" onClick={onAsk}>Sync bots</Button>}
         </dd>
       </dl>
     </section>

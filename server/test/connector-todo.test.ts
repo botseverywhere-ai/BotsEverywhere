@@ -180,7 +180,7 @@ test('a change reported done that a newer dump still does not show comes back as
   assert.equal(afterDump.items.some((entry) => entry.kind === 'describe'), false, 'done after this dump: wait for the next one')
 })
 
-test("Get the bots' profiles asks each bot with a seat once, drops the ask once its file is newer than the ask, and gives up after two asks", () => {
+test("Sync bots asks each bot with a seat once, drops the ask once its file is newer than the ask, and gives up after two asks", () => {
   const desk = org('org-a', 'Desk', [you, lead])
   const dump = data([bot('lead', 'Lead', 'Leads.')])
   const orgs = [{ id: 'org-a', bundle: desk, requests: [], profileAskedAt: '2026-10-28T09:00:00.000Z' }]

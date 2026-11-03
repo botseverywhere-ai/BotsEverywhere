@@ -624,7 +624,7 @@ export function Workspace({
     return { ok: true }
   }
 
-  /** Get the bots' profiles: every bot is asked to write its profile file now. The Connector sends the asks from its chat. */
+  /** Sync bots: every bot is asked to write its profile file now. The Connector sends the asks from its chat. */
   async function askProfiles() {
     try {
       const response = await fetch(`/api/orgs/${bundle.id}/grok/profile-asks`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })

@@ -4,7 +4,7 @@ import { normalizeText } from './normalize-text.ts'
 import { readTextFile } from './connector-files.ts'
 
 /**
- * Get the bots' profiles: when the owner last asked every bot in an organization to write its profile file now. The next
+ * Sync bots: when the owner last asked every bot in an organization to write its profile file now. The next
  * cycle turns it into one profile item per bot, which the Connector sends from its chat. One object: `askedAt`.
  */
 export const PROFILE_ASKS_FILE = 'grok/profile-asks.json'

@@ -412,7 +412,7 @@ export function computeTodo(input: {
   }
 
   // profile: a bot with a seat and no report yet is asked for one on the Connector's next run, by itself; after that the
-  // bot refreshes its file on its own runs. Get the bots' profiles asks every bot again, and its click is the key. An
+  // bot refreshes its file on its own runs. Sync bots asks every bot again, and its click is the key. An
   // ask drops once the bot's file is newer than it; a second ask waits a day; after two, the owner is told.
   for (const org of input.orgs) {
     const clicked = Date.parse(org.profileAskedAt ?? '')

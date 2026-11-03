@@ -105,11 +105,12 @@ test('the ask answers how many greyed bots there are, and with no bot of its own
   assert.equal(profilesAskedLine(0, 0), 'This organization has no bot of its own to ask. Add bots on Connect bots first.')
 })
 
-test("Performance has a Get the bots' profiles button that posts the ask and says what to tell the Connector", () => {
+test("Performance has a Sync bots button that posts the ask and says what to tell the Connector", () => {
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(workspace, /profilesAskedLine\(body\.bots \?\? 0, body\.greyed \?\? 0\)/)
   assert.match(workspace, /\/grok\/profile-asks`/)
   assert.match(workspace, /appsUsed: appsShown\(/)
   const status = readFileSync(new URL('../../src/components/PerformanceStatus.tsx', import.meta.url), 'utf8')
-  assert.match(status, /Get the bots&apos; profiles/)
+  assert.match(status, /<Button[^>]*>Sync bots<\/Button>/)
+  assert.doesNotMatch(status, /Get the bots&apos; profiles/, 'the button is called Sync bots everywhere the page names it')
 })
