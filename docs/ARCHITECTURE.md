@@ -77,7 +77,7 @@ The `orgs/` folder is the channel. One Connector bot in Grok Bot serves every or
 
 A new snapshot shows up on the **Sync with Grok Bot** button as a count. The drawer previews the merge: new bots become seats marked New, bots missing from Grok Bot are tagged and never deleted, matched bots take their link, routines and run numbers from Grok Bot and keep the manager, step, and card text set in the app. New routines become processes. Confirm applies it and logs one event.
 
-The other direction needs no channel. Changing a seat's manager in the app rewrites the seat file and `org.md`; the Connector reads them on its next run. If Grok Bot cannot reach the folder, the same drawer takes a pasted or imported JSON file.
+The other direction needs no channel. Changing a seat's manager in the app rewrites the seat file and `org.md`; the Connector reads them on its next run.
 
 There is no public Grok Bot API, so nothing is read back faster than the Connector's schedule.
 

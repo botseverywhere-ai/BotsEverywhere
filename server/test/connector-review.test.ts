@@ -203,6 +203,28 @@ test("messages to bots wait for the owner from the start; only work a scheduled 
   }
 })
 
+test('the drawer learns how many items the Connector carried out since the oldest late one, so a slow Connector is not called stopped', () => {
+  const t = project()
+  try {
+    writeFileSync(join(t.orgs, GROK_DATA_FILE), JSON.stringify(data([bot('lead', 'Lead', 'Leads.')])))
+    const late = { key: 'describe:lead:aaaa#1', kind: 'describe', bot: 'Lead', botId: 'lead', org: t.org, runs: 3, since: '2026-11-03T11:55:22+01:00' }
+    writeFileSync(join(t.orgs, TODO_FILE), JSON.stringify({ basedOn: 'x', items: [late], stuck: [], otherCopies: [], ledger: [] }))
+    writeFileSync(join(t.orgs, RESULTS_FILE), JSON.stringify({ results: [
+      { key: 'describe:old:1111#1', status: 'done', at: '2026-11-03T11:40:00+01:00' },
+      { key: 'describe:one:2222#1', status: 'done', at: '2026-11-03T12:08:26+01:00' },
+      { key: 'describe:two:3333#1', status: 'changed', at: '2026-11-03T12:09:19+01:00' },
+      { key: 'describe:three:4444#1', status: 'failed', at: '2026-11-03T11:20:41Z', why: 'busy' },
+    ], confirmations: [] }))
+    const state = connectorState(t.orgs, t.org)
+    assert.equal(state.pending, 1)
+    assert.equal(state.actedSince, 3, 'each result after the oldest late item counts, whatever its status; 11:20Z is 12:20 in Madrid')
+    writeFileSync(join(t.orgs, TODO_FILE), JSON.stringify({ basedOn: 'x', items: [{ ...late, runs: 1 }], stuck: [], otherCopies: [], ledger: [] }))
+    assert.equal(connectorState(t.orgs, t.org).actedSince, 0, 'nothing is late, so there is nothing to weigh')
+  } finally {
+    t.done()
+  }
+})
+
 test("a bot whose routines Grok Bot does not show keeps the seat's apps; one whose routines it shows gets exactly what it finds", () => {
   const withApps = seat('lead', 'title: Lead\nkind: bot\nreportsTo: you\ngrokBotUrl: "grokbot://app/v1/agent?id=lead"\napps: ["Gmail"]')
   const desk = org('org-a', 'Desk', [you, withApps])

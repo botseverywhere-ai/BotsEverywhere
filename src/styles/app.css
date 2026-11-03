@@ -1887,6 +1887,10 @@ a.site-nav-cta:focus {
 .sync-side-title { margin: 0 0 var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); }
 .sync-group ul.sync-picks { padding-left: 0; list-style: none; }
 .sync-group ul.sync-update-items { margin: var(--space-1) 0 0; padding-left: var(--space-4); list-style: none; display: grid; gap: var(--space-1); }
+.sync-group li.sync-copy { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.sync-copy details { min-width: 0; }
+.sync-copy summary { cursor: pointer; }
+.sync-copy details p { margin-top: var(--space-1); overflow-wrap: anywhere; }
 .be-drawer .sync-picks label { flex-direction: row; align-items: center; gap: var(--space-2); width: auto; margin-top: 0; font-size: var(--text-sm); color: var(--color-ink); cursor: pointer; }
 .be-drawer .sync-picks input { flex: none; width: auto; height: auto; margin: 0; }
 .overview { display: grid; gap: var(--space-4); max-width: 640px; margin-top: var(--space-4); }

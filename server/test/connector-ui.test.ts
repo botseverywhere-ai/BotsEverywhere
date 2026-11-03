@@ -148,9 +148,9 @@ test('the drawer shows each of these under Going to Grok Bot', async () => {
   assert.match(going, /The Connector&#x27;s data could not be read: Bot 1 has no id\./)
   assert.match(going, /The Connector has not acted on 3 items since /)
   assert.match(going, /18 profile requests, 1 routine request and 2 one-time notes wait for you\. Grok Bot sends messages to bots only from a chat, never from the Connector&#x27;s scheduled runs\. In the Connector&#x27;s chat in Grok Bot, say: do YOU now/)
-  assert.match(going, /Blocks from copy uft5 in 2 bots: Security, Outer Loop/)
+  assert.match(going, /<summary>Copy uft5 · 2 bots<\/summary><p class="overview-note">Security, Outer Loop<\/p>/)
   assert.match(going, /<button[^>]*>Remove them<\/button>/)
-  assert.match(going, /Blocks from copy k7m2 in 1 bot: Grok Bot · removing on the Connector&#x27;s next run/)
+  assert.match(going, /<summary>Copy k7m2 · 1 bot<\/summary><p class="overview-note">Grok Bot<\/p><\/details><span class="overview-note">Removing on the Connector&#x27;s next run<\/span>/)
 })
 
 test('Connect bots shows only the prompt to paste; CONNECTOR.md stays a file the app keeps, listed under Files the Connector uses', () => {

@@ -1,20 +1,17 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { ConnectorState, SyncPlan, SyncRow, SyncStatus } from '../../server/src/grok-sync.ts'
-import { grokSnapshotPrompt, syncNowPrompt } from '../content/grok-snapshot-prompt'
+import { syncNowPrompt } from '../content/grok-snapshot-prompt'
 import { CopyPromptButton } from '../directory/prompt-actions'
-import { orgFolder } from '../org/folder-path'
 import { Button } from './Button'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
 import { formatShortDate } from '../../server/src/bot-metrics.ts'
-import { activeBotCount, botLimitLine, outgoing, overBotLimit, rowLine, statusLine } from './sync-copy'
+import { activeBotCount, botLimitLine, connectorState, outgoing, overBotLimit, rowLine, statusLine } from './sync-copy'
 import { DEFAULT_SYNC_MINUTES, everyLabel } from '../../server/src/connector-timing.ts'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 
 const SAVING_OFF = 'Saving is off. Restart npm run dev, then sync again.'
 const STALE = 'The snapshot changed. Review it again.'
-
-type Source = { kind: 'file' } | { kind: 'json'; json: string; status: SyncStatus }
 
 export function SyncDrawer({
   orgSlug,
@@ -31,17 +28,13 @@ export function SyncDrawer({
   onRefresh: () => Promise<void>
   onApplied: (message: string) => Promise<void>
 }) {
-  const [source, setSource] = useState<Source>({ kind: 'file' })
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<SaveNotice | null>(null)
   const [picked, setPicked] = useState<Set<string>>(() => new Set())
   const [adopt, setAdopt] = useState<Set<string>>(() => new Set())
-  const fileRef = useRef<HTMLInputElement>(null)
-  const shown = source.kind === 'json' ? source.status : status
-  const plan = shown?.plan ?? null
+  const plan = status?.plan ?? null
   const incoming = plan?.writes ?? 0
   const project = status?.project
-  // Requests live beside the snapshot, so they come from the folder status even while a pasted file is previewed.
   const going = outgoing(plan, status?.requests ?? [], seats)
   const renamed = project?.renamed ?? {}
   const unassigned = project?.unassigned ?? []
@@ -52,8 +45,9 @@ export function SyncDrawer({
   const inGrok = Math.max(0, bots - going.ready.length)
   const limitOver = picked.size > 0 ? overBotLimit(inGrok, picked.size) : overBotLimit(bots)
   const limitLine = picked.size > 0 ? botLimitLine(inGrok, picked.size, scope) : botLimitLine(bots, 0, scope)
-  const oneOffPrompt = grokSnapshotPrompt(shown?.folder || orgFolder(orgSlug))
   const connector = project?.connectorName || 'Connector - BotsEverywhere'
+  // How to set up the Connector, only until it runs: once connected, the drawer is about what changed.
+  const setup = !['connected', 'checking'].includes(connectorState(status).state)
 
   function toggleAdopt(name: string) {
     setAdopt((current) => {
@@ -129,9 +123,7 @@ export function SyncDrawer({
   async function confirm(): Promise<string | null> {
     if (!plan || plan.writes === 0) return null
     try {
-      const body = source.kind === 'json'
-        ? { source: 'json', json: source.json }
-        : { source: 'file', stamp: shown?.snapshot?.stamp ?? '' }
+      const body = { source: 'file', stamp: status?.snapshot?.stamp ?? '' }
       const response = await fetch(`/api/orgs/${orgSlug}/sync/apply`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -185,23 +177,6 @@ export function SyncDrawer({
     setBusy(false)
   }
 
-  async function preview(file: File) {
-    setNotice(null)
-    const json = await file.text()
-    try {
-      const response = await fetch(`/api/orgs/${orgSlug}/sync/preview`, { method: 'POST', body: json })
-      const text = await response.text()
-      const result = text.trimStart().startsWith('{') ? JSON.parse(text) as SyncStatus & { errors?: string[] } : null
-      if (!response.ok || !result) {
-        setNotice(saveNotice(false, result?.errors?.join(' ') || 'Could not read that file.', 'Not imported'))
-        return
-      }
-      setSource({ kind: 'json', json, status: result })
-    } catch {
-      setNotice(saveNotice(false, SAVING_OFF, 'Not imported'))
-    }
-  }
-
   return (
     <div className="be-scrim" onClick={busy ? undefined : onClose}>
       <aside className="be-drawer be-hire sync-drawer" role="dialog" aria-labelledby="sync-title" onClick={(event) => event.stopPropagation()}>
@@ -212,30 +187,25 @@ export function SyncDrawer({
               ×
             </button>
           </header>
-          <p className="overview-note">
-            {connector} moves files between Grok Bot and every organization in this folder. Paste its prompt from Connect bots into Grok Bot once, and this drawer fills in by itself every {everyLabel(project?.syncMinutes ?? DEFAULT_SYNC_MINUTES)}.
-          </p>
-          <p className="overview-note">{shown ? statusLine(shown, orgSlug) : 'Checking for a snapshot…'}</p>
+          {setup ? (
+            <p className="overview-note">
+              {connector} moves files between Grok Bot and every organization in this folder. Paste its prompt from Connect bots into Grok Bot once, and this drawer fills in by itself every {everyLabel(project?.syncMinutes ?? DEFAULT_SYNC_MINUTES)}.
+            </p>
+          ) : null}
+          <p className="overview-note">{status ? statusLine(status, orgSlug) : 'Checking for a snapshot…'}</p>
           <div className="sync-run-now">
             <p className="overview-note">
               Do not want to wait for the next run? Copy this message, paste it into Grok Bot, and the Connector runs right away. This drawer updates when it finishes.
             </p>
             <CopyPromptButton text={syncNowPrompt(project?.connectorName ?? '')} label="Run the Connector now" onCopied={(message) => setNotice(saveNotice(true, message))} />
           </div>
-          <p className="overview-note">
-            <a href={`#/org/${orgSlug}/connect-bots`}>Copy the Connector prompt on Connect bots</a>
-          </p>
-          {source.kind === 'json' ? (
+          {setup ? (
             <p className="overview-note">
-              Previewing an imported file.{' '}
-              <Button variant="secondary" type="button" onClick={() => setSource({ kind: 'file' })}>Back to the snapshot</Button>
+              <a href={`#/org/${orgSlug}/connect-bots`}>Copy the Connector prompt on Connect bots</a>
             </p>
           ) : null}
           <section className="sync-side" aria-labelledby="sync-in">
             <h3 id="sync-in" className="sync-side-title">Coming from Grok Bot</h3>
-            <p className="overview-note">
-              Grok Bot&apos;s numbers (last active, runs, tasks, routines) apply on their own on every Connector run. Sync is for new bots, bots that left or came back, links, names, card fills, and processes.
-            </p>
             {plan ? <Preview plan={plan} /> : <p className="overview-note">Nothing until the Connector writes a snapshot.</p>}
             {unassigned.length ? (
               <section className="sync-group">
@@ -256,7 +226,7 @@ export function SyncDrawer({
           <section className="sync-side" aria-labelledby="sync-out">
             <h3 id="sync-out" className="sync-side-title">Going to Grok Bot</h3>
             {status?.connector ? <ConnectorTrouble state={status.connector} busy={busy} onRemove={(copy) => void removeCopy(copy)} /> : null}
-            <p className={limitOver ? 'save-off' : 'overview-note'} role={limitOver ? 'alert' : undefined}>{limitLine}</p>
+            {limitOver ? <p className="save-off" role="alert">{limitLine}</p> : null}
             {going.waiting.length === 0 && going.ready.length === 0 ? <p className="overview-note">{activeBotCount(seats) ? 'Every bot in the org chart is in Grok Bot.' : 'This organization has no bots yet.'}</p> : null}
             {going.waiting.length ? (
               <section className="sync-group">
@@ -289,31 +259,6 @@ export function SyncDrawer({
             ) : null}
           </section>
           {notice ? <SaveAlert kind={notice.kind}>{notice.message}</SaveAlert> : null}
-          <details className="link-panel">
-            <summary>
-              <span>One-off snapshot without the Connector</span>
-              <span className="grok-chevron" aria-hidden="true" />
-            </summary>
-            <div className="link-panel-body">
-              <p className="overview-note">Paste this into a Grok Bot chat. It answers with the snapshot, or saves it into the folder if it can. Then import the file here, or wait for the drawer to pick it up.</p>
-              <pre className="dir-prompt">{oneOffPrompt}</pre>
-              <div className="dir-actions">
-                <CopyPromptButton text={oneOffPrompt} onCopied={(message) => setNotice(saveNotice(true, message))} />
-                <Button variant="secondary" type="button" disabled={busy} onClick={() => fileRef.current?.click()}>Import snapshot file</Button>              </div>
-              <input
-                ref={fileRef}
-                className="be-file"
-                type="file"
-                accept="application/json,.json"
-                aria-label="Import snapshot file"
-                onChange={(event) => {
-                  const file = event.target.files?.[0]
-                  event.target.value = ''
-                  if (file) void preview(file)
-                }}
-              />
-            </div>
-          </details>
         </div>
         <footer className="be-hire-foot">
           <div className="dir-actions">
@@ -341,7 +286,9 @@ function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; bu
     <>
       {state.dumpError ? <p className="save-off" role="alert">{`The Connector's data could not be read: ${state.dumpError}`}</p> : null}
       {messages.length ? <p className="save-off" role="alert">{`${[messages.slice(0, -1).join(', '), messages.at(-1)].filter(Boolean).join(' and ')} wait for you. Grok Bot sends messages to bots only from a chat, never from the Connector's scheduled runs. In the Connector's chat in Grok Bot, say: do YOU now`}</p> : null}
-      {state.pending ? <p className="save-off" role="alert">{`The Connector has not acted on ${items(state.pending)} since ${formatShortDate(state.pendingSince)}. Check that it still runs in Grok Bot.`}</p> : null}
+      {/* Results since the oldest late item mean the Connector runs and works through its list, only slowly. */}
+      {state.pending && state.actedSince ? <p className="overview-note">{`The Connector is still working through ${items(state.pending)}. It has carried out ${state.actedSince} since ${formatShortDate(state.pendingSince)}.`}</p> : null}
+      {state.pending && !state.actedSince ? <p className="save-off" role="alert">{`The Connector has not acted on ${items(state.pending)} since ${formatShortDate(state.pendingSince)}. Check that it still runs in Grok Bot.`}</p> : null}
       {state.stuck.length ? (
         <section className="sync-group">
           <h3>{`The Connector could not do these (${state.stuck.length})`}</h3>
@@ -365,9 +312,12 @@ function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; bu
           <p className="overview-note">Another copy of BotsEverywhere put these blocks in your bots. Remove them only if that copy is gone.</p>
           <ul className="sync-picks">
             {state.otherCopies.map((item) => (
-              <li key={item.copy}>
-                {`Blocks from copy ${item.copy} in ${bots(item.bots.length)}: ${item.bots.join(', ')}`}
-                {item.removing ? " · removing on the Connector's next run" : <> <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove(item.copy)}>Remove them</Button></>}
+              <li key={item.copy} className="sync-copy">
+                <details>
+                  <summary>{`Copy ${item.copy} · ${bots(item.bots.length)}`}</summary>
+                  <p className="overview-note">{item.bots.join(', ')}</p>
+                </details>
+                {item.removing ? <span className="overview-note">Removing on the Connector&apos;s next run</span> : <Button variant="secondary" type="button" disabled={busy} onClick={() => onRemove(item.copy)}>Remove them</Button>}
               </li>
             ))}
           </ul>

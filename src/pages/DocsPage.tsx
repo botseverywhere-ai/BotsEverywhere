@@ -667,9 +667,6 @@ Plain notes for whoever reads the file.`}</CodeBlock>
         <p>
           Do not want to wait for the next run? <strong>Run the Connector now</strong> copies a message: paste it into Grok Bot and the Connector runs right away. The drawer updates when it finishes.
         </p>
-        <p>
-          If Grok Bot cannot write the snapshot, open <strong>One-off snapshot without the Connector</strong> in the drawer: copy the prompt into a Grok Bot chat, then import the file it gives you.
-        </p>
 
         <h2 id="directory">Bot directory</h2>
         <p>

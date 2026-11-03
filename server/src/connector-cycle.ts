@@ -193,11 +193,14 @@ export function connectorState(orgsDir: string, orgId: string): ConnectorState {
   // the start; only work a scheduled run can do is late.
   const count = (kind: TodoItem['kind']) => items.filter((item) => item.kind === kind).length
   const late = items.filter((item) => !MESSAGE_KINDS.includes(item.kind) && (item.runs ?? 0) > 2)
+  const pendingSince = late.map((item) => item.since ?? '').filter(Boolean).sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? ''
+  const since = Date.parse(pendingSince)
   return {
     stuck: (todo?.stuck ?? []).filter((item) => here(item.org)).map((item) => ({ bot: item.bot, why: item.why })),
     failed,
     pending: late.length,
-    pendingSince: late.map((item) => item.since ?? '').filter(Boolean).sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? '',
+    pendingSince,
+    actedSince: Number.isNaN(since) ? 0 : results.results.filter((result) => Date.parse(result.at) >= since).length,
     waiting: { routines: count('routine'), profiles: count('profile'), notes: count('cleanup') },
     dumpError,
     otherCopies: (todo?.otherCopies ?? []).map((item) => ({ copy: item.copy, bots: item.bots, removing: removing.includes(item.copy) })),

@@ -89,9 +89,9 @@ test("on each Connector run, Grok Bot's numbers land in the seat files; new bots
   }
 })
 
-test('the Sync drawer and Docs say the numbers apply on their own', () => {
+test('Docs say the numbers apply on their own; the Sync drawer no longer repeats it', () => {
   const drawer = readFileSync(new URL('../../src/components/SyncDrawer.tsx', import.meta.url), 'utf8')
   const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
-  assert.match(drawer, /Grok Bot&apos;s numbers \(last active, runs, tasks, routines\) apply on their own on every Connector run\./)
+  assert.doesNotMatch(drawer, /apply on their own on every Connector run/)
   assert.match(docs, /apply on their own on every Connector run/)
 })
