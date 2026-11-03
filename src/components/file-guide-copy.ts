@@ -72,6 +72,12 @@ function count(value: number, noun: string): string {
   return `${value} ${noun}${value === 1 ? '' : 's'}`
 }
 
+/** The Work Chart's Import processes panel: how many processes the organization has. */
+export function processesLine(processes: number): string {
+  if (processes === 0) return 'No processes in this organization yet'
+  return `${processes} ${processes === 1 ? 'process' : 'processes'} in this organization`
+}
+
 /** Step 2 on Connect bots once the organization has bots: how many active bots it has. The Connector only syncs files. */
 export function botsLine(seats: { kind: string; title: string; status: string }[]): string {
   const count = seats.filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !seat.title.trim().toLowerCase().startsWith('connector - botseverywhere')).length

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SeatDocument } from '../../server/src/org-files.ts'
 import {
   grokProcessesPrompt,
@@ -12,7 +12,9 @@ import {
 } from '../../server/src/processes.ts'
 import { activitySentence, latestStepStatus, newestFirst, waitingLines, type RunLine } from '../../server/src/run-log.ts'
 import { CopyPromptButton } from '../directory/prompt-actions'
+import { FOLDER_EVENT, orgFolder, processesFolder } from '../org/folder-path'
 import { Button } from './Button'
+import { FILE_NAMES, FILE_WHAT, processesLine } from './file-guide-copy'
 import { ChartPngButton } from './ChartPngButton'
 import { SaveAlert } from './SaveAlert'
 import { saveNotice, type SaveNotice } from './save-notice'
@@ -56,6 +58,16 @@ export function ProcessChart({
   const [removing, setRemoving] = useState<ProcessFile | null>(null)
   const [notice, setNotice] = useState<SaveNotice | null>(null)
   const [busy, setBusy] = useState(false)
+  // The writer's real folder once the sync status named it, so the path is the one on this computer.
+  const [folder, setFolder] = useState(() => orgFolder(orgId))
+  useEffect(() => {
+    const onFolder = (event: Event) => {
+      const detail = (event as CustomEvent<{ slug?: string; value?: string }>).detail
+      if (detail?.slug === orgId && typeof detail.value === 'string') setFolder(detail.value)
+    }
+    window.addEventListener(FOLDER_EVENT, onFolder)
+    return () => window.removeEventListener(FOLDER_EVENT, onFolder)
+  }, [orgId])
   const fileRef = useRef<HTMLInputElement>(null)
   const approvals = useMemo(() => waitingLines(runLines, processes), [processes, runLines])
   const feed = useMemo(() => newestFirst(runLines), [runLines])
@@ -216,10 +228,22 @@ export function ProcessChart({
       {editable ? (
         <details className="link-panel" open={empty}>
           <summary>
-            <span>Import processes from Grok Bot</span>
+            <span>Import processes from Grok Bot<span className={empty ? 'connect-badge link-panel-badge' : 'connect-badge link-panel-badge is-connected'}><i aria-hidden="true" />{empty ? 'Not imported' : 'Imported'}</span></span>
             <span className="grok-chevron" aria-hidden="true" />
           </summary>
           <div className="link-panel-body">
+            <dl className="connect-facts">
+              <dt>Status</dt>
+              <dd className="connect-status">
+                <span className="connect-status-detail">{processesLine(processes.length)}</span>
+              </dd>
+              <dt>Process files</dt>
+              <dd className="connect-file">
+                <code title={processesFolder(folder)}>{FILE_NAMES.processes}</code>
+                <span>{FILE_WHAT.processes}</span>
+                <span className="connect-file-fact">{processesFolder(folder)}</span>
+              </dd>
+            </dl>
             <p>Paste this into Grok Bot. It asks for the routines and handoffs its bots already run.</p>
             <pre className="dir-prompt">{processesPrompt}</pre>
             <div className="dir-actions">
