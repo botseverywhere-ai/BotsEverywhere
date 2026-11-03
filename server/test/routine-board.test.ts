@@ -81,7 +81,7 @@ test("a bot's skills in Grok Bot are the ones the Connector saved and wrote into
   assert.equal(by.get('helper')!.grokSkills, undefined, 'no block yet: nothing is known')
   assert.equal(by.get('lead')!.grokSkills, undefined, "another organization's block says nothing about this one")
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
-  assert.match(workspace, /reportedSkills=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.grokSkills\}/, 'Profile locks a skill from the Connector\'s reading, not from what the bot says it uses')
+  assert.match(workspace, /reportedSkills=\{knownInGrok\(chartBot\?\.grokSkills, chartBot\?\.skills\)\}/, "Profile locks a skill from the Connector's reading, with what the bot says it uses added")
 })
 
 test('with no Connector data yet, every bot says nothing is known and the Connector has not run', () => {

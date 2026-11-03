@@ -17,3 +17,12 @@ export function skillCount(reported: BotSkill[] | undefined, added: BotSkill[] |
   if (reported === undefined && here === 0) return null
   return here + skillsInGrok(reported, added).length
 }
+
+/**
+ * Everything known to be in Grok Bot for a bot: the Connector's reading of its instructions first, then any skill the
+ * bot itself reports using that the reading does not name, each once. Undefined when neither has said anything yet.
+ */
+export function knownInGrok(fromBlock: BotSkill[] | undefined, reported: BotSkill[] | undefined): BotSkill[] | undefined {
+  if (fromBlock === undefined && reported === undefined) return undefined
+  return [...(fromBlock ?? []), ...skillsInGrok(reported, fromBlock)]
+}

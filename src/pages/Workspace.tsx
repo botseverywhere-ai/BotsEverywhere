@@ -31,7 +31,7 @@ import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '.
 import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { appsShown, botApps } from '../org/bot-apps'
 import { PerformanceStatus } from '../components/PerformanceStatus'
-import { skillCount } from '../org/bot-skills'
+import { knownInGrok, skillCount } from '../org/bot-skills'
 import { WORK_CHART_LOCKED, workChartLocked } from '../org/work-chart-lock'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
 import { isOpenSeatId, openOrgSeats, stepIdFromOpenSeat } from '../org/open-seats'
@@ -275,6 +275,8 @@ export function Workspace({
   const createRequests = (sync?.requests ?? []).filter((item) => item.kind !== 'update')
   // The update waiting for the open bot: a move, skills and routines, or both.
   const waitingUpdate = chartSeat ? sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update') : undefined
+  /** The open seat's row on the routine board: what Grok Bot holds for it and what it reports about itself. */
+  const chartBot = chartSeat ? routineBoard?.bots.find((item) => item.slug === chartSeat.id) : undefined
   // Apps connected to the Grok Bot account, from the Connector's last report: one list for every organization.
   const accountApps = editable ? sync?.project?.connector?.apps ?? connection?.project?.connector?.apps : undefined
 
@@ -1144,8 +1146,8 @@ export function Workspace({
           grokUpdateAt={sync?.requests?.find((item) => item.seat === chartSeat.id && item.kind === 'update')?.requestedAt ?? ''}
           grokUpdateItems={waitingUpdate ? updateItems(waitingUpdate, sync?.progress?.[waitingUpdate.seat]) : []}
           accountApps={accountApps}
-          reportedSkills={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.grokSkills}
-          reportedApps={routineBoard?.bots.find((item) => item.slug === chartSeat.id)?.apps}
+          reportedSkills={knownInGrok(chartBot?.grokSkills, chartBot?.skills)}
+          reportedApps={chartBot?.apps}
           onUpdateInGrok={editable && chartSeat.type === 'bot' ? () => { void updateInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onCreateInGrok={editable && chartSeat.type === 'bot' ? () => { void createInGrok(chartSeat.id, chartSeat.name) } : undefined}
           onProfile={editable ? (changes) => { void saveProfile(chartSeat.id, changes) } : undefined}

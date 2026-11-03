@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 /** tsx compiles JSX in src/ with the classic runtime here (the root tsconfig sets no jsx), so React must be a global. */
@@ -38,4 +39,16 @@ test('a locked skill that was added here stays on the seat when another row is r
   const seat = [{ name: 'x-build-log', description: 'Posts.' }, { name: 'draft-skill' }]
   assert.deepEqual(keptSkills(seat, ['x-build-log'], 1), [{ name: 'x-build-log', description: 'Posts.' }], 'removing the draft keeps the locked one')
   assert.deepEqual(keptSkills(seat, ['x-build-log'], 0), seat, 'a locked row cannot be removed')
+})
+
+test("what a bot has in Grok Bot is the Connector's reading plus what the bot reports it uses, each once, so no skill the bot has goes missing from Profile", async () => {
+  const { knownInGrok } = await import('../../src/org/bot-skills.ts')
+  const fromBlock = [{ name: 'x-build-log', description: 'Posts.' }, { name: 'launch-thread', description: 'Thread.' }]
+  const reported = [{ name: 'X-Build-Log', description: 'posts (the bot)' }, { name: 'x-com-communication-guidelines-spacexsi', description: 'Guidelines.' }]
+  assert.deepEqual(knownInGrok(fromBlock, reported), [...fromBlock, { name: 'x-com-communication-guidelines-spacexsi', description: 'Guidelines.' }], "the Connector's reading first, then the bot's own extras")
+  assert.deepEqual(knownInGrok(undefined, reported), reported, 'before the Connector shows a block, the report alone')
+  assert.deepEqual(knownInGrok(fromBlock, undefined), fromBlock)
+  assert.equal(knownInGrok(undefined, undefined), undefined, 'nothing known yet')
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /reportedSkills=\{knownInGrok\(chartBot\?\.grokSkills, chartBot\?\.skills\)\}/)
 })
