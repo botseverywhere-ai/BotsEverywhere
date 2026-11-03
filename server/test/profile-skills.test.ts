@@ -18,8 +18,8 @@ test("Profile shows one list of skills: a skill the bot has in Grok Bot is locke
   const section = /<section class="profile-list">[\s\S]*?<h3 class="card-label">Skills<\/h3>[\s\S]*?<\/section>/.exec(html)?.[0] ?? ''
   assert.ok(section, 'one Skills section')
   assert.doesNotMatch(section, /Used in its work, as the bot reported them/, 'no second list')
-  assert.match(section, /<li class="skill-locked"><strong>x-build-log<\/strong><span class="profile-line">Build-in-public posts\.<\/span><span class="connect-badge is-connected"><i aria-hidden="true"><\/i>In Grok Bot<\/span><\/li>/)
-  assert.match(section, /<li class="skill-locked"><strong>x-com-communication-guidelines-spacexsi<\/strong><span class="profile-line">Checks every public post against the guidelines\.<\/span><span class="connect-badge is-connected"><i aria-hidden="true"><\/i>In Grok Bot<\/span><\/li>/)
+  assert.match(section, /<li class="skill-locked"><strong>x-build-log<\/strong><span class="connect-badge is-connected"><i aria-hidden="true"><\/i>In Grok Bot<\/span><span class="profile-line">Build-in-public posts\.<\/span><\/li>/)
+  assert.match(section, /<li class="skill-locked"><strong>x-com-communication-guidelines-spacexsi<\/strong><span class="connect-badge is-connected"><i aria-hidden="true"><\/i>In Grok Bot<\/span><span class="profile-line">Checks every public post against the guidelines\.<\/span><\/li>/)
   assert.equal((section.match(/aria-label="Remove skill"/g) ?? []).length, 1, 'only the skill not in Grok Bot yet can be removed')
   assert.match(section, /<input class="text-input" aria-label="Skill name" placeholder="New skill" value="draft-skill"/)
   assert.doesNotMatch(section, /<input[^>]*value="x-build-log"/, 'a locked skill is not an input')

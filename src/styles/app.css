@@ -1481,7 +1481,9 @@ input.be-file, .overview input.be-file { width: 1px; min-width: 0; max-width: 1p
 .profile-list .field-hint { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
 .skill-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: start; justify-self: stretch; }
 .skill-fields { display: grid; gap: var(--space-1); }
-.skill-locked { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.profile-list li.skill-locked { list-style: none; padding-left: 0; }
+.profile-list li.skill-locked::before { content: none; }
+.skill-locked .connect-badge { margin-left: var(--space-2); vertical-align: middle; }
 .skill-fields .text-input, .routine-card .text-input { margin-bottom: 0; }
 .panel .icon-btn { width: auto; margin-top: 0; padding: var(--space-2); }
 .routine-card { display: grid; gap: var(--space-2); justify-self: stretch; padding: var(--space-3); border: var(--hairline); border-radius: var(--control-radius); }

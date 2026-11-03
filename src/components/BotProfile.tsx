@@ -211,7 +211,7 @@ function SkillEditor({ initial, inGrok, onSave }: { initial: Skill[]; inGrok?: B
       {locked.length ? (
         <ul className="profile-items">
           {locked.map((skill) => (
-            <li className="skill-locked" key={skill.name}><strong>{skill.name}</strong>{describe(skill) ? <span className="profile-line">{describe(skill)}</span> : null}<span className="connect-badge is-connected"><i aria-hidden="true" />In Grok Bot</span></li>
+            <li className="skill-locked" key={skill.name}><strong>{skill.name}</strong><span className="connect-badge is-connected"><i aria-hidden="true" />In Grok Bot</span>{describe(skill) ? <span className="profile-line">{describe(skill)}</span> : null}</li>
           ))}
         </ul>
       ) : null}
