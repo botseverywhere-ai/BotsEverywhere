@@ -2,7 +2,7 @@
   "name": "botseverywhere",
   "private": true,
   "version": "1.0.0",
-  "license": "MIT OR Apache-2.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "tsx scripts/dev-all.ts",

@@ -203,7 +203,7 @@ export function Landing() {
               <p className="ld-label">Open source</p>
               <h2 id="open-source-title">Read it. Change it. Make it yours.</h2>
               <p>
-                BotsEverywhere is dual licensed under the MIT License or the Apache License 2.0, at your option. Every screen, rule, and seat card is code or text you can read and change.
+                BotsEverywhere is open source under the MIT License. Every screen, rule, and seat card is code or text you can read and change.
               </p>
               <ul className="ld-oss-points">
                 <li><strong>Fit it to your organization.</strong> Add fields, rename steps, change the look. Colors, type, and spacing live in one tokens file.</li>
@@ -211,7 +211,7 @@ export function Landing() {
                 <li><strong>Keep history.</strong> Commit the folder with git, and every change to your org chart is a diff you can review and roll back.</li>
                 <li><strong>No lock-in.</strong> If you stop using it, your organization is still a folder of markdown files.</li>
               </ul>
-              <p className="ld-fine">The BotsEverywhere name and logo are not licensed under either license.</p>
+              <p className="ld-fine">The BotsEverywhere name and logo are not covered by the license.</p>
             </div>
             <figure className="ld-tree">
               <figcaption>One organization, as it sits on your disk</figcaption>

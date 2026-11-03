@@ -1,6 +1,6 @@
 # Architecture
 
-Plain-English map of BotsEverywhere: what it is, the two builds, where files live, and what is still a plan.
+Plain-English map of BotsEverywhere: what it is, the two builds, where files live, and what is still a plan. Documentation updated 3 November 2026.
 
 ## 1. What it is
 
@@ -73,13 +73,19 @@ Local routes look like `#/org/<slug>/overview`. A template you are only browsing
 
 ## 5. Making it live with Grok Bot
 
-The `orgs/` folder is the channel. One Connector bot in Grok Bot serves every org in a copy of BotsEverywhere. It runs every 15 minutes unless **Runs every** on the Connect bots tab sets another interval. On each run it goes through every org folder: it creates the bots the app asked for in `grok/requests.json`, reads `org.md`, `seats/`, and `processes/`, keeps one routine per process, and writes `orgs/<slug>/grok/snapshot.json` with the bots that belong to that org. Last it writes `orgs/connector.json`, which lists bots that belong to no org and shows the app when the Connector last ran. Bots append one run-log line per step, and one per chat, to `orgs/<slug>/log/<date>.md`. The app watches that folder, so Logs, Performance, and the work chart update while you watch, and Grok Bot's numbers reach Performance on every run.
+The `orgs/` folder is the channel. One Connector bot in Grok Bot serves every org in a copy of BotsEverywhere. Its rules are `orgs/CONNECTOR.md`, which the app writes and the Connector reads at the start of every run, so a changed rule needs no new paste. It runs every 15 minutes unless **Runs every** on the Connect bots tab sets another interval, and its routine has two halves.
 
-A new snapshot shows up on the **Sync with Grok Bot** button as a count. The drawer previews the merge: new bots become seats marked New, bots missing from Grok Bot are tagged and never deleted, matched bots take their link, routines and run numbers from Grok Bot and keep the manager, step, and card text set in the app. New routines become processes. Confirm applies it and logs one event.
+**THE RUN** reads Grok Bot and writes files only: `orgs/grok-data.json` with every bot, its instructions, its routines where visible, and the skill library, then `orgs/connector.json` last, with the run time and the connected apps. The app watches for that and does the thinking: it writes each org's `grok/snapshot.json`, applies Grok Bot's numbers to the seats, and rebuilds `orgs/connector-todo.json`, the list of what should change in Grok Bot.
 
-The other direction needs no channel. Changing a seat's manager in the app rewrites the seat file and `org.md`; the Connector reads them on its next run.
+**YOU** carries out that list and records each result in `orgs/connector-results.json`. The items are: write a bot's instruction block (the text the app appends at the end of a bot's instructions: managers, team, skills to use, processes, the profile file path, run-log rules), save a skill added on a bot's Profile to the shared library, ask a bot to create a routine from the Work Chart, ask a bot to write its profile report, and send a one-time note. The Connector decides nothing: the app decides, the Connector carries it out, and a long list is carried out without asking the owner.
 
-There is no public Grok Bot API, so nothing is read back faster than the Connector's schedule.
+Bots write back on their own. Each appends one run-log line per step to `orgs/<slug>/log/<date>.md`, and writes its own report to `orgs/<slug>/profiles/<seat>.md`: routines, the skills it uses, apps, and what it hands to whom. The app reads those files directly, so Performance's Automated tasks and Skills, and the locked skills on a Profile, need no Connector run to land.
+
+A new snapshot shows up on the **Sync with Grok Bot** button as a count. The drawer previews the merge: new bots become seats marked New, bots missing from Grok Bot are tagged and never deleted, matched bots take their link, routines and run numbers from Grok Bot and keep the manager, step, and card text set in the app. New routines become processes. Confirm applies it and logs one event. The drawer also shows what the Connector could not do, and the instruction blocks older copies of BotsEverywhere left on your bots, with one click to remove them, bot by bot.
+
+The other direction needs no channel. Changing a seat's manager, a skill, or a routine in the app rewrites the org files; the next cycle puts the change on the Connector's list.
+
+A bot works for one organization; the Connector and the main bot are the exceptions. There is no public Grok Bot API, so nothing is read back faster than the Connector's schedule.
 
 The org chart shows what the sync knows. A bot card is green with **In Grok Bot** when the last snapshot had it, or when the seat carries a Grok Bot link and no snapshot has said otherwise. It is dashed with **Not in Grok Bot** when a snapshot lacked it, for example a bot hired from the directory that was never created in Grok Bot. **Not synced yet** means no link and no snapshot. The chart pans by dragging and zooms with the wheel or the buttons, and the seat drawer's **Reports to** select moves a seat under another.
 

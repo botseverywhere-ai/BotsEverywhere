@@ -44,10 +44,15 @@ test('every homepage claim about the app matches the app', () => {
   assert.ok(docs.includes('no analytics, no telemetry, and no third-party scripts'), 'Docs says the same about tracking')
   assert.ok(docs.includes('stores no passwords, tokens, or API keys'), 'Docs says the same about keys')
   const readme = read('../../README.md')
-  assert.ok(readme.includes('dual licensed under the [MIT License](LICENSE-MIT) or the [Apache License 2.0](LICENSE-APACHE), at your option'))
-  assert.ok(landing.includes('dual licensed under the MIT License or the Apache License 2.0, at your option'))
-  assert.ok(readme.includes('The BotsEverywhere name and logo are not licensed under either license.'))
-  assert.ok(landing.includes('The BotsEverywhere name and logo are not licensed under either license.'))
+  assert.ok(readme.includes('BotsEverywhere is open source under the [MIT License](LICENSE)'), 'one license, MIT, copyright Miguel Rovira')
+  assert.ok(landing.includes('BotsEverywhere is open source under the MIT License.'))
+  assert.ok(readme.includes('The BotsEverywhere name and logo are not covered by the license.'))
+  assert.ok(landing.includes('The BotsEverywhere name and logo are not covered by the license.'))
+  for (const gone of ['Apache', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE']) {
+    assert.ok(!readme.includes(gone) && !landing.includes(gone) && !docs.includes(gone), `${gone} is gone: the project is MIT only`)
+  }
+  const license = read('../../LICENSE')
+  assert.ok(license.startsWith('The MIT License (MIT)\n\nCopyright (c) 2026 Miguel Rovira\n'))
   for (const part of ['org.md', 'seats/', 'processes/', 'log/']) assert.ok(landing.includes(part), part)
 })
 

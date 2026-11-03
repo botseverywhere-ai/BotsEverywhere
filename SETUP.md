@@ -4,9 +4,11 @@ BotsEverywhere is an open source team management tool for bots.
 
 Organizations copy it to map their team of people and bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
 
-No accounts, no paid services, and no API keys. BotsEverywhere is dual licensed under the MIT License or the Apache License 2.0, at your option; see `LICENSE-MIT`, `LICENSE-APACHE`, and `NOTICE`.
+No accounts, no paid services, and no API keys. BotsEverywhere is open source under the MIT License, copyright 2026 Miguel Rovira; see `LICENSE`.
 
 You need Node.js 22 and npm.
+
+Documentation updated 3 November 2026.
 
 ## Clone and run (template mode)
 
@@ -79,10 +81,15 @@ You can also edit the files by hand:
 | `orgs/<slug>/processes/<slug>.md` | One process: trigger, ordered steps, done when. The Work Chart tab shows these |
 | `orgs/<slug>/log/<event>.md` | One log event (hire, fire, work, approval, exception) |
 | `orgs/<slug>/log/YYYY-MM-DD.md` | The run log the bots append to, one line per step |
-| `orgs/<slug>/grok/snapshot.json` | Written by the Connector bot in Grok Bot on each run, every 15 minutes unless **Runs every** on Connect bots says otherwise. The app only reads it. **Sync with Grok Bot** applies it |
-| `orgs/<slug>/grok/requests.json` | Bots the app asked the Connector to create (**Create in Grok Bot**). The Connector reads it |
-| `orgs/project.json` | This copy's id, which names its Connector, and how often the Connector runs. The app writes it |
-| `orgs/connector.json` | Written by the Connector last on each run: when it ran, its interval, and bots in Grok Bot that belong to no org |
+| `orgs/<slug>/profiles/<seat>.md` | Written by each bot on its own runs: its routines, the skills it uses, and its apps. Performance and the Profile tab read it |
+| `orgs/<slug>/grok/snapshot.json` | Written by the app from the Connector's reading, every 15 minutes unless **Runs every** on Connect bots says otherwise. **Sync with Grok Bot** applies it |
+| `orgs/<slug>/grok/requests.json` | Bots the app asked the Connector to create (**Create in Grok Bot**) or to update (**Update bot**). The app turns them into the Connector's list |
+| `orgs/<slug>/grok/profile-asks.json` | When every bot in this org was last asked for its report: **Sync bots** on Performance, a first import, or a new skill in the library |
+| `orgs/project.json` | This copy's id, which names its Connector, how often the Connector runs, and your main bot. The app writes it |
+| `orgs/CONNECTOR.md` | The Connector's rules. The app writes it; the Connector reads it at the start of every run |
+| `orgs/grok-data.json` | Written by the Connector in Grok Bot on each run: every bot, its instructions, its routines, and the skill library |
+| `orgs/connector-todo.json` | The app's list for the Connector: instructions to write, skills to save, routines and reports to ask for. The Connector carries it out and records each result in `orgs/connector-results.json` |
+| `orgs/connector.json` | Written by the Connector last on each run: when it ran, its interval, and the connected apps |
 
 `directory/` at the repo root is the shared bot catalog. Hiring writes `orgs/<chosen>/seats/<bot>.md` and adds that seat to that org's chart. It does not write another org's folder.
 

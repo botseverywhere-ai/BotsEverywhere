@@ -6,9 +6,7 @@ import { HiringGuide } from '../content/HiringGuide.tsx'
 import { GROK_BOT_LIMIT } from '../components/sync-copy.ts'
 import { DESKTOP_MIN_WIDTH } from '../content/screen-notice.ts'
 // The same file that ships with the project, so the page and the license never disagree.
-import LICENSE_TEXT from '../../LICENSE-APACHE?raw'
-import MIT_TEXT from '../../LICENSE-MIT?raw'
-import NOTICE_TEXT from '../../NOTICE?raw'
+import MIT_TEXT from '../../LICENSE?raw'
 
 const repoUrl = import.meta.env.VITE_REPO_URL || '<this-repository-url>'
 
@@ -197,7 +195,7 @@ export function DocsPage() {
           <p className="lede">
             BotsEverywhere is an open source team management tool for bots. It maps your bots in one place: an org chart of who each bot reports to,
             a work chart of what each bot does and when, and a directory of ready-made bots you can add to Grok Bot.
-            It runs on your own computer, and your data stays there.
+            It runs on your own computer, and your data stays there. Documentation updated 3 November 2026.
           </p>
           <p className="docs-head-actions">
             <To id="install">Install it</To>
@@ -664,7 +662,7 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           <li>
             What the Connector could not do shows here too: items stuck after two tries, with the reason; items on their second try; items it has not acted on for more than
             two runs; a <code>grok-data.json</code> it could not read; and instructions another copy of BotsEverywhere added to your bots, with <strong>Remove old instructions</strong>.
-            Remove them only if that copy is gone. It changes only those instructions, bot by bot: your bots, and your own text in them, stay as they are.
+            Remove those instructions only if that copy is gone. It changes only those instructions, bot by bot: your bots, and your own text in them, stay as they are.
             A copy whose Connector is no longer in Grok Bot says so, and <strong>Remove all old instructions</strong> cleans every such copy at once.
           </li>
           <li>
@@ -714,7 +712,7 @@ Plain notes for whoever reads the file.`}</CodeBlock>
         </p>
         <p>
           A <strong>To Grok Bot</strong> line that is still waiting says where its request stands, and the newest line for that bot lists each part: create the bot, its instructions,
-          each skill, and each routine. A part is waiting for the Connector, waiting for you in the Connector&apos;s chat, waiting for the bot to confirm, done in Grok Bot and confirming
+          each skill, and each routine. A part is waiting for the Connector&apos;s next run, waiting for the bot to confirm, done in Grok Bot and confirming
           on the next reading, confirmed in Grok Bot, failed once and trying again, or stuck and needing you.
         </p>
         <p>What the Connector does is logged in every organization, while <code>npm run dev</code> is running:</p>
@@ -872,48 +870,29 @@ git commit -m "Update the org chart"`}</CodeBlock>
 
         <h2 id="license">License</h2>
         <p>
-          BotsEverywhere is open source, copyright 2026 Miguel Rovira, and dual licensed: you may use it under the <strong>MIT License</strong> or the{' '}
-          <strong>Apache License 2.0</strong>, at your option. You follow the license you choose, not both. In package terms the license is <code>MIT OR Apache-2.0</code>.
+          BotsEverywhere is open source under the <strong>MIT License</strong>, copyright (c) 2026 Miguel Rovira. In package terms the license is <code>MIT</code>.
         </p>
-        <div className="docs-license-summary is-two">
-          <section>
-            <h3>Choose MIT for simplicity</h3>
-            <ul>
-              <li>Use, modify, distribute, and sell it, including commercially</li>
-              <li>Keep the copyright notice and the MIT text</li>
-              <li>No need to mark the files you change</li>
-              <li>No warranty, no liability for the authors</li>
-            </ul>
-          </section>
-          <section>
-            <h3>Choose Apache 2.0 for explicit terms</h3>
-            <ul>
-              <li>The same freedoms, plus a patent license from every contributor</li>
-              <li>Keep the copyright notices, the Apache text, and the <code>NOTICE</code> credit</li>
-              <li>Mark files you change when you share a modified copy</li>
-              <li>Suing over patents in the code ends your patent license</li>
-            </ul>
-          </section>
-        </div>
+        <h3>What MIT means</h3>
+        <ul>
+          <li>Use, modify, distribute, and sell it, including commercially</li>
+          <li>Keep the copyright notice and the license text with every copy</li>
+          <li>No need to mark the files you change</li>
+          <li>No warranty, no liability for the authors</li>
+        </ul>
         <p>
-          Under either license, using and changing BotsEverywhere inside your own organization asks nothing extra of you. The conditions above apply when you share copies.
-          Neither license gives rights to the BotsEverywhere name or logo.
+          Using and changing BotsEverywhere inside your own organization asks nothing extra of you. The conditions above apply when you share copies.
+          The BotsEverywhere name and logo are not covered by the license.
         </p>
         <h3>Contributions</h3>
         <p>
-          Unless you say otherwise, any contribution you intentionally submit for inclusion in BotsEverywhere is dual licensed as above, under MIT or Apache 2.0,
+          Unless you say otherwise, any contribution you intentionally submit for inclusion in BotsEverywhere is licensed under the MIT License,
           without any additional terms or conditions.
         </p>
         <p>
-          This summary is for reading convenience. The license texts below are what apply: <code>LICENSE-MIT</code> and <code>LICENSE-APACHE</code> at the root of the project,
-          with the credit in <code>NOTICE</code>.
+          This summary is for reading convenience. The license text below is what applies: <code>LICENSE</code> at the root of the project.
         </p>
         <h3>MIT License</h3>
         <div className="docs-license-text" role="region" aria-label="MIT License text" tabIndex={0}>{MIT_TEXT.trim()}</div>
-        <h3>Apache License 2.0</h3>
-        <div className="docs-license-text" role="region" aria-label="Apache License 2.0 text" tabIndex={0}>{LICENSE_TEXT.trim()}</div>
-        <h3>NOTICE</h3>
-        <div className="docs-license-text is-notice" aria-label="NOTICE file">{NOTICE_TEXT.trim()}</div>
       </article>
     </main>
   )
