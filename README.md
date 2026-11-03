@@ -65,10 +65,9 @@ Open `#docs` for the steps and `#directory` for the bot directory.
 | Mode | How to turn it on | What you get |
 | --- | --- | --- |
 | `template` | default | Your org files under `orgs/`. `npm run dev` starts the site and the file writer. |
-| `showcase` | `VITE_APP_MODE=showcase` | Read-only directory for a public site such as botseverywhere.ai. Sample organizations and clone instructions. No create-team links and no file writer. |
-| `sqlite` | `MODE=sqlite` and `VITE_APP_MODE=sqlite` | Optional share-link API kept from the earlier demo. Off unless you set the flag. |
+| `showcase` | `VITE_APP_MODE=showcase` | Read-only directory for a public site such as botseverywhere.ai. Sample organizations and clone instructions. No editing and no file writer. |
 
-Showcase does not start an API. SQLite is one command, `MODE=sqlite VITE_APP_MODE=sqlite npm run dev`. `AUTH_ENABLED` stays false unless you opt in. See SETUP.md.
+Showcase does not start an API. See SETUP.md.
 
 ## Files
 

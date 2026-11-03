@@ -7,11 +7,11 @@ Two modes (`src/mode.ts`):
 - **template** (default). Local org files under `orgs/`. `npm run dev` starts the site and the file writer. The UI writes through that writer (`canEditFiles` is true only in dev template mode).
 - **showcase**. `VITE_APP_MODE=showcase`. Read-only sample organizations, directory, and docs. The public site.
 
-`sqlite` in the same file is a separate share-link API. Leave it off. The writer (`server/src/index.ts`) listens only when `MODE` is `template` (the default). `MODE=showcase` does not start an API.
+`sqlite` in the same file is an unused mode left from the first prototype; nothing in the product uses it, and it is off unless set by hand. The writer (`server/src/index.ts`) listens only when `MODE` is `template` (the default). `MODE=showcase` does not start an API.
 
 ## Stack and commands
 
-Vite, React 19, TypeScript. The local writer is Node in `server/src/template-server.ts` and binds to `127.0.0.1` only. `server/src/app.ts` is the sqlite app, not the file writer.
+Vite, React 19, TypeScript. The local writer is Node in `server/src/template-server.ts` and binds to `127.0.0.1` only. `server/src/app.ts` is the unused sqlite app, not the file writer.
 
 ```bash
 npm install

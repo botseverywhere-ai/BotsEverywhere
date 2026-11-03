@@ -49,7 +49,7 @@ A fresh clone of the branch with no `orgs/` folder, on a computer whose Grok Bot
 
 ## Next
 
-Not built, raised today:
+Not built:
 
 - The import could read the "Skills to use" line from an older copy's block and put those skills on the seat, so an upgrade shows skills at import instead of after the reports.
 - Apply a sync automatically instead of on Confirm.

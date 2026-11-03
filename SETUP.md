@@ -12,7 +12,7 @@ Documentation updated 3 November 2026.
 
 ## Clone and run (template mode)
 
-Template mode is the default. It does not use SQLite.
+Template mode is the default.
 
 ### Windows PowerShell
 
@@ -103,7 +103,7 @@ npm run validate:org
 
 ## Public site mode (showcase)
 
-Use this for a read-only site such as botseverywhere.ai. It shows the sample organizations and the clone steps. It does not create teams and it does not write files.
+Use this for a read-only site such as botseverywhere.ai. It shows the sample organizations and the clone steps. It does not edit organizations and it does not write files.
 
 ```bash
 VITE_APP_MODE=showcase npm run dev
@@ -143,25 +143,3 @@ npm run preview
 `npm run preview` serves `dist/` on port 5199. On a server, copy `dist/` to the web root. Hash routes need the host to fall back to `index.html`.
 
 To publish a change, commit `orgs/` (with `git add -f orgs`) and run the build again.
-
-## Optional share-link mode (SQLite)
-
-The earlier share-link and owner-link API is still in the repo and stays off unless you opt in. It stores teams in a local SQLite file. Tokens are stored only as SHA-256 hashes. `AUTH_ENABLED` defaults to false, so email and Slack sign-in stay off and no mail or Slack keys are required.
-
-`npm run dev` starts the site and one API process. Set both variables on that one command so the API is the SQLite server and the site is in SQLite mode. Do not also run `npm run dev:api`; that starts a second writer on the same port.
-
-```bash
-MODE=sqlite VITE_APP_MODE=sqlite npm run dev
-```
-
-PowerShell:
-
-```powershell
-$env:MODE = "sqlite"
-$env:VITE_APP_MODE = "sqlite"
-npm run dev
-```
-
-`npm run seed:org` prints an owner link once for the bundled sample organization, Bot Company X. The token is not written to disk. Do not commit `data/*.sqlite`.
-
-Template and showcase do not need this mode.

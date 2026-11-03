@@ -16,11 +16,10 @@ One codebase. `VITE_APP_MODE` picks the build.
 
 **Template** is the local build, and it is the default. This is the full app: hire a bot, save files, keep more than one org, and read the logs of that org. `npm run dev` starts the site at `http://127.0.0.1:5199` and the file writer at `http://127.0.0.1:8787`. The writer only accepts connections from this computer. Saving and hiring write into `orgs/<slug>/` and nowhere else.
 
-**Showcase** is the public site, botseverywhere.ai, hosted on EC2. It is read-only. Visitors can browse the bot directory, use **Add to Grok Bot** and **Copy prompt**, open Templates, and read Docs. The header button says **Get it on GitHub**, not **Open your org**. Hire is hidden. The site does not save an org and does not write seats or logs.
+**Showcase** is the public site, botseverywhere.ai, served as static files. It is read-only. Visitors can browse the bot directory, use **Add to Grok Bot** and **Copy prompt**, open Templates, and read Docs. The header button says **Get it on GitHub**, not **Open your org**. Hire is hidden. The site does not save an org and does not write seats or logs.
 
 Turn showcase on with `VITE_APP_MODE=showcase`. Leave the variable unset for the local template build.
 
-An older sqlite mode still exists in the repo for a previous share-link demo. It is off unless someone sets `MODE=sqlite` and `VITE_APP_MODE=sqlite`. It is not one of these two builds.
 
 ## 3. Folder layout
 
@@ -93,11 +92,9 @@ Retire takes a seat out of one org; the bot keeps running in Grok Bot. Grok Bot 
 
 Status of this work and the next steps are in [STATUS.md](STATUS.md).
 
-## 6. After the demo, on the EC2 site
+## 6. The public site
 
-The public site stays the showcase build, on the same domain, and gains content pages around it: a blog, FAQs, and guides. Those pages are not in the repo yet. The recommended way to add them is in section 8. It is not built.
-
-Buttons on the live site point at two things: download the project from GitHub, and **Add to Grok Bot**. They do not point at a sign-up.
+The public site is the showcase build. Its buttons point at two things: the project on GitHub, and **Add to Grok Bot**. There is no sign-up. Content pages around it, such as guides and FAQs, are not part of this repository; section 8 says how they could be added.
 
 ## 7. Design rules
 
@@ -109,14 +106,12 @@ Corners are square. The button radius and the control radius in `tokens.css` are
 
 More detail is in [design-tokens.md](design-tokens.md) and [STYLEGUIDE.md](STYLEGUIDE.md).
 
-## 8. Recommendations after the first release (not built)
+## 8. Ideas for later (not built)
 
-These are recommendations for after the first public release. None of them are built.
+None of these are built. They are directions, not commitments.
 
-1. **Keep React, Vite, and TypeScript.** On a PC, `npm run dev` starts the site and the local writer. The writer saves plain markdown files in `orgs/`. There is no database and there are no accounts. The EC2 version is the same code, built as static files, with saving off.
+1. **Keep React, Vite, and TypeScript.** `npm run dev` starts the site and the local writer, which saves plain markdown files in `orgs/`. There is no database and there are no accounts. The public site is the same code, built as static files, with saving off.
 
-2. **A desktop app, later.** Wrap the app in Tauri so people double-click a desktop app instead of installing Node. It still reads and writes the same `orgs/` folder.
+2. **A desktop app.** Wrap the app so people double-click it instead of installing Node. It would read and write the same `orgs/` folder.
 
-3. **Blog and FAQs, later.** Build the EC2 blog and FAQs as a separate static content site, for example with Astro, for speed and SEO. Keep that site separate from the app. Its buttons go only to the GitHub download and to **Add to Grok Bot**.
-
-4. **Speed.** The slowness comes from how pages load, not from React. The speed fix targets that.
+3. **Guides and FAQs.** A separate static content site, kept apart from the app, whose buttons go only to GitHub and to **Add to Grok Bot**.
