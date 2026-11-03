@@ -4,7 +4,7 @@ BotsEverywhere is an open source team management tool for bots and humans.
 
 Organizations copy it to map their team of people and bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
 
-There are no API keys in the frontend. BotsEverywhere is open source under the [MIT License](LICENSE), copyright 2026 Miguel Rovira.
+There are no API keys in the frontend. BotsEverywhere is open source under the [MIT License](LICENSE).
 
 Full install steps, including Windows PowerShell and an optional static host, are in [SETUP.md](SETUP.md). How the two builds, the folders, and the Connector fit together is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Where the work stands is in [docs/STATUS.md](docs/STATUS.md).
 
@@ -122,7 +122,7 @@ The mark is the Org Bracket (option G). Files live in `brand-kit/v2/logo/final/`
 
 ## License
 
-Copyright (c) 2026 Miguel Rovira.
+See [LICENSE](LICENSE) for the copyright notice.
 
 BotsEverywhere is open source under the [MIT License](LICENSE). You may use, copy, change, and share it, including commercially, as long as the copyright notice and the license text stay with it. The BotsEverywhere name and logo are not covered by the license.
 

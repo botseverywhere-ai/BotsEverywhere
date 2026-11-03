@@ -4,7 +4,7 @@ BotsEverywhere is an open source team management tool for bots.
 
 Organizations copy it to map their team of people and bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
 
-No accounts, no paid services, and no API keys. BotsEverywhere is open source under the MIT License, copyright 2026 Miguel Rovira; see `LICENSE`.
+No accounts, no paid services, and no API keys. BotsEverywhere is open source under the MIT License; see `LICENSE`.
 
 You need Node.js 22 and npm.
 

@@ -870,7 +870,7 @@ git commit -m "Update the org chart"`}</CodeBlock>
 
         <h2 id="license">License</h2>
         <p>
-          BotsEverywhere is open source under the <strong>MIT License</strong>, copyright (c) 2026 Miguel Rovira. In package terms the license is <code>MIT</code>.
+          BotsEverywhere is open source under the <strong>MIT License</strong>. The copyright notice is in <code>LICENSE</code>. In package terms the license is <code>MIT</code>.
         </p>
         <h3>What MIT means</h3>
         <ul>
