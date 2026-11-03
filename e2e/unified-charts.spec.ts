@@ -5,8 +5,8 @@ const ROUTES: { url: string; testId: 'org-chart' | 'work-chart'; title?: string 
   { url: '/#work', testId: 'work-chart' },
   { url: '/#seat-you', testId: 'org-chart', title: 'You' },
   { url: '/#sample/harbor?view=org', testId: 'org-chart' },
-  { url: '/#sample/botseverywhere?view=org', testId: 'org-chart' },
-  { url: '/#sample/botseverywhere?view=work', testId: 'work-chart' },
+  { url: '/#sample/bot-company-x?view=org', testId: 'org-chart' },
+  { url: '/#sample/bot-company-x?view=work', testId: 'work-chart' },
   { url: '/#sample/meridian-ledger?view=org', testId: 'org-chart' },
   { url: '/#sample/meridian-ledger?view=work', testId: 'work-chart' },
 ]

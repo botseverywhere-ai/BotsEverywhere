@@ -1,4 +1,4 @@
-/** Curated sample bots for the Nov 7 2026 demo. Static only — nothing to log into. */
+/** Curated sample bots for the launch demo. Static only — nothing to log into. */
 
 export type SeatId = 'founder' | 'research' | 'writing' | 'site' | 'ops'
 export type BotKind = 'research' | 'writing' | 'site' | 'ops'
@@ -83,13 +83,13 @@ export const seats: Record<SeatId, Seat> = {
     reportsTo: 'Reports to you · Founder / PM',
     role: 'Seat on work chart · Sense & synthesize',
     purpose:
-      'Discover, synthesize, and brief. Turn signals into structured insight for the Nov 7 narrative.',
+      'Discover, synthesize, and brief. Turn signals into structured insight for the launch narrative.',
     job: 'Finds the facts so you don’t have to. Turns signals into a brief the other seats can use.',
     does: ['Market and competitor scans', 'Source-checked briefs', 'Flags uncertainty instead of inventing numbers'],
     landingDoes: ['Market and competitor scans', 'Source-checked briefs'],
     landingBlurb: 'Finds the facts so you don’t have to.',
     approve: 'Briefs stay drafts until you accept the findings.',
-    now: 'Source check for the Nov 7 narrative is underway.',
+    now: 'Source check for the launch narrative is underway.',
     status: 'staffed',
     addable: true,
     integrations: [

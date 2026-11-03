@@ -3,41 +3,41 @@
   "companies": [
     {
       "org": {
-        "id": "botseverywhere",
-        "name": "botseverywhere",
-        "description": "The owner’s organization.",
-        "industry": "Software",
+        "id": "bot-company-x",
+        "name": "Bot Company X",
+        "description": "A fictional open source project: one maintainer and a team of bots that keep a toolkit for bots and AI agents healthy. Every bot, issue, and number here is made up.",
+        "industry": "Open source software",
         "mock": false,
         "ownerOrg": true,
-        "tagline": "Org chart for bots. Work chart for humans.",
+        "tagline": "Open source tools for bots and AI agents.",
         "address": "Remote",
-        "headcount": "1 person, 14 bots",
-        "founded": 2026,
-        "mark": "BE",
+        "headcount": "1 person, 11 bots",
+        "founded": 2024,
+        "mark": "BX",
         "markColor": "#0b1220",
-        "logExemption": "Hire and fire have not happened in this project, so the real log has no hire or fire events. No exception was recorded either. Approvals are only the commits that landed on main; each one is the owner's recorded decision, with the commit subject kept verbatim. Branch-only commits stay work events.",
+        "logExemption": "Hire and fire have not happened in this made-up fortnight, so the release log has no hire or fire events; they appear only in the demo activity. Work events come one per step, and an approval each time the maintainer signed off a step.",
         "goals": {
-          "title": "Nov 7 2026 demo",
-          "dueOn": "2026-11-07",
+          "title": "Version 2.0 release",
+          "dueOn": "2026-11-30",
           "milestones": [
             {
-              "title": "share-link teams",
+              "title": "release plan approved",
               "done": false
             },
             {
-              "title": "mock sample organizations",
+              "title": "open pull requests reviewed",
               "done": false
             },
             {
-              "title": "app redesign",
+              "title": "benchmarks green on the candidate",
               "done": false
             },
             {
-              "title": "owner link",
+              "title": "release notes approved",
               "done": false
             },
             {
-              "title": "deploy to botseverywhere.ai on EC2",
+              "title": "version 2.0 tagged",
               "done": false
             }
           ]
@@ -45,30 +45,27 @@
         "seatIds": [
           "seat-sam",
           "seat-grok",
-          "seat-planning-bot",
-          "seat-build-bot",
+          "seat-issue-bot",
+          "seat-review-bot",
+          "seat-docs-bot",
+          "seat-release-bot",
+          "seat-community-bot",
           "seat-research-bot",
-          "seat-marketing-bot",
-          "seat-social-bot",
-          "seat-hr-bot",
-          "seat-product-bot",
-          "seat-qa-bot",
-          "seat-sales-bot",
-          "seat-finance-bot",
+          "seat-benchmark-bot",
           "seat-security-bot",
-          "seat-automation-bot",
-          "seat-design-bot"
+          "seat-roadmap-bot",
+          "seat-books-bot"
         ],
         "workstreamIds": [
-          "ws-nov7"
+          "ws-release"
         ]
       },
       "seats": [
         {
           "id": "seat-sam",
-          "orgId": "botseverywhere",
+          "orgId": "bot-company-x",
           "name": "Sam Rivera",
-          "role": "Owner",
+          "role": "Maintainer",
           "type": "human",
           "curated": true,
           "card": {
@@ -78,37 +75,37 @@
             "doneWhen": []
           },
           "profile": {
-            "department": "Owner",
-            "location": "Harbor",
+            "department": "Maintainer",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Sam Rivera, Owner."
+            "startedOn": "2026-09-15",
+            "bio": "Sam Rivera, Maintainer."
           },
           "status": "active"
         },
         {
           "id": "seat-grok",
-          "orgId": "botseverywhere",
+          "orgId": "bot-company-x",
           "name": "Grok Bot",
           "role": "Manager",
           "type": "bot",
           "reportsTo": "seat-sam",
-          "prompt": "You are Grok Bot. routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to the owner.",
+          "prompt": "You are Grok Bot. routing tasks to the right bot; managing all project work; the weekly release goal; the daily 18:00 summary to the maintainer.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "routing tasks to the right bot; managing all botseverywhere work; weekly shipping goal; daily 18:15 summary to the owner."
+              "routing tasks to the right bot; managing all project work; the weekly release goal; the daily 18:00 summary to the maintainer."
             ],
             "may": [
-              "route work to the right bot and set one shipping goal a week (profile + handbook v1); receive status, reviews, and hiring proposals from every botseverywhere bot (from handbook v1: all bots report to Grok Bot)."
+              "route work to the right bot and set one goal a week (profile + handbook v1); receive status and proposals from every project bot (from handbook v1: all bots report to Grok Bot)."
             ],
             "mustAskBefore": [
-              "sending messages/emails, public posts, spending, merging to main, production deploys, DNS, secrets, deleting, new access, logins before Nov 7 (from handbook v1)."
+              "merging, releasing, replying in public, spending, deleting anything, new access (from handbook v1)."
             ],
             "doneWhen": [
-              "the week's shipping goal is set, work is routed to the bot whose lane owns it, and the weekday 18:15 summary reaches the owner with current status from every bot (from handbook v1; profile says \"daily\")."
+              "the week's goal is set, work is routed to the bot whose lane owns it, and the 18:00 summary reaches the maintainer with current status from every bot (from handbook v1)."
             ]
           },
           "provenance": {
@@ -119,11 +116,11 @@
           },
           "profile": {
             "department": "Manager",
-            "location": "Harbor",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Manager."
+            "startedOn": "2026-09-15",
+            "bio": "routing tasks to the right bot; managing all project work; the weekly release goal; the daily 18:00 summary to the maintainer."
           },
           "status": "active",
           "stats": {
@@ -133,27 +130,27 @@
           }
         },
         {
-          "id": "seat-planning-bot",
-          "orgId": "botseverywhere",
-          "name": "Planning Bot",
-          "role": "Turns research into a build prompt",
+          "id": "seat-issue-bot",
+          "orgId": "bot-company-x",
+          "name": "Issue Bot",
+          "role": "Triages new issues",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Planning Bot. context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.",
+          "prompt": "You are Issue Bot. new issues: labels, the missing-information list, and a draft reply for each one within a day.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots."
+              "new issues: labels, the missing-information list, and a draft reply for each one within a day."
             ],
             "may": [
-              "research web/repos (read-only)/docs/competitors; send build prompts to Build Bot; run preview deploys and verification."
+              "read issues, the code, and the docs; propose labels; draft replies that thank the person and ask for what is missing."
             ],
             "mustAskBefore": [
-              "production deploys, DNS, paid services, secrets, deleting branches/data, merging to main, public posts, changes to the product lock."
+              "posting any reply; closing an issue; promising a fix or a date."
             ],
             "doneWhen": [
-              "preview URL works, screenshots/video prove it, the owner gets a short report (shipped / broke / next prompt)."
+              "every new issue has labels proposed and a draft reply waiting for the maintainer."
             ]
           },
           "provenance": {
@@ -163,42 +160,42 @@
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "Turn research into a build prompt",
-            "location": "Harbor",
+            "department": "Triages new issues",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Turns research into a build prompt."
+            "startedOn": "2026-09-15",
+            "bio": "new issues: labels, the missing-information list, and a draft reply for each one within a day."
           },
           "status": "active",
           "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
+            "usageCount30d": 1,
+            "tasksDone30d": 1,
+            "lastActiveAt": "2026-10-02T10:05:00+00:00"
           }
         },
         {
-          "id": "seat-build-bot",
-          "orgId": "botseverywhere",
-          "name": "Build Bot",
-          "role": "Builds the change",
+          "id": "seat-review-bot",
+          "orgId": "bot-company-x",
+          "name": "Review Bot",
+          "role": "Reviews pull requests",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Build Bot. running scoped prompts through the coding agent to green tests; small branch + PR changes with summaries; honest failure reports.",
+          "prompt": "You are Review Bot. the first-pass review of every pull request: tests, the diff against the project rules, and a plain-words review draft.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "running scoped prompts through the coding agent to green tests; small branch + PR changes with summaries; honest failure reports."
+              "the first-pass review of every pull request: tests, the diff against the project rules, and a plain-words review draft."
             ],
             "may": [
-              "launch/steer cloud coding agents on botseverywhere repos, create branches/PRs, run tests and local previews; ask Planning Bot for context."
+              "read pull requests and run the tests on a branch; draft reviews; ask Benchmark Bot for a run."
             ],
             "mustAskBefore": [
-              "merging to main, production deploys, secrets/paid services, deleting code/branches, large out-of-scope refactors, logins/auth before Nov 7."
+              "posting a review; approving, merging, or closing anything."
             ],
             "doneWhen": [
-              "tests pass, PR open with summary, Planning Bot can verify and preview-deploy."
+              "every open pull request has a review draft within a day, and nothing is merged without the maintainer."
             ]
           },
           "provenance": {
@@ -208,177 +205,42 @@
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "Build the change",
-            "location": "Harbor",
+            "department": "Reviews pull requests",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Builds the change."
-          },
-          "status": "active",
-          "stats": {
-            "usageCount30d": 11,
-            "tasksDone30d": 11,
-            "lastActiveAt": "2026-10-14T23:28:48+00:00"
-          }
-        },
-        {
-          "id": "seat-research-bot",
-          "orgId": "botseverywhere",
-          "name": "Research Bot",
-          "role": "Researches the question",
-          "type": "bot",
-          "reportsTo": "seat-grok",
-          "prompt": "You are Research Bot. product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in the shared folder; milestone briefs for x.com.",
-          "grokShareUrl": null,
-          "curated": true,
-          "card": {
-            "owns": [
-              "product thesis (source: Deloitte 16 Jun 2026 work chart article, no partnership claim); milestones; build log (Outer→Build Bot hand-off) for example.com; drafts in the shared folder; milestone briefs for x.com."
-            ],
-            "may": [
-              "research web/docs/teammates' context; draft/update docs in the shared folder."
-            ],
-            "mustAskBefore": [
-              "publishing, posting publicly, naming real people, changing the product lock."
-            ],
-            "doneWhen": [
-              "each milestone has an accurate, sourced draft in the shared folder and a brief for X."
-            ]
-          },
-          "provenance": {
-            "owns": "profile",
-            "may": "profile",
-            "mustAskBefore": "profile",
-            "doneWhen": "profile"
-          },
-          "profile": {
-            "department": "Research",
-            "location": "Harbor",
-            "email": "",
-            "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Researches the question."
-          },
-          "status": "active",
-          "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
-          }
-        },
-        {
-          "id": "seat-marketing-bot",
-          "orgId": "botseverywhere",
-          "name": "Marketing Bot",
-          "role": "Drafts brand and marketing",
-          "type": "bot",
-          "reportsTo": "seat-grok",
-          "prompt": "You are Marketing Bot. brand kit (exact logo PNG lock, palette, Inter, wordmark, tagline \"Org chart for bots. Work chart for humans.\"); product UI mockups/design system; landing visuals, emails/decks/CTAs, social creative, non-X copy; org-vs-work-chart diagrams.",
-          "grokShareUrl": null,
-          "curated": true,
-          "card": {
-            "owns": [
-              "brand kit (exact logo PNG lock, palette, Inter, wordmark, tagline \"Org chart for bots. Work chart for humans.\"); product UI mockups/design system; landing visuals, emails/decks/CTAs, social creative, non-X copy; org-vs-work-chart diagrams."
-            ],
-            "may": [
-              "deliver reviewable PNG/HTML in brand-kit paths when the owner asks for mockups or design; brief angles and creative to x.com; hand final screens to Planning Bot (all from profile)."
-            ],
-            "mustAskBefore": [
-              "sending messages/emails, public posts, spending, merging to main, production deploys, DNS, secrets, deleting, new access, logins before Nov 7 (from handbook v1). From profile: never regenerate the logo (composite the exact PNG only); no third-party marks."
-            ],
-            "doneWhen": [
-              "finished work is returned (from handbook v1): reviewable PNG/HTML in brand-kit paths, final screens handed to Planning Bot (profile), status kept current for the 18:15 summary (from handbook v1)."
-            ]
-          },
-          "provenance": {
-            "owns": "profile",
-            "may": "profile",
-            "mustAskBefore": "profile + handbook v1",
-            "doneWhen": "profile + handbook v1"
-          },
-          "profile": {
-            "department": "Marketing Bot",
-            "location": "Harbor",
-            "email": "",
-            "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Drafts brand and marketing."
+            "startedOn": "2026-09-15",
+            "bio": "the first-pass review of every pull request: tests, the diff against the project rules, and a plain-words review draft."
           },
           "status": "active",
           "stats": {
             "usageCount30d": 4,
             "tasksDone30d": 4,
-            "lastActiveAt": "2026-10-14T21:03:09+00:00"
+            "lastActiveAt": "2026-10-09T09:15:00+00:00"
           }
         },
         {
-          "id": "seat-social-bot",
-          "orgId": "botseverywhere",
-          "name": "Social Post Bot",
-          "role": "Drafts social posts",
+          "id": "seat-docs-bot",
+          "orgId": "bot-company-x",
+          "name": "Docs Bot",
+          "role": "Keeps the docs current",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Social Post Bot. polished X posts/threads on the build-up, milestones, cross-links to example.com.",
+          "prompt": "You are Docs Bot. the docs and the examples: keeping them current with each change, and the release notes draft.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "polished X posts/threads on the build-up, milestones, cross-links to example.com."
+              "the docs and the examples: keeping them current with each change, and the release notes draft."
             ],
             "may": [
-              "draft posts and threads from Research briefs and the owner's input; after the owner approves the exact text, post via the connected X account (profile)."
+              "read the code and merged pull requests; draft docs, examples, and release notes on a branch."
             ],
             "mustAskBefore": [
-              "posting anything. Every post, thread, or reply is a draft first and needs the owner's approval of the exact text, with no exceptions (from handbook v1: must-ask is absolute, public posts). The profile's \"unless he explicitly says to post without preview\" exception is removed here; the profile itself still contains it until the owner approves a rewrite."
+              "publishing docs; changing a public example's behavior."
             ],
             "doneWhen": [
-              "the post the owner approved is live and confirmed with the live link or post id (profile: \"confirm with the live link or post id\")."
-            ]
-          },
-          "provenance": {
-            "owns": "profile",
-            "may": "profile",
-            "mustAskBefore": "handbook v1",
-            "doneWhen": "profile"
-          },
-          "profile": {
-            "department": "x.com",
-            "location": "Harbor",
-            "email": "",
-            "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Drafts social posts."
-          },
-          "status": "active",
-          "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
-          }
-        },
-        {
-          "id": "seat-hr-bot",
-          "orgId": "botseverywhere",
-          "name": "HR Bot",
-          "role": "Handles hiring and the roster",
-          "type": "bot",
-          "reportsTo": "seat-grok",
-          "prompt": "You are HR Bot. hiring seat cards; onboarding notes; weekly reviews; the roster.",
-          "grokShareUrl": null,
-          "curated": true,
-          "card": {
-            "owns": [
-              "hiring seat cards; onboarding notes; weekly reviews; the roster."
-            ],
-            "may": [
-              "read other bots' descriptions and ask them about their work; draft cards, notes, reviews."
-            ],
-            "mustAskBefore": [
-              "creating/renaming/retiring/rewriting any bot, granting access, publishing."
-            ],
-            "doneWhen": [
-              "every bot on the roster has a current seat card, new hires have an approved card and onboarding note, and the weekly review is delivered (profile)."
+              "every merged change has its docs updated on a branch, and the release notes draft lists every change with a link."
             ]
           },
           "provenance": {
@@ -388,42 +250,132 @@
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "HR",
-            "location": "Harbor",
+            "department": "Keeps the docs current",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Handles hiring and the roster."
+            "startedOn": "2026-09-15",
+            "bio": "the docs and the examples: keeping them current with each change, and the release notes draft."
+          },
+          "status": "active",
+          "stats": {
+            "usageCount30d": 2,
+            "tasksDone30d": 2,
+            "lastActiveAt": "2026-10-10T08:45:00+00:00"
+          }
+        },
+        {
+          "id": "seat-release-bot",
+          "orgId": "bot-company-x",
+          "name": "Release Bot",
+          "role": "Prepares each release",
+          "type": "bot",
+          "reportsTo": "seat-grok",
+          "prompt": "You are Release Bot. the release checklist: version tag, changelog, package build, and the announcement draft.",
+          "grokShareUrl": null,
+          "curated": true,
+          "card": {
+            "owns": [
+              "the release checklist: version tag, changelog, package build, and the announcement draft."
+            ],
+            "may": [
+              "read the merged changes and the benchmark reports; draft the changelog and the announcement; build the package on a branch."
+            ],
+            "mustAskBefore": [
+              "tagging a version; publishing a package; posting an announcement."
+            ],
+            "doneWhen": [
+              "the checklist is complete and every item waits for the maintainer's OK."
+            ]
+          },
+          "provenance": {
+            "owns": "profile",
+            "may": "profile",
+            "mustAskBefore": "profile",
+            "doneWhen": "profile"
+          },
+          "profile": {
+            "department": "Prepares each release",
+            "location": "Remote",
+            "email": "",
+            "phone": "",
+            "startedOn": "2026-09-15",
+            "bio": "the release checklist: version tag, changelog, package build, and the announcement draft."
+          },
+          "status": "active",
+          "stats": {
+            "usageCount30d": 2,
+            "tasksDone30d": 2,
+            "lastActiveAt": "2026-10-14T09:30:00+00:00"
+          }
+        },
+        {
+          "id": "seat-community-bot",
+          "orgId": "bot-company-x",
+          "name": "Community Bot",
+          "role": "Drafts answers to questions",
+          "type": "bot",
+          "reportsTo": "seat-grok",
+          "prompt": "You are Community Bot. questions in discussions and the forum: a draft answer for each, with a link to the docs or the code.",
+          "grokShareUrl": null,
+          "curated": true,
+          "card": {
+            "owns": [
+              "questions in discussions and the forum: a draft answer for each, with a link to the docs or the code."
+            ],
+            "may": [
+              "read discussions, issues, and docs; draft answers; ask Docs Bot when a page is missing."
+            ],
+            "mustAskBefore": [
+              "posting any answer; naming a contributor in public."
+            ],
+            "doneWhen": [
+              "every open question has a draft answer within a day, and nothing is posted without the maintainer."
+            ]
+          },
+          "provenance": {
+            "owns": "profile",
+            "may": "profile",
+            "mustAskBefore": "profile",
+            "doneWhen": "profile"
+          },
+          "profile": {
+            "department": "Drafts answers to questions",
+            "location": "Remote",
+            "email": "",
+            "phone": "",
+            "startedOn": "2026-09-15",
+            "bio": "questions in discussions and the forum: a draft answer for each, with a link to the docs or the code."
           },
           "status": "active",
           "stats": {
             "usageCount30d": 1,
             "tasksDone30d": 1,
-            "lastActiveAt": "2026-10-14T23:36:06+00:00"
+            "lastActiveAt": "2026-10-09T13:05:00+00:00"
           }
         },
         {
-          "id": "seat-product-bot",
-          "orgId": "botseverywhere",
-          "name": "Product Bot",
-          "role": "Writes the spec",
+          "id": "seat-research-bot",
+          "orgId": "bot-company-x",
+          "name": "Research Bot",
+          "role": "Tracks other agent frameworks",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Product Bot. launch demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; launch demo script; acceptance criteria per feature.",
+          "prompt": "You are Research Bot. sourced notes on other agent frameworks, protocols, and standards; the comparison table the roadmap works from.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "launch demo scope (prioritized in/out list); dummy orgs (accounting firm, clinic, cybersecurity team, small agency) as data specs, no real people or organization data; launch demo script; acceptance criteria per feature."
+              "sourced notes on other agent frameworks, protocols, and standards; the comparison table the roadmap works from."
             ],
             "may": [
-              "read other bots' work, draft specs and scripts, propose scope cuts."
+              "research the web and other repositories (read only); draft notes in the shared folder."
             ],
             "mustAskBefore": [
-              "changing the product lock, adding scope after 31 Oct, publishing."
+              "contacting another project; publishing a comparison."
             ],
             "doneWhen": [
-              "every in-scope feature has spec + criteria, dummy orgs ready, demo script approved."
+              "each note has its sources and a date, and the comparison table is current every Monday."
             ]
           },
           "provenance": {
@@ -433,177 +385,87 @@
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "Write the spec",
-            "location": "Harbor",
+            "department": "Tracks other agent frameworks",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Writes the spec."
-          },
-          "status": "active",
-          "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
-          }
-        },
-        {
-          "id": "seat-qa-bot",
-          "orgId": "botseverywhere",
-          "name": "QA Bot",
-          "role": "Tests the build",
-          "type": "bot",
-          "reportsTo": "seat-grok",
-          "prompt": "You are QA Bot. testing every preview build (demo script + criteria, desktop/mobile, links, console errors, copy vs mockups); test report per build with screenshots and repro steps; growing regression checklist.",
-          "grokShareUrl": null,
-          "curated": true,
-          "card": {
-            "owns": [
-              "testing every preview build (demo script + criteria, desktop/mobile, links, console errors, copy vs mockups); test report per build with screenshots and repro steps; growing regression checklist."
-            ],
-            "may": [
-              "open previews, run the app locally/in browser, file bugs to Planning Bot."
-            ],
-            "mustAskBefore": [
-              "testing production, touching real data/accounts, changing code."
-            ],
-            "doneWhen": [
-              "build passes every criterion + regression checklist, report with Planning Bot and Grok Bot."
-            ]
-          },
-          "provenance": {
-            "owns": "profile",
-            "may": "profile",
-            "mustAskBefore": "profile",
-            "doneWhen": "profile"
-          },
-          "profile": {
-            "department": "Test the build",
-            "location": "Harbor",
-            "email": "",
-            "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Tests the build."
+            "startedOn": "2026-09-15",
+            "bio": "sourced notes on other agent frameworks, protocols, and standards; the comparison table the roadmap works from."
           },
           "status": "active",
           "stats": {
             "usageCount30d": 1,
             "tasksDone30d": 1,
+            "lastActiveAt": "2026-10-09T12:30:00+00:00"
+          }
+        },
+        {
+          "id": "seat-benchmark-bot",
+          "orgId": "bot-company-x",
+          "name": "Benchmark Bot",
+          "role": "Runs the agent evaluations",
+          "type": "bot",
+          "reportsTo": "seat-grok",
+          "prompt": "You are Benchmark Bot. the agent evaluation suite: running it on every candidate build and the report with what got better or worse.",
+          "grokShareUrl": null,
+          "curated": true,
+          "card": {
+            "owns": [
+              "the agent evaluation suite: running it on every candidate build and the report with what got better or worse."
+            ],
+            "may": [
+              "run the suite on branches and previews; draft the report; file a regression as an issue draft."
+            ],
+            "mustAskBefore": [
+              "changing the suite itself; running against a paid model account."
+            ],
+            "doneWhen": [
+              "every candidate build has a report with the numbers and the diff against the last release."
+            ]
+          },
+          "provenance": {
+            "owns": "profile",
+            "may": "profile",
+            "mustAskBefore": "profile",
+            "doneWhen": "profile"
+          },
+          "profile": {
+            "department": "Runs the agent evaluations",
+            "location": "Remote",
+            "email": "",
+            "phone": "",
+            "startedOn": "2026-09-15",
+            "bio": "the agent evaluation suite: running it on every candidate build and the report with what got better or worse."
+          },
+          "status": "active",
+          "stats": {
+            "usageCount30d": 3,
+            "tasksDone30d": 3,
             "lastActiveAt": "2026-10-15T06:05:00+00:00"
           }
         },
         {
-          "id": "seat-sales-bot",
-          "orgId": "botseverywhere",
-          "name": "Sales Bot",
-          "role": "Handles sales follow-up",
-          "type": "bot",
-          "reportsTo": "seat-grok",
-          "prompt": "You are Sales Bot. lead list (attendees of the next launch event and local meetups); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas.",
-          "grokShareUrl": null,
-          "curated": true,
-          "card": {
-            "owns": [
-              "lead list (attendees of the next launch event and local meetups); one-page pitch + pilot plan per segment (finance, healthcare, cybersecurity, agencies); post-demo follow-up drafts; partnership ideas."
-            ],
-            "may": [
-              "research organizations and public contacts; draft pitches, emails, DMs."
-            ],
-            "mustAskBefore": [
-              "sending any message; offering prices/discounts/terms; naming a partner publicly."
-            ],
-            "doneWhen": [
-              "each lead has status + next step; all follow-up drafts ready within a day of the demo."
-            ]
-          },
-          "provenance": {
-            "owns": "profile",
-            "may": "profile",
-            "mustAskBefore": "profile",
-            "doneWhen": "profile"
-          },
-          "profile": {
-            "department": "Sales Bot",
-            "location": "Harbor",
-            "email": "",
-            "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Handles sales follow-up."
-          },
-          "status": "active",
-          "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
-          }
-        },
-        {
-          "id": "seat-finance-bot",
-          "orgId": "botseverywhere",
-          "name": "Finance Bot",
-          "role": "Handles invoices and spend",
-          "type": "bot",
-          "reportsTo": "seat-grok",
-          "prompt": "You are Finance Bot. cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, coding tools, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7).",
-          "grokShareUrl": null,
-          "curated": true,
-          "card": {
-            "owns": [
-              "cost tracker (AWS EC2, Hostinger, X API credits, xAI credits, coding tools, others); weekly spend summary and low-balance/cost-jump alerts; ops checklists (renewals, domains, what must run for Nov 7)."
-            ],
-            "may": [
-              "read billing/usage data the owner shares; draft budgets/checklists."
-            ],
-            "mustAskBefore": [
-              "any purchase, top-up, subscription change, cancellation, payment, billing-setting change."
-            ],
-            "doneWhen": [
-              "tracker current, weekly summary delivered, nothing renews/runs out unwarned."
-            ]
-          },
-          "provenance": {
-            "owns": "profile",
-            "may": "profile",
-            "mustAskBefore": "profile",
-            "doneWhen": "profile"
-          },
-          "profile": {
-            "department": "Finance Bot",
-            "location": "Harbor",
-            "email": "",
-            "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Handles invoices and spend."
-          },
-          "status": "active",
-          "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
-          }
-        },
-        {
           "id": "seat-security-bot",
-          "orgId": "botseverywhere",
+          "orgId": "bot-company-x",
           "name": "Security Bot",
-          "role": "Checks for security issues",
+          "role": "Scans dependencies and secrets",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Security Bot. secrets hygiene (no keys in frontend/repo; xAI/X keys server-side with spend limits); EC2 setup review checklists; security review of PRs/deploy plans; pre-demo checklist; least-privilege access per bot.",
+          "prompt": "You are Security Bot. dependency and secrets scans on every pull request; the review of risky changes; the pre-release checklist.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "secrets hygiene (no keys in frontend/repo; xAI/X keys server-side with spend limits); EC2 setup review checklists; security review of PRs/deploy plans; pre-demo checklist; least-privilege access per bot."
+              "dependency and secrets scans on every pull request; the review of risky changes; the pre-release checklist."
             ],
             "may": [
-              "read repo/PRs/configs/public endpoints; safe scans of botseverywhere's own sites; draft fixes as prompts for Planning Bot."
+              "read the code, pull requests, and lock files; run the scans; draft fixes as pull requests."
             ],
             "mustAskBefore": [
-              "changing any server/DNS/firewall/key/account setting; rotating/revoking credentials; scanning non-owned targets."
+              "rotating or revoking any credential; changing a dependency's version; scanning anything outside the project."
             ],
             "doneWhen": [
-              "no secrets exposed, pre-demo checklist passes, every bot's access matches its seat card."
+              "no secret in the repository, every flagged dependency has a draft fix, and the pre-release checklist passes."
             ]
           },
           "provenance": {
@@ -613,42 +475,42 @@
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "Security",
-            "location": "Harbor",
+            "department": "Scans dependencies and secrets",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Checks for security issues."
+            "startedOn": "2026-09-15",
+            "bio": "dependency and secrets scans on every pull request; the review of risky changes; the pre-release checklist."
           },
           "status": "active",
           "stats": {
             "usageCount30d": 1,
             "tasksDone30d": 1,
-            "lastActiveAt": "2026-10-14T23:14:18+00:00"
+            "lastActiveAt": "2026-10-07T09:20:00+00:00"
           }
         },
         {
-          "id": "seat-automation-bot",
-          "orgId": "botseverywhere",
-          "name": "Automation Bot",
-          "role": "Keeps the routines running",
+          "id": "seat-roadmap-bot",
+          "orgId": "bot-company-x",
+          "name": "Roadmap Bot",
+          "role": "Writes the release plan",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Automation Bot. automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during the owner's 10:00–18:00 job.",
+          "prompt": "You are Roadmap Bot. the release plan: issues and research notes turned into milestones, each with its owner bot and its done-when.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "automations register (routines, schedules, listeners, Make.com scenarios, local pipelines: owner, trigger, action, output, last worked); proposals for repeated manual steps (as seat cards); health checks (failing, quiet, duplicate, spammy); phone-first approvals during the owner's 10:00–18:00 job."
+              "the release plan: issues and research notes turned into milestones, each with its owner bot and its done-when."
             ],
             "may": [
-              "read other bots' routines/outputs; draft automations and fixes."
+              "read issues, notes, and the benchmark reports; draft the plan and the milestones."
             ],
             "mustAskBefore": [
-              "creating/changing/pausing/deleting any automation; anything that sends, spends, or acts in an outside account."
+              "adding scope after the plan is approved; promising anything in public."
             ],
             "doneWhen": [
-              "register current, every automation owned and working, proposals waiting for the owner's OK."
+              "the plan is approved and every milestone has an owner, a done-when, and a date."
             ]
           },
           "provenance": {
@@ -658,920 +520,776 @@
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "Automations",
-            "location": "Harbor",
+            "department": "Writes the release plan",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Keeps the routines running."
+            "startedOn": "2026-09-15",
+            "bio": "the release plan: issues and research notes turned into milestones, each with its owner bot and its done-when."
           },
           "status": "active",
           "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
+            "usageCount30d": 1,
+            "tasksDone30d": 1,
+            "lastActiveAt": "2026-10-01T09:12:00+00:00"
           }
         },
         {
-          "id": "seat-design-bot",
-          "orgId": "botseverywhere",
-          "name": "Design Bot",
-          "role": "Designs the screens",
+          "id": "seat-books-bot",
+          "orgId": "bot-company-x",
+          "name": "Bookkeeping Bot",
+          "role": "Sums the weekly spend",
           "type": "bot",
           "reportsTo": "seat-grok",
-          "prompt": "You are Design Bot. user flows, information architecture, wireframes, interaction and usability specs, accessibility and mobile checks, UX acceptance criteria for each screen (profile).",
+          "prompt": "You are Bookkeeping Bot. the weekly spend summary: hosting, continuous integration minutes, model credits, and domains, with anything about to renew.",
           "grokShareUrl": null,
           "curated": true,
           "card": {
             "owns": [
-              "user flows, information architecture, wireframes, interaction and usability specs, accessibility and mobile checks, UX acceptance criteria for each screen (profile)."
+              "the weekly spend summary: hosting, continuous integration minutes, model credits, and domains, with anything about to renew."
             ],
             "may": [
-              "read the repo and preview builds; read Product's scope and Brand's mockups; write specs into /workspace/ux/; hand specs to Planning Bot (profile)."
+              "read the billing exports the maintainer shares; draft the summary and the budget."
             ],
             "mustAskBefore": [
-              "sending or posting anything, spending money, merging, deploying, touching DNS or secrets, deleting anything, requesting new access (profile). Logins before Nov 7 (from handbook v1)."
+              "any purchase, renewal, cancellation, or change to a payment setting."
             ],
             "doneWhen": [
-              "each demo screen has a flow, a wireframe or spec, and UX acceptance criteria that Planning Bot has accepted and QA can test (profile)."
+              "the summary is delivered every Friday and nothing renews unwarned."
             ]
           },
           "provenance": {
             "owns": "profile",
             "may": "profile",
-            "mustAskBefore": "profile + handbook v1",
+            "mustAskBefore": "profile",
             "doneWhen": "profile"
           },
           "profile": {
-            "department": "Design Bot",
-            "location": "Harbor",
+            "department": "Sums the weekly spend",
+            "location": "Remote",
             "email": "",
             "phone": "",
-            "startedOn": "2026-10-14",
-            "bio": "Designs the screens."
+            "startedOn": "2026-09-15",
+            "bio": "the weekly spend summary: hosting, continuous integration minutes, model credits, and domains, with anything about to renew."
           },
           "status": "active",
           "stats": {
-            "usageCount30d": 0,
-            "tasksDone30d": 0,
-            "lastActiveAt": ""
+            "usageCount30d": 1,
+            "tasksDone30d": 1,
+            "lastActiveAt": "2026-10-14T17:00:00+00:00"
           }
         }
       ],
       "triggers": [
         {
-          "id": "trigger-nov7",
-          "orgId": "botseverywhere",
+          "id": "trigger-release",
+          "orgId": "bot-company-x",
           "source": "management",
-          "label": "Nov 7 2026 demo",
-          "example": "The owner sets the launch demo as the outcome for this stream."
+          "label": "Version 2.0 release",
+          "example": "The maintainer sets the version 2.0 release as the outcome for this stream."
         }
       ],
       "workstreams": [
         {
-          "id": "ws-nov7",
-          "orgId": "botseverywhere",
-          "triggerId": "trigger-nov7",
-          "outcome": "Nov 7 2026 demo",
+          "id": "ws-release",
+          "orgId": "bot-company-x",
+          "triggerId": "trigger-release",
+          "outcome": "Version 2.0 release",
           "ownerSeatId": "seat-sam",
           "kind": "main",
           "stepIds": [
-            "step-spec",
-            "step-outer",
-            "step-inner",
-            "step-qa"
+            "step-plan",
+            "step-review",
+            "step-bench",
+            "step-notes"
           ]
         }
       ],
       "steps": [
         {
-          "id": "step-spec",
-          "workstreamId": "ws-nov7",
-          "name": "Write the spec",
+          "id": "step-plan",
+          "workstreamId": "ws-release",
+          "name": "Write the release plan",
           "level": 2,
-          "executorSeatId": "seat-product-bot",
+          "executorSeatId": "seat-roadmap-bot",
           "inputs": [
-            "The current preview branch"
+            "The release plan and the open pull requests"
           ],
           "outputs": [
-            "Write the spec"
+            "Write the release plan"
           ]
         },
         {
-          "id": "step-outer",
-          "workstreamId": "ws-nov7",
-          "name": "Turn research into a build prompt",
+          "id": "step-review",
+          "workstreamId": "ws-release",
+          "name": "Review the pull requests",
           "level": 2,
-          "executorSeatId": "seat-planning-bot",
+          "executorSeatId": "seat-review-bot",
           "inputs": [
-            "The current preview branch"
+            "The release plan and the open pull requests"
           ],
           "outputs": [
-            "Turn research into a build prompt"
+            "Review the pull requests"
           ],
           "checkpointId": "cp-owner-merge"
         },
         {
-          "id": "step-inner",
-          "workstreamId": "ws-nov7",
-          "name": "Build the change",
+          "id": "step-bench",
+          "workstreamId": "ws-release",
+          "name": "Run the agent benchmarks",
           "level": 2,
-          "executorSeatId": "seat-build-bot",
+          "executorSeatId": "seat-benchmark-bot",
           "inputs": [
-            "The current preview branch"
+            "The release plan and the open pull requests"
           ],
           "outputs": [
-            "Build the change"
+            "Run the agent benchmarks"
           ]
         },
         {
-          "id": "step-qa",
-          "workstreamId": "ws-nov7",
-          "name": "Test the build",
+          "id": "step-notes",
+          "workstreamId": "ws-release",
+          "name": "Draft the release notes",
           "level": 2,
-          "executorSeatId": "seat-qa-bot",
+          "executorSeatId": "seat-docs-bot",
           "inputs": [
-            "The current preview branch"
+            "The release plan and the open pull requests"
           ],
           "outputs": [
-            "Test the build"
+            "Draft the release notes"
           ]
         }
       ],
       "handoffs": [
         {
-          "id": "hand-spec-outer",
-          "fromStepId": "step-spec",
-          "toStepId": "step-outer"
+          "id": "hand-plan-review",
+          "fromStepId": "step-plan",
+          "toStepId": "step-review"
         },
         {
-          "id": "hand-outer-inner",
-          "fromStepId": "step-outer",
-          "toStepId": "step-inner"
+          "id": "hand-review-bench",
+          "fromStepId": "step-review",
+          "toStepId": "step-bench"
         },
         {
-          "id": "hand-inner-qa",
-          "fromStepId": "step-inner",
-          "toStepId": "step-qa"
+          "id": "hand-bench-notes",
+          "fromStepId": "step-bench",
+          "toStepId": "step-notes"
         },
         {
-          "id": "hand-qa-outer",
-          "fromStepId": "step-qa",
-          "toStepId": "step-outer",
-          "condition": "report back"
+          "id": "hand-bench-review",
+          "fromStepId": "step-bench",
+          "toStepId": "step-review",
+          "condition": "regression: send back"
         }
       ],
       "checkpoints": [
         {
           "id": "cp-owner-merge",
-          "stepId": "step-outer",
-          "rule": "The owner approves merges to main and production deploys.",
+          "stepId": "step-review",
+          "rule": "The maintainer approves every merge and every release.",
           "approverSeatId": "seat-sam",
           "required": true
         }
       ],
       "activity": [
         {
-          "id": "botseverywhere-act-1",
-          "at": "2026-10-14T20:13:08+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
+          "id": "bot-company-x-act-1",
+          "at": "2026-10-01T09:12:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-roadmap-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Initialize project"
+            "Release plan: tool calling, streaming, and the new eval suite in 2.0"
           ],
-          "note": "Initialize project"
+          "note": "Release plan: tool calling, streaming, and the new eval suite in 2.0"
         },
         {
-          "id": "botseverywhere-act-2",
-          "at": "2026-10-14T20:13:08+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
+          "id": "bot-company-x-act-2",
+          "at": "2026-10-01T09:12:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
           "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
           "inputRefs": [],
           "outputRefs": [
-            "Initialize project"
+            "Release plan: tool calling, streaming, and the new eval suite in 2.0"
           ],
           "approverSeatId": "seat-sam",
-          "note": "Initialize project"
+          "note": "Release plan: tool calling, streaming, and the new eval suite in 2.0"
         },
         {
-          "id": "botseverywhere-act-3",
-          "at": "2026-10-14T20:43:07+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
+          "id": "bot-company-x-act-3",
+          "at": "2026-10-02T10:05:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-issue-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Add the Nov 7 BotsEverywhere demo app"
+            "Triaged twelve new issues: four bugs, five features, three questions"
           ],
-          "note": "Add the Nov 7 BotsEverywhere demo app"
+          "note": "Triaged twelve new issues: four bugs, five features, three questions"
         },
         {
-          "id": "botseverywhere-act-4",
-          "at": "2026-10-14T20:43:07+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
+          "id": "bot-company-x-act-4",
+          "at": "2026-10-03T15:40:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-review-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Reviewed the streaming pull request: tests added, two names changed"
+          ],
+          "note": "Reviewed the streaming pull request: tests added, two names changed"
+        },
+        {
+          "id": "bot-company-x-act-5",
+          "at": "2026-10-06T11:00:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-review-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Streaming pull request approved and merged"
+          ],
+          "note": "Streaming pull request approved and merged"
+        },
+        {
+          "id": "bot-company-x-act-6",
+          "at": "2026-10-06T11:00:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
           "actorSeatId": "seat-sam",
           "actorType": "human",
           "action": "approved",
           "status": "approved",
           "inputRefs": [],
           "outputRefs": [
-            "Add the Nov 7 BotsEverywhere demo app"
+            "Streaming pull request approved and merged"
           ],
           "approverSeatId": "seat-sam",
-          "note": "Add the Nov 7 BotsEverywhere demo app"
+          "note": "Streaming pull request approved and merged"
         },
         {
-          "id": "botseverywhere-act-5",
-          "at": "2026-10-14T20:50:35+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-spec",
-          "actorSeatId": "seat-marketing-bot",
+          "id": "bot-company-x-act-7",
+          "at": "2026-10-06T16:30:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-bench",
+          "actorSeatId": "seat-benchmark-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Replace seat mascots with the bots-index robots"
+            "Benchmarks on the candidate: tool calling up, latency unchanged"
           ],
-          "note": "Replace seat mascots with the bots-index robots"
+          "note": "Benchmarks on the candidate: tool calling up, latency unchanged"
         },
         {
-          "id": "botseverywhere-act-6",
-          "at": "2026-10-14T20:50:35+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Replace seat mascots with the bots-index robots"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Replace seat mascots with the bots-index robots"
-        },
-        {
-          "id": "botseverywhere-act-7",
-          "at": "2026-10-14T20:59:10+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-spec",
-          "actorSeatId": "seat-marketing-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Use the official tree mark and capital-E wordmark"
-          ],
-          "note": "Use the official tree mark and capital-E wordmark"
-        },
-        {
-          "id": "botseverywhere-act-8",
-          "at": "2026-10-14T20:59:10+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Use the official tree mark and capital-E wordmark"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Use the official tree mark and capital-E wordmark"
-        },
-        {
-          "id": "botseverywhere-act-9",
-          "at": "2026-10-14T21:01:09+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-spec",
-          "actorSeatId": "seat-marketing-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Update the landing hero and charts heading"
-          ],
-          "note": "Update the landing hero and charts heading"
-        },
-        {
-          "id": "botseverywhere-act-10",
-          "at": "2026-10-14T21:01:09+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Update the landing hero and charts heading"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Update the landing hero and charts heading"
-        },
-        {
-          "id": "botseverywhere-act-11",
-          "at": "2026-10-14T21:03:09+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-spec",
-          "actorSeatId": "seat-marketing-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Enlarge the header and footer lockup"
-          ],
-          "note": "Enlarge the header and footer lockup"
-        },
-        {
-          "id": "botseverywhere-act-12",
-          "at": "2026-10-14T21:03:09+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Enlarge the header and footer lockup"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Enlarge the header and footer lockup"
-        },
-        {
-          "id": "botseverywhere-act-13",
-          "at": "2026-10-14T21:20:12+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add private teams, passwordless auth, and a bot catalog"
-          ],
-          "note": "Add private teams, passwordless auth, and a bot catalog"
-        },
-        {
-          "id": "botseverywhere-act-14",
-          "at": "2026-10-14T21:20:12+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add private teams, passwordless auth, and a bot catalog"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Add private teams, passwordless auth, and a bot catalog"
-        },
-        {
-          "id": "botseverywhere-act-15",
-          "at": "2026-10-14T21:20:18+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add the curated bot markdown files the catalog validator reads"
-          ],
-          "note": "Add the curated bot markdown files the catalog validator reads"
-        },
-        {
-          "id": "botseverywhere-act-16",
-          "at": "2026-10-14T21:20:18+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add the curated bot markdown files the catalog validator reads"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Add the curated bot markdown files the catalog validator reads"
-        },
-        {
-          "id": "botseverywhere-act-17",
-          "at": "2026-10-14T21:26:30+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add how-it-works and security notes under sign-in"
-          ],
-          "note": "Add how-it-works and security notes under sign-in"
-        },
-        {
-          "id": "botseverywhere-act-18",
-          "at": "2026-10-14T21:26:30+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-outer",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "action": "approved",
-          "status": "approved",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add how-it-works and security notes under sign-in"
-          ],
-          "approverSeatId": "seat-sam",
-          "note": "Add how-it-works and security notes under sign-in"
-        },
-        {
-          "id": "botseverywhere-act-19",
-          "at": "2026-10-14T21:45:18+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add share-link teams and gate email and Slack sign-in"
-          ],
-          "note": "Add share-link teams and gate email and Slack sign-in"
-        },
-        {
-          "id": "botseverywhere-act-20",
-          "at": "2026-10-14T22:22:17+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add sample organization charts and scroll the org tree natively"
-          ],
-          "note": "Add sample organization charts and scroll the org tree natively"
-        },
-        {
-          "id": "botseverywhere-act-21",
-          "at": "2026-10-14T22:28:44+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add an organization owner link that opens every owned team"
-          ],
-          "note": "Add an organization owner link that opens every owned team"
-        },
-        {
-          "id": "botseverywhere-act-22",
-          "at": "2026-10-14T23:09:00+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "action": "completed",
-          "status": "done",
-          "inputRefs": [],
-          "outputRefs": [
-            "Add organization goals and seed the botseverywhere owner org"
-          ],
-          "note": "Add organization goals and seed the botseverywhere owner org"
-        },
-        {
-          "id": "botseverywhere-act-23",
-          "at": "2026-10-14T23:14:18+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-spec",
+          "id": "bot-company-x-act-8",
+          "at": "2026-10-07T09:20:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
           "actorSeatId": "seat-security-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Stop trusting spoofed client addresses and cap request bodies"
+            "Dependency scan: one package pinned, no secrets found"
           ],
-          "note": "Stop trusting spoofed client addresses and cap request bodies"
+          "note": "Dependency scan: one package pinned, no secrets found"
         },
         {
-          "id": "botseverywhere-act-24",
-          "at": "2026-10-14T23:28:27+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
+          "id": "bot-company-x-act-9",
+          "at": "2026-10-08T10:10:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-notes",
+          "actorSeatId": "seat-docs-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Add the Oct 15 preview with work charts, hire, and retire"
+            "Docs updated for streaming, with a runnable example"
           ],
-          "note": "Add the Oct 15 preview with work charts, hire, and retire"
+          "note": "Docs updated for streaming, with a runnable example"
         },
         {
-          "id": "botseverywhere-act-25",
-          "at": "2026-10-14T23:28:48+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-inner",
-          "actorSeatId": "seat-build-bot",
+          "id": "bot-company-x-act-10",
+          "at": "2026-10-08T14:00:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-review-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Add a Hire bot action on the work chart"
+            "Reviewed the tool-calling pull request: one regression sent back"
           ],
-          "note": "Add a Hire bot action on the work chart"
+          "note": "Reviewed the tool-calling pull request: one regression sent back"
         },
         {
-          "id": "botseverywhere-act-26",
-          "at": "2026-10-14T23:36:06+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-spec",
-          "actorSeatId": "seat-hr-bot",
+          "id": "bot-company-x-act-11",
+          "at": "2026-10-09T09:15:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-review-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "Fill every owner-org bot card from the v1.1 seat cards"
+            "Tool-calling pull request approved and merged"
           ],
-          "note": "Fill every owner-org bot card from the v1.1 seat cards"
+          "note": "Tool-calling pull request approved and merged"
         },
         {
-          "id": "botseverywhere-act-27",
+          "id": "bot-company-x-act-12",
+          "at": "2026-10-09T09:15:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-sam",
+          "actorType": "human",
+          "action": "approved",
+          "status": "approved",
+          "inputRefs": [],
+          "outputRefs": [
+            "Tool-calling pull request approved and merged"
+          ],
+          "approverSeatId": "seat-sam",
+          "note": "Tool-calling pull request approved and merged"
+        },
+        {
+          "id": "bot-company-x-act-13",
+          "at": "2026-10-09T12:30:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-research-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Comparison table: six frameworks, protocol support by column"
+          ],
+          "note": "Comparison table: six frameworks, protocol support by column"
+        },
+        {
+          "id": "bot-company-x-act-14",
+          "at": "2026-10-09T13:05:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-community-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Drafted answers to five questions in discussions"
+          ],
+          "note": "Drafted answers to five questions in discussions"
+        },
+        {
+          "id": "bot-company-x-act-15",
+          "at": "2026-10-10T08:45:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-notes",
+          "actorSeatId": "seat-docs-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Release notes draft: every change with its link and its author"
+          ],
+          "note": "Release notes draft: every change with its link and its author"
+        },
+        {
+          "id": "bot-company-x-act-16",
+          "at": "2026-10-10T08:45:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-sam",
+          "actorType": "human",
+          "action": "approved",
+          "status": "approved",
+          "inputRefs": [],
+          "outputRefs": [
+            "Release notes draft: every change with its link and its author"
+          ],
+          "approverSeatId": "seat-sam",
+          "note": "Release notes draft: every change with its link and its author"
+        },
+        {
+          "id": "bot-company-x-act-17",
+          "at": "2026-10-13T09:00:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-bench",
+          "actorSeatId": "seat-benchmark-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Benchmarks on the release candidate: all suites green"
+          ],
+          "note": "Benchmarks on the release candidate: all suites green"
+        },
+        {
+          "id": "bot-company-x-act-18",
+          "at": "2026-10-13T11:20:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-release-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Release checklist: tag, changelog, package build, announcement draft"
+          ],
+          "note": "Release checklist: tag, changelog, package build, announcement draft"
+        },
+        {
+          "id": "bot-company-x-act-19",
+          "at": "2026-10-14T09:30:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-release-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Version 2.0 tagged and the announcement approved"
+          ],
+          "note": "Version 2.0 tagged and the announcement approved"
+        },
+        {
+          "id": "bot-company-x-act-20",
+          "at": "2026-10-14T09:30:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-review",
+          "actorSeatId": "seat-sam",
+          "actorType": "human",
+          "action": "approved",
+          "status": "approved",
+          "inputRefs": [],
+          "outputRefs": [
+            "Version 2.0 tagged and the announcement approved"
+          ],
+          "approverSeatId": "seat-sam",
+          "note": "Version 2.0 tagged and the announcement approved"
+        },
+        {
+          "id": "bot-company-x-act-21",
+          "at": "2026-10-14T17:00:00+00:00",
+          "workstreamId": "ws-release",
+          "stepId": "step-plan",
+          "actorSeatId": "seat-books-bot",
+          "actorType": "bot",
+          "action": "completed",
+          "status": "done",
+          "inputRefs": [],
+          "outputRefs": [
+            "Weekly spend summary: hosting, CI minutes, one renewal due"
+          ],
+          "note": "Weekly spend summary: hosting, CI minutes, one renewal due"
+        },
+        {
+          "id": "bot-company-x-act-22",
           "at": "2026-10-15T06:05:00+00:00",
-          "workstreamId": "ws-nov7",
-          "stepId": "step-qa",
-          "actorSeatId": "seat-qa-bot",
+          "workstreamId": "ws-release",
+          "stepId": "step-bench",
+          "actorSeatId": "seat-benchmark-bot",
           "actorType": "bot",
           "action": "completed",
           "status": "done",
           "inputRefs": [],
           "outputRefs": [
-            "QA report for PR #1 at ccdc18f"
+            "Benchmarks on the 2.0.1 candidate: green"
           ],
-          "note": "QA report for PR #1 at ccdc18f"
+          "note": "Benchmarks on the 2.0.1 candidate: green"
         }
       ],
       "log": [
         {
-          "id": "botseverywhere-log-1",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-1",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-build-bot",
+          "actorSeatId": "seat-roadmap-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T20:13:08+00:00",
-          "summary": "Initialize project",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-01T09:12:00+00:00",
+          "summary": "Release plan: tool calling, streaming, and the new eval suite in 2.0",
+          "stepId": "step-plan",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-2",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-2",
+          "orgId": "bot-company-x",
           "type": "approval",
           "actorSeatId": "seat-sam",
           "actorType": "human",
-          "timestamp": "2026-10-14T20:13:08+00:00",
-          "summary": "Initialize project",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-01T09:12:00+00:00",
+          "summary": "Release plan: tool calling, streaming, and the new eval suite in 2.0",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
           "status": "approved",
           "approverSeatId": "seat-sam"
         },
         {
-          "id": "botseverywhere-log-3",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-3",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-build-bot",
+          "actorSeatId": "seat-issue-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T20:43:07+00:00",
-          "summary": "Add the Nov 7 BotsEverywhere demo app",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-02T10:05:00+00:00",
+          "summary": "Triaged twelve new issues: four bugs, five features, three questions",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-4",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-4",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-review-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-03T15:40:00+00:00",
+          "summary": "Reviewed the streaming pull request: tests added, two names changed",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-5",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-review-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-06T11:00:00+00:00",
+          "summary": "Streaming pull request approved and merged",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-6",
+          "orgId": "bot-company-x",
           "type": "approval",
           "actorSeatId": "seat-sam",
           "actorType": "human",
-          "timestamp": "2026-10-14T20:43:07+00:00",
-          "summary": "Add the Nov 7 BotsEverywhere demo app",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-06T11:00:00+00:00",
+          "summary": "Streaming pull request approved and merged",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
           "status": "approved",
           "approverSeatId": "seat-sam"
         },
         {
-          "id": "botseverywhere-log-5",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-7",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-marketing-bot",
+          "actorSeatId": "seat-benchmark-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T20:50:35+00:00",
-          "summary": "Replace seat mascots with the bots-index robots",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-06T16:30:00+00:00",
+          "summary": "Benchmarks on the candidate: tool calling up, latency unchanged",
+          "stepId": "step-bench",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-6",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T20:50:35+00:00",
-          "summary": "Replace seat mascots with the bots-index robots",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-7",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-marketing-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T20:59:10+00:00",
-          "summary": "Use the official tree mark and capital-E wordmark",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-8",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T20:59:10+00:00",
-          "summary": "Use the official tree mark and capital-E wordmark",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-9",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-marketing-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T21:01:09+00:00",
-          "summary": "Update the landing hero and charts heading",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-10",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T21:01:09+00:00",
-          "summary": "Update the landing hero and charts heading",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-11",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-marketing-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T21:03:09+00:00",
-          "summary": "Enlarge the header and footer lockup",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-12",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T21:03:09+00:00",
-          "summary": "Enlarge the header and footer lockup",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-13",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T21:20:12+00:00",
-          "summary": "Add private teams, passwordless auth, and a bot catalog",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-14",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T21:20:12+00:00",
-          "summary": "Add private teams, passwordless auth, and a bot catalog",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-15",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T21:20:18+00:00",
-          "summary": "Add the curated bot markdown files the catalog validator reads",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-16",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T21:20:18+00:00",
-          "summary": "Add the curated bot markdown files the catalog validator reads",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-17",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T21:26:30+00:00",
-          "summary": "Add how-it-works and security notes under sign-in",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-18",
-          "orgId": "botseverywhere",
-          "type": "approval",
-          "actorSeatId": "seat-sam",
-          "actorType": "human",
-          "timestamp": "2026-10-14T21:26:30+00:00",
-          "summary": "Add how-it-works and security notes under sign-in",
-          "stepId": "step-outer",
-          "workstreamId": "ws-nov7",
-          "status": "approved",
-          "approverSeatId": "seat-sam"
-        },
-        {
-          "id": "botseverywhere-log-19",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T21:45:18+00:00",
-          "summary": "Add share-link teams and gate email and Slack sign-in",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-20",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T22:22:17+00:00",
-          "summary": "Add sample organization charts and scroll the org tree natively",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-21",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T22:28:44+00:00",
-          "summary": "Add an organization owner link that opens every owned team",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-22",
-          "orgId": "botseverywhere",
-          "type": "work",
-          "actorSeatId": "seat-build-bot",
-          "actorType": "bot",
-          "timestamp": "2026-10-14T23:09:00+00:00",
-          "summary": "Add organization goals and seed the botseverywhere owner org",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
-          "status": "done"
-        },
-        {
-          "id": "botseverywhere-log-23",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-8",
+          "orgId": "bot-company-x",
           "type": "work",
           "actorSeatId": "seat-security-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T23:14:18+00:00",
-          "summary": "Stop trusting spoofed client addresses and cap request bodies",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-07T09:20:00+00:00",
+          "summary": "Dependency scan: one package pinned, no secrets found",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-24",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-9",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-build-bot",
+          "actorSeatId": "seat-docs-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T23:28:27+00:00",
-          "summary": "Add the Oct 15 preview with work charts, hire, and retire",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-08T10:10:00+00:00",
+          "summary": "Docs updated for streaming, with a runnable example",
+          "stepId": "step-notes",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-25",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-10",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-build-bot",
+          "actorSeatId": "seat-review-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T23:28:48+00:00",
-          "summary": "Add a Hire bot action on the work chart",
-          "stepId": "step-inner",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-08T14:00:00+00:00",
+          "summary": "Reviewed the tool-calling pull request: one regression sent back",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-26",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-11",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-hr-bot",
+          "actorSeatId": "seat-review-bot",
           "actorType": "bot",
-          "timestamp": "2026-10-14T23:36:06+00:00",
-          "summary": "Fill every owner-org bot card from the v1.1 seat cards",
-          "workstreamId": "ws-nov7",
+          "timestamp": "2026-10-09T09:15:00+00:00",
+          "summary": "Tool-calling pull request approved and merged",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
           "status": "done"
         },
         {
-          "id": "botseverywhere-log-27",
-          "orgId": "botseverywhere",
+          "id": "bot-company-x-log-12",
+          "orgId": "bot-company-x",
+          "type": "approval",
+          "actorSeatId": "seat-sam",
+          "actorType": "human",
+          "timestamp": "2026-10-09T09:15:00+00:00",
+          "summary": "Tool-calling pull request approved and merged",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
+          "status": "approved",
+          "approverSeatId": "seat-sam"
+        },
+        {
+          "id": "bot-company-x-log-13",
+          "orgId": "bot-company-x",
           "type": "work",
-          "actorSeatId": "seat-qa-bot",
+          "actorSeatId": "seat-research-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-09T12:30:00+00:00",
+          "summary": "Comparison table: six frameworks, protocol support by column",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-14",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-community-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-09T13:05:00+00:00",
+          "summary": "Drafted answers to five questions in discussions",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-15",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-docs-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-10T08:45:00+00:00",
+          "summary": "Release notes draft: every change with its link and its author",
+          "stepId": "step-notes",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-16",
+          "orgId": "bot-company-x",
+          "type": "approval",
+          "actorSeatId": "seat-sam",
+          "actorType": "human",
+          "timestamp": "2026-10-10T08:45:00+00:00",
+          "summary": "Release notes draft: every change with its link and its author",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
+          "status": "approved",
+          "approverSeatId": "seat-sam"
+        },
+        {
+          "id": "bot-company-x-log-17",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-benchmark-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-13T09:00:00+00:00",
+          "summary": "Benchmarks on the release candidate: all suites green",
+          "stepId": "step-bench",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-18",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-release-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-13T11:20:00+00:00",
+          "summary": "Release checklist: tag, changelog, package build, announcement draft",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-19",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-release-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-14T09:30:00+00:00",
+          "summary": "Version 2.0 tagged and the announcement approved",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-20",
+          "orgId": "bot-company-x",
+          "type": "approval",
+          "actorSeatId": "seat-sam",
+          "actorType": "human",
+          "timestamp": "2026-10-14T09:30:00+00:00",
+          "summary": "Version 2.0 tagged and the announcement approved",
+          "stepId": "step-review",
+          "workstreamId": "ws-release",
+          "status": "approved",
+          "approverSeatId": "seat-sam"
+        },
+        {
+          "id": "bot-company-x-log-21",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-books-bot",
+          "actorType": "bot",
+          "timestamp": "2026-10-14T17:00:00+00:00",
+          "summary": "Weekly spend summary: hosting, CI minutes, one renewal due",
+          "workstreamId": "ws-release",
+          "status": "done"
+        },
+        {
+          "id": "bot-company-x-log-22",
+          "orgId": "bot-company-x",
+          "type": "work",
+          "actorSeatId": "seat-benchmark-bot",
           "actorType": "bot",
           "timestamp": "2026-10-15T06:05:00+00:00",
-          "summary": "QA report for PR #1 at ccdc18f",
-          "stepId": "step-qa",
-          "workstreamId": "ws-nov7",
+          "summary": "Benchmarks on the 2.0.1 candidate: green",
+          "stepId": "step-bench",
+          "workstreamId": "ws-release",
           "status": "done"
         }
       ],
@@ -1579,737 +1297,561 @@
         "label": "Demo activity (sample)",
         "events": [
           {
-            "id": "botseverywhere-demo-1",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-1",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-design-bot",
+            "actorSeatId": "seat-research-bot",
             "actorType": "bot",
             "timestamp": "2026-09-18T15:10:00+00:00",
-            "summary": "Sample: reviewed lane spacing for the walkthrough.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: compared three agent protocols for the plan.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-2",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-2",
+            "orgId": "bot-company-x",
             "type": "hire",
             "actorSeatId": "seat-sam",
             "actorType": "human",
             "timestamp": "2026-09-22T14:00:00+00:00",
-            "summary": "Sample: hired a walkthrough bot for the lane.",
-            "subjectSeatId": "demo-walkthrough-bot",
+            "summary": "Sample: hired a migration bot for the 2.0 upgrade guide.",
+            "subjectSeatId": "demo-migration-bot",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-3",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-3",
+            "orgId": "bot-company-x",
             "type": "exception",
-            "actorSeatId": "seat-qa-bot",
+            "actorSeatId": "seat-benchmark-bot",
             "actorType": "bot",
             "timestamp": "2026-10-02T11:20:00+00:00",
-            "summary": "Sample: mismatch sent back before approval.",
-            "stepId": "step-qa",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: a benchmark regressed; the pull request was sent back.",
+            "stepId": "step-bench",
+            "workstreamId": "ws-release",
             "status": "exception"
           },
           {
-            "id": "botseverywhere-demo-4",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-4",
+            "orgId": "bot-company-x",
             "type": "approval",
             "actorSeatId": "seat-sam",
             "actorType": "human",
             "timestamp": "2026-10-06T16:05:00+00:00",
-            "summary": "Sample: approved the walkthrough lane.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: approved the streaming merge.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "approved",
             "approverSeatId": "seat-sam"
           },
           {
-            "id": "botseverywhere-demo-5",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-5",
+            "orgId": "bot-company-x",
             "type": "fire",
             "actorSeatId": "seat-sam",
             "actorType": "human",
             "timestamp": "2026-10-08T17:40:00+00:00",
-            "summary": "Sample: retired the walkthrough bot after the lane.",
-            "subjectSeatId": "demo-walkthrough-bot",
+            "summary": "Sample: retired the migration bot after the guide shipped.",
+            "subjectSeatId": "demo-migration-bot",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-6",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-6",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-sales-bot",
+            "actorSeatId": "seat-issue-bot",
             "actorType": "bot",
             "timestamp": "2026-09-20T19:00:00+00:00",
-            "summary": "Sample: listed a partner to invite to the Nov 7 walkthrough. Pass 1.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: triaged an issue and drafted the reply. Pass 1.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-7",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-7",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-sales-bot",
+            "actorSeatId": "seat-issue-bot",
             "actorType": "bot",
             "timestamp": "2026-09-21T05:00:00+00:00",
-            "summary": "Sample: listed a partner to invite to the Nov 7 walkthrough. Pass 2.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: triaged an issue and drafted the reply. Pass 2.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-8",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-8",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-finance-bot",
+            "actorSeatId": "seat-issue-bot",
             "actorType": "bot",
             "timestamp": "2026-09-21T15:00:00+00:00",
-            "summary": "Sample: checked the walkthrough has no spend. Pass 1.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: triaged an issue and drafted the reply. Pass 3.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-9",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-9",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-finance-bot",
+            "actorSeatId": "seat-issue-bot",
             "actorType": "bot",
             "timestamp": "2026-09-22T01:00:00+00:00",
-            "summary": "Sample: checked the walkthrough has no spend. Pass 2.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: triaged an issue and drafted the reply. Pass 4.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-10",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-10",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-automation-bot",
+            "actorSeatId": "seat-community-bot",
             "actorType": "bot",
             "timestamp": "2026-09-22T11:00:00+00:00",
-            "summary": "Sample: sketched a reminder for the Nov 7 date. Pass 1.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted an answer with a docs link. Pass 1.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-11",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-11",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-automation-bot",
+            "actorSeatId": "seat-community-bot",
             "actorType": "bot",
             "timestamp": "2026-09-22T21:00:00+00:00",
-            "summary": "Sample: sketched a reminder for the Nov 7 date. Pass 2.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted an answer with a docs link. Pass 2.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-12",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-12",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-social-bot",
+            "actorSeatId": "seat-community-bot",
             "actorType": "bot",
             "timestamp": "2026-09-23T07:00:00+00:00",
-            "summary": "Sample: drafted a walkthrough post that was not sent. Pass 1.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted an answer with a docs link. Pass 3.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-13",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-13",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-social-bot",
+            "actorSeatId": "seat-security-bot",
             "actorType": "bot",
             "timestamp": "2026-09-23T17:00:00+00:00",
-            "summary": "Sample: drafted a walkthrough post that was not sent. Pass 2.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: scanned a pull request for secrets. Pass 1.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-14",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-14",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-social-bot",
+            "actorSeatId": "seat-security-bot",
             "actorType": "bot",
             "timestamp": "2026-09-24T03:00:00+00:00",
-            "summary": "Sample: drafted a walkthrough post that was not sent. Pass 3.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: scanned a pull request for secrets. Pass 2.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-15",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-15",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-security-bot",
+            "actorSeatId": "seat-release-bot",
             "actorType": "bot",
             "timestamp": "2026-09-24T13:00:00+00:00",
-            "summary": "Sample: reviewed the walkthrough link before it is shared. Pass 1.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: updated the release checklist. Pass 1.",
+            "stepId": "step-notes",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-16",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-16",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-security-bot",
+            "actorSeatId": "seat-roadmap-bot",
             "actorType": "bot",
             "timestamp": "2026-09-24T23:00:00+00:00",
-            "summary": "Sample: reviewed the walkthrough link before it is shared. Pass 2.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: moved a milestone date in the plan. Pass 1.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-17",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-17",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-security-bot",
+            "actorSeatId": "seat-roadmap-bot",
             "actorType": "bot",
             "timestamp": "2026-09-25T09:00:00+00:00",
-            "summary": "Sample: reviewed the walkthrough link before it is shared. Pass 3.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: moved a milestone date in the plan. Pass 2.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-18",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-18",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-research-bot",
+            "actorSeatId": "seat-roadmap-bot",
             "actorType": "bot",
             "timestamp": "2026-09-25T19:00:00+00:00",
-            "summary": "Sample: collected notes for the Nov 7 story. Pass 1.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: moved a milestone date in the plan. Pass 3.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-19",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-19",
+            "orgId": "bot-company-x",
             "type": "work",
             "actorSeatId": "seat-research-bot",
             "actorType": "bot",
             "timestamp": "2026-09-26T05:00:00+00:00",
-            "summary": "Sample: collected notes for the Nov 7 story. Pass 2.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: added a sourced note to the comparison table. Pass 1.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-20",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-20",
+            "orgId": "bot-company-x",
             "type": "work",
             "actorSeatId": "seat-research-bot",
             "actorType": "bot",
             "timestamp": "2026-09-26T15:00:00+00:00",
-            "summary": "Sample: collected notes for the Nov 7 story. Pass 3.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: added a sourced note to the comparison table. Pass 2.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-21",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-21",
+            "orgId": "bot-company-x",
             "type": "work",
             "actorSeatId": "seat-research-bot",
             "actorType": "bot",
             "timestamp": "2026-09-27T01:00:00+00:00",
-            "summary": "Sample: collected notes for the Nov 7 story. Pass 4.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: added a sourced note to the comparison table. Pass 3.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-22",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-22",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-hr-bot",
+            "actorSeatId": "seat-research-bot",
             "actorType": "bot",
             "timestamp": "2026-09-27T11:00:00+00:00",
-            "summary": "Sample: checked the walkthrough seat list. Pass 1.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: added a sourced note to the comparison table. Pass 4.",
+            "stepId": "step-plan",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-23",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-23",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-hr-bot",
+            "actorSeatId": "seat-docs-bot",
             "actorType": "bot",
             "timestamp": "2026-09-27T21:00:00+00:00",
-            "summary": "Sample: checked the walkthrough seat list. Pass 2.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: updated an example after a merge. Pass 1.",
+            "stepId": "step-notes",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-24",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-24",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-hr-bot",
+            "actorSeatId": "seat-docs-bot",
             "actorType": "bot",
             "timestamp": "2026-09-28T07:00:00+00:00",
-            "summary": "Sample: checked the walkthrough seat list. Pass 3.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: updated an example after a merge. Pass 2.",
+            "stepId": "step-notes",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-25",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-25",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-hr-bot",
+            "actorSeatId": "seat-docs-bot",
             "actorType": "bot",
             "timestamp": "2026-09-28T17:00:00+00:00",
-            "summary": "Sample: checked the walkthrough seat list. Pass 4.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: updated an example after a merge. Pass 3.",
+            "stepId": "step-notes",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-26",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-26",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-marketing-bot",
+            "actorSeatId": "seat-docs-bot",
             "actorType": "bot",
             "timestamp": "2026-09-29T03:00:00+00:00",
-            "summary": "Sample: prepared a walkthrough slide. Pass 1.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: updated an example after a merge. Pass 4.",
+            "stepId": "step-notes",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-27",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-27",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-marketing-bot",
+            "actorSeatId": "seat-docs-bot",
             "actorType": "bot",
             "timestamp": "2026-09-29T13:00:00+00:00",
-            "summary": "Sample: prepared a walkthrough slide. Pass 2.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: updated an example after a merge. Pass 5.",
+            "stepId": "step-notes",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-28",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-28",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-marketing-bot",
+            "actorSeatId": "seat-review-bot",
             "actorType": "bot",
             "timestamp": "2026-09-29T23:00:00+00:00",
-            "summary": "Sample: prepared a walkthrough slide. Pass 3.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted a first-pass review. Pass 1.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-29",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-29",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-marketing-bot",
+            "actorSeatId": "seat-review-bot",
             "actorType": "bot",
             "timestamp": "2026-09-30T09:00:00+00:00",
-            "summary": "Sample: prepared a walkthrough slide. Pass 4.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted a first-pass review. Pass 2.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-30",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-30",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-marketing-bot",
+            "actorSeatId": "seat-review-bot",
             "actorType": "bot",
             "timestamp": "2026-09-30T19:00:00+00:00",
-            "summary": "Sample: prepared a walkthrough slide. Pass 5.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted a first-pass review. Pass 3.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-31",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-31",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-product-bot",
+            "actorSeatId": "seat-review-bot",
             "actorType": "bot",
             "timestamp": "2026-10-01T05:00:00+00:00",
-            "summary": "Sample: wrote a walkthrough step. Pass 1.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted a first-pass review. Pass 4.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-32",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-32",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-product-bot",
+            "actorSeatId": "seat-review-bot",
             "actorType": "bot",
             "timestamp": "2026-10-01T15:00:00+00:00",
-            "summary": "Sample: wrote a walkthrough step. Pass 2.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted a first-pass review. Pass 5.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-33",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-33",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-product-bot",
+            "actorSeatId": "seat-review-bot",
             "actorType": "bot",
             "timestamp": "2026-10-02T01:00:00+00:00",
-            "summary": "Sample: wrote a walkthrough step. Pass 3.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: drafted a first-pass review. Pass 6.",
+            "stepId": "step-review",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-34",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-34",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-product-bot",
+            "actorSeatId": "seat-benchmark-bot",
             "actorType": "bot",
             "timestamp": "2026-10-02T11:00:00+00:00",
-            "summary": "Sample: wrote a walkthrough step. Pass 4.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: ran the suite on a candidate build. Pass 1.",
+            "stepId": "step-bench",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-35",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-35",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-product-bot",
+            "actorSeatId": "seat-benchmark-bot",
             "actorType": "bot",
             "timestamp": "2026-10-02T21:00:00+00:00",
-            "summary": "Sample: wrote a walkthrough step. Pass 5.",
-            "stepId": "step-spec",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: ran the suite on a candidate build. Pass 2.",
+            "stepId": "step-bench",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-36",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-36",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-planning-bot",
+            "actorSeatId": "seat-benchmark-bot",
             "actorType": "bot",
             "timestamp": "2026-10-03T07:00:00+00:00",
-            "summary": "Sample: turned a walkthrough note into a prompt. Pass 1.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: ran the suite on a candidate build. Pass 3.",
+            "stepId": "step-bench",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-37",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-37",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-planning-bot",
+            "actorSeatId": "seat-benchmark-bot",
             "actorType": "bot",
             "timestamp": "2026-10-03T17:00:00+00:00",
-            "summary": "Sample: turned a walkthrough note into a prompt. Pass 2.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: ran the suite on a candidate build. Pass 4.",
+            "stepId": "step-bench",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-38",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-38",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-planning-bot",
+            "actorSeatId": "seat-benchmark-bot",
             "actorType": "bot",
             "timestamp": "2026-10-04T03:00:00+00:00",
-            "summary": "Sample: turned a walkthrough note into a prompt. Pass 3.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: ran the suite on a candidate build. Pass 5.",
+            "stepId": "step-bench",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-39",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-39",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-planning-bot",
+            "actorSeatId": "seat-books-bot",
             "actorType": "bot",
             "timestamp": "2026-10-04T13:00:00+00:00",
-            "summary": "Sample: turned a walkthrough note into a prompt. Pass 4.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: summed the week's spend. Pass 1.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-40",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-40",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-planning-bot",
+            "actorSeatId": "seat-books-bot",
             "actorType": "bot",
             "timestamp": "2026-10-04T23:00:00+00:00",
-            "summary": "Sample: turned a walkthrough note into a prompt. Pass 5.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: summed the week's spend. Pass 2.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-41",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-41",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-planning-bot",
+            "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-05T09:00:00+00:00",
-            "summary": "Sample: turned a walkthrough note into a prompt. Pass 6.",
-            "stepId": "step-outer",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 1.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-42",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-42",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-qa-bot",
+            "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-05T19:00:00+00:00",
-            "summary": "Sample: ran the walkthrough path. Pass 1.",
-            "stepId": "step-qa",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 2.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-43",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-43",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-qa-bot",
+            "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-06T05:00:00+00:00",
-            "summary": "Sample: ran the walkthrough path. Pass 2.",
-            "stepId": "step-qa",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 3.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-44",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-44",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-qa-bot",
+            "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-06T15:00:00+00:00",
-            "summary": "Sample: ran the walkthrough path. Pass 3.",
-            "stepId": "step-qa",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 4.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-45",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-45",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-qa-bot",
+            "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-07T01:00:00+00:00",
-            "summary": "Sample: ran the walkthrough path. Pass 4.",
-            "stepId": "step-qa",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 5.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-46",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-46",
+            "orgId": "bot-company-x",
             "type": "work",
-            "actorSeatId": "seat-qa-bot",
+            "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-07T11:00:00+00:00",
-            "summary": "Sample: ran the walkthrough path. Pass 5.",
-            "stepId": "step-qa",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 6.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-47",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-47",
+            "orgId": "bot-company-x",
             "type": "work",
             "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-07T21:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 1.",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 7.",
+            "workstreamId": "ws-release",
             "status": "done"
           },
           {
-            "id": "botseverywhere-demo-48",
-            "orgId": "botseverywhere",
+            "id": "bot-company-x-demo-48",
+            "orgId": "bot-company-x",
             "type": "work",
             "actorSeatId": "seat-grok",
             "actorType": "bot",
             "timestamp": "2026-10-08T07:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 2.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-49",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-grok",
-            "actorType": "bot",
-            "timestamp": "2026-10-08T17:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 3.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-50",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-grok",
-            "actorType": "bot",
-            "timestamp": "2026-10-09T03:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 4.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-51",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-grok",
-            "actorType": "bot",
-            "timestamp": "2026-10-09T13:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 5.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-52",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-grok",
-            "actorType": "bot",
-            "timestamp": "2026-10-09T23:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 6.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-53",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-grok",
-            "actorType": "bot",
-            "timestamp": "2026-10-10T09:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 7.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-54",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-grok",
-            "actorType": "bot",
-            "timestamp": "2026-10-10T19:00:00+00:00",
-            "summary": "Sample: routed a walkthrough task. Pass 8.",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-55",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-11T05:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 1.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-56",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-11T15:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 2.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-57",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-12T01:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 3.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-58",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-12T11:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 4.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-59",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-12T21:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 5.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-60",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-13T07:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 6.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-61",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-13T17:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 7.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-62",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-14T03:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 8.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
-            "status": "done"
-          },
-          {
-            "id": "botseverywhere-demo-63",
-            "orgId": "botseverywhere",
-            "type": "work",
-            "actorSeatId": "seat-build-bot",
-            "actorType": "bot",
-            "timestamp": "2026-10-14T13:00:00+00:00",
-            "summary": "Sample: built a walkthrough slice. Pass 9.",
-            "stepId": "step-inner",
-            "workstreamId": "ws-nov7",
+            "summary": "Sample: routed a release task. Pass 8.",
+            "workstreamId": "ws-release",
             "status": "done"
           }
         ]

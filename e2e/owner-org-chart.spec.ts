@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('owner org chart reaches every seat by scrolling and search opens Design Bot', async ({ page }) => {
-  await page.goto('/#sample/botseverywhere?view=org', { waitUntil: 'domcontentloaded' })
+  await page.goto('/#sample/bot-company-x?view=org', { waitUntil: 'domcontentloaded' })
   await expect(page.getByTestId('org-chart')).toBeVisible()
   await page.locator('.org-zoom').getByRole('button', { name: /^\d+%$/ }).click()
 

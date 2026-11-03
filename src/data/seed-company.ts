@@ -43,7 +43,7 @@ export const SEED_COMPANY: CompanySeed = {
     name: 'Your team',
     industry: 'Founder team',
     mock: true,
-    tagline: 'Seed demo for Nov 7',
+    tagline: 'Seed demo for the launch',
     mark: 'YT',
     markColor: '#0B1220',
     headcount: '1 person, 4 bots',

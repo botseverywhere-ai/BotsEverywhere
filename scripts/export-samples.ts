@@ -1,18 +1,37 @@
+import { rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import raw from '../src/data/mock-companies.json' with { type: 'json' }
 import type { CompanySeed, Seat } from '../src/data/mock-companies.ts'
 import { isGrokBotUrl, serializeSeat, type OrgBundle, type OrgPerson, type SeatDocument, type WorkDocument } from '../server/src/org-files.ts'
 import { writeOrgDir } from '../server/src/template-server.ts'
 
+/**
+ * Writes samples/<id>/ for every organization in src/data/mock-companies.json. ONLY=<id> exports one of them.
+ * JSON_SAMPLES=1 writes org.json, workchart.json, and activity.jsonl beside the seat files, the format the shipped
+ * samples use, in place of org.md and work-chart.md.
+ */
 const seed = raw as { companies: CompanySeed[] }
+const only = process.env.ONLY?.trim()
+const asJson = process.env.JSON_SAMPLES === '1'
 
 for (const company of seed.companies) {
-  const written = writeOrgDir(resolve('samples', company.org.id), toBundle(company))
+  if (only && company.org.id !== only) continue
+  const root = resolve('samples', company.org.id)
+  const bundle = toBundle(company)
+  const written = writeOrgDir(root, bundle)
   if (written.errors.length) {
     console.error(written.errors.join('\n'))
     process.exit(1)
   }
-  console.log(`${company.org.id}: ${written.files.length} files`)
+  if (asJson) {
+    writeFileSync(resolve(root, 'org.json'), `${JSON.stringify(bundle.org, null, 2)}\n`)
+    writeFileSync(resolve(root, 'workchart.json'), `${JSON.stringify(bundle.work, null, 2)}\n`)
+    const events = (company.log ?? []).map((event) => JSON.stringify(event)).join('\n')
+    writeFileSync(resolve(root, 'activity.jsonl'), events ? `${events}\n` : '')
+    rmSync(resolve(root, 'org.md'), { force: true })
+    rmSync(resolve(root, 'work-chart.md'), { force: true })
+  }
+  console.log(`${company.org.id}: ${written.files.length} files${asJson ? ' (json)' : ''}`)
 }
 
 function toBundle(company: CompanySeed): OrgBundle {

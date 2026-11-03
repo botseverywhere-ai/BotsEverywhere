@@ -2,7 +2,7 @@
 
 BotsEverywhere is an open source team management tool for bots.
 
-Organizations copy it to map their team of people and bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
+Organizations copy it to map their team of bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
 
 No accounts, no paid services, and no API keys. BotsEverywhere is open source under the MIT License; see `LICENSE`.
 
@@ -162,6 +162,6 @@ $env:VITE_APP_MODE = "sqlite"
 npm run dev
 ```
 
-`npm run seed:org` prints an owner link once for the bundled botseverywhere organization. The token is not written to disk. Do not commit `data/*.sqlite`.
+`npm run seed:org` prints an owner link once for the bundled sample organization, Bot Company X. The token is not written to disk. Do not commit `data/*.sqlite`.
 
 Template and showcase do not need this mode.

@@ -1,6 +1,6 @@
 /**
  * Writes src/data/mock-companies.json for the 15 Oct preview.
- * Ten fictional companies plus the owner org. Run: npx tsx scripts/build-preview-seed.ts
+ * Ten fictional companies plus the owner org, Bot Company X, which is fictional too. Run: npx tsx scripts/build-preview-seed.ts
  */
 import { writeFileSync } from 'node:fs'
 import { ACTIVITY, QA_RUN, SEEDED_SEATS } from '../server/src/seed-botseverywhere.ts'
@@ -410,12 +410,12 @@ function ownerDemoActivity(orgId: string): DemoActivity {
   }
   push({
     type: 'work',
-    actorSeatId: 'seat-design-bot',
+    actorSeatId: 'seat-research-bot',
     actorType: 'bot',
     timestamp: '2026-09-18T15:10:00+00:00',
-    summary: 'Sample: reviewed lane spacing for the walkthrough.',
-    stepId: 'step-spec',
-    workstreamId: 'ws-nov7',
+    summary: 'Sample: compared three agent protocols for the plan.',
+    stepId: 'step-plan',
+    workstreamId: 'ws-release',
     status: 'done',
   })
   push({
@@ -423,18 +423,18 @@ function ownerDemoActivity(orgId: string): DemoActivity {
     actorSeatId: 'seat-sam',
     actorType: 'human',
     timestamp: '2026-09-22T14:00:00+00:00',
-    summary: 'Sample: hired a walkthrough bot for the lane.',
-    subjectSeatId: 'demo-walkthrough-bot',
+    summary: 'Sample: hired a migration bot for the 2.0 upgrade guide.',
+    subjectSeatId: 'demo-migration-bot',
     status: 'done',
   })
   push({
     type: 'exception',
-    actorSeatId: 'seat-qa-bot',
+    actorSeatId: 'seat-benchmark-bot',
     actorType: 'bot',
     timestamp: '2026-10-02T11:20:00+00:00',
-    summary: 'Sample: mismatch sent back before approval.',
-    stepId: 'step-qa',
-    workstreamId: 'ws-nov7',
+    summary: 'Sample: a benchmark regressed; the pull request was sent back.',
+    stepId: 'step-bench',
+    workstreamId: 'ws-release',
     status: 'exception',
   })
   push({
@@ -442,9 +442,9 @@ function ownerDemoActivity(orgId: string): DemoActivity {
     actorSeatId: 'seat-sam',
     actorType: 'human',
     timestamp: '2026-10-06T16:05:00+00:00',
-    summary: 'Sample: approved the walkthrough lane.',
-    stepId: 'step-outer',
-    workstreamId: 'ws-nov7',
+    summary: 'Sample: approved the streaming merge.',
+    stepId: 'step-review',
+    workstreamId: 'ws-release',
     status: 'approved',
     approverSeatId: 'seat-sam',
   })
@@ -453,24 +453,22 @@ function ownerDemoActivity(orgId: string): DemoActivity {
     actorSeatId: 'seat-sam',
     actorType: 'human',
     timestamp: '2026-10-08T17:40:00+00:00',
-    summary: 'Sample: retired the walkthrough bot after the lane.',
-    subjectSeatId: 'demo-walkthrough-bot',
+    summary: 'Sample: retired the migration bot after the guide shipped.',
+    subjectSeatId: 'demo-migration-bot',
     status: 'done',
   })
   const work: { seat: string; count: number; line: string; stepId?: string }[] = [
-    { seat: 'seat-sales-bot', count: 2, line: 'Sample: listed a partner to invite to the Nov 7 walkthrough.' },
-    { seat: 'seat-finance-bot', count: 2, line: 'Sample: checked the walkthrough has no spend.' },
-    { seat: 'seat-automation-bot', count: 2, line: 'Sample: sketched a reminder for the Nov 7 date.' },
-    { seat: 'seat-social-bot', count: 3, line: 'Sample: drafted a walkthrough post that was not sent.' },
-    { seat: 'seat-security-bot', count: 3, line: 'Sample: reviewed the walkthrough link before it is shared.', stepId: 'step-inner' },
-    { seat: 'seat-research-bot', count: 4, line: 'Sample: collected notes for the Nov 7 story.', stepId: 'step-outer' },
-    { seat: 'seat-hr-bot', count: 4, line: 'Sample: checked the walkthrough seat list.' },
-    { seat: 'seat-marketing-bot', count: 5, line: 'Sample: prepared a walkthrough slide.', stepId: 'step-spec' },
-    { seat: 'seat-product-bot', count: 5, line: 'Sample: wrote a walkthrough step.', stepId: 'step-spec' },
-    { seat: 'seat-planning-bot', count: 6, line: 'Sample: turned a walkthrough note into a prompt.', stepId: 'step-outer' },
-    { seat: 'seat-qa-bot', count: 5, line: 'Sample: ran the walkthrough path.', stepId: 'step-qa' },
-    { seat: 'seat-grok', count: 8, line: 'Sample: routed a walkthrough task.' },
-    { seat: 'seat-build-bot', count: 9, line: 'Sample: built a walkthrough slice.', stepId: 'step-inner' },
+    { seat: 'seat-issue-bot', count: 4, line: 'Sample: triaged an issue and drafted the reply.' },
+    { seat: 'seat-community-bot', count: 3, line: 'Sample: drafted an answer with a docs link.' },
+    { seat: 'seat-security-bot', count: 2, line: 'Sample: scanned a pull request for secrets.', stepId: 'step-review' },
+    { seat: 'seat-release-bot', count: 1, line: 'Sample: updated the release checklist.', stepId: 'step-notes' },
+    { seat: 'seat-roadmap-bot', count: 3, line: 'Sample: moved a milestone date in the plan.', stepId: 'step-plan' },
+    { seat: 'seat-research-bot', count: 4, line: 'Sample: added a sourced note to the comparison table.', stepId: 'step-plan' },
+    { seat: 'seat-docs-bot', count: 5, line: 'Sample: updated an example after a merge.', stepId: 'step-notes' },
+    { seat: 'seat-review-bot', count: 6, line: 'Sample: drafted a first-pass review.', stepId: 'step-review' },
+    { seat: 'seat-benchmark-bot', count: 5, line: 'Sample: ran the suite on a candidate build.', stepId: 'step-bench' },
+    { seat: 'seat-books-bot', count: 2, line: 'Sample: summed the week\'s spend.' },
+    { seat: 'seat-grok', count: 8, line: 'Sample: routed a release task.' },
   ]
   let cursor = Date.parse('2026-09-20T09:00:00+00:00')
   for (const item of work) {
@@ -483,7 +481,7 @@ function ownerDemoActivity(orgId: string): DemoActivity {
         timestamp: new Date(cursor).toISOString().replace('.000Z', '+00:00'),
         summary: `${item.line} Pass ${index + 1}.`,
         stepId: item.stepId,
-        workstreamId: 'ws-nov7',
+        workstreamId: 'ws-release',
         status: 'done',
       })
     }
@@ -492,7 +490,7 @@ function ownerDemoActivity(orgId: string): DemoActivity {
 }
 
 function ownerCompany(): CompanySeed {
-  const orgId = 'botseverywhere'
+  const orgId = 'bot-company-x'
   const seats: Seat[] = SEEDED_SEATS.map((seat) => ({
     id: seat.id,
     orgId,
@@ -512,31 +510,31 @@ function ownerCompany(): CompanySeed {
     provenance: seat.kind === 'bot' ? { ...seat.card.provenance } : undefined,
     profile: {
       department: seat.role,
-      location: 'Harbor',
+      location: 'Remote',
       email: '',
       phone: '',
-      startedOn: '2026-10-14',
+      startedOn: '2026-09-15',
       bio: displayCardText(seat.card.owns) || `${seat.name}, ${seat.role}.`,
     },
     status: 'active' as const,
   }))
   const steps = [
-    { id: 'step-spec', name: 'Write the spec', exec: 'seat-product-bot', level: 2 as const },
-    { id: 'step-outer', name: 'Turn research into a build prompt', exec: 'seat-planning-bot', level: 2 as const },
-    { id: 'step-inner', name: 'Build the change', exec: 'seat-build-bot', level: 2 as const },
-    { id: 'step-qa', name: 'Test the build', exec: 'seat-qa-bot', level: 2 as const },
+    { id: 'step-plan', name: 'Write the release plan', exec: 'seat-roadmap-bot', level: 2 as const },
+    { id: 'step-review', name: 'Review the pull requests', exec: 'seat-review-bot', level: 2 as const },
+    { id: 'step-bench', name: 'Run the agent benchmarks', exec: 'seat-benchmark-bot', level: 2 as const },
+    { id: 'step-notes', name: 'Draft the release notes', exec: 'seat-docs-bot', level: 2 as const },
   ]
   const stepForSeat: Record<string, string> = {
-    'seat-build-bot': 'step-inner',
-    'seat-qa-bot': 'step-qa',
-    'seat-product-bot': 'step-spec',
-    'seat-planning-bot': 'step-outer',
+    'seat-roadmap-bot': 'step-plan',
+    'seat-review-bot': 'step-review',
+    'seat-benchmark-bot': 'step-bench',
+    'seat-docs-bot': 'step-notes',
   }
   const log: LogEvent[] = []
   let logIndex = 0
   function pushLog(event: Omit<LogEvent, 'id' | 'orgId'>): void {
     logIndex += 1
-    log.push({ id: `botseverywhere-log-${logIndex}`, orgId, ...event })
+    log.push({ id: `${orgId}-log-${logIndex}`, orgId, ...event })
   }
   for (const event of ACTIVITY) {
     pushLog({
@@ -546,7 +544,7 @@ function ownerCompany(): CompanySeed {
       timestamp: event.at,
       summary: event.summary,
       stepId: stepForSeat[event.seatId],
-      workstreamId: 'ws-nov7',
+      workstreamId: 'ws-release',
       status: 'done',
     })
     if (event.onMain) {
@@ -556,8 +554,8 @@ function ownerCompany(): CompanySeed {
         actorType: 'human',
         timestamp: event.at,
         summary: event.summary,
-        stepId: 'step-outer',
-        workstreamId: 'ws-nov7',
+        stepId: 'step-review',
+        workstreamId: 'ws-release',
         status: 'approved',
         approverSeatId: 'seat-sam',
       })
@@ -569,8 +567,8 @@ function ownerCompany(): CompanySeed {
     actorType: 'bot',
     timestamp: QA_RUN.at,
     summary: QA_RUN.summary,
-    stepId: 'step-qa',
-    workstreamId: 'ws-nov7',
+    stepId: 'step-bench',
+    workstreamId: 'ws-release',
     status: 'done',
   })
   for (const seat of seats) {
@@ -586,78 +584,78 @@ function ownerCompany(): CompanySeed {
   return {
     org: {
       id: orgId,
-      name: 'botseverywhere',
-      description: 'The owner’s organization.',
-      industry: 'Software',
+      name: 'Bot Company X',
+      description: 'A fictional open source project: one maintainer and a team of bots that keep a toolkit for bots and AI agents healthy. Every bot, issue, and number here is made up.',
+      industry: 'Open source software',
       mock: false,
       ownerOrg: true,
-      tagline: 'Org chart for bots. Work chart for humans.',
+      tagline: 'Open source tools for bots and AI agents.',
       address: 'Remote',
-      headcount: '1 person, 14 bots',
-      founded: 2026,
-      mark: 'BE',
+      headcount: '1 person, 11 bots',
+      founded: 2024,
+      mark: 'BX',
       markColor: '#0b1220',
       logExemption:
-        'Hire and fire have not happened in this project, so the real log has no hire or fire events. No exception was recorded either. Approvals are only the commits that landed on main; each one is the owner\'s recorded decision, with the commit subject kept verbatim. Branch-only commits stay work events.',
+        'Hire and fire have not happened in this made-up fortnight, so the release log has no hire or fire events; they appear only in the demo activity. Work events come one per step, and an approval each time the maintainer signed off a step.',
       goals: {
-        title: 'Nov 7 2026 demo',
-        dueOn: '2026-11-07',
+        title: 'Version 2.0 release',
+        dueOn: '2026-11-30',
         milestones: [
-          'share-link teams',
-          'mock sample organizations',
-          'app redesign',
-          'owner link',
-          'deploy to botseverywhere.ai on EC2',
+          'release plan approved',
+          'open pull requests reviewed',
+          'benchmarks green on the candidate',
+          'release notes approved',
+          'version 2.0 tagged',
         ].map((title) => ({ title, done: false })),
       },
       seatIds: seats.map((seat) => seat.id),
-      workstreamIds: ['ws-nov7'],
+      workstreamIds: ['ws-release'],
     },
     seats,
     triggers: [{
-      id: 'trigger-nov7',
+      id: 'trigger-release',
       orgId,
       source: 'management',
-      label: 'Nov 7 2026 demo',
-      example: 'The owner sets the launch demo as the outcome for this stream.',
+      label: 'Version 2.0 release',
+      example: 'The maintainer sets the version 2.0 release as the outcome for this stream.',
     }],
     workstreams: [{
-      id: 'ws-nov7',
+      id: 'ws-release',
       orgId,
-      triggerId: 'trigger-nov7',
-      outcome: 'Nov 7 2026 demo',
+      triggerId: 'trigger-release',
+      outcome: 'Version 2.0 release',
       ownerSeatId: 'seat-sam',
       kind: 'main',
       stepIds: steps.map((step) => step.id),
     }],
     steps: steps.map((step) => ({
       id: step.id,
-      workstreamId: 'ws-nov7',
+      workstreamId: 'ws-release',
       name: step.name,
       level: step.level,
       executorSeatId: step.exec,
-      inputs: ['The current preview branch'],
+      inputs: ['The release plan and the open pull requests'],
       outputs: [step.name],
-      checkpointId: step.id === 'step-outer' ? 'cp-owner-merge' : undefined,
+      checkpointId: step.id === 'step-review' ? 'cp-owner-merge' : undefined,
     })),
     handoffs: [
-      { id: 'hand-spec-outer', fromStepId: 'step-spec', toStepId: 'step-outer' },
-      { id: 'hand-outer-inner', fromStepId: 'step-outer', toStepId: 'step-inner' },
-      { id: 'hand-inner-qa', fromStepId: 'step-inner', toStepId: 'step-qa' },
-      { id: 'hand-qa-outer', fromStepId: 'step-qa', toStepId: 'step-outer', condition: 'report back' },
+      { id: 'hand-plan-review', fromStepId: 'step-plan', toStepId: 'step-review' },
+      { id: 'hand-review-bench', fromStepId: 'step-review', toStepId: 'step-bench' },
+      { id: 'hand-bench-notes', fromStepId: 'step-bench', toStepId: 'step-notes' },
+      { id: 'hand-bench-review', fromStepId: 'step-bench', toStepId: 'step-review', condition: 'regression: send back' },
     ],
     checkpoints: [{
       id: 'cp-owner-merge',
-      stepId: 'step-outer',
-      rule: 'The owner approves merges to main and production deploys.',
+      stepId: 'step-review',
+      rule: 'The maintainer approves every merge and every release.',
       approverSeatId: 'seat-sam',
       required: true,
     }],
     activity: log.map((event, index) => ({
-      id: `botseverywhere-act-${index + 1}`,
+      id: `${orgId}-act-${index + 1}`,
       at: event.timestamp,
-      workstreamId: event.workstreamId || 'ws-nov7',
-      stepId: event.stepId || 'step-spec',
+      workstreamId: event.workstreamId || 'ws-release',
+      stepId: event.stepId || 'step-plan',
       actorSeatId: event.actorSeatId,
       actorType: event.actorType,
       action: event.type === 'approval' ? 'approved' as const : 'completed' as const,

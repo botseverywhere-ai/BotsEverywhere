@@ -1,0 +1,243 @@
+{
+  "company": {
+    "name": "Bot Company X",
+    "tagline": "Open source tools for bots and AI agents.",
+    "industry": "Open source software",
+    "mark": "BX",
+    "markColor": "#0b1220"
+  },
+  "departments": [
+    {
+      "id": "maintainer",
+      "name": "Maintainer"
+    },
+    {
+      "id": "manager",
+      "name": "Manager"
+    },
+    {
+      "id": "triages-new-issues",
+      "name": "Triages new issues"
+    },
+    {
+      "id": "reviews-pull-requests",
+      "name": "Reviews pull requests"
+    },
+    {
+      "id": "keeps-the-docs-current",
+      "name": "Keeps the docs current"
+    },
+    {
+      "id": "prepares-each-release",
+      "name": "Prepares each release"
+    },
+    {
+      "id": "drafts-answers-to-questions",
+      "name": "Drafts answers to questions"
+    },
+    {
+      "id": "tracks-other-agent-frameworks",
+      "name": "Tracks other agent frameworks"
+    },
+    {
+      "id": "runs-the-agent-evaluations",
+      "name": "Runs the agent evaluations"
+    },
+    {
+      "id": "scans-dependencies-and-secrets",
+      "name": "Scans dependencies and secrets"
+    },
+    {
+      "id": "writes-the-release-plan",
+      "name": "Writes the release plan"
+    },
+    {
+      "id": "sums-the-weekly-spend",
+      "name": "Sums the weekly spend"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-seat-sam",
+      "name": "Sam Rivera",
+      "title": "Maintainer",
+      "department": "maintainer",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "Sam Rivera, Maintainer.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-grok",
+      "name": "Grok Bot",
+      "title": "Manager",
+      "department": "manager",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "routing tasks to the right bot; managing all project work; the weekly release goal; the daily 18:00 summary to the maintainer.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-issue-bot",
+      "name": "Issue Bot",
+      "title": "Triages new issues",
+      "department": "triages-new-issues",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "new issues: labels, the missing-information list, and a draft reply for each one within a day.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-review-bot",
+      "name": "Review Bot",
+      "title": "Reviews pull requests",
+      "department": "reviews-pull-requests",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "the first-pass review of every pull request: tests, the diff against the project rules, and a plain-words review draft.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-docs-bot",
+      "name": "Docs Bot",
+      "title": "Keeps the docs current",
+      "department": "keeps-the-docs-current",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "the docs and the examples: keeping them current with each change, and the release notes draft.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-release-bot",
+      "name": "Release Bot",
+      "title": "Prepares each release",
+      "department": "prepares-each-release",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "the release checklist: version tag, changelog, package build, and the announcement draft.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-community-bot",
+      "name": "Community Bot",
+      "title": "Drafts answers to questions",
+      "department": "drafts-answers-to-questions",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "questions in discussions and the forum: a draft answer for each, with a link to the docs or the code.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-research-bot",
+      "name": "Research Bot",
+      "title": "Tracks other agent frameworks",
+      "department": "tracks-other-agent-frameworks",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "sourced notes on other agent frameworks, protocols, and standards; the comparison table the roadmap works from.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-benchmark-bot",
+      "name": "Benchmark Bot",
+      "title": "Runs the agent evaluations",
+      "department": "runs-the-agent-evaluations",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "the agent evaluation suite: running it on every candidate build and the report with what got better or worse.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-security-bot",
+      "name": "Security Bot",
+      "title": "Scans dependencies and secrets",
+      "department": "scans-dependencies-and-secrets",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "dependency and secrets scans on every pull request; the review of risky changes; the pre-release checklist.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-roadmap-bot",
+      "name": "Roadmap Bot",
+      "title": "Writes the release plan",
+      "department": "writes-the-release-plan",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "the release plan: issues and research notes turned into milestones, each with its owner bot and its done-when.",
+      "startedOn": "2026-09-15"
+    },
+    {
+      "id": "person-seat-books-bot",
+      "name": "Bookkeeping Bot",
+      "title": "Sums the weekly spend",
+      "department": "sums-the-weekly-spend",
+      "email": "",
+      "phone": "",
+      "location": "Remote",
+      "bio": "the weekly spend summary: hosting, continuous integration minutes, model credits, and domains, with anything about to renew.",
+      "startedOn": "2026-09-15"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "seat-sam",
+      "reportsTo": null
+    },
+    {
+      "slug": "seat-grok",
+      "reportsTo": "seat-sam"
+    },
+    {
+      "slug": "seat-issue-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-review-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-docs-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-release-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-community-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-research-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-benchmark-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-security-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-roadmap-bot",
+      "reportsTo": "seat-grok"
+    },
+    {
+      "slug": "seat-books-bot",
+      "reportsTo": "seat-grok"
+    }
+  ]
+}

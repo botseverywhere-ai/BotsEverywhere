@@ -1,12 +1,15 @@
 ---
 title: Sam Rivera
-department: owner
+department: maintainer
 reportsTo: ""
 addToGrokBotUrl: ""
 status: active
 kind: human
-role: Owner
+role: Maintainer
 personId: person-seat-sam
+hiredAt: ""
+retiredAt: ""
+directoryId: ""
 ---
 
 ## Owns

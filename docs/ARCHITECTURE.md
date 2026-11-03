@@ -8,7 +8,7 @@ BotsEverywhere is an open source team management tool for bots.
 
 It is one repository. There are no logins. A person clones it from GitHub and runs it on their own computer. The org chart, the work chart, the seats, and the logs stay in folders on that computer. Nothing in the product uploads that data.
 
-Organizations use it to see people and bots in one place: who owns what, how work moves, and which ready-made bots they can add to Grok Bot.
+Organizations use it to see their bots in one place: who owns what, how work moves, and which ready-made bots they can add to Grok Bot.
 
 ## 2. Two builds of the same code
 
@@ -109,9 +109,9 @@ Corners are square. The button radius and the control radius in `tokens.css` are
 
 More detail is in [design-tokens.md](design-tokens.md) and [STYLEGUIDE.md](STYLEGUIDE.md).
 
-## 8. Recommendations after the demo (not built)
+## 8. Recommendations after the first release (not built)
 
-These are recommendations for after the launch demo. None of them are built. Do not switch stacks before Nov 7.
+These are recommendations for after the first public release. None of them are built.
 
 1. **Keep React, Vite, and TypeScript.** On a PC, `npm run dev` starts the site and the local writer. The writer saves plain markdown files in `orgs/`. There is no database and there are no accounts. The EC2 version is the same code, built as static files, with saving off.
 

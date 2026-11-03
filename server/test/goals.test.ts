@@ -5,7 +5,7 @@ import { openDatabase } from '../src/db.ts'
 import { ACTIVITY, seedBotseverywhere, SEEDED_SEATS } from '../src/seed-botseverywhere.ts'
 import { CookieJar, createTestApp, readJson, sessionOf } from './helpers.ts'
 
-describe('organization goals and botseverywhere seed', () => {
+describe('organization goals and the Bot Company X seed', () => {
   it('computes progress from milestones and rejects a team view token', async () => {
     const { app } = createTestApp()
     const anon = await anonymous(app)
@@ -18,7 +18,7 @@ describe('organization goals and botseverywhere seed', () => {
     const goal = await app.request('/api/owner/goals', {
       method: 'POST',
       headers: { ...jsonHeaders(anon.csrf, anon.cookie), 'x-owner-token': ownerToken },
-      body: JSON.stringify({ title: 'Nov 7 2026 demo', dueOn: '2026-11-07' }),
+      body: JSON.stringify({ title: 'Version 2.0 release', dueOn: '2026-11-30' }),
     })
     assert.equal(goal.status, 201)
     const goalId = (await readJson(goal)).goal as { id: string }
@@ -58,7 +58,7 @@ describe('organization goals and botseverywhere seed', () => {
     assert.equal(denied.status, 404)
   })
 
-  it('seeds botseverywhere from git history and seat-card text, without storing the owner token', () => {
+  it('seeds Bot Company X from its seat cards and made-up release log, without storing the owner token', () => {
     const { sqlite } = createTestApp()
     const db = openDatabase(sqlite)
     const seeded = seedBotseverywhere(db, { origin: 'http://127.0.0.1:5199', now: 1 })
@@ -68,10 +68,10 @@ describe('organization goals and botseverywhere seed', () => {
 
     const stored = JSON.stringify(sqlite.prepare('SELECT id, name, owner_token_hash FROM organizations').all())
     assert.equal(stored.includes(seeded.ownerToken), false)
-    const row = sqlite.prepare('SELECT owner_token_hash FROM organizations WHERE id = ?').get('org-botseverywhere') as { owner_token_hash: string }
+    const row = sqlite.prepare('SELECT owner_token_hash FROM organizations WHERE id = ?').get('org-bot-company-x') as { owner_token_hash: string }
     assert.equal(row.owner_token_hash, sha256(seeded.ownerToken))
 
-    const seats = sqlite.prepare('SELECT id, name, kind, reports_to, owns, may, must_ask_before, done_when FROM seats WHERE team_id = ? ORDER BY sort_order').all('team-botseverywhere') as {
+    const seats = sqlite.prepare('SELECT id, name, kind, reports_to, owns, may, must_ask_before, done_when FROM seats WHERE team_id = ? ORDER BY sort_order').all('team-bot-company-x') as {
       id: string
       name: string
       kind: string
@@ -85,18 +85,14 @@ describe('organization goals and botseverywhere seed', () => {
     assert.equal(seats[0]?.kind, 'human')
     assert.equal(seats[1]?.name, 'Grok Bot')
     assert.equal(seats[1]?.reports_to, 'seat-sam')
-    assert.equal(seats.filter((seat) => seat.reports_to === 'seat-grok').length, 13)
+    assert.equal(seats.filter((seat) => seat.reports_to === 'seat-grok').length, 10)
 
-    const ux = seats.find((seat) => seat.name === 'Design Bot')
-    assert.equal(ux?.owns, 'user flows, information architecture, wireframes, interaction and usability specs, accessibility and mobile checks, UX acceptance criteria for each screen (profile).')
-    assert.match(ux?.must_ask_before ?? '', /from handbook v1/)
-    const outer = seats.find((seat) => seat.name === 'Planning Bot')
-    assert.equal(outer?.owns, 'context before code (repo, libraries, competitors, X signals the owner shares); scoped prompts to Build Bot; testing, integration, screenshot/video verification, Cloudflare/EC2 preview deploys; proposing skills/routines/loop bots.')
-    const hr = seats.find((seat) => seat.name === 'HR Bot')
-    assert.equal(hr?.done_when, 'every bot on the roster has a current seat card, new hires have an approved card and onboarding note, and the weekly review is delivered (profile).')
-    const brand = seats.find((seat) => seat.name === 'Marketing Bot')
-    assert.match(brand?.may ?? '', /all from profile/)
-    assert.match(brand?.done_when ?? '', /from handbook v1/)
+    const review = seats.find((seat) => seat.name === 'Review Bot')
+    assert.equal(review?.owns, 'the first-pass review of every pull request: tests, the diff against the project rules, and a plain-words review draft.')
+    const social = seats.find((seat) => seat.name === 'Issue Bot')
+    assert.equal(social?.done_when, 'every new issue has labels proposed and a draft reply waiting for the maintainer.')
+    const bench = seats.find((seat) => seat.name === 'Benchmark Bot')
+    assert.match(bench?.may ?? '', /run the suite on branches and previews/)
     const grok = seats.find((seat) => seat.name === 'Grok Bot')
     const grokSource = JSON.parse((sqlite.prepare('SELECT card_provenance FROM seats WHERE id = ?').get('seat-grok') as { card_provenance: string }).card_provenance) as { mustAskBefore: string }
     assert.equal(grokSource.mustAskBefore, 'handbook v1')
@@ -110,24 +106,24 @@ describe('organization goals and botseverywhere seed', () => {
 
     const milestones = sqlite.prepare('SELECT title, done, due_on FROM milestones ORDER BY sort_order').all() as { title: string; done: number; due_on: string | null }[]
     assert.deepEqual(milestones.map((item) => item.title), [
-      'share-link teams',
-      'mock sample organizations',
-      'app redesign',
-      'owner link',
-      'deploy to botseverywhere.ai on EC2',
+      'release plan approved',
+      'open pull requests reviewed',
+      'benchmarks green on the candidate',
+      'release notes approved',
+      'version 2.0 tagged',
     ])
     assert.deepEqual(milestones.map((item) => item.done), [0, 0, 0, 0, 0])
 
     const activity = sqlite.prepare('SELECT at, summary, commit_sha FROM activity_log ORDER BY at').all() as { at: string; summary: string; commit_sha: string }[]
     assert.deepEqual(activity.map((item) => item.summary), ACTIVITY.map((item) => item.summary))
-    assert.equal(activity[0]?.at, '2026-10-14T20:13:08+00:00')
+    assert.equal(activity[0]?.at, '2026-10-01T09:12:00+00:00')
 
     const steps = sqlite.prepare('SELECT name, executor_seat_id FROM steps ORDER BY sort_order').all() as { name: string; executor_seat_id: string }[]
-    assert.deepEqual(steps.map((step) => step.name), ['Write the spec', 'Turn research into a build prompt', 'Build the change', 'Test the build'])
-    const back = sqlite.prepare('SELECT from_step_id, to_step_id FROM handoffs WHERE id = ?').get('hand-qa-outer') as { from_step_id: string; to_step_id: string }
-    assert.deepEqual(back, { from_step_id: 'step-qa', to_step_id: 'step-outer' })
+    assert.deepEqual(steps.map((step) => step.name), ['Write the release plan', 'Review the pull requests', 'Run the agent benchmarks', 'Draft the release notes'])
+    const back = sqlite.prepare('SELECT from_step_id, to_step_id FROM handoffs WHERE id = ?').get('hand-bench-review') as { from_step_id: string; to_step_id: string }
+    assert.deepEqual(back, { from_step_id: 'step-bench', to_step_id: 'step-review' })
     const checkpoint = sqlite.prepare('SELECT rule, approver_seat_id, required FROM checkpoints').get() as { rule: string; approver_seat_id: string; required: number }
-    assert.equal(checkpoint.rule, 'The owner approves merges to main and production deploys.')
+    assert.equal(checkpoint.rule, 'The maintainer approves every merge and every release.')
     assert.equal(checkpoint.approver_seat_id, 'seat-sam')
     assert.equal(checkpoint.required, 1)
 

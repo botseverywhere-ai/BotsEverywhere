@@ -15,7 +15,7 @@ describe('mock companies', () => {
   it('lists 10 samples and the owner org', () => {
     assert.equal(seed.companies.length, 11)
     const owner = seed.companies.find((company) => company.org.ownerOrg)
-    assert.equal(owner?.org.name, 'botseverywhere')
+    assert.equal(owner?.org.name, 'Bot Company X')
     assert.equal(owner?.org.mock, false)
     const samples = seed.companies.filter((company) => company.org.mock)
     assert.equal(samples.length, 10)

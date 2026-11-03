@@ -1,0 +1,112 @@
+{
+  "triggers": [
+    {
+      "id": "trigger-release",
+      "source": "management",
+      "label": "Version 2.0 release",
+      "example": "The maintainer sets the version 2.0 release as the outcome for this stream."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "ws-release",
+      "triggerId": "trigger-release",
+      "outcome": "Version 2.0 release",
+      "ownerSeatId": "seat-sam",
+      "kind": "main",
+      "stepIds": [
+        "step-plan",
+        "step-review",
+        "step-bench",
+        "step-notes"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "step-plan",
+      "workstreamId": "ws-release",
+      "name": "Write the release plan",
+      "level": 2,
+      "executorSeatId": "seat-roadmap-bot",
+      "inputs": [
+        "The release plan and the open pull requests"
+      ],
+      "outputs": [
+        "Write the release plan"
+      ]
+    },
+    {
+      "id": "step-review",
+      "workstreamId": "ws-release",
+      "name": "Review the pull requests",
+      "level": 2,
+      "executorSeatId": "seat-review-bot",
+      "inputs": [
+        "The release plan and the open pull requests"
+      ],
+      "outputs": [
+        "Review the pull requests"
+      ],
+      "checkpointId": "cp-owner-merge"
+    },
+    {
+      "id": "step-bench",
+      "workstreamId": "ws-release",
+      "name": "Run the agent benchmarks",
+      "level": 2,
+      "executorSeatId": "seat-benchmark-bot",
+      "inputs": [
+        "The release plan and the open pull requests"
+      ],
+      "outputs": [
+        "Run the agent benchmarks"
+      ]
+    },
+    {
+      "id": "step-notes",
+      "workstreamId": "ws-release",
+      "name": "Draft the release notes",
+      "level": 2,
+      "executorSeatId": "seat-docs-bot",
+      "inputs": [
+        "The release plan and the open pull requests"
+      ],
+      "outputs": [
+        "Draft the release notes"
+      ]
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "hand-plan-review",
+      "fromStepId": "step-plan",
+      "toStepId": "step-review"
+    },
+    {
+      "id": "hand-review-bench",
+      "fromStepId": "step-review",
+      "toStepId": "step-bench"
+    },
+    {
+      "id": "hand-bench-notes",
+      "fromStepId": "step-bench",
+      "toStepId": "step-notes"
+    },
+    {
+      "id": "hand-bench-review",
+      "fromStepId": "step-bench",
+      "toStepId": "step-review",
+      "condition": "regression: send back"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "cp-owner-merge",
+      "stepId": "step-review",
+      "rule": "The maintainer approves every merge and every release.",
+      "approverSeatId": "seat-sam",
+      "required": true
+    }
+  ]
+}
