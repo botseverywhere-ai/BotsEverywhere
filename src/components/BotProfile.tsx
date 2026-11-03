@@ -9,7 +9,7 @@ import { skillsInGrok } from '../org/bot-skills'
 import { AccountApps } from './AccountApps'
 import { Button } from './Button'
 import { grokRequestLine, grokSyncTag } from './sync-copy'
-import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, UPDATE_HINT, UPDATE_LABEL, updateWaitingLine, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, profileParts, promptToSave, startLine } from './bot-profile-copy'
+import { CRON_PRESETS, IMPORTED_NOTE, IMPORTED_TITLE, SKILLS_HINT, UPDATE_HINT, UPDATE_LABEL, updateWaitingLine, INSTRUCTIONS_LABEL, INSTRUCTIONS_PLACEHOLDER, START_LABELS, cronText, draftRoutines, draftRows, keptSkills, profileParts, promptToSave, startLine } from './bot-profile-copy'
 
 type Skill = { name: string; description?: string }
 
@@ -191,30 +191,37 @@ export function ProfileLists({ seat, inGrok }: { seat: Pick<Seat, 'skills' | 'ro
 }
 
 /**
- * Skills as the Grok Bot Graph panel edits them: a name, what it does, and a remove button. Above them, read only, the
- * skills the bot reported turned on in Grok Bot that are not on this list.
+ * One list of the bot's skills. A skill the bot has in Grok Bot (it reported it) is locked, as a bot is once it exists
+ * there: shown with its name and what it does, removed only in Grok Bot. A skill added here is a name and what it does
+ * with a remove button, until the bot reports it. The seat keeps every locked skill it added, so its block still names it.
  */
 function SkillEditor({ initial, inGrok, onSave }: { initial: Skill[]; inGrok?: BotSkill[]; onSave: (skills: Skill[]) => void }) {
   const [skills, setSkills] = useState<Skill[]>(initial)
   const update = (index: number, change: Partial<Skill>) => setSkills(skills.map((skill, at) => (at === index ? { ...skill, ...change } : skill)))
-  const shown = skillsInGrok(inGrok, skills)
+  const key = (name: string) => name.trim().toLowerCase()
+  const reported = inGrok ?? []
+  const isLocked = (skill: Skill) => Boolean(key(skill.name)) && reported.some((item) => key(item.name) === key(skill.name))
+  const describe = (skill: Skill) => skill.description || reported.find((item) => key(item.name) === key(skill.name))?.description || ''
+  const locked = [...skills.filter(isLocked), ...skillsInGrok(inGrok, skills)]
   return (
     <section className="profile-list">
       <h3 className="card-label">Skills</h3>
-      {shown.length ? (
-        <>
-          <p className="field-hint">Used in its work, as the bot reported them.</p>
-          <SkillItems skills={shown} />
-        </>
+      <p className="field-hint">{SKILLS_HINT}</p>
+      {skills.length === 0 && !locked.length ? <p className="auth-note">No skills yet.</p> : null}
+      {locked.length ? (
+        <ul className="profile-items">
+          {locked.map((skill) => (
+            <li className="skill-locked" key={skill.name}><strong>{skill.name}</strong>{describe(skill) ? <span className="profile-line">{describe(skill)}</span> : null}<span className="connect-badge is-connected"><i aria-hidden="true" />In Grok Bot</span></li>
+          ))}
+        </ul>
       ) : null}
-      {skills.length === 0 && !shown.length ? <p className="auth-note">No skills yet.</p> : null}
-      {skills.map((skill, index) => (
+      {skills.map((skill, index) => isLocked(skill) ? null : (
         <div className="skill-row" key={index}>
           <div className="skill-fields">
             <input className="text-input" aria-label="Skill name" placeholder="New skill" value={skill.name} onChange={(event) => update(index, { name: event.target.value })} onBlur={() => onSave(skills)} />
             <input className="text-input" aria-label="What the skill does" placeholder="What it does (optional)" value={skill.description ?? ''} onChange={(event) => update(index, { description: event.target.value })} onBlur={() => onSave(skills)} />
           </div>
-          <Button variant="ghost" type="button" className="icon-btn" aria-label="Remove skill" onClick={() => { const next = skills.filter((_, at) => at !== index); setSkills(next); onSave(next) }}>
+          <Button variant="ghost" type="button" className="icon-btn" aria-label="Remove skill" onClick={() => { const next = keptSkills(skills, reported.map((item) => item.name), index); setSkills(next); onSave(next) }}>
             <TrashIcon />
           </Button>
         </div>

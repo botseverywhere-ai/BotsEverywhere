@@ -33,6 +33,19 @@ export function promptToSave(edited: string, directoryPrompt: string): string {
   return text === directoryPrompt.trim() ? '' : text
 }
 
+/** Under Skills on Profile: Grok Bot owns a skill once the bot has it, the same way it owns the bot. */
+export const SKILLS_HINT = 'A skill the bot has in Grok Bot stays there: remove it in Grok Bot. A skill added here goes to the bot with Update bot and can be removed until then.'
+
+const skillKey = (name: string) => name.trim().toLowerCase()
+
+/** The seat's skills after removing the row at `index`: a row whose name the bot reported from Grok Bot is kept. */
+export function keptSkills<T extends { name: string }>(skills: T[], lockedNames: string[], index: number): T[] {
+  const locked = new Set(lockedNames.map(skillKey))
+  const row = skills[index]
+  if (!row || locked.has(skillKey(row.name))) return skills
+  return skills.filter((_, at) => at !== index)
+}
+
 /** Skill or routine rows as Profile saves them: trimmed, empty fields dropped, and a row without a name left out. */
 export function draftRows<T extends { name: string }>(rows: T[]): T[] {
   return rows.flatMap((row) => {

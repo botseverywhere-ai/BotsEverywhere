@@ -105,5 +105,5 @@ test('the profile form asks for skills the bot uses, not every skill turned on',
   assert.match(form, /- <private skill you use in your work; leave out skills you only have turned on> \| <what it does, in one line>/)
   assert.equal(form.includes('turned on for you'), false)
   const profile = readFileSync(new URL('../../src/components/BotProfile.tsx', import.meta.url), 'utf8')
-  assert.match(profile, /Used in its work, as the bot reported them\./)
+  assert.match(profile, /In Grok Bot<\/span>/, 'a skill the bot reported is shown as in Grok Bot, locked')
 })
