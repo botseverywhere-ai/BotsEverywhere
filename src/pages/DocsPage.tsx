@@ -703,8 +703,9 @@ Plain notes for whoever reads the file.`}</CodeBlock>
         </p>
         <p>
           Grok Bot shows a bot&apos;s routines only to that bot, so <strong>Automated tasks done</strong> and the apps and skills a bot reports come from a profile file each bot writes
-          into the organization&apos;s folder on its own runs. <strong>Get the bots&apos; profiles</strong> on Performance asks every bot to write it now: the Connector sends each ask
-          from its chat, so say <em>do YOU now</em> there, and the columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
+          into the organization&apos;s folder on its own runs. The status block at the top of Performance says whether the Connector runs and how many bots have reported.
+          <strong>Import from the Connector</strong> asks every bot for its report by itself, and <strong>Get the bots&apos; profiles</strong> asks again at any time: the Connector sends
+          each ask from its chat, so the block shows the one line to say there, <em>do YOU now</em>, with a Copy button, and the columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
         </p>
         <p>
           <strong>Logs</strong> lists every event of the organization, newest first: hires, retirements, edits, work, approvals, and exceptions, and everything that passes

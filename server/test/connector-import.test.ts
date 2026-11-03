@@ -22,7 +22,7 @@ function project(dump?: Record<string, unknown>) {
   return { orgs, org: made.slug, root: join(orgs, made.slug), seat, done: () => rmSync(dir, { recursive: true, force: true }) }
 }
 
-test("the Connector import brings every bot with its own-text manager", () => {
+test("the Connector import brings every bot with its own-text manager", async () => {
   const { orgs, org, root, seat, done } = project({ bots: [bot('g', 'Grok Bot'), bot('s', 'Security', { reportsTo: 'Grok Bot' })], self: { id: 'c1', name: 'Connector - BotsEverywhere (acn8)', grokBotUrl: link('c1') } })
   try {
     const result = importFromConnector(orgs, root, org)
@@ -31,6 +31,8 @@ test("the Connector import brings every bot with its own-text manager", () => {
     assert.match(seat('grok-bot'), /^reportsTo: you$/m)
     assert.match(seat('connector-botseverywhere-acn8'), /id=c1/)
     assert.match(seat('security'), /^grokSync: synced$/m)
+    const { readProfileAsk } = await import('../src/profile-asks.ts')
+    assert.ok(Number.isFinite(Date.parse(readProfileAsk(root))), 'the import asks every bot for its profile by itself, so nobody has to find the button')
   } finally {
     done()
   }

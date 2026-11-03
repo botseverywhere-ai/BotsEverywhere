@@ -30,6 +30,7 @@ import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choi
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
 import { appsShown, botApps } from '../org/bot-apps'
+import { PerformanceStatus } from '../components/PerformanceStatus'
 import { skillCount } from '../org/bot-skills'
 import { WORK_CHART_LOCKED, workChartLocked } from '../org/work-chart-lock'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
@@ -1079,6 +1080,17 @@ export function Workspace({
               />
             </Suspense>
           ) : null}
+          {view === 'performance' && editable ? (
+            <PerformanceStatus
+              orgSlug={bundle.id}
+              connected={Boolean(sync?.project?.connector?.syncedAt)}
+              reported={routineBoard?.bots.filter((item) => item.source === 'bot').length ?? 0}
+              total={bots.filter((seat) => !seat.name.trim().toLowerCase().startsWith('connector - botseverywhere')).length}
+              waitingAsks={sync?.connector?.waiting?.profiles ?? 0}
+              onAsk={() => void askProfiles()}
+              onCopied={(message) => pushNotice({ kind: 'ok', message })}
+            />
+          ) : null}
           {view === 'performance' ? (
             <PerformanceTable
               bots={bots.map((seat) => ({
@@ -1095,7 +1107,6 @@ export function Workspace({
                 setRetireSlug(id)
                 setReason('')
               }}
-              onAskProfiles={editable && writer === 'up' ? () => void askProfiles() : undefined}
             />
           ) : null}
           {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} progress={sync?.progress} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} retired={editable ? { seats: retired, activeElsewhere: sync?.retiredElsewhere ?? {} } : undefined} /> : null}
@@ -1233,7 +1244,6 @@ function PerformanceTable({
   accountApps,
   canRetire,
   onRetire,
-  onAskProfiles,
 }: {
   bots: { id: string; name: string; apps?: string[]; appsUsed?: AppUse[]; skills?: number | null; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
@@ -1243,20 +1253,12 @@ function PerformanceTable({
   accountApps?: AccountApp[]
   canRetire: boolean
   onRetire: (id: string) => void
-  /** Your own orgs with the writer up: asks every bot to write its profile file now. */
-  onAskProfiles?: () => void
 }) {
   const rows = [...bots].sort((a, b) => (a.shown?.usage ?? 0) - (b.shown?.usage ?? 0) || a.name.localeCompare(b.name))
   if (!rows.length) return <p className="be-empty">No bots hired yet.</p>
   return (
     <>
       <AccountApps apps={accountApps} />
-      {onAskProfiles ? (
-        <div className="dir-actions be-profile-ask">
-          <Button variant="secondary" type="button" onClick={onAskProfiles}>Get the bots&apos; profiles</Button>
-          <span className="overview-note">Skills, Apps used, and Automated tasks done come from each bot&apos;s own profile. This asks every bot to write it now.</span>
-        </div>
-      ) : null}
       <table className="be-performance">
         <thead>
           <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Skills</th><th>Apps used</th><th>Action</th></tr>
@@ -1289,8 +1291,7 @@ function PerformanceTable({
       </table>
       <p className="be-performance-note">
         Times used counts each time the Connector saw a bot become active, or the chats the bot logged itself. Automated tasks done counts the routine runs the bot
-        counted from its Run history when it last sent its profile, plus each run it logged after that, once per run however many steps it logged. Skills counts the
-        skills turned on for the bot in Grok Bot and the ones added on its profile here. All of it is in the run log. The Connector&apos;s own row counts its runs, from Connector runs today in Logs. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
+        counted from its Run history when it last sent its profile, plus each run it logged after that, once per run however many steps it logged. Skills counts the skills the bot reports it uses and the ones set on its profile here. All of it is in the run log. The Connector&apos;s own row counts its runs, from Connector runs today in Logs. — means nothing yet: the numbers fill in from the Connector&apos;s next reports.
       </p>
     </>
   )

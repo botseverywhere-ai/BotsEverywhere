@@ -83,5 +83,6 @@ test("Performance has a Get the bots' profiles button that posts the ask and say
   const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
   assert.match(workspace, /\/grok\/profile-asks`/)
   assert.match(workspace, /appsUsed: appsShown\(/)
-  assert.match(workspace, /Get the bots&apos; profiles/)
+  const status = readFileSync(new URL('../../src/components/PerformanceStatus.tsx', import.meta.url), 'utf8')
+  assert.match(status, /Get the bots&apos; profiles/)
 })

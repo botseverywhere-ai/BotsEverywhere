@@ -1783,7 +1783,10 @@ export function importFromConnector(orgsDir: string, root: string, orgId: string
   const here = new Set(read.bundle.seats.flatMap((seat) => [botKey(seat.grokBotUrl ?? ''), botKey(seat.elsewhereUrl ?? '')]).filter(Boolean))
   const connectorHere = read.bundle.seats.some((seat) => isConnectorName(seat.title))
   const fresh = rows.filter((row) => !here.has(botKey(row.grokBotUrl)) && !(connectorHere && isConnectorName(row.name)))
-  return importBotsFile(root, orgId, fresh, { grokSync: 'synced', grokSyncedAt: dump.data.dumpedAt })
+  const result = importBotsFile(root, orgId, fresh, { grokSync: 'synced', grokSyncedAt: dump.data.dumpedAt })
+  // The bots' own reports fill the rest of Performance: ask for them now, so nobody has to find the button.
+  if (!('status' in result)) writeProfileAsk(root, new Date().toISOString())
+  return result
 }
 
 /** The link on the Connector's seat in another organization, or '' when no organization has one. */
