@@ -58,6 +58,7 @@ import { RESULTS_FILE, readTextFile } from './connector-files.js'
 import { parseResults } from './connector-todo.js'
 import { botRow, readGrokData, rowsFromDump } from './grok-data.js'
 import { routineBoard, type RoutineBoard } from './routine-board.js'
+import { writeProfileAsk } from './profile-asks.js'
 import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, canRequest, canUpdate, dropRequests, fulfilledSeats, parseRequests, requestStats, serializeRequests, stillInGrok, type GrokRequest, type ReportedBot } from './grok-requests.js'
 
 export const TEMPLATE_HOST = '127.0.0.1'
@@ -3024,6 +3025,24 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const made = requestGrokBot(root, slug, seat, orgsDir)
       if (!made.ok) return send(res, 422, { errors: made.errors })
       send(res, 200, { ok: true, request: made.request })
+      return
+    }
+    const profileAsksMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/grok\/profile-asks$/.exec(url.pathname)
+    if (profileAsksMatch && req.method === 'POST') {
+      const slug = profileAsksMatch[1]!
+      // This route leads to messages being sent to bots, so only this computer may reach it.
+      const origin = req.headers.origin
+      if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may ask the bots.' })
+      const root = orgRoot(orgsDir, slug)
+      if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
+      const read = readOrgDir(root, slug)
+      if (!read.ok) return send(res, 422, { errors: read.errors })
+      const askedAt = new Date().toISOString()
+      writeProfileAsk(root, askedAt)
+      // The items go on the Connector's list at once, so the Sync drawer says what waits for the owner's chat.
+      runConnectorCycle(orgsDir, ensureProjectId(orgsDir))
+      const bots = grokSeats(read.bundle.seats).filter((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !isConnectorName(seat.title)).length
+      send(res, 200, { askedAt, bots })
       return
     }
     const updatesMatch = /^\/api\/orgs\/([a-z0-9]+(?:-[a-z0-9]+)*)\/grok\/updates$/.exec(url.pathname)

@@ -267,7 +267,7 @@ test("the Work Chart's flows carry the live routine; Performance and Profile sho
   assert.match(badges, /<strong>Connected to your Grok Bot account:<\/strong>/)
   assert.match(badges, /className=\{app\.status === 'needsAuth' \? 'app-badge is-needs-auth' : 'app-badge is-connected'\}/)
   assert.match(badges, /\{app\.name\}\{app\.status === 'needsAuth' \? ' \(needs sign-in\)' : ''\}/)
-  assert.match(workspace, /appsUsed: routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps/)
+  assert.match(workspace, /appsUsed: appsShown\(routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps, seats\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps\)/, "the bot's own report, else what the Connector read onto the seat")
   assert.match(workspace, /reportedApps=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.apps\}/)
   assert.equal(workspace.includes('<th>Apps</th>'), false)
   assert.match(workspace, /reportedSkills=\{routineBoard\?\.bots\.find\(\(item\) => item\.slug === chartSeat\.id\)\?\.skills\}/)

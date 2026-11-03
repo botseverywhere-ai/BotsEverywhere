@@ -29,7 +29,7 @@ import { activeBotCount, botLimitLine, greyedDone, mainBotChoices, outgoing, ove
 import { alsoChoices, defaultManager, managerChoices } from '../org/manager-choices'
 import { slugify, type AccountApp, type ConnectorInfo, type SyncStatus } from '../../server/src/grok-sync.ts'
 import type { AppUse } from '../../server/src/routine-board-types.ts'
-import { botApps } from '../org/bot-apps'
+import { appsShown, botApps } from '../org/bot-apps'
 import { skillCount } from '../org/bot-skills'
 import { WORK_CHART_LOCKED, workChartLocked } from '../org/work-chart-lock'
 import { HIRE_HIGHLIGHT_KEY } from '../content/hiring-guide.ts'
@@ -623,6 +623,22 @@ export function Workspace({
     return { ok: true }
   }
 
+  /** Get the bots' profiles: every bot is asked to write its profile file now. The Connector sends the asks from its chat. */
+  async function askProfiles() {
+    try {
+      const response = await fetch(`/api/orgs/${bundle.id}/grok/profile-asks`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
+      const body = (await response.json().catch(() => ({}))) as { bots?: number; error?: string; errors?: string[] }
+      if (!response.ok) {
+        pushNotice({ kind: 'bad', message: body.error || body.errors?.join(' ') || 'Could not ask the bots.' })
+        return
+      }
+      const count = body.bots ?? 0
+      pushNotice({ kind: 'ok', message: `Asked ${count} ${count === 1 ? 'bot' : 'bots'} for ${count === 1 ? 'its' : 'their'} profile. Grok Bot sends messages to bots only from a chat: in the Connector's chat in Grok Bot, say: do YOU now. Skills, Apps used, and Automated tasks done fill in as each profile lands.` })
+    } catch {
+      pushNotice({ kind: 'bad', message: SAVING_OFF })
+    }
+  }
+
   async function updateInGrok(slug: string, name: string) {
     setBotNotice(null)
     try {
@@ -1068,7 +1084,7 @@ export function Workspace({
               bots={bots.map((seat) => ({
                 ...seat,
                 shown: metricsById.get(seat.id),
-                appsUsed: routineBoard?.bots.find((item) => item.slug === seat.id)?.apps,
+                appsUsed: appsShown(routineBoard?.bots.find((item) => item.slug === seat.id)?.apps, seats.find((item) => item.slug === seat.id)?.apps),
                 skills: skillCount(routineBoard?.bots.find((item) => item.slug === seat.id)?.skills, seats.find((item) => item.slug === seat.id)?.skills),
               }))}
               leastId={least?.id}
@@ -1079,6 +1095,7 @@ export function Workspace({
                 setRetireSlug(id)
                 setReason('')
               }}
+              onAskProfiles={editable && writer === 'up' ? () => void askProfiles() : undefined}
             />
           ) : null}
           {view === 'log' ? <LogPanel events={activity} waiting={waitingLogIds(activity, sync?.requests ?? [])} progress={sync?.progress} stepNames={stepNames} onStep={() => { window.location.hash = hrefFor(bundle.id, sample, 'work') }} retired={editable ? { seats: retired, activeElsewhere: sync?.retiredElsewhere ?? {} } : undefined} /> : null}
@@ -1216,6 +1233,7 @@ function PerformanceTable({
   accountApps,
   canRetire,
   onRetire,
+  onAskProfiles,
 }: {
   bots: { id: string; name: string; apps?: string[]; appsUsed?: AppUse[]; skills?: number | null; shown?: { createdAt: string; lastActive: string; usage: number | null; tasks: number | null } }[]
   leastId?: string
@@ -1225,12 +1243,20 @@ function PerformanceTable({
   accountApps?: AccountApp[]
   canRetire: boolean
   onRetire: (id: string) => void
+  /** Your own orgs with the writer up: asks every bot to write its profile file now. */
+  onAskProfiles?: () => void
 }) {
   const rows = [...bots].sort((a, b) => (a.shown?.usage ?? 0) - (b.shown?.usage ?? 0) || a.name.localeCompare(b.name))
   if (!rows.length) return <p className="be-empty">No bots hired yet.</p>
   return (
     <>
       <AccountApps apps={accountApps} />
+      {onAskProfiles ? (
+        <div className="dir-actions be-profile-ask">
+          <Button variant="secondary" type="button" onClick={onAskProfiles}>Get the bots&apos; profiles</Button>
+          <span className="overview-note">Skills, Apps used, and Automated tasks done come from each bot&apos;s own profile. This asks every bot to write it now.</span>
+        </div>
+      ) : null}
       <table className="be-performance">
         <thead>
           <tr><th>Bot</th><th>Created</th><th>Times used (30d)</th><th>Automated tasks done (30d)</th><th>Last active</th><th>Skills</th><th>Apps used</th><th>Action</th></tr>

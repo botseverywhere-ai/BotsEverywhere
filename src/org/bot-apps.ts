@@ -1,4 +1,14 @@
 import type { AccountApp } from '../../server/src/grok-sync.ts'
+import type { AppUse } from '../../server/src/routine-board-types.ts'
+
+/**
+ * The apps a bot uses, for Performance: what the bot itself reported in its profile when it has sent one (an empty list
+ * is none), else what the Connector read onto its seat from Grok Bot.
+ */
+export function appsShown(reported: AppUse[] | undefined, seatApps: string[] | undefined): AppUse[] {
+  if (reported) return reported
+  return (seatApps ?? []).map((name) => ({ name }))
+}
 
 /** unknown: the account's list does not name the app, or the Connector has not reported the account's apps yet. */
 export type BotAppStatus = AccountApp['status'] | 'unknown'

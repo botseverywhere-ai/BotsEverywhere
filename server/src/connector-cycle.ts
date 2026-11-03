@@ -10,6 +10,7 @@ import { normalizeText } from './normalize-text.ts'
 import { grokSeats, type OrgBundle } from './org-files.ts'
 import { profileFileLines } from './profile-files.ts'
 import { latestProfileReports, type ProfileReport } from './profile-reports.ts'
+import { readProfileAsk } from './profile-asks.ts'
 import { readConnector, readRemoveCopies, readSyncMinutes } from './project.ts'
 import { listOrgSlugs, readOrgDir, readRequests } from './template-server.ts'
 
@@ -62,7 +63,7 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
   if (!read.ok) return { ok: false, error: read.error, missing: false }
   const { results } = read
   const apps = readConnector(orgsDir)?.apps
-  const orgs: { id: string; bundle: OrgBundle; requests: GrokRequest[] }[] = []
+  const orgs: { id: string; bundle: OrgBundle; requests: GrokRequest[]; profileAskedAt?: string }[] = []
   const keepOrgs: string[] = []
   for (const slug of listOrgSlugs(orgsDir)) {
     const root = resolve(orgsDir, slug)
@@ -72,7 +73,7 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
       continue
     }
     // A greyed seat's bot works for another organization: it gets no block, no snapshot row, and no to-do here.
-    orgs.push({ id: slug, bundle: { ...read.bundle, seats: grokSeats(read.bundle.seats) }, requests: readRequests(root).requests })
+    orgs.push({ id: slug, bundle: { ...read.bundle, seats: grokSeats(read.bundle.seats) }, requests: readRequests(root).requests, ...(readProfileAsk(root) ? { profileAskedAt: readProfileAsk(root) } : {}) })
   }
   const taken = linkedBotIds(orgs.map((org) => org.bundle))
   const profiles = latestProfileReports([...results.confirmations, ...profileFileLines(orgsDir, orgs.map((org) => org.id))])
@@ -88,7 +89,7 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
   const unassigned = unassignedFromData(data, orgs.map((org) => ({ bundle: org.bundle, orgName: org.bundle.org.company.name, created: org.requests.filter((request) => request.kind !== 'update').map((request) => request.name) })))
   writeIfChanged(resolve(orgsDir, UNASSIGNED_FILE), `${JSON.stringify({ syncedAt: data.dumpedAt, unassigned: unassigned.map(botJson) }, null, 2)}\n`)
   const previous = readTodo(orgsDir)
-  const todo = computeTodo({ copyId, orgsFolder, timeZone: zone, data, orgs, keepOrgs, results, removeCopies: readRemoveCopies(orgsDir), now, previous })
+  const todo = computeTodo({ copyId, orgsFolder, timeZone: zone, data, orgs, keepOrgs, results, removeCopies: readRemoveCopies(orgsDir), now, previous, profiles })
   backUp(orgsDir, todo, now)
   writeIfChanged(resolve(orgsDir, TODO_FILE), `${JSON.stringify(withRuns(todo, previous), null, 2)}\n`)
   return { ok: true, dumpedAt: data.dumpedAt }

@@ -180,6 +180,31 @@ test('a change reported done that a newer dump still does not show comes back as
   assert.equal(afterDump.items.some((entry) => entry.kind === 'describe'), false, 'done after this dump: wait for the next one')
 })
 
+test("Get the bots' profiles asks each bot with a seat once, drops the ask once its file is newer than the ask, and gives up after two asks", () => {
+  const desk = org('org-a', 'Desk', [you, lead])
+  const dump = data([bot('lead', 'Lead', 'Leads.')])
+  const orgs = [{ id: 'org-a', bundle: desk, requests: [], profileAskedAt: '2026-10-28T09:00:00.000Z' }]
+  const asks = computeTodo({ ...BASE, data: dump, orgs, results: NO_RESULTS }).items.filter((item) => item.kind === 'profile')
+  assert.deepEqual(asks.map((item) => [item.bot, item.botId, item.org]), [['Lead', 'lead', 'org-a']])
+  assert.match(asks[0]!.key, /^profile:org-a:lead:[0-9a-f]{16}#1$/)
+  assert.match(asks[0]!.message!, /^BotsEverywhere \(3s53\): for Desk, write your profile file now with Shell, at \/o\/org-a\/profiles\/lead\.md, exactly in this form and nothing else:\nBotsEverywhere profile: org-a \| lead\nRoutines:\n/)
+  assert.match(asks[0]!.message!, /\nUnder a heading with nothing in it, write: - none$/)
+  const older = computeTodo({ ...BASE, data: dump, orgs, results: NO_RESULTS, profiles: new Map([['org-a|lead', { at: '2026-10-27T09:30:00.000Z' }]]) })
+  assert.equal(older.items.some((item) => item.kind === 'profile'), true, 'a file from before the ask does not count')
+  const landed = computeTodo({ ...BASE, data: dump, orgs, results: NO_RESULTS, profiles: new Map([['org-a|lead', { at: '2026-10-28T09:30:00.000Z' }]]) })
+  assert.equal(landed.items.some((item) => item.kind === 'profile'), false, 'the file arrived: nothing more to ask')
+  const key = asks[0]!.key
+  const sentNow = computeTodo({ ...BASE, data: dump, orgs, results: { results: [{ key, status: 'done', at: '2026-10-28T09:50:00.000Z' }], confirmations: [] } })
+  assert.equal(sentNow.items.some((item) => item.kind === 'profile'), false, 'sent less than a day ago: wait')
+  const sentYesterday = computeTodo({ ...BASE, data: dump, orgs, results: { results: [{ key, status: 'done', at: '2026-10-26T09:50:00.000Z' }], confirmations: [] } })
+  assert.equal(sentYesterday.items.find((item) => item.kind === 'profile')!.key, key.replace(/#1$/, '#2'))
+  const twice = computeTodo({ ...BASE, data: dump, orgs, results: { results: [{ key, status: 'done', at: '2026-10-25T09:50:00.000Z' }, { key: key.replace(/#1$/, '#2'), status: 'done', at: '2026-10-26T09:50:00.000Z' }], confirmations: [] } })
+  assert.equal(twice.items.some((item) => item.kind === 'profile'), false)
+  assert.deepEqual(twice.stuck, [{ bot: 'Lead', org: 'org-a', why: 'Asked twice for its profile; Lead has not written it.' }])
+  const newAsk = computeTodo({ ...BASE, data: dump, orgs: [{ ...orgs[0]!, profileAskedAt: '2026-10-28T09:55:00.000Z' }], results: { results: [{ key, status: 'done', at: '2026-10-28T09:50:00.000Z' }], confirmations: [] } })
+  assert.match(newAsk.items.find((item) => item.kind === 'profile')!.key, /#1$/, 'a new click is a new ask, with its own attempts')
+})
+
 test('no bot is asked for its profile: each bot writes its own profile file, so nothing waits for the owner', () => {
   const desk = org('org-a', 'Desk', [you, lead])
   const dump = data([bot('lead', 'Lead', 'Leads.')])

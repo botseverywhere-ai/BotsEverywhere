@@ -702,6 +702,11 @@ Plain notes for whoever reads the file.`}</CodeBlock>
           The numbers come from the run log and from Grok Bot; the app never estimates them.
         </p>
         <p>
+          Grok Bot shows a bot&apos;s routines only to that bot, so <strong>Automated tasks done</strong> and the apps and skills a bot reports come from a profile file each bot writes
+          into the organization&apos;s folder on its own runs. <strong>Get the bots&apos; profiles</strong> on Performance asks every bot to write it now: the Connector sends each ask
+          from its chat, so say <em>do YOU now</em> there, and the columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
+        </p>
+        <p>
           <strong>Logs</strong> lists every event of the organization, newest first: hires, retirements, edits, work, approvals, and exceptions, and everything that passes
           between the app and Grok Bot. Each line has a label, and its figures show as small tiles under it. The <strong>Show</strong> menu narrows it to Grok Bot and the
           Connector, or to team and work. A <strong>From Grok Bot</strong> or <strong>To Grok Bot</strong> badge shows which way a change went; a step chip jumps to that step on the Work Chart.

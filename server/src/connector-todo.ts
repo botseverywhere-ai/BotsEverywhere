@@ -1,4 +1,6 @@
-import { copyBlocks, orgBlocks, otherCopyIds, ownerText, sha256, withCopyBlocks } from './bot-blocks.ts'
+import { copyBlocks, orgBlocks, orgPath, otherCopyIds, ownerText, sha256, withCopyBlocks } from './bot-blocks.ts'
+import { PROFILES_DIR } from './profile-files.ts'
+import { profileForm } from './profile-reports.ts'
 import { botForSeat, linkedBotIds, type GrokData, type GrokDataBot } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
 import type { RequestPart } from './grok-sync.ts'
@@ -106,6 +108,8 @@ function confirmationLine(orgId: string, seat: string, routine: BotRoutine): str
 export const createKeyBase = (request: Pick<GrokRequest, 'seat' | 'name' | 'requestedAt'>) => `create:${request.seat}:${short(`${request.name}\u0000${request.requestedAt}`)}`
 export const skillKeyBase = (skill: { name: string; description?: string }) => `skill:${short(norm(skill.name))}:${short(`${skill.name}\u0000${skill.description ?? ''}`)}`
 export const routineKeyBase = (orgId: string, seat: string, routine: BotRoutine) => `routine:${orgId}:${seat}:${short(confirmationLine(orgId, seat, routine))}`
+/** One ask per click: a new askedAt is a new key, with its own attempts. */
+export const profileKeyBase = (orgId: string, seat: string, askedAt: string) => `profile:${orgId}:${seat}:${short(askedAt)}`
 
 function routineShown(want: BotRoutine, bot: GrokDataBot | undefined): boolean {
   if (!bot?.routinesVisible) return false
@@ -239,9 +243,11 @@ export function computeTodo(input: {
   orgsFolder: string
   timeZone: string
   data: GrokData
-  orgs: { id: string; bundle: OrgBundle; requests: GrokRequest[] }[]
+  orgs: { id: string; bundle: OrgBundle; requests: GrokRequest[]; profileAskedAt?: string }[]
   /** Organizations that exist but could not be read now: their blocks stay as they are. */
   keepOrgs?: string[]
+  /** The newest profile each seat's bot wrote or sent, by `<org>|<seat>`, so an ask is dropped once the file is there. */
+  profiles?: Map<string, { at: string }>
   results: ResultsFile
   removeCopies: string[]
   now: Date
@@ -255,7 +261,7 @@ export function computeTodo(input: {
   // The Connector's results, plus every cleanup and routine result the app already saw, in case its file lost them.
   const seen = new Set(input.results.results.map((result) => `${result.key}\u0000${result.status}\u0000${result.at}`))
   const results: ResultsFile = { ...input.results, results: [...input.results.results, ...(input.previous?.ledger ?? []).filter((result) => !seen.has(`${result.key}\u0000${result.status}\u0000${result.at}`))] }
-  const ledger = results.results.filter((result) => /^(cleanup|routine):/.test(result.key))
+  const ledger = results.results.filter((result) => /^(cleanup|routine|profile):/.test(result.key))
 
   // A describe reported done must show in the next newer dump. If the owner's text around the blocks changed, nothing more is
   // sent to that bot until its text changes again: the owner restores it from the backup or edits it.
@@ -405,8 +411,36 @@ export function computeTodo(input: {
     }
   }
 
-  // No profile asks and no one-time note: each bot writes its own profile file, and its block replaces what earlier
-  // Connector messages said. Both would be messages, which Grok Bot sends only when the owner is in the Connector's chat.
+  // profile: each bot writes its own profile file on its runs, so nothing is asked unless the owner clicked Get the bots'
+  // profiles. Then every bot with a seat is asked once, by message, which Grok Bot sends only from the Connector's chat.
+  // The ask drops once the bot's file is newer than the click; a second ask waits a day; after two, the owner is told.
+  for (const org of input.orgs) {
+    const askedAt = Date.parse(org.profileAskedAt ?? '')
+    if (!Number.isFinite(askedAt)) continue
+    const orgName = org.bundle.org.company.name
+    for (const [slug, bot] of seatBots(org.bundle, data, taken).bots) {
+      if (!bot || isConnector(bot.name)) continue
+      const have = input.profiles?.get(`${org.id}|${slug}`)
+      if (have && Date.parse(have.at) >= askedAt) continue
+      const base = profileKeyBase(org.id, slug, org.profileAskedAt!)
+      const mine = results.results.filter((result) => result.key.startsWith(`${base}#`))
+      const sends = mine.filter((result) => result.status === 'done')
+      const failures = mine.filter((result) => result.status === 'failed')
+      if (failures.length >= 2) {
+        stuck.push({ bot: bot.name, org: org.id, why: `Failed twice: ${failures.at(-1)!.why || 'no reason given'}` })
+        continue
+      }
+      if (sends.length >= 2) {
+        stuck.push({ bot: bot.name, org: org.id, why: `Asked twice for its profile; ${bot.name} has not written it.` })
+        continue
+      }
+      const last = Math.max(0, ...sends.map((result) => Date.parse(result.at)).filter(Number.isFinite))
+      if (last && input.now.getTime() - last < DAY) continue
+      const path = orgPath(input.orgsFolder, org.id, PROFILES_DIR, `${slug}.md`)
+      const message = `BotsEverywhere (${copyId}): for ${orgName}, write your profile file now with Shell, at ${path}, exactly in this form and nothing else:\n${profileForm(org.id, slug).join('\n')}`
+      items.push({ key: `${base}#${mine.length + 1}`, kind: 'profile', bot: bot.name, botId: bot.id, org: org.id, message })
+    }
+  }
 
   const order: TodoKind[] = ['describe', 'create', 'skill', 'routine', 'profile', 'cleanup']
   items.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind))

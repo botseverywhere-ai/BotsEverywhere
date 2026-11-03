@@ -76,7 +76,7 @@ export function blockText(input: BlockInput): string {
 }
 
 /** A path inside an organization folder, with the separator the orgs folder itself uses. */
-function orgPath(orgsFolder: string, orgId: string, ...parts: string[]): string {
+export function orgPath(orgsFolder: string, orgId: string, ...parts: string[]): string {
   const sep = orgsFolder.includes('\\') ? '\\' : '/'
   return [orgsFolder.replace(/[\\/]+$/, ''), orgId, ...parts].join(sep)
 }
