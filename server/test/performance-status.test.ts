@@ -31,13 +31,15 @@ test("Bot reports counts the bots that have written their profile, amber until a
   assert.match(one, /0 of 1 bots reported/)
 })
 
-test('while asks wait for the owner, the block shows the one sentence to say in the Connector chat, in plain words and with no button', async () => {
+test("while asks are queued, Bot reports says they go out on the Connector's next run; nothing waits for the owner", async () => {
   const waiting = await render({ waitingAsks: 21 })
-  assert.match(waiting, /<dt>Waiting for you<\/dt><dd class="connect-status"><span class="connect-status-detail">21 asks are ready\. Grok Bot sends them only from a chat: in the Connector&#x27;s chat in Grok Bot, say: <strong>Send the waiting items<\/strong><\/span><\/dd>/)
-  assert.doesNotMatch(waiting, /do YOU now|Copy:/)
-  assert.doesNotMatch(waiting, /<button[^>]*>Get the bots&#x27; profiles<\/button>/, 'no second click while the first waits')
-  assert.doesNotMatch(await render({ waitingAsks: 0 }), /Waiting for you/)
-  assert.match(await render({ waitingAsks: 1 }), /1 ask is ready\./)
+  assert.match(waiting, /<span class="connect-badge"><i aria-hidden="true"><\/i>2 of 21 bots reported<\/span><span class="connect-status-detail">21 asks go out on the Connector&#x27;s next run\. Automated tasks done and Skills come from each bot&#x27;s own report\./)
+  assert.doesNotMatch(waiting, /Waiting for you|do YOU now|Send the waiting items|Copy:/)
+  assert.doesNotMatch(waiting, /<button[^>]*>Get the bots&#x27; profiles<\/button>/, 'no second click while asks are queued')
+  assert.match(await render({ waitingAsks: 1 }), /1 ask goes out on the Connector&#x27;s next run\./)
+  const none = await render({ waitingAsks: 0 })
+  assert.doesNotMatch(none, /go(es)? out on the Connector/)
+  assert.match(none, /<button[^>]*>Get the bots&#x27; profiles<\/button>/)
 })
 
 test("a bot's name on Performance opens its seat card, the same drawer as on the org chart", () => {

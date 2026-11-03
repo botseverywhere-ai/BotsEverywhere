@@ -62,7 +62,7 @@ test('deleting an organization rewrites the Connector\'s to-do list before it an
   const started = await startTemplateServer({ port: 0, orgsDir: orgs, host: '127.0.0.1' })
   const todo = () => (JSON.parse(readFileSync(join(orgs, TODO_FILE), 'utf8')) as { items: { kind: string; bot: string }[] }).items
   try {
-    assert.deepEqual(todo().map((item) => `${item.kind} ${item.bot}`), ['describe Brand'], 'the bot is due its block')
+    assert.deepEqual(todo().map((item) => `${item.kind} ${item.bot}`), ['describe Brand', 'profile Brand'], 'the bot is due its block, and its first report')
     const answer = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${desk.slug}`, { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ confirm: 'Desk' }) })
     assert.equal(answer.status, 200)
     assert.deepEqual(todo(), [], 'no block for an organization that is gone, already when the page hears back')

@@ -411,18 +411,23 @@ export function computeTodo(input: {
     }
   }
 
-  // profile: each bot writes its own profile file on its runs, so nothing is asked unless the owner clicked Get the bots'
-  // profiles. Then every bot with a seat is asked once, by message, which Grok Bot sends only from the Connector's chat.
-  // The ask drops once the bot's file is newer than the click; a second ask waits a day; after two, the owner is told.
+  // profile: a bot with a seat and no report yet is asked for one on the Connector's next run, by itself; after that the
+  // bot refreshes its file on its own runs. Get the bots' profiles asks every bot again, and its click is the key. An
+  // ask drops once the bot's file is newer than it; a second ask waits a day; after two, the owner is told.
   for (const org of input.orgs) {
-    const askedAt = Date.parse(org.profileAskedAt ?? '')
-    if (!Number.isFinite(askedAt)) continue
+    const clicked = Date.parse(org.profileAskedAt ?? '')
     const orgName = org.bundle.org.company.name
     for (const [slug, bot] of seatBots(org.bundle, data, taken).bots) {
       if (!bot || isConnector(bot.name)) continue
       const have = input.profiles?.get(`${org.id}|${slug}`)
-      if (have && Date.parse(have.at) >= askedAt) continue
-      const base = profileKeyBase(org.id, slug, org.profileAskedAt!)
+      let base: string
+      if (Number.isFinite(clicked)) {
+        if (have && Date.parse(have.at) >= clicked) continue
+        base = profileKeyBase(org.id, slug, org.profileAskedAt!)
+      } else {
+        if (have) continue
+        base = `profile:${org.id}:${slug}:first`
+      }
       const mine = results.results.filter((result) => result.key.startsWith(`${base}#`))
       const sends = mine.filter((result) => result.status === 'done')
       const failures = mine.filter((result) => result.status === 'failed')

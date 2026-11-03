@@ -205,13 +205,21 @@ test("Get the bots' profiles asks each bot with a seat once, drops the ask once 
   assert.match(newAsk.items.find((item) => item.kind === 'profile')!.key, /#1$/, 'a new click is a new ask, with its own attempts')
 })
 
-test('no bot is asked for its profile: each bot writes its own profile file, so nothing waits for the owner', () => {
+test('a bot with a seat and no report at all is asked for its profile on its own, once; a bot that has reported is left to refresh on its own runs', () => {
   const desk = org('org-a', 'Desk', [you, lead])
   const dump = data([bot('lead', 'Lead', 'Leads.')])
-  const uncounted: ResultsFile = { results: [], confirmations: [{ line: 'BotsEverywhere profile: org-a | lead\nRoutines:\n- Weekly | 0 9 * * 1 | Europe/Madrid | active | never', from: 'Lead', at: '2026-10-28T10:40:00+01:00' }] }
-  for (const results of [NO_RESULTS, uncounted]) {
-    const todo = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results })
-    assert.equal(todo.items.some((item) => item.kind === 'profile'), false)
-    assert.equal(todo.stuck.length, 0)
-  }
+  const first = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: NO_RESULTS })
+  const ask = first.items.find((item) => item.kind === 'profile')
+  assert.ok(ask, 'no click, no import: the first report is asked for by itself')
+  assert.match(ask.key, /^profile:org-a:lead:first#1$/)
+  assert.match(ask.message!, /write your profile file now with Shell, at \/o\/org-a\/profiles\/lead\.md/)
+  const reported = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: NO_RESULTS, profiles: new Map([['org-a|lead', { at: '2026-10-01T09:30:00.000Z' }]]) })
+  assert.equal(reported.items.some((item) => item.kind === 'profile'), false, 'however old the report: the bot refreshes it on its own')
+  const sent = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: { results: [{ key: ask.key, status: 'done', at: '2026-10-28T09:50:00.000Z' }], confirmations: [] } })
+  assert.equal(sent.items.some((item) => item.kind === 'profile'), false, 'sent less than a day ago: wait for the file')
+  const twice = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [] }], results: { results: [{ key: ask.key, status: 'done', at: '2026-10-25T09:50:00.000Z' }, { key: ask.key.replace(/#1$/, '#2'), status: 'done', at: '2026-10-26T09:50:00.000Z' }], confirmations: [] } })
+  assert.deepEqual(twice.stuck, [{ bot: 'Lead', org: 'org-a', why: 'Asked twice for its profile; Lead has not written it.' }])
+  const clicked = computeTodo({ ...BASE, data: dump, orgs: [{ id: 'org-a', bundle: desk, requests: [], profileAskedAt: '2026-10-28T09:00:00.000Z' }], results: NO_RESULTS })
+  assert.equal(clicked.items.filter((item) => item.kind === 'profile').length, 1, 'a click on top of the first ask is still one ask per bot')
+  assert.match(clicked.items.find((item) => item.kind === 'profile')!.key, /^profile:org-a:lead:[0-9a-f]{16}#1$/, 'the click wins: its key, so its attempts')
 })

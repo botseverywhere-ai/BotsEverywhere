@@ -181,7 +181,7 @@ test('a broken to-do file never breaks the drawer or the next cycle', () => {
   }
 })
 
-test("messages to bots wait for the owner from the start; only work a scheduled run can do counts as not acted on", () => {
+test("messages to bots go out on the Connector's runs like everything else, so one left after more than two runs is late too", () => {
   const t = project()
   try {
     writeFileSync(join(t.orgs, GROK_DATA_FILE), JSON.stringify(data([bot('lead', 'Lead', 'Leads.')])))
@@ -195,9 +195,9 @@ test("messages to bots wait for the owner from the start; only work a scheduled 
       item('cleanup', 4, '2026-10-28T17:00:00+01:00'),
     ], stuck: [], otherCopies: [], ledger: [] }))
     const state = connectorState(t.orgs, t.org)
-    assert.equal(state.pending, 1, 'the describe item, listed after more than two runs')
-    assert.equal(state.pendingSince, '2026-10-28T17:08:00+01:00')
-    assert.deepEqual(state.waiting, { routines: 1, profiles: 2, notes: 1 })
+    assert.equal(state.pending, 3, 'the describe, a profile ask, and the cleanup, each listed after more than two runs')
+    assert.equal(state.pendingSince, '2026-10-28T17:00:00+01:00')
+    assert.deepEqual(state.waiting, { routines: 1, profiles: 2, notes: 1 }, 'still counted, as what goes out on the next run')
   } finally {
     t.done()
   }

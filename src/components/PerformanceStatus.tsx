@@ -1,8 +1,5 @@
 import { Button } from './Button'
 
-/** The one sentence the owner says in the Connector's chat in Grok Bot, which sends every waiting ask to the bots. */
-export const SEND_WAITING = 'Send the waiting items'
-
 /**
  * Where Performance's numbers come from, in the shape of Step 2 on Connect bots: whether the Connector runs, how many
  * bots have written their own report, and, while asks wait, the one line to say in the Connector's chat.
@@ -47,17 +44,9 @@ export function PerformanceStatus({
         <dt>Bot reports</dt>
         <dd className="connect-status">
           <span className={all ? 'connect-badge is-connected' : 'connect-badge'}><i aria-hidden="true" />{all ? `All ${total} bots reported` : `${reported} of ${total} bots reported`}</span>
-          <span className="connect-status-detail">Automated tasks done and Skills come from each bot&apos;s own report. Bots report on their own when they next run; Get the bots&apos; profiles asks all of them now.</span>
+          <span className="connect-status-detail">{waitingAsks ? `${waitingAsks === 1 ? '1 ask goes' : `${waitingAsks} asks go`} out on the Connector's next run. ` : ''}Automated tasks done and Skills come from each bot&apos;s own report. Bots report on their own when they next run; Get the bots&apos; profiles asks all of them now.</span>
           {waitingAsks ? null : <Button variant="secondary" type="button" onClick={onAsk}>Get the bots&apos; profiles</Button>}
         </dd>
-        {waitingAsks ? (
-          <>
-            <dt>Waiting for you</dt>
-            <dd className="connect-status">
-              <span className="connect-status-detail">{waitingAsks === 1 ? '1 ask is' : `${waitingAsks} asks are`} ready. Grok Bot sends them only from a chat: in the Connector&apos;s chat in Grok Bot, say: <strong>{SEND_WAITING}</strong></span>
-            </dd>
-          </>
-        ) : null}
       </dl>
     </section>
   )

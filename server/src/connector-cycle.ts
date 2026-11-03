@@ -168,9 +168,6 @@ export function requestProgressFor(orgsDir: string, orgId: string, requests: Gro
   return requestProgress({ orgId, requests, data: dump.data, results: read.ok ? read.results : { results: [], confirmations: [] }, todo: readTodo(orgsDir) })
 }
 
-/** The items the Connector carries out with SendToAgent, which Grok Bot allows only from a chat. */
-const MESSAGE_KINDS: TodoItem['kind'][] = ['routine', 'profile', 'cleanup']
-
 /**
  * What the Connector could not do, for one organization's Sync drawer: stuck items with their reason, items on their
  * second try, items listed after more than two dumps, a dump that could not be read, and other copies' blocks.
@@ -190,10 +187,8 @@ export function connectorState(orgsDir: string, orgId: string): ConnectorState {
     const last = results.results.filter((result) => result.key === item.key.replace(/#\d+$/, `#${attempt - 1}`)).at(-1)
     return [{ bot: item.bot, why: last?.status === 'done' ? 'reported done, but Grok Bot does not show it' : last?.why || 'no reason given' }]
   })
-  // A message to a bot goes out only when the owner tells the Connector's chat to do YOU, so it waits for the owner from
-  // the start; only work a scheduled run can do is late.
   const count = (kind: TodoItem['kind']) => items.filter((item) => item.kind === kind).length
-  const late = items.filter((item) => !MESSAGE_KINDS.includes(item.kind) && (item.runs ?? 0) > 2)
+  const late = items.filter((item) => (item.runs ?? 0) > 2)
   const pendingSince = late.map((item) => item.since ?? '').filter(Boolean).sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? ''
   const since = Date.parse(pendingSince)
   // The dump lists every bot in the account but this copy's own Connector. Without a dump nothing is known, so no copy is called gone.

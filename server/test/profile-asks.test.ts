@@ -62,11 +62,15 @@ test('a profile ask written by hand is read on the next cycle; a bad file is no 
     writeFileSync(join(t.root, PROFILE_ASKS_FILE), '﻿{"askedAt":"2026-11-03T13:05:00+01:00"}\r\n')
     assert.equal(readProfileAsk(t.root), '2026-11-03T13:05:00+01:00')
     assert.ok(runConnectorCycle(t.orgs, t.copy).ok)
-    assert.equal(todo(t.orgs).items.filter((item) => item.kind === 'profile').length, 2)
+    const clicked = todo(t.orgs).items.filter((item) => item.kind === 'profile')
+    assert.equal(clicked.length, 2)
+    assert.ok(clicked.every((item) => /:[0-9a-f]{16}#1$/.test(item.key)), 'keyed by the click')
     writeFileSync(join(t.root, PROFILE_ASKS_FILE), 'not json')
     assert.equal(readProfileAsk(t.root), '')
     assert.ok(runConnectorCycle(t.orgs, t.copy).ok)
-    assert.equal(todo(t.orgs).items.filter((item) => item.kind === 'profile').length, 0)
+    const first = todo(t.orgs).items.filter((item) => item.kind === 'profile')
+    assert.equal(first.length, 2, 'no click to read, but neither bot has reported yet: asked by itself')
+    assert.ok(first.every((item) => /:first#1$/.test(item.key)))
   } finally {
     t.done()
   }

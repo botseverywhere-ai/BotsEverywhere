@@ -115,7 +115,7 @@ export interface ConnectorState {
   pendingSince: string
   /** Results the Connector recorded since pendingSince, whatever their status: it is working, only slowly. Absent from an older writer. */
   actedSince?: number
-  /** Messages to bots, which Grok Bot sends only from the Connector's chat, never from a scheduled run: they wait for the owner. */
+  /** Messages to bots on the Connector's list, which go out on its next run: profile asks, routine requests, one-time notes. */
   waiting: { routines: number; profiles: number; notes: number }
   /** Why the Connector's data could not be read, or ''. */
   dumpError: string

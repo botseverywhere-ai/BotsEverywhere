@@ -634,7 +634,7 @@ export function Workspace({
         return
       }
       const count = body.bots ?? 0
-      pushNotice({ kind: 'ok', message: `Asked ${count} ${count === 1 ? 'bot' : 'bots'} for ${count === 1 ? 'its' : 'their'} profile. Grok Bot sends messages to bots only from a chat: in the Connector's chat in Grok Bot, say: Send the waiting items. Skills, Apps used, and Automated tasks done fill in as each profile lands.` })
+      pushNotice({ kind: 'ok', message: `Asked ${count} ${count === 1 ? 'bot' : 'bots'} for ${count === 1 ? 'its' : 'their'} profile. The Connector sends the asks on its next run; Run the Connector now in the Sync drawer sends them sooner. Skills, Apps used, and Automated tasks done fill in as each profile lands.` })
     } catch {
       pushNotice({ kind: 'bad', message: SAVING_OFF })
     }

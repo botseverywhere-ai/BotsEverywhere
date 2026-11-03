@@ -287,13 +287,13 @@ function ConnectorTrouble({ state, busy, onRemove }: { state: ConnectorState; bu
   const bots = (count: number) => (count === 1 ? '1 bot' : `${count} bots`)
   // A writer started before this field sends none.
   const waiting = state.waiting ?? { routines: 0, profiles: 0, notes: 0 }
-  const messages = ([[waiting.profiles, 'profile request'], [waiting.routines, 'routine request'], [waiting.notes, 'one-time note']] as const)
+  const messages = ([[waiting.profiles, 'profile ask'], [waiting.routines, 'routine request'], [waiting.notes, 'one-time note']] as const)
     .filter(([count]) => count > 0)
     .map(([count, what]) => `${count} ${what}${count === 1 ? '' : 's'}`)
   return (
     <>
       {state.dumpError ? <p className="save-off" role="alert">{`The Connector's data could not be read: ${state.dumpError}`}</p> : null}
-      {messages.length ? <p className="save-off" role="alert">{`${[messages.slice(0, -1).join(', '), messages.at(-1)].filter(Boolean).join(' and ')} wait for you. Grok Bot sends messages to bots only from a chat, never from the Connector's scheduled runs. In the Connector's chat in Grok Bot, say: Send the waiting items`}</p> : null}
+      {messages.length ? <p className="overview-note">{`${[messages.slice(0, -1).join(', '), messages.at(-1)].filter(Boolean).join(' and ')} go out on the Connector's next run.`}</p> : null}
       {/* Results since the oldest late item mean the Connector runs and works through its list, only slowly. */}
       {state.pending && state.actedSince ? <p className="overview-note">{`The Connector is still working through ${items(state.pending)}. It has carried out ${state.actedSince} since ${formatShortDate(state.pendingSince)}.`}</p> : null}
       {state.pending && !state.actedSince ? <p className="save-off" role="alert">{`The Connector has not acted on ${items(state.pending)} since ${formatShortDate(state.pendingSince)}. Check that it still runs in Grok Bot.`}</p> : null}

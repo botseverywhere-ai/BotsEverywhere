@@ -417,8 +417,8 @@ npm run dev`}</CodeBlock>
           The Connector&apos;s own log lines use the bot field {CONNECTOR_LOG_BOT}.
         </p>
         <p>
-          Grok Bot lets the Connector message a bot only from a chat, never from a scheduled run. When a routine or a profile request waits for that, the Sync drawer and Logs
-          say so: in the Connector&apos;s chat in Grok Bot, say <strong>Send the waiting items</strong>.
+          Messages to bots, such as a routine request or a profile ask, go out on the Connector&apos;s next run; the Sync drawer counts what is queued. If your Connector
+          does not send them from its runs, say <strong>Send the waiting items</strong> in its chat in Grok Bot.
         </p>
         <p>
           A bot belongs to an organization when the Connector created it from that organization&apos;s requests, when its link matches a seat there, or when its name matches a seat title there.
@@ -704,8 +704,8 @@ Plain notes for whoever reads the file.`}</CodeBlock>
         <p>
           Grok Bot shows a bot&apos;s routines only to that bot, so <strong>Automated tasks done</strong> and the apps and skills a bot reports come from a profile file each bot writes
           into the organization&apos;s folder on its own runs. The status block at the top of Performance says whether the Connector runs and how many bots have reported.
-          <strong>Import from the Connector</strong> asks every bot for its report by itself, and <strong>Get the bots&apos; profiles</strong> asks again at any time: the Connector sends
-          each ask from its chat, so the block shows the one line to say there, <em>Send the waiting items</em>, and the columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
+          A bot that has not reported yet is asked for its report on the Connector&apos;s next run, by itself; <strong>Get the bots&apos; profiles</strong> asks every bot again at any time.
+          The columns fill in as the files land. Until a bot has written one, <strong>Apps used</strong> and <strong>Skills</strong> show what the Connector read in Grok Bot.
         </p>
         <p>
           <strong>Logs</strong> lists every event of the organization, newest first: hires, retirements, edits, work, approvals, and exceptions, and everything that passes
@@ -839,8 +839,8 @@ git commit -m "Update the org chart"`}</CodeBlock>
           Three of its intervals passed without a run. Check in Grok Bot that the Connector still exists and that its routine runs as often as <strong>Runs every</strong> on
           Connect bots says. <strong>Run the Connector now</strong> in the Sync drawer starts a run by hand.
         </p>
-        <h3>Something waits for you in the Connector&apos;s chat</h3>
-        <p>Grok Bot sends messages to bots only from a chat. Open the Connector&apos;s chat in Grok Bot and say <strong>Send the waiting items</strong>.</p>
+        <h3>Asks to bots stay queued run after run</h3>
+        <p>The Connector sends messages to bots on its runs. If the Sync drawer keeps counting the same asks, open the Connector&apos;s chat in Grok Bot and say <strong>Send the waiting items</strong>.</p>
         <h3>A bot shows Not in Grok Bot</h3>
         <p>The last snapshot did not include it. Open the bot and choose <strong>Create in Grok Bot</strong>, or tick it under Going to Grok Bot in the Sync drawer.</p>
         <h3>A bot is greyed</h3>
