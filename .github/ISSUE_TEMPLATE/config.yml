@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security problem
+    url: https://github.com/botseverywhere-ai/botseverywhere/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue for it.
+  - name: Question
+    url: https://github.com/botseverywhere-ai/botseverywhere/discussions
+    about: Ask how something works, or share what you built.
