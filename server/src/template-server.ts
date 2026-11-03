@@ -3033,6 +3033,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       // This route leads to messages being sent to bots, so only this computer may reach it.
       const origin = req.headers.origin
       if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return send(res, 403, { error: 'Only this computer may ask the bots.' })
+      // JSON forces a CORS preflight, which only loopback origins pass; a plain form post from another site is refused here.
+      if (!String(req.headers['content-type'] || '').startsWith('application/json')) return send(res, 415, { error: 'Send JSON.' })
       const root = orgRoot(orgsDir, slug)
       if (!root || !orgExists(root)) return send(res, 404, { error: 'Org not found.' })
       const read = readOrgDir(root, slug)

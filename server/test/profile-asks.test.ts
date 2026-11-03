@@ -36,6 +36,9 @@ test("POST .../grok/profile-asks saves when the owner asked, and the next cycle 
   try {
     assert.equal((await post('no-such-org')).status, 404)
     assert.equal((await post(t.org, 'https://evil.example')).status, 403, 'it leads to messages being sent to bots')
+    const form = await fetch(`http://127.0.0.1:${started.port}/api/orgs/${t.org}/grok/profile-asks`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'x=1' })
+    assert.equal(form.status, 415, 'a form post with no JSON never counts as a click')
+    assert.equal(existsSync(join(t.root, PROFILE_ASKS_FILE)), false)
     const response = await post(t.org)
     assert.equal(response.status, 200)
     const body = (await response.json()) as { askedAt: string; bots: number }
