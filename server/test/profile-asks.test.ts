@@ -6,7 +6,7 @@ import test from 'node:test'
 import { runConnectorCycle } from '../src/connector-cycle.ts'
 import { GROK_DATA_FILE, TODO_FILE } from '../src/connector-files.ts'
 import type { TodoFile } from '../src/connector-todo.ts'
-import { PROFILE_ASKS_FILE, readProfileAsk } from '../src/profile-asks.ts'
+import { LIBRARY_SEEN_FILE, PROFILE_ASKS_FILE, readLibrarySeen, readProfileAsk } from '../src/profile-asks.ts'
 import { ensureProjectId } from '../src/project.ts'
 import { createExistingBot, createOrgFiles, startTemplateServer } from '../src/template-server.ts'
 import { appsShown } from '../../src/org/bot-apps.ts'
@@ -113,4 +113,29 @@ test("Performance has a Sync bots button that posts the ask and says what to tel
   const status = readFileSync(new URL('../../src/components/PerformanceStatus.tsx', import.meta.url), 'utf8')
   assert.match(status, /<Button[^>]*>Sync bots<\/Button>/)
   assert.doesNotMatch(status, /Get the bots&apos; profiles/, 'the button is called Sync bots everywhere the page names it')
+})
+
+test('a skill new in the library makes the app ask every bot for its profile, so a skill a bot saved in Grok Bot reaches its card by the next run', () => {
+  const t = project()
+  try {
+    assert.ok(runConnectorCycle(t.orgs, t.copy, new Date('2026-11-03T12:01:00.000Z')).ok)
+    assert.equal(readProfileAsk(t.root), '', 'the first reading only remembers the library')
+    assert.equal(readLibrarySeen(t.orgs)?.length, 0)
+    const data = JSON.parse(readFileSync(join(t.orgs, GROK_DATA_FILE), 'utf8')) as { skills: unknown[] }
+    writeFileSync(join(t.orgs, GROK_DATA_FILE), JSON.stringify({ ...data, dumpedAt: '2026-11-03T13:15:00+01:00', skills: [{ name: 'open-source-maintenance', description: 'Keeps the repo healthy.' }] }))
+    assert.ok(runConnectorCycle(t.orgs, t.copy, new Date('2026-11-03T12:16:00.000Z')).ok)
+    assert.equal(readProfileAsk(t.root), '2026-11-03T12:16:00.000Z', 'asked when the library grew')
+    const asks = todo(t.orgs).items.filter((item) => item.kind === 'profile')
+    assert.deepEqual(asks.map((item) => item.bot).sort(), ['Helper', 'Lead'])
+    assert.ok(asks.every((item) => /:[0-9a-f]{16}#1$/.test(item.key)), 'keyed like a click, so a bot that reported before is asked again')
+    assert.deepEqual(readLibrarySeen(t.orgs), ['open-source-maintenance'])
+    assert.ok(runConnectorCycle(t.orgs, t.copy, new Date('2026-11-03T12:31:00.000Z')).ok)
+    assert.equal(readProfileAsk(t.root), '2026-11-03T12:16:00.000Z', 'the same library asks nothing more')
+    writeFileSync(join(t.orgs, LIBRARY_SEEN_FILE), '﻿["open-source-maintenance"]\r\n')
+    assert.deepEqual(readLibrarySeen(t.orgs), ['open-source-maintenance'], 'a BOM and CRLF read fine')
+    writeFileSync(join(t.orgs, LIBRARY_SEEN_FILE), 'not json')
+    assert.equal(readLibrarySeen(t.orgs), null, 'a bad file counts as a first reading: nothing is asked')
+  } finally {
+    t.done()
+  }
 })

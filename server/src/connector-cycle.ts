@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { BACKUPS_DIR, GUIDE_FILE, RESULTS_FILE, TODO_FILE, UNASSIGNED_FILE, readTextFile, writeFileAtomic } from './connector-files.ts'
-import { SNAPSHOT_PATH, connectorGuide, connectorName } from './connector-prompt.ts'
+import { CONNECTOR_BOT_NAME, SNAPSHOT_PATH, connectorGuide, connectorName } from './connector-prompt.ts'
 import { computeTodo, orgBlocksFromData, parseResults, requestProgress, seatBots, updatedFor, type ResultsFile, type TodoFile, type TodoItem, type VerifyEntry } from './connector-todo.ts'
 import { botJson, linkedBotIds, readGrokData, snapshotFromData, snapshotJson, unassignedFromData, type GrokData } from './grok-data.ts'
 import type { GrokRequest } from './grok-requests.ts'
@@ -10,7 +10,7 @@ import { normalizeText } from './normalize-text.ts'
 import { grokSeats, type OrgBundle } from './org-files.ts'
 import { profileFileLines } from './profile-files.ts'
 import { latestProfileReports, type ProfileReport } from './profile-reports.ts'
-import { readProfileAsk } from './profile-asks.ts'
+import { readLibrarySeen, readProfileAsk, writeLibrarySeen, writeProfileAsk } from './profile-asks.ts'
 import { readConnector, readRemoveCopies, readSyncMinutes } from './project.ts'
 import { listOrgSlugs, readOrgDir, readRequests } from './template-server.ts'
 
@@ -75,6 +75,20 @@ export function runConnectorCycle(orgsDir: string, copyId: string, now = new Dat
     // A greyed seat's bot works for another organization: it gets no block, no snapshot row, and no to-do here.
     orgs.push({ id: slug, bundle: { ...read.bundle, seats: grokSeats(read.bundle.seats) }, requests: readRequests(root).requests, ...(readProfileAsk(root) ? { profileAskedAt: readProfileAsk(root) } : {}) })
   }
+  // A skill new in the library since the last reading may be one a bot saved in its own chat. Grok Bot keeps no link from a
+  // skill to a bot, so only the bot can say it uses it: every bot is asked for its profile, and the skill reaches its card
+  // on the next run. The first reading only remembers the library, so an upgrade asks nothing.
+  const library = data.skills.map((skill) => skill.name.trim().toLowerCase()).filter(Boolean)
+  const seen = readLibrarySeen(orgsDir)
+  if (seen && library.some((name) => !seen.includes(name))) {
+    const askedAt = now.toISOString()
+    for (const org of orgs) {
+      if (!org.bundle.seats.some((seat) => seat.kind === 'bot' && seat.status !== 'retired' && !seat.title.trim().toLowerCase().startsWith(CONNECTOR_BOT_NAME.toLowerCase()))) continue
+      writeProfileAsk(resolve(orgsDir, org.id), askedAt)
+      org.profileAskedAt = askedAt
+    }
+  }
+  writeLibrarySeen(orgsDir, library)
   const taken = linkedBotIds(orgs.map((org) => org.bundle))
   const profiles = latestProfileReports([...results.confirmations, ...profileFileLines(orgsDir, orgs.map((org) => org.id))])
   for (const org of orgs) {
