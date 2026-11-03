@@ -168,14 +168,14 @@ export function requestProgress(input: { orgId: string; requests: GrokRequest[];
     const why = stuckWhy(bot)
     return why ? { stage: 'stuck', why } : { stage: 'waiting' }
   }
-  /** A message to a bot: it goes out from the Connector's chat, then the bot confirms. */
+  /** A message to a bot: the Connector sends it on its next run, then the bot confirms. */
   const ask = (base: string, shown: boolean, bot: string): Omit<RequestPart, 'label'> => {
     if (shown) return { stage: 'confirmed' }
     const last = latest(`${base}#`)
-    if (items.some((item) => item.key.startsWith(`${base}#`))) return last?.status === 'failed' ? { stage: 'retrying', at: last.at, why: failedWhy(last) } : { stage: 'you' }
+    if (items.some((item) => item.key.startsWith(`${base}#`))) return last?.status === 'failed' ? { stage: 'retrying', at: last.at, why: failedWhy(last) } : { stage: 'waiting' }
     const why = stuckWhy(bot, /routine/i)
     if (why) return { stage: 'stuck', why }
-    return last?.status === 'done' ? { stage: 'asked', at: last.at } : { stage: 'you' }
+    return last?.status === 'done' ? { stage: 'asked', at: last.at } : { stage: 'waiting' }
   }
   const progress: Record<string, RequestPart[]> = {}
   for (const request of input.requests) {

@@ -93,7 +93,7 @@ export interface SyncStatus {
  * only when the owner tells the Connector's chat to act. asked: sent; the bot has not confirmed. done: the Connector reported
  * it after Grok Bot's latest reading. confirmed: the reading shows it. after-create: asked once the bot exists.
  */
-export type PartStage = 'waiting' | 'you' | 'asked' | 'done' | 'confirmed' | 'retrying' | 'stuck' | 'after-create'
+export type PartStage = 'waiting' | 'asked' | 'done' | 'confirmed' | 'retrying' | 'stuck' | 'after-create'
 
 export interface RequestPart {
   /** Create the bot, Instructions, Skill: <name>, or Routine: <name>. */

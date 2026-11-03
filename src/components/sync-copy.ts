@@ -279,7 +279,6 @@ function stageWords(part: RequestPart, timeZone?: string): string {
   const at = part.at ? clock(part.at, timeZone) : ''
   switch (part.stage) {
     case 'waiting': return "waiting for the Connector's next run"
-    case 'you': return 'waiting for you. Tell the Connector in its chat to carry out its to-do list'
     case 'asked': return `asked at ${at}, waiting for the bot to confirm`
     case 'done': return `done in Grok Bot at ${at}, confirming on the Connector's next reading`
     case 'confirmed': return 'confirmed in Grok Bot'
@@ -295,12 +294,11 @@ export function partLine(part: RequestPart, timeZone?: string): string {
 }
 
 /** Furthest from done first: the part that decides a request's one line in Logs. */
-const STAGE_ORDER: PartStage[] = ['stuck', 'retrying', 'waiting', 'you', 'asked', 'done', 'after-create', 'confirmed']
+const STAGE_ORDER: PartStage[] = ['stuck', 'retrying', 'waiting', 'asked', 'done', 'after-create', 'confirmed']
 const SUMMARY: Record<PartStage, string> = {
   stuck: 'Stuck: needs you',
   retrying: 'Failed once, trying again',
   waiting: 'Waiting for the Connector',
-  you: "Waiting for you in the Connector's chat",
   asked: 'Waiting for the bot to confirm',
   done: 'Done in Grok Bot, confirming on the next reading',
   'after-create': 'Done in Grok Bot, confirming on the next reading',

@@ -34,7 +34,7 @@ const todo = (items: string[], stuck: TodoFile['stuck'] = []): Pick<TodoFile, 'i
 })
 const stages = (parts: { label: string; stage: string }[] = []) => Object.fromEntries(parts.map((part) => [part.label, part.stage]))
 
-test('each part of a request has its own stage: done after the reading, confirmed in it, waiting for the owner', () => {
+test('each part of a request has its own stage: done after the reading, confirmed in it, waiting for the Connector', () => {
   const results: ResultsFile = {
     results: [
       { key: `${createKeyBase(create)}#1`, status: 'done', at: ACTED_AT, botId: 'n1' },
@@ -52,7 +52,7 @@ test('each part of a request has its own stage: done after the reading, confirme
   assert.deepEqual(stages(progress['grok-bot']), {
     Instructions: 'done',
     'Skill: daily-status': 'confirmed',
-    'Routine: botseverywhere daily summary': 'you',
+    'Routine: botseverywhere daily summary': 'waiting',
   })
   assert.equal(progress.growth?.[0]?.at, ACTED_AT)
 })
@@ -90,7 +90,6 @@ test('the words for each stage, and the one line in Logs', () => {
   const at = { at: ACTED_AT }
   assert.equal(partLine({ label: 'Instructions', stage: 'done', ...at }, 'Europe/Madrid'), "Instructions: done in Grok Bot at 18:17, confirming on the Connector's next reading")
   assert.equal(partLine({ label: 'Skill: daily-status', stage: 'confirmed' }), 'Skill: daily-status: confirmed in Grok Bot')
-  assert.equal(partLine({ label: 'Routine: Daily', stage: 'you' }), "Routine: Daily: waiting for you. Tell the Connector in its chat to carry out its to-do list")
   assert.equal(partLine({ label: 'Routine: Daily', stage: 'asked', ...at }, 'Europe/Madrid'), 'Routine: Daily: asked at 18:17, waiting for the bot to confirm')
   assert.equal(partLine({ label: 'Create the bot', stage: 'waiting' }), "Create the bot: waiting for the Connector's next run")
   assert.equal(partLine({ label: 'Instructions', stage: 'retrying', why: 'read-back differed', ...at }, 'Europe/Madrid'), 'Instructions: failed at 18:17 (read-back differed), trying again on the next run')
@@ -98,17 +97,17 @@ test('the words for each stage, and the one line in Logs', () => {
   assert.equal(partLine({ label: 'Routine: Weekly', stage: 'after-create' }), 'Routine: Weekly: asked for once the bot is created')
 
   assert.deepEqual(progressSummary([{ label: 'A', stage: 'done' }, { label: 'B', stage: 'confirmed' }]), { text: 'Done in Grok Bot, confirming on the next reading', moving: true })
-  assert.deepEqual(progressSummary([{ label: 'A', stage: 'done' }, { label: 'B', stage: 'you' }]), { text: "Waiting for you in the Connector's chat", moving: true })
+  assert.deepEqual(progressSummary([{ label: 'A', stage: 'done' }, { label: 'B', stage: 'waiting' }]), { text: 'Waiting for the Connector', moving: true })
   assert.deepEqual(progressSummary([{ label: 'A', stage: 'stuck' }, { label: 'B', stage: 'waiting' }]), { text: 'Stuck: needs you', moving: false })
   assert.deepEqual(progressSummary([{ label: 'A', stage: 'confirmed' }]), { text: 'Confirmed in Grok Bot', moving: false })
 })
 
 test('Profile and the Sync drawer say where each waiting change stands', () => {
-  const parts = [{ label: 'Instructions', stage: 'done' as const, at: ACTED_AT }, { label: 'Skill: daily-status', stage: 'confirmed' as const }, { label: 'Routine: botseverywhere daily summary', stage: 'you' as const }]
+  const parts = [{ label: 'Instructions', stage: 'done' as const, at: ACTED_AT }, { label: 'Skill: daily-status', stage: 'confirmed' as const }, { label: 'Routine: botseverywhere daily summary', stage: 'waiting' as const }]
   assert.deepEqual(updateItems({ reportsTo: 'You', previousReportsTo: 'Miguel', skills: [status], routines: [daily] }, parts, 'Europe/Madrid'), [
     "Reports to You (was Miguel): done in Grok Bot at 18:17, confirming on the Connector's next reading",
     'Skill: daily-status: confirmed in Grok Bot',
-    'Routine: botseverywhere daily summary: waiting for you. Tell the Connector in its chat to carry out its to-do list',
+    "Routine: botseverywhere daily summary: waiting for the Connector's next run",
   ])
   assert.deepEqual(updateItems({ skills: [status] }), ['Skill: daily-status'], 'without progress, the change alone')
 })
@@ -131,6 +130,8 @@ test('the sync status carries each request\'s progress, read from the Connector\
     assert.ok(read.ok)
     if (!read.ok) return
     assert.deepEqual(read.status.progress?.you?.map((part) => part.label), ['Instructions', 'Skill: daily-status', 'Routine: botseverywhere daily summary'])
+    // A routine ask goes out from the Connector's own runs, so it waits for the Connector, never for the owner's chat.
+    assert.equal(read.status.progress?.you?.[2]?.stage, 'waiting')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
