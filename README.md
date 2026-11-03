@@ -10,6 +10,18 @@ Full install steps, including Windows PowerShell and an optional static host, ar
 
 Documentation updated 3 November 2026.
 
+## Dependencies
+
+What you need before you start:
+
+- **A Grok Bot account.** Your bots run there, and one bot in it, the Connector, links Grok Bot to this app. The app itself never calls Grok Bot: the Connector reads and writes files in your `orgs` folder.
+- **Node.js 22 or newer, with npm.** From [nodejs.org](https://nodejs.org). `npm install` brings in everything else: Vite, React 19, TypeScript, and the small Node writer that saves your files.
+- **Git.** To clone this repository and to update it later with `git pull`.
+- **A desktop browser** at least 1024 pixels wide. Chrome, Edge, Firefox, or Safari. The org chart, the work chart, and the logs need the room.
+- **Windows, macOS, or Linux.** The app runs on your own computer at `127.0.0.1` and keeps your data in the `orgs` folder beside it.
+
+No accounts other than Grok Bot, no API keys, no database, and no paid service. Optional: Chrome at `/usr/bin/google-chrome` (or `CHROME_PATH`) for one layout test, and the Playwright browsers for the end-to-end tests.
+
 ## Run locally
 
 Template mode is the default.
