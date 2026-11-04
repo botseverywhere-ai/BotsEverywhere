@@ -222,12 +222,10 @@
 .ld-hero h1 { font-size: 56px; line-height: 1.02; font-weight: 500; letter-spacing: -0.035em; margin: 0; }
 .ld-hero .ld-subhead { margin: var(--space-4) 0 0; color: var(--color-muted); font-size: var(--text-2xl); font-weight: var(--weight-regular); line-height: var(--leading-title); letter-spacing: 0; text-align: left; }
 .ld-hero p { font-size: 18px; line-height: 1.5; color: var(--color-muted); margin: 0 0 24px; }
-.ld-clone { display: flex; flex-direction: column; width: 100%; max-width: 560px; min-width: 0; border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); }
-.ld-clone-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); border-bottom: var(--hairline); }
-.ld-clone-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-muted); }
-.ld-clone-bar .btn { flex: none; height: var(--btn-height-sm); padding: 0 var(--btn-pad-x-sm); margin: 0; border-radius: var(--control-radius); }
-/* One line, never wrapped: the command is what a reader copies by hand when the button is out of reach. */
-.ld-clone code { display: block; padding: var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.4; color: var(--color-ink); white-space: nowrap; overflow-x: auto; }
+.ld-clone { display: flex; align-items: center; gap: var(--space-3); width: 100%; max-width: 560px; min-width: 0; padding: var(--space-2) var(--space-2) var(--space-2) 0; border: var(--hairline); border-radius: var(--control-radius); background: var(--color-white); }
+/* One line. A command too long for the row ends in … instead of wrapping or scrolling: the button copies the whole command. */
+.ld-clone code { flex: 1; min-width: 0; padding: 0 var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.4; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ld-clone .btn { flex: none; margin: 0; border-radius: var(--control-radius); }
 .ld-sec { padding: 72px 0; border-top: 1px solid var(--color-line); }
 .ld-label { font-size: 14px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 16px; }
 .ld-teams { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
