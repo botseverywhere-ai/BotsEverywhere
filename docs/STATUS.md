@@ -4,7 +4,7 @@ Where the app stands as of 4 November 2026, written for whoever picks it up next
 
 ## Branch
 
-The main branch is `main`. All of the work since the initial commit sits on `feature/documentation-updated-v8`, which holds every earlier branch. It is not merged into `main` yet; that merge happens through a pull request on GitHub, after the branch protection on `main` is set. Never push to `main` without the maintainer's OK.
+The main branch is `main`, the only long-lived branch, and it is protected: a change lands through a pull request on GitHub, squash-merged once CI is green and a maintainer has approved it. Release 1.0.0 is the tag `v1.0.0`. Never push to `main` directly.
 
 The rules for working on the code are in `AGENTS.md`.
 

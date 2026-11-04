@@ -3,6 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/botseverywhere-ai/botseverywhere.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "scripts": {
     "dev": "tsx scripts/dev-all.ts",

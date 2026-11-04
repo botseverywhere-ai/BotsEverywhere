@@ -19,7 +19,7 @@ playwright-report
 *.local
 .env
 
-# Organizations are each person's own data. Only the starter org ships with the app.
+# Organizations are each person's own data. None ships with the app: the file writer creates orgs/ on its first start.
 orgs/*
 # Written on each computer: this copy's id, and what its Connector writes.
 orgs/project.json
