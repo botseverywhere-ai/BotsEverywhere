@@ -20,6 +20,9 @@ function seat(root: string, slug: string, title: string, link: string) {
 const minute = (n: number) => new Date(Date.now() + n * 60_000)
 const hhmm = (date: Date) => `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 const day = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+/** Minutes before a base that stays on one calendar day for offsets down to -59, so run-log lines never straddle midnight. */
+const dayBase = (() => { const now = new Date(); return now.getHours() === 0 ? new Date(now.getTime() - 60 * 60_000) : now })()
+const sameDay = (n: number) => new Date(dayBase.getTime() + n * 60_000)
 
 /** One Connector run: the org snapshot, then connector.json, at a file time. */
 function run(orgs: string, slug: string, at: Date, bots: object[]) {
@@ -88,9 +91,9 @@ test('one chat logged as waiting and then done is one use', () => {
     title: 'Inner Loop',
     slug: 'inner',
     log: [
-      { date: day(minute(-30)), time: hhmm(minute(-30)), bot: 'Inner Loop', process: 'chat', status: 'waiting', step: 'push commits' },
-      { date: day(minute(-25)), time: hhmm(minute(-25)), bot: 'Inner Loop', process: 'chat', status: 'done', step: 'push commits' },
-      { date: day(minute(-20)), time: hhmm(minute(-20)), bot: 'Inner Loop', process: 'chat', status: 'done', step: 'list routines' },
+      { date: day(sameDay(-30)), time: hhmm(sameDay(-30)), bot: 'Inner Loop', process: 'chat', status: 'waiting', step: 'push commits' },
+      { date: day(sameDay(-25)), time: hhmm(sameDay(-25)), bot: 'Inner Loop', process: 'chat', status: 'done', step: 'push commits' },
+      { date: day(sameDay(-20)), time: hhmm(sameDay(-20)), bot: 'Inner Loop', process: 'chat', status: 'done', step: 'list routines' },
     ],
   })
   assert.equal(shown.usage, 2)
