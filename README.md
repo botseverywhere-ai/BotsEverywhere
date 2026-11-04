@@ -1,6 +1,6 @@
 # BotsEverywhere
 
-![BotsEverywhere: the open source team management tool for bots. An organization with a person and two bots under it.](docs/images/hero.png)
+![BotsEverywhere: the open source team management tool for bots. A human with three bots reporting to them.](docs/images/hero.png)
 
 BotsEverywhere is an open source team management tool for bots.
 
