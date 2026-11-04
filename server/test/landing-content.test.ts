@@ -93,6 +93,8 @@ test('the home page clone box has a Copy button that copies the clone command; O
   const landingCss = read('../../src/styles/landing.css')
   assert.match(landingCss, /\.ld-clone code \{[^}]*white-space: nowrap;/, 'the command never wraps')
   assert.match(landingCss, /\.ld-clone code \{[^}]*text-overflow: ellipsis;/, 'a command too long for the row ends in … so it fits beside the button')
+  assert.match(landingCss, /\.ld-clone code \{[^}]*line-height: var\(--btn-height\);/, 'the command line sets the box height, so the box stays as tall as it was')
+  assert.match(landingCss, /\.ld-clone \.btn \{[^}]*align-self: stretch; height: auto;/, 'the button is as tall as the box')
   assert.match(landing, /navigator\.clipboard\.writeText\(text\)/)
   assert.match(landing, /document\.execCommand\('copy'\)/, 'a browser without the clipboard API still copies')
   assert.equal((landing.match(/href=\{primaryHref\}/g) ?? []).length, 1, 'the closing section keeps the Open your org button')
