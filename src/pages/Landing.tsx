@@ -74,11 +74,8 @@ export function Landing() {
                 their own computer.
               </p>
               <div className="ld-clone">
-                <div className="ld-clone-bar">
-                  <span className="ld-clone-label">Clone the repository</span>
-                  <CopyButton text={clone} />
-                </div>
                 <code>{clone}</code>
+                <CopyButton text={clone} />
               </div>
               <p className="ld-more"><a href={github}>See how it works on GitHub →</a></p>
             </div>
@@ -248,6 +245,30 @@ export function Landing() {
 
 const COPY_RESET_MS = 2000
 
+/** The clipboard API first; where a browser has none, or refuses it, a hidden textarea and the old copy command. */
+async function writeClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    // Fall through to the old way.
+  }
+  const area = document.createElement('textarea')
+  area.value = text
+  area.setAttribute('readonly', '')
+  area.style.position = 'fixed'
+  area.style.opacity = '0'
+  document.body.appendChild(area)
+  area.select()
+  try {
+    return document.execCommand('copy')
+  } catch {
+    return false
+  } finally {
+    area.remove()
+  }
+}
+
 /** Copies the clone command beside it. Says Copied for a moment, then is ready again. */
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -257,16 +278,11 @@ function CopyButton({ text }: { text: string }) {
     return () => window.clearTimeout(id)
   }, [copied])
   async function copy() {
-    try {
-      await navigator.clipboard.writeText(text)
-    } catch {
-      return
-    }
-    setCopied(true)
+    if (await writeClipboard(text)) setCopied(true)
   }
   return (
     <Button variant="primary" type="button" aria-label="Copy the clone command" onClick={() => void copy()}>
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? 'Copied' : 'Copy Repo'}
     </Button>
   )
 }
