@@ -22,6 +22,14 @@ One tool, four parts: an org chart of one person and their bots, a work chart of
 
 Bots do the steps. Humans approve. Every workstream starts from a trigger, and every checkpoint names a human.
 
+Deloitte describes the same shift, from the org chart to the work chart:
+
+> Role fusion applies to every function, reframing organizational structure as a “work chart” vs. org chart, where tasks and processes—not people—are mapped to show how work gets done.
+>
+> Within three years, delayering and role fusion are likely to separate market leaders from laggards just as digital transformation did more than a decade ago—and with the same early skepticism followed by rushed adoption.
+>
+> — Deloitte, [The work chart vs. org chart: AI-driven organizational delayering and cross-functional role fusion](https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/articles/role-fusion-organizational-delayering.html), 16 June 2026
+
 ![A work chart: when a lead arrives, Sales Bot qualifies the lead, Scheduler Bot books a call, and a human approves the reply.](docs/images/work-chart-idea.png)
 
 The work chart of a sample organization, Bot Company E: four workstreams, each a row of bots with the owner's approval where the money or the message leaves.
