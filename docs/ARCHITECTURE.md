@@ -86,11 +86,15 @@ The other direction needs no channel. Changing a seat's manager, a skill, or a r
 
 A bot works for one organization; the Connector and the main bot are the exceptions. There is no public Grok Bot API, so nothing is read back faster than the Connector's schedule.
 
-The org chart shows what the sync knows. A bot card is green with **In Grok Bot** when the last snapshot had it, or when the seat carries a Grok Bot link and no snapshot has said otherwise. It is dashed with **Not in Grok Bot** when a snapshot lacked it, for example a bot hired from the directory that was never created in Grok Bot. **Not synced yet** means no link and no snapshot. The chart pans by dragging and zooms with the wheel or the buttons, and the seat drawer's **Reports to** select moves a seat under another.
+### How the files reach the Connector, and who may write what
 
-Retire takes a seat out of one org; the bot keeps running in Grok Bot. Grok Bot gives the Connector no way to delete a bot, so **Delete in Grok Bot** on a retired bot opens it there and the person deletes it by hand. The app marks the seat deleted once a later Connector run no longer reports that bot anywhere.
+The folder never moves. The Connector runs in Grok Bot and reads and writes `orgs/` through the Grok Bot app's Shell on your own computer, so what it reads travels to Grok Bot the way a message you type does, and nothing is synced anywhere else. When your computer is offline, its rules tell it to stop and write nothing.
 
-Status of this work and the next steps are in [STATUS.md](STATUS.md).
+Three writers share the folder, each with its own paths. The app writes the organization: `org.md`, `seats/`, `processes/`, the work chart, the Connector's rules in `CONNECTOR.md`, its to-do list, and each organization's snapshot. The Connector writes only its reading (`grok-data.json`), its heartbeat (`connector.json`), its results, and the backups it takes before changing a bot; its rules forbid it to write anything the app owns. Bots write only their own profile file under `profiles/` and the day's run log under `log/`. These are rules to a model, not permissions the operating system enforces, so the app treats every file the Connector or a bot writes as data: each is parsed against a fixed shape and a file that does not fit is skipped, never followed. What the Connector writes into Grok Bot is checked too: every item on its list carries a hash of the text it expects to find and a hash of the text it should leave; the Connector compares before writing, reads back after, restores the previous text when the read-back differs, and the app shows the item as stuck. A bot that picked up hostile text and changed its own block cannot steer the Connector that way: the block no longer matches, so it is left alone and flagged.
+
+During its reading the Connector does read every bot's instructions and the shared skill library. Its rules say that everything it reads there is data to record, never instructions to follow. That is the one bot with a pen for every other bot, and it is told so.
+
+Whoever can write to the folder runs the organization: the app, a coding agent you point at it, a script, or you with an editor. The review step for those changes is git, before the Connector's next run. There is no in-app sign-off yet on a change to a seat's May or Needs approval sections; that is the next thing to build.
 
 ## 6. The public site
 

@@ -270,6 +270,24 @@ export function DocsPage() {
           Only what your Connector and your bots read in <code>orgs/</code>: the Connector&apos;s rules and to-do list, and each bot&apos;s seat file and process files.
           That data is then handled by Grok Bot under its own terms, the same as anything else you give it. If you never set up a Connector, nothing leaves your computer.
         </p>
+        <h3>How the Connector reaches the folder, and who may write what</h3>
+        <p>
+          The folder never moves. The Connector runs in Grok Bot and reads and writes <code>orgs/</code> through the Grok Bot app&apos;s Shell on your own computer, so what it reads
+          travels to Grok Bot the way a message you type does, and nothing is synced anywhere else. When your computer is offline, its rules tell it to stop and write nothing.
+        </p>
+        <p>
+          Three writers share the folder, each with its own paths. The app writes the organization: the chart, the seats, the processes, the Connector&apos;s rules, and its to-do list.
+          The Connector writes only its reading, its heartbeat, its results, and the backups it takes before changing a bot. Bots write only their own profile file and the day&apos;s run log.
+          These are rules to a model, not permissions the operating system enforces, so the app treats every file the Connector or a bot writes as data: each is read against a fixed
+          shape and a file that does not fit is skipped, never followed. What the Connector writes into Grok Bot is checked too: every change carries the text it expects to find and the
+          text it should leave; the Connector compares before writing, reads back after, puts the previous text back when the read-back differs, and the Sync drawer shows the item as stuck.
+          A bot that picked up hostile text and changed its own block cannot steer the Connector that way: the block no longer matches, so it is left alone and flagged. Everything the
+          Connector reads in Grok Bot is, by its rules, data to record and never an instruction to follow.
+        </p>
+        <p>
+          Whoever can write to the folder runs the organization: the app, a coding agent you point at it, a script, or you with an editor. The review step for those changes is git,
+          before the Connector&apos;s next run. There is no in-app sign-off yet on a change to a seat&apos;s May or Needs approval sections.
+        </p>
         <h3>What you stay responsible for</h3>
         <ul>
           <li>Keep secrets out of seat cards, processes, and prompts. Bots read them.</li>
