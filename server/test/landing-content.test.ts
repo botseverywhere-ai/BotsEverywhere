@@ -88,7 +88,9 @@ test("the homepage follows the article's blueprint in its own order and words, a
 
 test('the home page clone box has a Copy button that copies the clone command; Open your org stays in the header and the closing section', () => {
   const landing = read('../../src/pages/Landing.tsx')
-  assert.match(landing, /<div className="ld-clone">\s*<span>\{clone\}<\/span>\s*<CopyButton text=\{clone\} \/>\s*<\/div>/)
+  assert.match(landing, /<div className="ld-clone-bar">\s*<span className="ld-clone-label">Clone the repository<\/span>\s*<CopyButton text=\{clone\} \/>\s*<\/div>\s*<code>\{clone\}<\/code>/, 'the Copy button sits in a bar above the command')
+  const landingCss = read('../../src/styles/landing.css')
+  assert.match(landingCss, /\.ld-clone code \{[^}]*white-space: nowrap;/, 'the command never wraps')
   assert.match(landing, /navigator\.clipboard\.writeText\(text\)/)
   assert.match(landing, /\{copied \? 'Copied' : 'Copy'\}/)
   assert.equal((landing.match(/href=\{primaryHref\}/g) ?? []).length, 1, 'the closing section keeps the Open your org button')

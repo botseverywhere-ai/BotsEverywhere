@@ -74,8 +74,11 @@ export function Landing() {
                 their own computer.
               </p>
               <div className="ld-clone">
-                <span>{clone}</span>
-                <CopyButton text={clone} />
+                <div className="ld-clone-bar">
+                  <span className="ld-clone-label">Clone the repository</span>
+                  <CopyButton text={clone} />
+                </div>
+                <code>{clone}</code>
               </div>
               <p className="ld-more"><a href={github}>See how it works on GitHub →</a></p>
             </div>
