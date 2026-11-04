@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
 
+# The workflow only reads the repository: no write to contents, packages, or pull requests.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
