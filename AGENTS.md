@@ -125,7 +125,7 @@ The seat drawer's tabs: **Seat card** is the bot's place in the organization (Re
 
 ## Current status and next step
 
-Status, branches, known quirks, and deferred items: `docs/STATUS.md`. The main branch is `main`. Work since the initial commit sits on one line of branches above it, not merged into `main`; `feature/documentation-updated-v8` is the top and holds the others. It lands through a pull request on GitHub.
+Status, branches, known quirks, and deferred items: `docs/STATUS.md`. The main branch is `main`, the only long-lived branch, and it is protected: a change lands through a pull request on GitHub, squash-merged once CI is green and a maintainer has approved it.
 
 Built: **Create in Grok Bot**. A bot card that says **Not in Grok Bot** or **Not synced yet** shows the button in the seat drawer. `POST /api/orgs/<slug>/grok/requests` (`{ "seat": "<slug>" }`) writes `orgs/<slug>/grok/requests.json` (`server/src/grok-requests.ts`): one entry per seat with `seat`, `name`, the absolute `seatFile`, `prompt`, the text of `directory/<directoryId>.md` below its frontmatter when it exists (inline, because the Connector never reads outside `orgs/`), and `requestedAt`. The seat file is not touched. Step 1 of the Connector prompt reads the file and creates each bot named exactly `name`. On each Connector run (`recordConnectorRun`), and on a confirmed sync from the Connector's snapshot, a requested seat the snapshot matched gets its link written (`applyPerformance` with the requested set), its request dropped, and a Created in Grok Bot line (`clearFulfilledRequests`); a pasted file never clears requests. Until then its Performance row pulses Connecting. `GET .../sync` carries `requests`, and the drawer says when the Connector was asked.
 

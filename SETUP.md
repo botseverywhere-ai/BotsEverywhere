@@ -17,8 +17,8 @@ Template mode is the default.
 ### Windows PowerShell
 
 ```powershell
-git clone <this-repository-url>
-Set-Location <repository-folder>
+git clone https://github.com/botseverywhere-ai/botseverywhere.git
+Set-Location botseverywhere
 npm install
 npm run dev
 ```
@@ -28,8 +28,8 @@ Leave that window open. `npm run dev` starts the site and the file writer togeth
 ### macOS and Linux
 
 ```bash
-git clone <this-repository-url>
-cd <repository-folder>
+git clone https://github.com/botseverywhere-ai/botseverywhere.git
+cd botseverywhere
 npm install
 npm run dev
 ```
