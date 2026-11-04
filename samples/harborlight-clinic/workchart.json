@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "harborlight-clinic-trigger",
+      "source": "email",
+      "label": "A referral arrives",
+      "example": "Maine Coast Referrals faxes a cardiology follow-up for a current patient."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "harborlight-clinic-main",
+      "triggerId": "harborlight-clinic-trigger",
+      "outcome": "The patient has a confirmed visit, or the referral is declined with a reason.",
+      "ownerSeatId": "harborlight-clinic-owner",
+      "kind": "main",
+      "stepIds": [
+        "harborlight-clinic-step-extract",
+        "harborlight-clinic-step-match",
+        "harborlight-clinic-step-draft",
+        "harborlight-clinic-step-approve",
+        "harborlight-clinic-step-schedule"
+      ]
+    },
+    {
+      "id": "harborlight-clinic-exception",
+      "triggerId": "harborlight-clinic-trigger",
+      "outcome": "The right chart is found, or the referral is returned.",
+      "ownerSeatId": "harborlight-clinic-owner",
+      "kind": "contingency",
+      "stepIds": [
+        "harborlight-clinic-step-query",
+        "harborlight-clinic-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "harborlight-clinic-step-extract",
+      "workstreamId": "harborlight-clinic-main",
+      "name": "Read the referral",
+      "level": 4,
+      "executorSeatId": "harborlight-clinic-referral-inbox",
+      "inputs": [
+        "Maine Coast Referrals source document"
+      ],
+      "outputs": [
+        "Read the referral for Maine Coast Referrals"
+      ]
+    },
+    {
+      "id": "harborlight-clinic-step-match",
+      "workstreamId": "harborlight-clinic-main",
+      "name": "Match the patient record",
+      "level": 4,
+      "executorSeatId": "harborlight-clinic-record-bot",
+      "inputs": [
+        "Maine Coast Referrals source document"
+      ],
+      "outputs": [
+        "Match the patient record for Maine Coast Referrals"
+      ]
+    },
+    {
+      "id": "harborlight-clinic-step-draft",
+      "workstreamId": "harborlight-clinic-main",
+      "name": "Draft the visit hold",
+      "level": 2,
+      "executorSeatId": "harborlight-clinic-schedule-bot",
+      "inputs": [
+        "Maine Coast Referrals source document"
+      ],
+      "outputs": [
+        "Draft the visit hold for Maine Coast Referrals"
+      ]
+    },
+    {
+      "id": "harborlight-clinic-step-approve",
+      "workstreamId": "harborlight-clinic-main",
+      "name": "Confirm the booking",
+      "level": 3,
+      "executorSeatId": "harborlight-clinic-owner",
+      "inputs": [
+        "Maine Coast Referrals source document"
+      ],
+      "outputs": [
+        "Confirm the booking for Maine Coast Referrals"
+      ],
+      "checkpointId": "harborlight-clinic-cp-approve"
+    },
+    {
+      "id": "harborlight-clinic-step-schedule",
+      "workstreamId": "harborlight-clinic-main",
+      "name": "Send the confirmation",
+      "level": 4,
+      "executorSeatId": "harborlight-clinic-message-bot",
+      "inputs": [
+        "Maine Coast Referrals source document"
+      ],
+      "outputs": [
+        "Send the confirmation for Maine Coast Referrals"
+      ]
+    },
+    {
+      "id": "harborlight-clinic-step-query",
+      "workstreamId": "harborlight-clinic-exception",
+      "name": "Draft the clarification",
+      "level": 4,
+      "executorSeatId": "harborlight-clinic-schedule-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the clarification"
+      ]
+    },
+    {
+      "id": "harborlight-clinic-step-msg",
+      "workstreamId": "harborlight-clinic-exception",
+      "name": "Approve the clarification",
+      "level": 3,
+      "executorSeatId": "harborlight-clinic-owner",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the clarification"
+      ],
+      "checkpointId": "harborlight-clinic-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "harborlight-clinic-hand-1",
+      "fromStepId": "harborlight-clinic-step-extract",
+      "toStepId": "harborlight-clinic-step-match"
+    },
+    {
+      "id": "harborlight-clinic-hand-2",
+      "fromStepId": "harborlight-clinic-step-match",
+      "toStepId": "harborlight-clinic-step-draft"
+    },
+    {
+      "id": "harborlight-clinic-hand-3",
+      "fromStepId": "harborlight-clinic-step-draft",
+      "toStepId": "harborlight-clinic-step-approve"
+    },
+    {
+      "id": "harborlight-clinic-hand-4",
+      "fromStepId": "harborlight-clinic-step-approve",
+      "toStepId": "harborlight-clinic-step-schedule"
+    },
+    {
+      "id": "harborlight-clinic-hand-exception",
+      "fromStepId": "harborlight-clinic-step-match",
+      "toStepId": "harborlight-clinic-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "harborlight-clinic-hand-extra",
+      "fromStepId": "harborlight-clinic-step-query",
+      "toStepId": "harborlight-clinic-step-msg"
+    },
+    {
+      "id": "harborlight-clinic-hand-rejoin",
+      "fromStepId": "harborlight-clinic-step-msg",
+      "toStepId": "harborlight-clinic-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "harborlight-clinic-cp-approve",
+      "stepId": "harborlight-clinic-step-approve",
+      "rule": "Any message to a patient, or a decline.",
+      "approverSeatId": "harborlight-clinic-owner",
+      "required": true
+    },
+    {
+      "id": "harborlight-clinic-cp-msg",
+      "stepId": "harborlight-clinic-step-msg",
+      "rule": "Any message that includes clinical detail.",
+      "approverSeatId": "harborlight-clinic-owner",
+      "required": true
+    }
+  ]
+}

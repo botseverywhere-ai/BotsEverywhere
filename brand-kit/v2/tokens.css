@@ -1,0 +1,14 @@
+:root{
+ --be-bg:#F4F2EE; --be-ink:#111111; --be-stone:#E7E3DC; --be-grey:#8A857C; --be-link:#1D4ED8; --be-link-hover:#1E40AF; --be-link-visited:#1E40AF;
+ --be-font:"Inter",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+ --be-display:300 88px/0.98 var(--be-font); --be-display-track:-0.035em;
+ --be-h1:300 56px/1.04 var(--be-font); --be-h1-track:-0.03em;
+ --be-h2:400 36px/1.12 var(--be-font); --be-h2-track:-0.02em;
+ --be-h3:500 22px/1.25 var(--be-font); --be-h3-track:-0.01em;
+ --be-body:400 17px/1.55 var(--be-font); --be-body-track:-0.005em;
+ --be-small:400 14px/1.45 var(--be-font); --be-small-track:0;
+ --be-label:500 12px/1.25 var(--be-font); --be-label-track:0.08em;
+ --be-s1:4px;--be-s2:8px;--be-s3:12px;--be-s4:16px;--be-s5:24px;--be-s6:32px;--be-s7:48px;--be-s8:64px;--be-s9:96px;--be-s10:128px;
+ --be-radius:2px; --be-radius-pill:999px; --be-rule:1px solid var(--be-stone);
+ --be-max:1280px; --be-gutter:24px; --be-margin:80px;
+}

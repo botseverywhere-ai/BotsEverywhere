@@ -1,0 +1,17 @@
+[Unit]
+Description=BotsEverywhere API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/botseverywhere
+EnvironmentFile=/etc/botseverywhere.env
+ExecStart=/usr/bin/node dist-server/index.js
+Restart=on-failure
+RestartSec=3
+User=botseverywhere
+Group=botseverywhere
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

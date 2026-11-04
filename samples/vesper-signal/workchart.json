@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "vesper-signal-trigger",
+      "source": "customer",
+      "label": "A client asks for a read",
+      "example": "Cedar Route Transit asks why on-time performance dropped last Tuesday."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "vesper-signal-main",
+      "triggerId": "vesper-signal-trigger",
+      "outcome": "The client receives a sourced answer a person has approved.",
+      "ownerSeatId": "vesper-signal-owner",
+      "kind": "main",
+      "stepIds": [
+        "vesper-signal-step-extract",
+        "vesper-signal-step-match",
+        "vesper-signal-step-draft",
+        "vesper-signal-step-approve",
+        "vesper-signal-step-schedule"
+      ]
+    },
+    {
+      "id": "vesper-signal-exception",
+      "triggerId": "vesper-signal-trigger",
+      "outcome": "The broken definition is corrected or the answer is held.",
+      "ownerSeatId": "vesper-signal-owner",
+      "kind": "contingency",
+      "stepIds": [
+        "vesper-signal-step-query",
+        "vesper-signal-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "vesper-signal-step-extract",
+      "workstreamId": "vesper-signal-main",
+      "name": "Pull the source extract",
+      "level": 4,
+      "executorSeatId": "vesper-signal-data-pull",
+      "inputs": [
+        "Cedar Route Transit source document"
+      ],
+      "outputs": [
+        "Pull the source extract for Cedar Route Transit"
+      ]
+    },
+    {
+      "id": "vesper-signal-step-match",
+      "workstreamId": "vesper-signal-main",
+      "name": "Check the metric against the definition",
+      "level": 4,
+      "executorSeatId": "vesper-signal-metric-bot",
+      "inputs": [
+        "Cedar Route Transit source document"
+      ],
+      "outputs": [
+        "Check the metric against the definition for Cedar Route Transit"
+      ]
+    },
+    {
+      "id": "vesper-signal-step-draft",
+      "workstreamId": "vesper-signal-main",
+      "name": "Draft the insight memo",
+      "level": 2,
+      "executorSeatId": "vesper-signal-insight-bot",
+      "inputs": [
+        "Cedar Route Transit source document"
+      ],
+      "outputs": [
+        "Draft the insight memo for Cedar Route Transit"
+      ]
+    },
+    {
+      "id": "vesper-signal-step-approve",
+      "workstreamId": "vesper-signal-main",
+      "name": "Approve the client answer",
+      "level": 3,
+      "executorSeatId": "vesper-signal-owner",
+      "inputs": [
+        "Cedar Route Transit source document"
+      ],
+      "outputs": [
+        "Approve the client answer for Cedar Route Transit"
+      ],
+      "checkpointId": "vesper-signal-cp-approve"
+    },
+    {
+      "id": "vesper-signal-step-schedule",
+      "workstreamId": "vesper-signal-main",
+      "name": "Send the approved memo",
+      "level": 4,
+      "executorSeatId": "vesper-signal-send-bot",
+      "inputs": [
+        "Cedar Route Transit source document"
+      ],
+      "outputs": [
+        "Send the approved memo for Cedar Route Transit"
+      ]
+    },
+    {
+      "id": "vesper-signal-step-query",
+      "workstreamId": "vesper-signal-exception",
+      "name": "Draft the definition question",
+      "level": 4,
+      "executorSeatId": "vesper-signal-insight-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the definition question"
+      ]
+    },
+    {
+      "id": "vesper-signal-step-msg",
+      "workstreamId": "vesper-signal-exception",
+      "name": "Approve the question to the client",
+      "level": 3,
+      "executorSeatId": "vesper-signal-owner",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the question to the client"
+      ],
+      "checkpointId": "vesper-signal-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "vesper-signal-hand-1",
+      "fromStepId": "vesper-signal-step-extract",
+      "toStepId": "vesper-signal-step-match"
+    },
+    {
+      "id": "vesper-signal-hand-2",
+      "fromStepId": "vesper-signal-step-match",
+      "toStepId": "vesper-signal-step-draft"
+    },
+    {
+      "id": "vesper-signal-hand-3",
+      "fromStepId": "vesper-signal-step-draft",
+      "toStepId": "vesper-signal-step-approve"
+    },
+    {
+      "id": "vesper-signal-hand-4",
+      "fromStepId": "vesper-signal-step-approve",
+      "toStepId": "vesper-signal-step-schedule"
+    },
+    {
+      "id": "vesper-signal-hand-exception",
+      "fromStepId": "vesper-signal-step-match",
+      "toStepId": "vesper-signal-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "vesper-signal-hand-extra",
+      "fromStepId": "vesper-signal-step-query",
+      "toStepId": "vesper-signal-step-msg"
+    },
+    {
+      "id": "vesper-signal-hand-rejoin",
+      "fromStepId": "vesper-signal-step-msg",
+      "toStepId": "vesper-signal-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "vesper-signal-cp-approve",
+      "stepId": "vesper-signal-step-approve",
+      "rule": "Any number that leaves the firm, or a claim about a person.",
+      "approverSeatId": "vesper-signal-owner",
+      "required": true
+    },
+    {
+      "id": "vesper-signal-cp-msg",
+      "stepId": "vesper-signal-step-msg",
+      "rule": "Any question that leaves the firm.",
+      "approverSeatId": "vesper-signal-owner",
+      "required": true
+    }
+  ]
+}

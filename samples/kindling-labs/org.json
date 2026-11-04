@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Kindling Labs",
+    "tagline": "Workflow software for field service organizations.",
+    "industry": "Software",
+    "mark": "KL",
+    "markColor": "#0369a1"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "product",
+      "name": "Product"
+    },
+    {
+      "id": "engineering",
+      "name": "Engineering"
+    },
+    {
+      "id": "support",
+      "name": "Support"
+    },
+    {
+      "id": "roadmap",
+      "name": "Roadmap"
+    },
+    {
+      "id": "code-review",
+      "name": "Code review"
+    },
+    {
+      "id": "help-desk",
+      "name": "Help desk"
+    },
+    {
+      "id": "testing",
+      "name": "Testing"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "ticket-intake",
+      "name": "Ticket intake"
+    },
+    {
+      "id": "reproduction-notes",
+      "name": "Reproduction notes"
+    },
+    {
+      "id": "patch-summary",
+      "name": "Patch summary"
+    },
+    {
+      "id": "release-checklist",
+      "name": "Release checklist"
+    },
+    {
+      "id": "old-status-drafts",
+      "name": "Old status drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-kindling-labs-owner",
+      "name": "Jordan Hale",
+      "title": "Chief Executive",
+      "department": "leadership",
+      "email": "jordan.hale@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Jordan Hale is chief executive at Kindling Labs, working with Northwind Field Service.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-priya",
+      "name": "Product Bot",
+      "title": "Product",
+      "department": "product",
+      "email": "kindling-labs-priya@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Product Bot leads product at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-chris",
+      "name": "Engineering Bot",
+      "title": "Engineering",
+      "department": "engineering",
+      "email": "kindling-labs-chris@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Engineering Bot leads engineering at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-nora",
+      "name": "Support Bot",
+      "title": "Support",
+      "department": "support",
+      "email": "kindling-labs-nora@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Support Bot leads support at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-sam",
+      "name": "Roadmap Bot",
+      "title": "Roadmap",
+      "department": "roadmap",
+      "email": "kindling-labs-sam@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Roadmap Bot covers roadmap for Kindling Labs.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-leah",
+      "name": "Code Review Bot",
+      "title": "Code review",
+      "department": "code-review",
+      "email": "kindling-labs-leah@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Code Review Bot leads code review at Kindling Labs: it hands work to the bots on its team and passes approvals to Jordan Hale.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-owen",
+      "name": "Help Desk Bot",
+      "title": "Help desk",
+      "department": "help-desk",
+      "email": "kindling-labs-owen@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Help Desk Bot covers help desk for Kindling Labs.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-mia",
+      "name": "QA Bot",
+      "title": "Testing",
+      "department": "testing",
+      "email": "kindling-labs-mia@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "QA Bot covers testing for Kindling Labs.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-error-inbox",
+      "name": "Error Inbox",
+      "title": "Receives production errors",
+      "department": "operations",
+      "email": "kindling-labs-error-inbox@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Handles inbound files for Kindling Labs before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-kindling-labs-ticket-bot",
+      "name": "Ticket Bot",
+      "title": "Takes in support tickets",
+      "department": "ticket-intake",
+      "email": "kindling-labs-ticket-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Takes in support tickets.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-repro-bot",
+      "name": "Repro Bot",
+      "title": "Writes the steps to reproduce",
+      "department": "reproduction-notes",
+      "email": "kindling-labs-repro-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Writes the steps to reproduce.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-patch-bot",
+      "name": "Patch Bot",
+      "title": "Summarizes the fix",
+      "department": "patch-summary",
+      "email": "kindling-labs-patch-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Summarizes the fix.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-release-bot",
+      "name": "Release Bot",
+      "title": "Runs the release checklist",
+      "department": "release-checklist",
+      "email": "kindling-labs-release-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Runs the release checklist.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-kindling-labs-old-status-bot",
+      "name": "Old Status Bot",
+      "title": "Holds old status drafts",
+      "department": "old-status-drafts",
+      "email": "kindling-labs-old-status-bot@kindlinglabs.com",
+      "phone": "(617) 555-0104",
+      "location": "Boston",
+      "bio": "Holds old status drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "kindling-labs-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "kindling-labs-priya",
+      "reportsTo": "kindling-labs-owner"
+    },
+    {
+      "slug": "kindling-labs-chris",
+      "reportsTo": "kindling-labs-owner"
+    },
+    {
+      "slug": "kindling-labs-nora",
+      "reportsTo": "kindling-labs-owner"
+    },
+    {
+      "slug": "kindling-labs-sam",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-leah",
+      "reportsTo": "kindling-labs-chris"
+    },
+    {
+      "slug": "kindling-labs-owen",
+      "reportsTo": "kindling-labs-nora"
+    },
+    {
+      "slug": "kindling-labs-mia",
+      "reportsTo": "kindling-labs-leah"
+    },
+    {
+      "slug": "kindling-labs-error-inbox",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-ticket-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-repro-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-patch-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-release-bot",
+      "reportsTo": "kindling-labs-priya"
+    },
+    {
+      "slug": "kindling-labs-old-status-bot",
+      "reportsTo": "kindling-labs-priya"
+    }
+  ]
+}

@@ -1,0 +1,388 @@
+@import '../../brand-kit/v2/tokens.css';
+
+/*
+  App style guide. This file is the only place in src/ that may contain raw hex colors.
+  Brand kit values stay in brand-kit/v2/tokens.css (do not edit that file).
+  Components use these custom properties through classes. See docs/STYLEGUIDE.md.
+*/
+:root {
+  /* Color — surfaces and ink */
+  --color-bg: #FFFFFF;
+  --color-white: #FFFFFF;
+  --color-ink: #111111;
+  --color-ink-soft: #2A2A2A;
+  --color-muted: #5C574F;
+  --color-grey: #8A857C;
+  --color-line: #DDD8CF;
+  --color-stone: #E7E3DC;
+  --color-paper: #F7F5F1;
+  --color-inverse: #F4F2EE;
+  --color-inverse-muted: #CFCAC2;
+  --color-inverse-line: #3A3A3A;
+  --color-link: #1D4ED8;
+  --color-link-hover: #1E40AF;
+  --color-navy: #0B1220;
+
+  /* Color — legacy surfaces still used by older screens */
+  --color-slate: #94A3B8;
+  --color-slate-700: #334155;
+  --color-slate-500: #64748B;
+  --color-slate-300: #CBD5E1;
+  --color-slate-100: #E8EDF5;
+  --color-slate-50: #F8FAFC;
+  --color-gray-600: #4B5563;
+  --color-gray-500: #6B7280;
+  --color-gray-200: #E5E7EB;
+  --color-gray-100: #F3F4F6;
+  --color-blue-500: #3B82F6;
+  --color-blue-300: #93C5FD;
+  --color-blue-100: #DBEAFE;
+  --color-blue-50: #EFF6FF;
+  --color-blue-25: #F8FAFF;
+  --color-indigo-800: #3730A3;
+  --color-indigo-700: #4338CA;
+  --color-indigo-600: #4F46E5;
+  --color-indigo-200: #C7D2FE;
+  --color-indigo-100: #E0E7FF;
+  --color-indigo-50: #EEF2FF;
+  --color-violet-800: #5B21B6;
+  --color-violet-700: #6D28D9;
+  --color-violet-300: #C4B5FD;
+  --color-violet-200: #DDD6FE;
+  --color-violet-100: #EDE9FE;
+  --color-violet-50: #F5F3FF;
+  --color-purple-50: #FAF5FF;
+  --color-pink-100: #FCE7F3;
+  --color-green-700: #047857;
+  --color-green-400: #34D399;
+  --color-green-200: #A7F3D0;
+  --color-green-50: #ECFDF5;
+  --color-green-50b: #F0FDF4;
+  --color-emerald-600: #059669;
+  --color-emerald-100: #D1FAE5;
+  --color-teal-700: #0F766E;
+  --color-teal-50: #F0FDFA;
+  --color-amber-800: #92400E;
+  --color-amber-700: #B45309;
+  --color-amber-200: #FDE68A;
+  --color-amber-100: #FEF3C7;
+  --color-amber-50: #FFFBEB;
+  --color-orange-800: #9A3412;
+  --color-orange-700: #C2410C;
+  --color-orange-300: #FDBA74;
+  --color-orange-50: #FFF7ED;
+  --color-red-700: #B91C1C;
+  --color-red-50: #FEF2F2;
+
+  /* Brand aliases. Page background is white in the app; brand kit stays #F4F2EE. */
+  --be-bg: var(--color-bg);
+  --paper: var(--color-bg);
+  --surface: var(--color-bg);
+  --accent-fill: var(--color-paper);
+  --ink: var(--color-ink);
+  --stone: var(--color-stone);
+  --grey: var(--color-grey);
+  --link: var(--color-link);
+  --link-hover: var(--color-link-hover);
+  --line: var(--color-line);
+  --text-2: var(--color-muted);
+  --navy: var(--color-ink);
+  --gray: var(--color-paper);
+  --white: var(--color-white);
+  --muted: var(--color-muted);
+  --border: var(--color-line);
+  --page: var(--color-bg);
+  --blue: var(--color-blue-500);
+  --mint: var(--color-green-200);
+  --teal: var(--color-teal-700);
+  --purple: var(--color-violet-700);
+  --c: var(--color-link);
+
+  /* Typography */
+  --font: var(--be-font);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-2xs: 11px; /* non-essential labels only */
+  --text-tag: 12px; /* meaning-carrying tags: step type, BOT */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 15px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 36px;
+  --text-5xl: 40px;
+  --text-6xl: 48px;
+  --text-7xl: 56px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --leading-tight: 1.02;
+  --leading-snug: 1.15;
+  --leading-title: 1.25;
+  --leading-body: 1.5;
+  --track-tight: -0.035em;
+  --track-snug: -0.03em;
+  --track-label: 0.12em;
+
+  /* Spacing. Heading→subtext uses --space-heading. Subtext→CTA uses --space-cta. */
+  --space-1: var(--be-s1); /* 4 */
+  --space-2: var(--be-s2); /* 8 */
+  --space-3: var(--be-s3); /* 12 */
+  --space-4: var(--be-s4); /* 16 */
+  --space-5: var(--be-s5); /* 24 */
+  --space-6: var(--be-s6); /* 32 */
+  --space-7: var(--be-s7); /* 48 */
+  --space-8: var(--be-s8); /* 64 */
+  --space-9: var(--be-s9); /* 96 */
+  --space-10: var(--be-s10); /* 128 */
+  --space-heading: var(--space-3);
+  --space-cta: var(--space-5);
+  --section-pad: var(--space-8);
+  --section-pad-sm: var(--space-7);
+  --gutter: var(--be-gutter);
+  --page-max: var(--be-max);
+
+  /* Radii */
+  --radius-sm: 2px;
+  --radius: 2px;
+  --radius-compact: 0;
+  --control-radius: 0;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* Borders and hairlines */
+  --hairline-width: 1px;
+  --hairline: var(--hairline-width) solid var(--color-line);
+  --border-strong: var(--hairline-width) solid var(--color-ink);
+  --border-dashed: var(--hairline-width) dashed var(--color-ink);
+
+  /* Shadows and overlays */
+  --shadow: none;
+  --shadow-sm: none;
+  --overlay-blue-10: rgba(59, 130, 246, 0.1);
+  --overlay-blue-12: rgba(59, 130, 246, 0.12);
+  --overlay-blue-18: rgba(59, 130, 246, 0.18);
+  --overlay-navy-40: rgba(11, 18, 32, 0.4);
+  --overlay-navy-25: rgba(11, 18, 32, 0.25);
+  --overlay-navy-20: rgba(11, 18, 32, 0.2);
+  --overlay-white-94: rgba(255, 255, 255, 0.94);
+  --overlay-white-85: rgba(255, 255, 255, 0.85);
+  --overlay-white-35: rgba(255, 255, 255, 0.35);
+  --overlay-slate-35: rgba(15, 23, 42, 0.35);
+  --overlay-slate-12: rgba(15, 23, 42, 0.12);
+  --shadow-pop: 0 8px 28px var(--overlay-blue-10);
+  --shadow-pop-strong: 0 8px 28px var(--overlay-blue-18);
+  --shadow-seat: 0 8px 20px var(--overlay-blue-12);
+  --shadow-dialog: 0 24px 60px var(--overlay-navy-20);
+  --shadow-menu: 0 8px 24px var(--overlay-navy-25);
+  --shadow-drawer: -8px 0 30px var(--overlay-slate-12);
+  --overlay-ink-20: rgba(17, 17, 17, 0.2);
+
+  /* Z-index. Dropdowns stay under the leave dialog. */
+  --z-sticky: 2;
+  --z-dropdown: 4;
+  --z-drawer: 20;
+  --z-nav: 40;
+  --z-menu: 50;
+  --z-modal: 80;
+  --z-skip: 80;
+
+  /* Breakpoints. Media queries repeat these widths; custom properties cannot drive @media. */
+  --bp-mobile: 390px;
+  --bp-nav: 900px;
+  --bp-app: 800px;
+  --bp-desktop: 1280px;
+
+  /* Hiring rules strip and drawer marks. */
+  --strip-height: 36px;
+  --rule-icon: 16px;
+  --rule-ring: 1.5px;
+  --rule-block-max: 140px;
+  --track-label: 0.08em;
+
+  /* Focus */
+  --focus-ring-width: 2px;
+  --focus-ring-color: var(--color-ink);
+  --focus-ring: var(--focus-ring-width) solid var(--focus-ring-color);
+  --focus-ring-offset: 2px;
+
+  /* Buttons. One size. See docs/design-tokens.md. */
+  --btn-height: 36px;
+  /* Native <select> chevron. Stroke matches --color-ink (#111111) at --rule-ring (1.5px).
+     A data-URI background cannot resolve var(), so the ink hex lives on this token. */
+  --select-chevron-size: 10px;
+  --select-chevron-inset: 10px;
+  --select-pad-right: calc(var(--select-chevron-inset) + var(--select-chevron-size) + var(--space-2));
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 3.5L5 6.5L8 3.5' stroke='%23111111' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --btn-height-compact: var(--btn-height);
+  --btn-font-size: var(--text-sm);
+  --btn-pad-y: var(--space-2);
+  --btn-pad-x: var(--space-4);
+  --btn-gap: var(--space-2);
+  --btn-radius: var(--control-radius);
+  --btn-weight: var(--weight-medium);
+  --btn-primary-bg: var(--color-ink);
+  --btn-primary-fg: var(--color-white);
+  --btn-primary-border: var(--color-ink);
+  --btn-secondary-bg: var(--color-white);
+  --btn-secondary-fg: var(--color-ink);
+  --btn-secondary-border: var(--color-ink);
+  --btn-ghost-bg: var(--color-white);
+  --btn-ghost-fg: var(--color-ink);
+  --btn-ghost-border: var(--color-ink);
+  --btn-disabled-bg: var(--color-paper);
+  --btn-disabled-fg: var(--color-muted);
+  --btn-disabled-border: var(--color-line);
+  --btn-bg: var(--btn-primary-bg);
+  --btn-fg: var(--btn-primary-fg);
+
+  /* Controls that are not the Button (tabs, search, menus). */
+  --control-height: 44px;
+  --btn-height-sm: 32px;
+  --btn-height-md: 40px;
+  --btn-height-lg: 48px;
+  --btn-pad-x-sm: var(--space-3);
+  --tag-size: var(--text-tag);
+  --tag-size-present: var(--text-sm);
+  --org-zoom: 1;
+  --org-tag-floor: 11px; /* spec §10: BOT/SYS tags and initials */
+  --org-body-floor: 12px;
+  --tag-weight: var(--weight-semibold);
+  --tag-track: 0.06em;
+  --card-bg: var(--color-white);
+  --card-radius: var(--radius-sm);
+  --card-border: var(--hairline);
+  --card-pad: var(--space-5);
+  --nav-height: 72px;
+  --nav-gap: var(--space-5);
+  --nav-link: var(--color-ink);
+  --nav-size: var(--text-md);
+  --logo-nav: 28px; /* lockup, halfway back from 31px toward 26px */
+  --logo-footer: 40px;
+  --footer-label-track: 0.12em;
+  --node-min: 200px;
+  --drawer-width: 480px;
+  --logo-mark-sm: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; }
+a:hover, a:visited { color: var(--color-link-hover); }
+button, select, input, textarea {
+  font-family: inherit;
+  color: var(--color-ink);
+  background: var(--color-white);
+  border: var(--hairline);
+  border-radius: var(--control-radius);
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: var(--btn-height);
+  padding: 0 var(--select-pad-right) 0 var(--space-3);
+  border-radius: var(--control-radius);
+  background-color: var(--color-white);
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right var(--select-chevron-inset) center;
+  background-size: var(--select-chevron-size) var(--select-chevron-size);
+  line-height: 1.2;
+}
+select:disabled {
+  color: var(--btn-disabled-fg);
+  background-color: var(--btn-disabled-bg);
+}
+button { cursor: pointer; }
+input[type='checkbox'], input[type='radio'] { accent-color: var(--color-ink); width: auto; }
+.brand { display: flex; align-items: center; }
+.brand img { height: var(--logo-nav); width: auto; display: block; }
+.brand-sm img { height: var(--logo-mark-sm); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap);
+  height: var(--btn-height);
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border-radius: var(--btn-radius);
+  border-width: var(--hairline-width);
+  border-style: solid;
+  border-color: transparent;
+  font-weight: var(--btn-weight);
+  font-size: var(--btn-font-size);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); }
+.btn:disabled, .btn[aria-disabled='true'] {
+  background: var(--btn-disabled-bg);
+  color: var(--btn-disabled-fg);
+  border-color: var(--btn-disabled-border);
+  cursor: not-allowed;
+}
+.btn.is-busy:disabled {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border-color: var(--btn-primary-border);
+  cursor: wait;
+}
+.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border-color: var(--btn-primary-border);
+}
+.btn-primary:hover, .btn-primary:visited, .btn-primary:focus {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+.btn-secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
+  border-color: var(--btn-secondary-border);
+}
+.btn-secondary:hover, .btn-secondary:visited, .btn-secondary:focus {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
+}
+.btn-ghost {
+  background: var(--btn-ghost-bg);
+  color: var(--btn-ghost-fg);
+  border-color: var(--btn-ghost-border);
+}
+.btn-ghost:hover, .btn-ghost:visited, .btn-ghost:focus {
+  background: var(--color-paper);
+  color: var(--btn-ghost-fg);
+}
+.btn-block { width: 100%; }
+.card { background: var(--card-bg); border: var(--card-border); border-radius: var(--card-radius); }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+}
+.badge.staffed { background: var(--color-paper); color: var(--color-ink); }
+.badge.empty { background: var(--color-paper); color: var(--color-muted); }
+.badge.review { background: var(--color-stone); color: var(--color-ink); }
+.toggle { display: inline-flex; background: var(--color-white); border: var(--hairline); border-radius: var(--control-radius); padding: 3px; }
+.toggle button { padding: var(--space-2) var(--space-4); border-radius: var(--control-radius); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-muted); }
+.toggle button.active { background: var(--color-ink); color: var(--color-white); }

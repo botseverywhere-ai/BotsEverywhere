@@ -1,0 +1,1106 @@
+[
+  {
+    "slug": "broken-link-bot",
+    "name": "Broken Link Bot",
+    "category": "Content/SEO",
+    "summary": "Lists broken addresses and redirect chains from the check results the team already ran.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "build-journal-bot",
+    "name": "Build Journal Bot",
+    "category": "Content/SEO",
+    "summary": "Turns the week's commits and notes into a post draft, without publishing it.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "link-bot",
+    "name": "Link Bot",
+    "category": "Content/SEO",
+    "summary": "Suggests links from a draft to pages on the list the team provided.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "page-title-bot",
+    "name": "Page Title Bot",
+    "category": "Content/SEO",
+    "summary": "Drafts a title and a description from the page text, and does not edit the live page.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "search-brief-bot",
+    "name": "Search Brief Bot",
+    "category": "Content/SEO",
+    "summary": "Writes a search brief for one query: the intent, an outline, and the sources the team already attached.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "champion-bot",
+    "name": "Champion Bot",
+    "category": "Customer Success",
+    "summary": "Lists the champion recorded on each account, and the accounts with nobody recorded.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "customer-setup-bot",
+    "name": "Customer Setup Bot",
+    "category": "Customer Success",
+    "summary": "Tracks a new customer's setup steps against the checklist the team already uses.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "renewal-bot",
+    "name": "Renewal Bot",
+    "category": "Customer Success",
+    "summary": "Lists customer renewals whose stored date falls in the window, and does not quote a price.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "renewal-risk-bot",
+    "name": "Renewal Risk Bot",
+    "category": "Customer Success",
+    "summary": "Lists accounts the usage file already marks as dropping, without offering a discount.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "dashboard-bot",
+    "name": "Dashboard Bot",
+    "category": "Data",
+    "summary": "Checks dashboards against the usage notes and the broken marks the team already recorded.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "metric-change-bot",
+    "name": "Metric Change Bot",
+    "category": "Data",
+    "summary": "Flags metric rows the table already marks as a sudden change, and does not page anyone.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "query-bot",
+    "name": "Query Bot",
+    "category": "Data",
+    "summary": "Drafts a read-only query from a question and the tables the team listed.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "spreadsheet-bot",
+    "name": "Spreadsheet Bot",
+    "category": "Data",
+    "summary": "Deduplicates and normalizes a table from the rules the team wrote, without overwriting the source.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "acceptance-bot",
+    "name": "Acceptance Bot",
+    "category": "Engineering",
+    "summary": "Drafts acceptance criteria from behavior the spec already states.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "bug-bot",
+    "name": "Bug Bot",
+    "category": "Engineering",
+    "summary": "Sorts a new bug report into what is known, what is missing, and which queue it belongs in.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "build-failure-bot",
+    "name": "Build Failure Bot",
+    "category": "Engineering",
+    "summary": "Explains a failed CI log from the text provided and suggests a fix only when the log states the cause.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "change-summary-bot",
+    "name": "Change Summary Bot",
+    "category": "Engineering",
+    "summary": "Summarizes a pull request from its description and the list of files changed.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "code-review-bot",
+    "name": "Code Review Bot",
+    "category": "Engineering",
+    "summary": "Writes a first-pass review from the pull request description and the diff summary provided.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "demo-notes-bot",
+    "name": "Demo Notes Bot",
+    "category": "Engineering",
+    "summary": "Turns saved demo notes into possible tasks, and does not push code.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "issue-bot",
+    "name": "Issue Bot",
+    "category": "Engineering",
+    "summary": "Compares a new issue with the open issues provided and suggests a label only from the label list.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "release-note-bot",
+    "name": "Release Note Bot",
+    "category": "Engineering",
+    "summary": "Drafts the internal release note from the changes the release owner marked as included.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "community-bot",
+    "name": "Community Bot",
+    "category": "Events/Community",
+    "summary": "Collects the week's community questions into one digest and does not answer them in public.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "event-recap-bot",
+    "name": "Event Recap Bot",
+    "category": "Events/Community",
+    "summary": "Drafts a recap and follow-ups from the notes taken at the event.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "meetup-bot",
+    "name": "Meetup Bot",
+    "category": "Events/Community",
+    "summary": "Drafts a run-of-show and a checklist for an organization meetup from the event record.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "rsvp-bot",
+    "name": "RSVP Bot",
+    "category": "Events/Community",
+    "summary": "Counts replies already recorded and drafts a reminder only from the text the team approved.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "speaker-bot",
+    "name": "Speaker Bot",
+    "category": "Events/Community",
+    "summary": "Tracks titles, bios, and slides against what each confirmed speaker has sent.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "board-pack-bot",
+    "name": "Board Pack Bot",
+    "category": "Executive/Admin",
+    "summary": "Checks a board pack against the section list the team already uses.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "calendar-bot",
+    "name": "Calendar Bot",
+    "category": "Executive/Admin",
+    "summary": "Prepares a day's meetings from the calendar titles and the notes already attached to them.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "chief-of-staff-bot",
+    "name": "Chief of Staff Bot",
+    "category": "Executive/Admin",
+    "summary": "Prepares a daily brief of decisions waiting on the principal, and leaves everything else as FYI.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "decision-bot",
+    "name": "Decision Bot",
+    "category": "Executive/Admin",
+    "summary": "Records a decision from the meeting notes in a form the team can look up later.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "inbox-bot",
+    "name": "Inbox Bot",
+    "category": "Executive/Admin",
+    "summary": "Sorts messages into reply, decide, or FYI, and drafts a reply only where the thread already has the answer.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "meeting-prep-bot",
+    "name": "Meeting Prep Bot",
+    "category": "Executive/Admin",
+    "summary": "Writes a one-page brief for one meeting from the invite and the notes already attached to it.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "scheduling-bot",
+    "name": "Scheduling Bot",
+    "category": "Executive/Admin",
+    "summary": "Proposes meeting times and drafts invites, and books nothing until a person confirms.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "weekly-review-bot",
+    "name": "Weekly Review Bot",
+    "category": "Executive/Admin",
+    "summary": "Turns the week's written updates into shipped, slipped, and blocked for a leadership read.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "expense-bot",
+    "name": "Bookkeeping Bot",
+    "category": "Finance",
+    "summary": "Categorizes receipts against the team's categories and flags the ones missing a required field.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "budget-bot",
+    "name": "Budget Bot",
+    "category": "Finance",
+    "summary": "Explains each budget line using the variance the table already shows.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "expense-review-bot",
+    "name": "Expense Review Bot",
+    "category": "Finance",
+    "summary": "Checks expense lines against the written rules and lists what needs a person to decide.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "invoice-bot",
+    "name": "Invoice Bot",
+    "category": "Finance",
+    "summary": "Matches supplier invoices to open purchase orders and lists what does not agree.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "month-end-bot",
+    "name": "Month-end Bot",
+    "category": "Finance",
+    "summary": "Builds the month-end close checklist from the tasks the finance lead already listed.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "collections-bot",
+    "name": "Payment Reminder Bot",
+    "category": "Finance",
+    "summary": "Drafts a payment reminder for invoices the ledger already marks overdue.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "subscription-bot",
+    "name": "Subscription Bot",
+    "category": "Finance",
+    "summary": "Lists unused or duplicate subscriptions from the inventory and the usage notes the team already recorded.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "candidate-bot",
+    "name": "Candidate Bot",
+    "category": "HR",
+    "summary": "Compares an application with the role card and marks each requirement met, not met, or not shown.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "interview-question-bot",
+    "name": "Interview Question Bot",
+    "category": "HR",
+    "summary": "Drafts interview questions from the requirements the team already listed for the role.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "interview-schedule-bot",
+    "name": "Interview Schedule Bot",
+    "category": "HR",
+    "summary": "Drafts interview slots and invite text from the availability already collected.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "job-post-bot",
+    "name": "Job Post Bot",
+    "category": "HR",
+    "summary": "Drafts a job post from the role description the hiring manager already wrote.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "offboarding-bot",
+    "name": "Offboarding Bot",
+    "category": "HR",
+    "summary": "Builds the exit checklist of access to review and assets to return from the lists the team already keeps.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "onboarding-bot",
+    "name": "Onboarding Bot",
+    "category": "HR",
+    "summary": "Builds a first-week checklist for a new hire from the role and the tasks the team already uses.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "policy-bot",
+    "name": "Policy Bot",
+    "category": "HR",
+    "summary": "Answers an employee question by quoting the policy text and saying when the policy does not cover it.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "time-off-bot",
+    "name": "Time-off Bot",
+    "category": "HR",
+    "summary": "Turns a time-off request into a draft the manager can accept or refuse against the written rules.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "device-bot",
+    "name": "Device Bot",
+    "category": "IT",
+    "summary": "Lists laptops with the owner and warranty date already stored, and flags rows that are incomplete.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "domain-bot",
+    "name": "Domain Bot",
+    "category": "IT",
+    "summary": "Lists domains and certificates whose stored end date falls inside the window the team set.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "it-help-bot",
+    "name": "IT Help Bot",
+    "category": "IT",
+    "summary": "Answers a how-to question from the internal docs provided, and says when they do not cover it.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "license-bot",
+    "name": "License Bot",
+    "category": "IT",
+    "summary": "Compares paid seats with assigned seats from the license list, and names seats the list marks unused.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "access-check-bot",
+    "name": "Access Check Bot",
+    "category": "Legal & Compliance",
+    "summary": "Compares a bot's access with the seat card and lists access the card does not allow.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "access-review-bot",
+    "name": "Access Review Bot",
+    "category": "Legal & Compliance",
+    "summary": "Compares who has access with the role list and flags accounts the list does not explain.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "audit-evidence-bot",
+    "name": "Audit Evidence Bot",
+    "category": "Legal & Compliance",
+    "summary": "Matches attached evidence to the items a control request already names.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "claim-bot",
+    "name": "Claim Bot",
+    "category": "Legal & Compliance",
+    "summary": "Flags claims in a draft that the support notes do not back, including partnership claims.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "contract-bot",
+    "name": "Contract Bot",
+    "category": "Legal & Compliance",
+    "summary": "Flags clauses in a contract draft that differ from the positions the team already wrote down.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "contract-clause-bot",
+    "name": "Contract Clause Bot",
+    "category": "Legal & Compliance",
+    "summary": "Pulls the clauses a team asked for out of a contract and marks the ones it cannot find.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "contract-date-bot",
+    "name": "Contract Date Bot",
+    "category": "Legal & Compliance",
+    "summary": "Lists contract dates that fall in a window, using only the dates stored on each record.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "data-check-bot",
+    "name": "Data Check Bot",
+    "category": "Legal & Compliance",
+    "summary": "Checks a proposed integration against the tools the team already approved for data.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "nda-bot",
+    "name": "NDA Bot",
+    "category": "Legal & Compliance",
+    "summary": "Checks an incoming NDA against the points the team already wrote down.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "policy-ack-bot",
+    "name": "Policy Acknowledgement Bot",
+    "category": "Legal & Compliance",
+    "summary": "Lists who has and has not acknowledged a policy, from the acknowledgement records.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "policy-change-bot",
+    "name": "Policy Change Bot",
+    "category": "Legal & Compliance",
+    "summary": "Summarizes what changed between two versions of a policy the team provided.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "privacy-request-bot",
+    "name": "Privacy Request Bot",
+    "category": "Legal & Compliance",
+    "summary": "Logs a personal-data request and drafts a response from the facts and the deadline already on the request.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "terms-bot",
+    "name": "Terms Bot",
+    "category": "Legal & Compliance",
+    "summary": "Summarizes what changed between two versions of a vendor's terms, and does not accept them.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "vendor-form-bot",
+    "name": "Vendor Form Bot",
+    "category": "Legal & Compliance",
+    "summary": "Drafts questionnaire answers only from a fact sheet the team already wrote.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "campaign-bot",
+    "name": "Campaign Bot",
+    "category": "Marketing",
+    "summary": "Turns an approved campaign brief into drafts and a review queue, and does not post them.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "campaign-brief-bot",
+    "name": "Campaign Brief Bot",
+    "category": "Marketing",
+    "summary": "Drafts a campaign brief from the offer, the audience, and the constraint the team already wrote down.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "changelog-bot",
+    "name": "Changelog Bot",
+    "category": "Marketing",
+    "summary": "Turns merged change notes into a changelog a reader outside the team can follow.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "customer-update-bot",
+    "name": "Customer Update Bot",
+    "category": "Marketing",
+    "summary": "Rewrites an approved internal release note into customer language without adding changes.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "launch-bot",
+    "name": "Launch Bot",
+    "category": "Marketing",
+    "summary": "Builds a launch checklist from the tasks the team listed and shows which ones have no owner.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "mention-bot",
+    "name": "Mention Bot",
+    "category": "Marketing",
+    "summary": "Digests the day's mentions into a list a person can read, and does not reply.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "post-bot",
+    "name": "Post Bot",
+    "category": "Marketing",
+    "summary": "Drafts one post in the brand voice notes the team already wrote, from the notes they dropped in.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "post-repurpose-bot",
+    "name": "Post Repurpose Bot",
+    "category": "Marketing",
+    "summary": "Turns one published long piece into a thread draft and a longer-post draft, without new claims.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "access-request-bot",
+    "name": "Access Request Bot",
+    "category": "Ops",
+    "summary": "Compares an access request with the access the role list already allows.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "bid-bot",
+    "name": "Bid Bot",
+    "category": "Ops",
+    "summary": "Lays supplier bids side by side on the criteria the buyer already listed.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "incident-bot",
+    "name": "Incident Bot",
+    "category": "Ops",
+    "summary": "Writes a plain incident note from the timeline people already recorded.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "leaver-bot",
+    "name": "Leaver Bot",
+    "category": "Ops",
+    "summary": "Lists the access to review on a leave date from the records the team already keeps.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "new-hire-setup-bot",
+    "name": "New Hire Setup Bot",
+    "category": "Ops",
+    "summary": "Builds the system-account checklist for a new hire from the standard list for their role.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "procedure-bot",
+    "name": "Procedure Bot",
+    "category": "Ops",
+    "summary": "Turns a walkthrough the team recorded into a standard procedure, without adding steps.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "purchase-check-bot",
+    "name": "Purchase Check Bot",
+    "category": "Ops",
+    "summary": "Checks a purchase request for the fields the team requires and leaves the approval to a person.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "request-bot",
+    "name": "Request Bot",
+    "category": "Ops",
+    "summary": "Classifies a new request against the service list and names the owner that list already gives.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "schedule-bot",
+    "name": "Schedule Bot",
+    "category": "Ops",
+    "summary": "Drafts next week's coverage from the availability people already sent and the roles that must be filled.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "stock-bot",
+    "name": "Stock Bot",
+    "category": "Ops",
+    "summary": "Lists items at or below the reorder point already stored on the inventory.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "supplier-doc-bot",
+    "name": "Supplier Document Bot",
+    "category": "Ops",
+    "summary": "Checks whether a new supplier packet contains the documents the team named.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "vendor-chase-bot",
+    "name": "Vendor Chase Bot",
+    "category": "Ops",
+    "summary": "Drafts a chase note for a vendor delivery that is past the date already on the order.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "price-watch-bot",
+    "name": "Price Watch Bot",
+    "category": "Procurement",
+    "summary": "Watches a target item and the price already listed, and drafts a note when the listing matches.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "purchase-bot",
+    "name": "Purchase Bot",
+    "category": "Procurement",
+    "summary": "Turns a purchase request into a short spec and up to three options already in the notes.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "spend-limit-bot",
+    "name": "Spend Limit Bot",
+    "category": "Procurement",
+    "summary": "Flags a new purchase order whose amount is above the threshold the team already set.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "decision-search-bot",
+    "name": "Decision Search Bot",
+    "category": "Product",
+    "summary": "Answers where a decision was recorded, using only the notes the team provided.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "demo-script-bot",
+    "name": "Demo Script Bot",
+    "category": "Product",
+    "summary": "Updates the demo click-path from the build notes, and flags steps the notes say no longer work.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "feedback-bot",
+    "name": "Feedback Bot",
+    "category": "Product",
+    "summary": "Groups feedback notes into themes and keeps a quote with each theme.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "roadmap-bot",
+    "name": "Roadmap Bot",
+    "category": "Product",
+    "summary": "Says what moved on the roadmap between two versions, and why only if the note says why.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "spec-bot",
+    "name": "Spec Bot",
+    "category": "Product",
+    "summary": "Turns a tagged idea into a one-page spec from the problem the note already states.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "adoption-bot",
+    "name": "Adoption Bot",
+    "category": "Research",
+    "summary": "Summarizes the team's own notes on where groups sit with bots, without sharing a person's data.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "cited-answer-bot",
+    "name": "Cited Answer Bot",
+    "category": "Research",
+    "summary": "Answers a request only with claims a provided source supports, and cites that source.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "competitor-bot",
+    "name": "Competitor Bot",
+    "category": "Research",
+    "summary": "Summarizes competitor changes from the notes the team already collected.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "data-pull-bot",
+    "name": "Data Pull Bot",
+    "category": "Research",
+    "summary": "Turns a question into the tables, fields, and filters a person must pull.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "feedback-tag-bot",
+    "name": "Feedback Tag Bot",
+    "category": "Research",
+    "summary": "Tags feedback notes with the tag list the team already defined.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "interview-notes-bot",
+    "name": "Interview Notes Bot",
+    "category": "Research",
+    "summary": "Synthesizes interview notes into themes, and keeps a comment tied to the person who said it.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "report-check-bot",
+    "name": "Report Check Bot",
+    "category": "Research",
+    "summary": "Checks a draft report against the section list the team requires.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "social-digest-bot",
+    "name": "Social Digest Bot",
+    "category": "Research",
+    "summary": "Digests posts from a curated list the team already keeps, and does not reply.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "source-bot",
+    "name": "Source Bot",
+    "category": "Research",
+    "summary": "Summarizes a source the researcher already supplied and separates what it says from what it does not.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "weekly-numbers-bot",
+    "name": "Weekly Numbers Bot",
+    "category": "Research",
+    "summary": "Writes the weekly note from figures the team already put in a table.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "call-follow-up-bot",
+    "name": "Call Follow-up Bot",
+    "category": "Sales",
+    "summary": "Drafts the follow-up a seller can send after a call, using only what was said.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "call-recap-bot",
+    "name": "Call Recap Bot",
+    "category": "Sales",
+    "summary": "Turns a call transcript into next steps and a CRM draft, using only what was said.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "discovery-bot",
+    "name": "Discovery Bot",
+    "category": "Sales",
+    "summary": "Turns discovery-call notes into a record of what the buyer said and what is still unanswered.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "follower-log-bot",
+    "name": "Follower Log Bot",
+    "category": "Sales",
+    "summary": "Logs new followers and direct messages into a CRM draft, without sending anything.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "pipeline-bot",
+    "name": "Pipeline Bot",
+    "category": "Sales",
+    "summary": "Summarizes open deals from the notes the team already wrote, without forecasting a number.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "proposal-bot",
+    "name": "Proposal Bot",
+    "category": "Sales",
+    "summary": "Outlines a proposal from what the buyer asked for and the scope the seller already wrote.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "quote-bot",
+    "name": "Quote Bot",
+    "category": "Sales",
+    "summary": "Checks a draft quote against the price list and points at every line that does not match.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "sales-follow-up-bot",
+    "name": "Sales Follow-up Bot",
+    "category": "Sales",
+    "summary": "Checks each new lead against the ideal-customer points the team already wrote, without contacting anyone.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "stale-deal-bot",
+    "name": "Stale Deal Bot",
+    "category": "Sales",
+    "summary": "Lists open deals that are stale or missing a next step, from the dates and notes already on them.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "dependency-bot",
+    "name": "Dependency Bot",
+    "category": "Security",
+    "summary": "Lists dependency advisories the team already pasted, matched to the dependencies in the file.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "instruction-check-bot",
+    "name": "Instruction Check Bot",
+    "category": "Security",
+    "summary": "Flags bot inputs that try to override the bot's instructions, and does not run the requested action.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "phishing-bot",
+    "name": "Phishing Bot",
+    "category": "Security",
+    "summary": "Classifies a reported message from the headers and body provided, and does not block anyone.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "secret-bot",
+    "name": "Secret Bot",
+    "category": "Security",
+    "summary": "Flags secrets in the text the team provided, and does not repeat the secret in the report.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "account-note-bot",
+    "name": "Account Note Bot",
+    "category": "Support",
+    "summary": "Writes one account note from the latest call notes and the open tasks already on file.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "escalation-bot",
+    "name": "Escalation Bot",
+    "category": "Support",
+    "summary": "Writes an escalation note when a ticket meets a written rule for leaving the frontline queue.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "help-gap-bot",
+    "name": "Help Gap Bot",
+    "category": "Support",
+    "summary": "Lists questions from the week that the article list does not answer.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "known-issue-bot",
+    "name": "Known Issue Bot",
+    "category": "Support",
+    "summary": "Checks a ticket against the known-issue list and says whether it matches one.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "refund-bot",
+    "name": "Refund Bot",
+    "category": "Support",
+    "summary": "Checks a refund request against the written refund rules and does not issue the refund.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "review-agenda-bot",
+    "name": "Review Agenda Bot",
+    "category": "Support",
+    "summary": "Drafts a business-review agenda from open items and the template the team already uses.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "support-bot",
+    "name": "Support Bot",
+    "category": "Support",
+    "summary": "Drafts a reply to a customer ticket from the article or policy text you were given.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "support-handoff-bot",
+    "name": "Support Handoff Bot",
+    "category": "Support",
+    "summary": "Drafts the handoff from the account owner to support from the account file.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "ticket-sort-bot",
+    "name": "Ticket Sort Bot",
+    "category": "Support",
+    "summary": "Classifies a new ticket against the categories and priority rules the team wrote.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "action-item-bot",
+    "name": "Action Item Bot",
+    "category": "Team management",
+    "summary": "Pulls tasks out of meeting notes and leaves owner blank when the notes name nobody.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "backup-plan-bot",
+    "name": "Backup Plan Bot",
+    "category": "Team management",
+    "summary": "Opens a workstream draft when an intake matches none of the routines the team already defined.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "handoff-bot",
+    "name": "Handoff Bot",
+    "category": "Team management",
+    "summary": "Flags work that has sat between a person and a bot for more than the wait the team set.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "handoff-note-bot",
+    "name": "Handoff Note Bot",
+    "category": "Team management",
+    "summary": "Writes a handoff when a piece of work moves from one owner to another.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "meeting-brief-bot",
+    "name": "Meeting Brief Bot",
+    "category": "Team management",
+    "summary": "Turns the week's notes into a one-page brief for the next team meeting.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "role-card-bot",
+    "name": "Role Card Bot",
+    "category": "Team management",
+    "summary": "Drafts Owns, May, Needs approval, and Done when from the job description the team already wrote.",
+    "core": true,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "roster-bot",
+    "name": "Roster Bot",
+    "category": "Team management",
+    "summary": "Compares the org chart with who actually did this week's work and lists the mismatches.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "standup-bot",
+    "name": "Standup Bot",
+    "category": "Team management",
+    "summary": "Collects the async updates people already sent into one standup.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "status-bot",
+    "name": "Status Bot",
+    "category": "Team management",
+    "summary": "Combines written status updates into one note and keeps disagreements visible.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "weekly-tip-bot",
+    "name": "Weekly Tip Bot",
+    "category": "Team management",
+    "summary": "Drafts one weekly tip and one exercise for each teammate from the skill note the team already wrote.",
+    "core": false,
+    "addToGrokBotUrl": null
+  },
+  {
+    "slug": "work-chart-bot",
+    "name": "Work Chart Bot",
+    "category": "Team management",
+    "summary": "Turns a routine the team described into a trigger, steps, an owner, and an approver.",
+    "core": true,
+    "addToGrokBotUrl": null
+  }
+]

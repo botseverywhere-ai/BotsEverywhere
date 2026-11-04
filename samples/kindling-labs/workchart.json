@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "kindling-labs-trigger",
+      "source": "alert",
+      "label": "A customer bug is filed",
+      "example": "Northwind Field Service reports that completed jobs are not syncing after 6 p.m."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "kindling-labs-main",
+      "triggerId": "kindling-labs-trigger",
+      "outcome": "A fix is ready for release, or the bug is returned with a reason.",
+      "ownerSeatId": "kindling-labs-owner",
+      "kind": "main",
+      "stepIds": [
+        "kindling-labs-step-extract",
+        "kindling-labs-step-match",
+        "kindling-labs-step-draft",
+        "kindling-labs-step-approve",
+        "kindling-labs-step-schedule"
+      ]
+    },
+    {
+      "id": "kindling-labs-exception",
+      "triggerId": "kindling-labs-trigger",
+      "outcome": "The missing detail is requested, or the ticket is closed as not reproduced.",
+      "ownerSeatId": "kindling-labs-owner",
+      "kind": "contingency",
+      "stepIds": [
+        "kindling-labs-step-query",
+        "kindling-labs-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "kindling-labs-step-extract",
+      "workstreamId": "kindling-labs-main",
+      "name": "Capture the report",
+      "level": 4,
+      "executorSeatId": "kindling-labs-error-inbox",
+      "inputs": [
+        "Northwind Field Service source document"
+      ],
+      "outputs": [
+        "Capture the report for Northwind Field Service"
+      ]
+    },
+    {
+      "id": "kindling-labs-step-match",
+      "workstreamId": "kindling-labs-main",
+      "name": "Write the reproduction note",
+      "level": 4,
+      "executorSeatId": "kindling-labs-repro-bot",
+      "inputs": [
+        "Northwind Field Service source document"
+      ],
+      "outputs": [
+        "Write the reproduction note for Northwind Field Service"
+      ]
+    },
+    {
+      "id": "kindling-labs-step-draft",
+      "workstreamId": "kindling-labs-main",
+      "name": "Summarize the patch",
+      "level": 2,
+      "executorSeatId": "kindling-labs-patch-bot",
+      "inputs": [
+        "Northwind Field Service source document"
+      ],
+      "outputs": [
+        "Summarize the patch for Northwind Field Service"
+      ]
+    },
+    {
+      "id": "kindling-labs-step-approve",
+      "workstreamId": "kindling-labs-main",
+      "name": "Approve the release",
+      "level": 3,
+      "executorSeatId": "kindling-labs-owner",
+      "inputs": [
+        "Northwind Field Service source document"
+      ],
+      "outputs": [
+        "Approve the release for Northwind Field Service"
+      ],
+      "checkpointId": "kindling-labs-cp-approve"
+    },
+    {
+      "id": "kindling-labs-step-schedule",
+      "workstreamId": "kindling-labs-main",
+      "name": "Queue the release",
+      "level": 4,
+      "executorSeatId": "kindling-labs-release-bot",
+      "inputs": [
+        "Northwind Field Service source document"
+      ],
+      "outputs": [
+        "Queue the release for Northwind Field Service"
+      ]
+    },
+    {
+      "id": "kindling-labs-step-query",
+      "workstreamId": "kindling-labs-exception",
+      "name": "Draft the question to support",
+      "level": 4,
+      "executorSeatId": "kindling-labs-patch-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the question to support"
+      ]
+    },
+    {
+      "id": "kindling-labs-step-msg",
+      "workstreamId": "kindling-labs-exception",
+      "name": "Approve the customer question",
+      "level": 3,
+      "executorSeatId": "kindling-labs-owner",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the customer question"
+      ],
+      "checkpointId": "kindling-labs-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "kindling-labs-hand-1",
+      "fromStepId": "kindling-labs-step-extract",
+      "toStepId": "kindling-labs-step-match"
+    },
+    {
+      "id": "kindling-labs-hand-2",
+      "fromStepId": "kindling-labs-step-match",
+      "toStepId": "kindling-labs-step-draft"
+    },
+    {
+      "id": "kindling-labs-hand-3",
+      "fromStepId": "kindling-labs-step-draft",
+      "toStepId": "kindling-labs-step-approve"
+    },
+    {
+      "id": "kindling-labs-hand-4",
+      "fromStepId": "kindling-labs-step-approve",
+      "toStepId": "kindling-labs-step-schedule"
+    },
+    {
+      "id": "kindling-labs-hand-exception",
+      "fromStepId": "kindling-labs-step-match",
+      "toStepId": "kindling-labs-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "kindling-labs-hand-extra",
+      "fromStepId": "kindling-labs-step-query",
+      "toStepId": "kindling-labs-step-msg"
+    },
+    {
+      "id": "kindling-labs-hand-rejoin",
+      "fromStepId": "kindling-labs-step-msg",
+      "toStepId": "kindling-labs-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "kindling-labs-cp-approve",
+      "stepId": "kindling-labs-step-approve",
+      "rule": "Any production release, or a customer-facing status.",
+      "approverSeatId": "kindling-labs-owner",
+      "required": true
+    },
+    {
+      "id": "kindling-labs-cp-msg",
+      "stepId": "kindling-labs-step-msg",
+      "rule": "Any question that goes to the customer.",
+      "approverSeatId": "kindling-labs-owner",
+      "required": true
+    }
+  ]
+}

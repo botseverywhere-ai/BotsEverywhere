@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Rowan & Co.",
+    "tagline": "Audit and advisory for owner-managed organizations.",
+    "industry": "Accounting",
+    "mark": "RC",
+    "markColor": "#1d4ed8"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "assurance",
+      "name": "Assurance"
+    },
+    {
+      "id": "tax",
+      "name": "Tax"
+    },
+    {
+      "id": "advisory",
+      "name": "Advisory"
+    },
+    {
+      "id": "audit",
+      "name": "Audit"
+    },
+    {
+      "id": "accounting",
+      "name": "Accounting"
+    },
+    {
+      "id": "tax-preparation",
+      "name": "Tax preparation"
+    },
+    {
+      "id": "workpapers",
+      "name": "Workpapers"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "pbc-intake",
+      "name": "PBC intake"
+    },
+    {
+      "id": "tie-out-check",
+      "name": "Tie-out check"
+    },
+    {
+      "id": "exception-memo",
+      "name": "Exception memo"
+    },
+    {
+      "id": "close-checklist",
+      "name": "Close checklist"
+    },
+    {
+      "id": "old-sampling-notes",
+      "name": "Old sampling notes"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-rowan-accountants-owner",
+      "name": "Margaret Rowan",
+      "title": "Managing Partner",
+      "department": "leadership",
+      "email": "margaret.rowan@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Margaret Rowan is managing partner at Rowan & Co., working with Piedmont Mills.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-rowan-accountants-david",
+      "name": "Assurance Bot",
+      "title": "Assurance",
+      "department": "assurance",
+      "email": "rowan-accountants-david@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Assurance Bot leads assurance at Rowan & Co.: it hands work to the bots on its team and passes approvals to Margaret Rowan.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-anita",
+      "name": "Tax Bot",
+      "title": "Tax",
+      "department": "tax",
+      "email": "rowan-accountants-anita@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Tax Bot leads tax at Rowan & Co.: it hands work to the bots on its team and passes approvals to Margaret Rowan.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-paul",
+      "name": "Advisory Bot",
+      "title": "Advisory",
+      "department": "advisory",
+      "email": "rowan-accountants-paul@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Advisory Bot covers advisory for Rowan & Co..",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-nina",
+      "name": "Audit Bot",
+      "title": "Audit",
+      "department": "audit",
+      "email": "rowan-accountants-nina@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Audit Bot covers audit for Rowan & Co..",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-omar",
+      "name": "Accounting Bot",
+      "title": "Accounting",
+      "department": "accounting",
+      "email": "rowan-accountants-omar@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Accounting Bot leads accounting at Rowan & Co.: it hands work to the bots on its team and passes approvals to Margaret Rowan.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-liz",
+      "name": "Tax Prep Bot",
+      "title": "Tax preparation",
+      "department": "tax-preparation",
+      "email": "rowan-accountants-liz@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Tax Prep Bot covers tax preparation for Rowan & Co..",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-evan",
+      "name": "Workpaper Bot",
+      "title": "Workpapers",
+      "department": "workpapers",
+      "email": "rowan-accountants-evan@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Workpaper Bot covers workpapers for Rowan & Co..",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-client-inbox",
+      "name": "Client File Inbox",
+      "title": "Receives client uploads",
+      "department": "operations",
+      "email": "rowan-accountants-client-inbox@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Handles inbound files for Rowan & Co. before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-rowan-accountants-client-file-bot",
+      "name": "Client File Bot",
+      "title": "Takes in client files",
+      "department": "pbc-intake",
+      "email": "rowan-accountants-client-file-bot@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Takes in client files.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-tie-out-bot",
+      "name": "Tie-out Bot",
+      "title": "Checks that the numbers match",
+      "department": "tie-out-check",
+      "email": "rowan-accountants-tie-out-bot@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Checks that the numbers match.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-exception-bot",
+      "name": "Exception Bot",
+      "title": "Drafts the exception memo",
+      "department": "exception-memo",
+      "email": "rowan-accountants-exception-bot@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Drafts the exception memo.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-close-bot",
+      "name": "Close Bot",
+      "title": "Runs the month-end checklist",
+      "department": "close-checklist",
+      "email": "rowan-accountants-close-bot@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Runs the month-end checklist.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-rowan-accountants-old-notes-bot",
+      "name": "Old Notes Bot",
+      "title": "Holds old sampling notes",
+      "department": "old-sampling-notes",
+      "email": "rowan-accountants-old-notes-bot@rowanandco.com",
+      "phone": "(704) 555-0160",
+      "location": "Charlotte",
+      "bio": "Holds old sampling notes.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "rowan-accountants-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "rowan-accountants-david",
+      "reportsTo": "rowan-accountants-owner"
+    },
+    {
+      "slug": "rowan-accountants-anita",
+      "reportsTo": "rowan-accountants-owner"
+    },
+    {
+      "slug": "rowan-accountants-paul",
+      "reportsTo": "rowan-accountants-owner"
+    },
+    {
+      "slug": "rowan-accountants-nina",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-omar",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-liz",
+      "reportsTo": "rowan-accountants-anita"
+    },
+    {
+      "slug": "rowan-accountants-evan",
+      "reportsTo": "rowan-accountants-omar"
+    },
+    {
+      "slug": "rowan-accountants-client-inbox",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-client-file-bot",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-tie-out-bot",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-exception-bot",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-close-bot",
+      "reportsTo": "rowan-accountants-david"
+    },
+    {
+      "slug": "rowan-accountants-old-notes-bot",
+      "reportsTo": "rowan-accountants-david"
+    }
+  ]
+}

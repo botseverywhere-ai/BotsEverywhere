@@ -1,0 +1,281 @@
+{
+  "company": {
+    "name": "Lark & Field",
+    "tagline": "Brand and campaign work for regional consumer organizations.",
+    "industry": "Marketing agency",
+    "mark": "LF",
+    "markColor": "#7c3aed"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "client-services",
+      "name": "Client services"
+    },
+    {
+      "id": "creative-direction",
+      "name": "Creative direction"
+    },
+    {
+      "id": "production",
+      "name": "Production"
+    },
+    {
+      "id": "account-management",
+      "name": "Account management"
+    },
+    {
+      "id": "media-planning",
+      "name": "Media planning"
+    },
+    {
+      "id": "studio-work",
+      "name": "Studio work"
+    },
+    {
+      "id": "job-traffic",
+      "name": "Job traffic"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "brief-intake",
+      "name": "Brief intake"
+    },
+    {
+      "id": "asset-matching",
+      "name": "Asset matching"
+    },
+    {
+      "id": "first-draft-copy",
+      "name": "First-draft copy"
+    },
+    {
+      "id": "schedule-and-handoff",
+      "name": "Schedule and handoff"
+    },
+    {
+      "id": "old-social-drafts",
+      "name": "Old social drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-lark-field-owner",
+      "name": "Claire Fenwick",
+      "title": "Managing Director",
+      "department": "leadership",
+      "email": "claire.fenwick@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Claire Fenwick is managing director at Lark & Field, working with Hale Grocery.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-nina",
+      "name": "Client Services Bot",
+      "title": "Client services",
+      "department": "client-services",
+      "email": "lark-field-nina@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Client Services Bot leads client services at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-samir",
+      "name": "Creative Bot",
+      "title": "Creative direction",
+      "department": "creative-direction",
+      "email": "lark-field-samir@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Creative Bot leads creative direction at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-ruth",
+      "name": "Production Bot",
+      "title": "Production",
+      "department": "production",
+      "email": "lark-field-ruth@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Production Bot leads production at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-leah",
+      "name": "Account Bot",
+      "title": "Account management",
+      "department": "account-management",
+      "email": "lark-field-leah@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Account Bot covers account management for Lark & Field.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-chris",
+      "name": "Media Plan Bot",
+      "title": "Media planning",
+      "department": "media-planning",
+      "email": "lark-field-chris@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Media Plan Bot covers media planning for Lark & Field.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-paulo",
+      "name": "Studio Bot",
+      "title": "Studio work",
+      "department": "studio-work",
+      "email": "lark-field-paulo@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Studio Bot leads studio work at Lark & Field: it hands work to the bots on its team and passes approvals to Claire Fenwick.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-ivy",
+      "name": "Traffic Bot",
+      "title": "Job traffic",
+      "department": "job-traffic",
+      "email": "lark-field-ivy@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Traffic Bot covers job traffic for Lark & Field.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-brief-inbox",
+      "name": "Brief Inbox",
+      "title": "Receives campaign briefs",
+      "department": "operations",
+      "email": "lark-field-brief-inbox@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Handles inbound files for Lark & Field before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-lark-field-brief-bot",
+      "name": "Brief Bot",
+      "title": "Takes in campaign briefs",
+      "department": "brief-intake",
+      "email": "lark-field-brief-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Takes in campaign briefs.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-asset-bot",
+      "name": "Asset Bot",
+      "title": "Matches campaign assets",
+      "department": "asset-matching",
+      "email": "lark-field-asset-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Matches campaign assets.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-copy-bot",
+      "name": "Copy Bot",
+      "title": "Drafts campaign copy",
+      "department": "first-draft-copy",
+      "email": "lark-field-copy-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Drafts campaign copy.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-schedule-bot",
+      "name": "Schedule Bot",
+      "title": "Schedules the handoff",
+      "department": "schedule-and-handoff",
+      "email": "lark-field-schedule-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Schedules the handoff.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-lark-field-old-post-bot",
+      "name": "Old Post Bot",
+      "title": "Holds old social drafts",
+      "department": "old-social-drafts",
+      "email": "lark-field-old-post-bot@larkandfield.com",
+      "phone": "(212) 555-0146",
+      "location": "New York",
+      "bio": "Holds old social drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "lark-field-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "lark-field-nina",
+      "reportsTo": "lark-field-owner"
+    },
+    {
+      "slug": "lark-field-samir",
+      "reportsTo": "lark-field-owner"
+    },
+    {
+      "slug": "lark-field-ruth",
+      "reportsTo": "lark-field-owner"
+    },
+    {
+      "slug": "lark-field-leah",
+      "reportsTo": "lark-field-nina"
+    },
+    {
+      "slug": "lark-field-chris",
+      "reportsTo": "lark-field-nina"
+    },
+    {
+      "slug": "lark-field-paulo",
+      "reportsTo": "lark-field-samir"
+    },
+    {
+      "slug": "lark-field-ivy",
+      "reportsTo": "lark-field-paulo"
+    },
+    {
+      "slug": "lark-field-brief-inbox",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-brief-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-asset-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-copy-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-schedule-bot",
+      "reportsTo": "lark-field-ruth"
+    },
+    {
+      "slug": "lark-field-old-post-bot",
+      "reportsTo": "lark-field-ruth"
+    }
+  ]
+}

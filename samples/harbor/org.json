@@ -1,0 +1,31 @@
+{
+  "company": {
+    "name": "Harbor Studio",
+    "tagline": "A sample organization shipped with the template.",
+    "industry": "Design studio",
+    "mark": "HS",
+    "markColor": "#7C3AED"
+  },
+  "departments": [
+    { "id": "leadership", "name": "Leadership" },
+    { "id": "delivery", "name": "Delivery" }
+  ],
+  "people": [
+    {
+      "id": "person-amina",
+      "name": "Amina Shah",
+      "title": "Founder",
+      "department": "leadership",
+      "email": "amina@harbor.example",
+      "phone": "",
+      "location": "Lisbon",
+      "bio": "Amina keeps the approve. Harbor Studio is fictional."
+    }
+  ],
+  "seats": [
+    { "slug": "amina", "reportsTo": null },
+    { "slug": "research-bot", "reportsTo": "amina" },
+    { "slug": "client-note-bot", "reportsTo": "amina" },
+    { "slug": "website-bot", "reportsTo": "amina" }
+  ]
+}

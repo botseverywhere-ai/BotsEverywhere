@@ -1,0 +1,73 @@
+{
+  "triggers": [
+    {
+      "id": "harbor-trigger",
+      "source": "customer",
+      "label": "Client kickoff",
+      "example": "A new client asks Harbor for a one-page launch note."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "harbor-main",
+      "triggerId": "harbor-trigger",
+      "outcome": "Approved launch note",
+      "ownerSeatId": "amina",
+      "kind": "main",
+      "stepIds": ["harbor-brief", "harbor-draft", "harbor-page", "harbor-approve"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "harbor-brief",
+      "workstreamId": "harbor-main",
+      "name": "Source-checked brief",
+      "level": 2,
+      "executorSeatId": "research-bot",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "id": "harbor-draft",
+      "workstreamId": "harbor-main",
+      "name": "Draft the note",
+      "level": 2,
+      "executorSeatId": "client-note-bot",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "id": "harbor-page",
+      "workstreamId": "harbor-main",
+      "name": "Update the page",
+      "level": 2,
+      "executorSeatId": "website-bot",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "id": "harbor-approve",
+      "workstreamId": "harbor-main",
+      "name": "Founder approve",
+      "level": 2,
+      "executorSeatId": "amina",
+      "inputs": [],
+      "outputs": [],
+      "checkpointId": "harbor-cp"
+    }
+  ],
+  "handoffs": [
+    { "id": "harbor-hand-1", "fromStepId": "harbor-brief", "toStepId": "harbor-draft" },
+    { "id": "harbor-hand-2", "fromStepId": "harbor-draft", "toStepId": "harbor-page" },
+    { "id": "harbor-hand-3", "fromStepId": "harbor-page", "toStepId": "harbor-approve" }
+  ],
+  "checkpoints": [
+    {
+      "id": "harbor-cp",
+      "stepId": "harbor-approve",
+      "rule": "Nothing goes to the client until Amina says yes.",
+      "approverSeatId": "amina",
+      "required": true
+    }
+  ]
+}

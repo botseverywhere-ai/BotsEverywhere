@@ -1,0 +1,291 @@
+import assert from 'node:assert/strict'
+import { existsSync, readFileSync } from 'node:fs'
+import test from 'node:test'
+import { formatShortDate } from '../src/bot-metrics.ts'
+import type { ProcessFile } from '../src/processes.ts'
+import type { BoardBot, RoutineBoard } from '../src/routine-board.ts'
+import { HANDOFFS_HINT, IDLE_HINT, OFF_CHART_HINT, ROUTINES_HINT, deleteFlowText, flowSegment, idleWithRoutines, importSummary, laneNoRoutine, lanePaused, laneProblems, laneRoutine, laneRuns, routinesOffChart, scheduleWords } from '../../src/components/routine-board-copy.ts'
+import { connectedApps } from '../../src/org/bot-apps.ts'
+import { skillCount, skillsInGrok } from '../../src/org/bot-skills.ts'
+
+const bot = (slug: string, source: BoardBot['source'], routines: BoardBot['routines'] = []): BoardBot => ({ slug, title: slug.toUpperCase(), source, reportedAt: '', routines })
+const flow = (name: string, seat: string, description = ''): Pick<ProcessFile, 'name' | 'steps' | 'trigger'> => ({ name, steps: [{ seat, action: 'Do it' }], trigger: { type: 'schedule', schedule: '49 8 * * 1', source: '', description } })
+const board: RoutineBoard = { bots: [
+  bot('x-com', 'bot', [{ name: 'Inner Loop milestone check', schedule: '0 9,21 * * *', trigger: 'schedule', timeZone: 'Europe/Madrid', enabled: true, lastRun: '2026-10-28T09:09:57+01:00', nextRun: '2026-10-28T20:00:00.000Z' }]),
+  bot('aura', 'files', [{ name: 'Aura production health', schedule: '0 9 * * 1-5', trigger: 'schedule', enabled: true }, { name: 'Old routine', schedule: '0 9 * * 1', trigger: 'schedule', enabled: false }]),
+  bot('eggbot', 'none'),
+  bot('connector', 'app', [{ name: 'BotsEverywhere sync', schedule: '*/20 * * * *', trigger: 'schedule', enabled: true }]),
+] }
+
+test("a flow shows the routine of the same name owned by the bot on its first step", () => {
+  assert.equal(laneRoutine(flow('inner loop milestone check', 'x-com'), board)?.routine.lastRun, '2026-10-28T09:09:57+01:00', 'names match without regard to case')
+  assert.equal(laneRoutine(flow('Inner Loop milestone check', 'aura'), board), null, "another bot's routine is not this flow's")
+  assert.equal(laneRoutine(flow('Anything', 'eggbot'), board), null)
+  assert.equal(laneRoutine(flow('Anything', 'x-com'), null), null)
+  assert.equal(laneRoutine(flow('BotsEverywhere Connector run', 'connector'), board)?.routine.name, 'BotsEverywhere sync', "the Connector has one routine, whatever Grok Bot's file calls its flow")
+  assert.equal(lanePaused(flow('BotsEverywhere Connector run', 'connector'), laneRoutine(flow('BotsEverywhere Connector run', 'connector'), board)), false, 'so it shows Active')
+})
+
+test("a routine flow's badge comes only from the bot's own report or the (paused) mark, never a guess; a handoff has none", () => {
+  assert.equal(lanePaused(flow('Inner Loop milestone check', 'x-com', 'Daily (paused)'), laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), false, "the bot's report wins over an old mark")
+  assert.equal(lanePaused(flow('transcript-healthcheck', 'eggbot', 'Weekdays at 08:44, Europe/Madrid (paused)'), null), true)
+  assert.equal(lanePaused(flow('Aura production health', 'aura', 'Weekdays (paused)'), laneRoutine(flow('Aura production health', 'aura'), board)), true, "the mark wins over Grok Bot's stale files")
+  assert.equal(lanePaused(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), null, "Grok Bot's files alone give no badge")
+  assert.equal(lanePaused(flow('Weekly brief', 'eggbot'), null), null, 'no routine reported: no badge')
+  assert.equal(lanePaused({ ...flow('Inner Loop milestone check', 'x-com'), trigger: { type: 'event', schedule: '', source: 'email', description: '' } }, laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), null, 'an event flow is a handoff: no badge')
+  assert.equal(lanePaused({ ...flow('Build handoff', 'eggbot'), trigger: { type: 'manual', schedule: '', source: '', description: 'Outer Loop has a change' } }, null), null, 'a manual flow shows no state')
+})
+
+test('routines and handoffs are different segments: a scheduled flow is a routine a bot starts on its own; a manual or event flow is a handoff', () => {
+  const at = (type: 'schedule' | 'event' | 'manual') => ({ trigger: { type, schedule: '', source: '', description: '' } })
+  assert.equal(flowSegment(at('schedule')), 'routines')
+  assert.equal(flowSegment(at('manual')), 'handoffs')
+  assert.equal(flowSegment(at('event')), 'handoffs')
+  assert.equal(ROUTINES_HINT, 'Flows whose trigger is a schedule: a bot starts them on its own. The badge says whether its routine is on (Active) or off (Paused) in Grok Bot.')
+  assert.equal(HANDOFFS_HINT, "Flows whose trigger is someone handing work on, or an event like an email. Nothing runs on a timer, so there's no badge.")
+  assert.equal(OFF_CHART_HINT, "These routines run in Grok Bot, but this Work Chart doesn't show their steps yet. Import processes from Grok Bot and each one becomes a flow with all its steps.")
+  assert.equal(IDLE_HINT, 'Bots that do no step in any flow on this Work Chart yet.')
+})
+
+test('bots without work that still run routines with no flow are named; when none do, nothing more is said', () => {
+  const off = [{ bot: 'Tradbot' }, { bot: 'Tradbot' }, { bot: 'Overheard' }, { bot: 'x.com' }]
+  assert.equal(idleWithRoutines(['Events', 'UX/UI'], off), '', 'none of them run a routine without a flow')
+  assert.equal(idleWithRoutines(['Events', 'Tradbot'], off), 'Tradbot still runs routines in Grok Bot, listed under Routines without a flow.')
+  assert.equal(idleWithRoutines(['Overheard', 'Events', 'Tradbot'], off), 'Overheard and Tradbot still run routines in Grok Bot, listed under Routines without a flow.')
+  assert.equal(idleWithRoutines(['A', 'B', 'C'], [{ bot: 'A' }, { bot: 'B' }, { bot: 'C' }]), 'A, B and C still run routines in Grok Bot, listed under Routines without a flow.')
+})
+
+test('a routine flow with no badge says why; one with a badge, a handoff, or a stale file match says nothing more', () => {
+  assert.equal(laneNoRoutine(flow('Weekly brief', 'eggbot'), null), "No badge yet: the bot hasn't reported a routine with this name.")
+  assert.equal(laneNoRoutine(flow('Inner Loop milestone check', 'x-com'), laneRoutine(flow('Inner Loop milestone check', 'x-com'), board)), '')
+  assert.equal(laneNoRoutine(flow('Aura production health', 'aura'), laneRoutine(flow('Aura production health', 'aura'), board)), '', 'the last-run line already says the bot has not confirmed it')
+  assert.equal(laneNoRoutine(flow('transcript-healthcheck', 'eggbot', 'Weekdays (paused)'), null), '')
+  assert.equal(laneNoRoutine({ ...flow('Build handoff', 'eggbot'), trigger: { type: 'manual', schedule: '', source: '', description: '' } }, null), '')
+})
+
+test('a routine not on the Work Chart shows Paused only when its bot says so, and an event routine shows its event', () => {
+  const own = { bots: [bot('lead', 'bot', [
+    { name: 'Weekly', schedule: '0 9 * * 1', trigger: 'schedule' as const, timeZone: 'Europe/Madrid', enabled: false },
+    { name: 'Inbox watch', schedule: '', trigger: 'email' as const, event: 'A supplier invoice lands', enabled: true },
+  ])] }
+  assert.deepEqual(routinesOffChart(own, []), [
+    { bot: 'LEAD', name: 'Weekly', schedule: scheduleWords('0 9 * * 1', 'Europe/Madrid'), paused: true },
+    { bot: 'LEAD', name: 'Inbox watch', schedule: 'A supplier invoice lands', paused: false },
+  ])
+})
+
+test('a flow names what needs your attention: a step whose seat is gone or retired, a last run that failed, a schedule faster than hourly', () => {
+  const seats = [
+    { slug: 'inner', title: 'Inner Loop', status: 'active' as const },
+    { slug: 'old', title: 'Old Bot', status: 'retired' as const },
+    { slug: 'connector', title: 'Connector - BotsEverywhere (acn8)', status: 'active' as const },
+  ]
+  const process = (steps: { seat: string; action: string }[], schedule = '0 9 * * 1'): ProcessFile => ({ slug: 'p', name: 'Weekly', trigger: { type: 'schedule', schedule, source: '', description: '' }, steps, doneWhen: '', next: '', notes: '' })
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }]), seats, []), [])
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }, { seat: 'old', action: 'Review' }, { seat: 'gone', action: 'Ship' }]), seats, []), ['Old Bot is retired', 'gone is not a seat in this organization'])
+  assert.deepEqual(laneProblems(process([{ seat: '', action: 'Ship' }]), seats, []), ['A step has no seat'])
+  const failed = [
+    { date: '2026-10-28', time: '09:00', bot: 'Inner Loop', process: 'Weekly', step: 'Check', status: 'done' as const, note: '-', index: 0 },
+    { date: '2026-10-28', time: '09:01', bot: 'Inner Loop', process: 'Weekly', step: 'Review', status: 'failed' as const, note: 'timeout', index: 1 },
+  ]
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }, { seat: 'inner', action: 'Review' }]), seats, failed), ['The last run failed at: Review'])
+  assert.deepEqual(laneProblems(process([{ seat: 'inner', action: 'Check' }], '*/10 * * * *'), seats, []), ['Runs more than once an hour'])
+  assert.deepEqual(laneProblems(process([{ seat: 'connector', action: 'Sync' }], '*/20 * * * *'), seats, []), [], "the Connector's own run is meant to run often")
+})
+
+test('a schedule reads in words with its time zone; a cron line with no words stays as it is', () => {
+  assert.equal(scheduleWords('49 8 * * 1', 'Europe/Madrid'), 'Every Monday at 8:49 AM · Europe/Madrid')
+  assert.equal(scheduleWords('0 9,21 * * *'), 'Every day at 9:00 AM and 9:00 PM')
+  assert.equal(scheduleWords('*/20 * * * *'), 'Every 20 minutes')
+  assert.equal(scheduleWords('5 4 * 2 *'), '5 4 * 2 *')
+  assert.equal(scheduleWords('Mon 09:00'), 'Mon 09:00')
+})
+
+test("a flow's last and next run come from the bot's report: a paused routine has no next run; Grok Bot's files give only the last run, marked not confirmed", () => {
+  const last = '2026-10-28T09:00:12+01:00'
+  const next = '2026-10-28T20:00:00.000Z'
+  const live = (routine: { enabled?: boolean; lastRun?: string; nextRun?: string }, source: 'bot' | 'files' = 'bot') => ({ source, routine: { name: 'R', schedule: '0 9 * * *', ...routine } })
+  assert.deepEqual(laneRuns(live({ enabled: true, lastRun: last, nextRun: next })), { last: formatShortDate(last), next: formatShortDate(next), note: '' })
+  assert.deepEqual(laneRuns(live({ enabled: true, nextRun: next })), { last: 'Never', next: formatShortDate(next), note: '' })
+  assert.deepEqual(laneRuns(live({ enabled: false, lastRun: last, nextRun: next })), { last: formatShortDate(last), next: '', note: '' }, 'paused: no next run')
+  assert.deepEqual(laneRuns(live({ enabled: false })), { last: 'Never', next: '', note: '' })
+  assert.deepEqual(laneRuns(live({ lastRun: '2026-09-18T09:12:52+02:00', nextRun: next }, 'files')), { last: formatShortDate('2026-09-18T09:12:52+02:00'), next: '', note: 'Not confirmed by the bot yet' })
+  assert.deepEqual(laneRuns(live({}, 'files')), { last: 'Unknown', next: '', note: 'Not confirmed by the bot yet' })
+  assert.equal(laneRuns(null), null)
+  assert.equal(laneRuns(laneRoutine(flow('Inner Loop milestone check', 'x-com'), board))?.last, formatShortDate('2026-10-28T09:09:57+01:00'))
+})
+
+test('a flow reads as a header with its name, badges, and Delete, then its trigger and runs as labeled facts; a routine does not repeat its schedule in words', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /<div className="process-lane-head">\n\s+<h2>\{process\.name\}<\/h2>\n\s+<div className="process-lane-actions">/, 'name on the left, badges and Delete on the right')
+  assert.match(chart, /\{editable \? <Button variant="secondary" type="button" className="process-delete" onClick=\{onDelete\}>Delete<\/Button> : null\}/)
+  assert.match(chart, /<dl className="process-runs">\n\s+<dt>Last run<\/dt>\n\s+<dd>\{runs\.last\}<\/dd>\n\s+\{runs\.next \? <><dt>Next run<\/dt><dd>\{runs\.next\}<\/dd><\/> : null\}/)
+  assert.match(chart, /\{flowSegment\(process\) === 'handoffs' && process\.trigger\.description \? <p>\{process\.trigger\.description\}<\/p> : null\}/, "only a handoff's trigger needs its words")
+  assert.equal(chart.includes('process-lane-tools'), false)
+  assert.equal(chart.includes('laneWhen'), false)
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.process-lane-head \{/)
+  assert.match(css, /\.process-runs \{/)
+  assert.equal(css.includes('.process-lane-tools'), false)
+  assert.match(css, /\.process-steps \{ list-style: none; display: flex; align-items: stretch; gap: var\(--space-2\); margin: 0; padding: 0 0 var\(--space-3\); overflow-x: auto; \}/, 'room between the steps and their scrollbar')
+  assert.match(css, /\.be-body > \.preview-drawer \{ align-self: start; background: var\(--color-white\); \}/, 'a seat panel beside a chart scrolls with the page, not on its own')
+})
+
+test("routines a bot reports that have no flow yet are named once; the Connector's own run is not one of them", () => {
+  assert.deepEqual(routinesOffChart(board, [{ name: 'Inner Loop milestone check' }, { name: 'aura production health' }]), [{ bot: 'AURA', name: 'Old routine', schedule: scheduleWords('0 9 * * 1'), paused: false }], "Grok Bot's files never say paused")
+  assert.deepEqual(routinesOffChart(board, []).map((item) => [item.name, item.paused]), [['Inner Loop milestone check', false], ['Aura production health', false], ['Old routine', false]])
+  assert.deepEqual(routinesOffChart(null, []), [])
+})
+
+test("every bot is connected to the account's apps: connected first, then the ones that need signing in again", () => {
+  assert.deepEqual(connectedApps([{ name: 'Finance', status: 'needsAuth' }, { name: 'X', status: 'connected' }, { name: 'Gmail', status: 'connected' }]), [
+    { name: 'X', status: 'connected' },
+    { name: 'Gmail', status: 'connected' },
+    { name: 'Finance', status: 'needsAuth' },
+  ])
+  assert.deepEqual(connectedApps(undefined), [])
+})
+
+test("a bot's skills are the ones it reported in Grok Bot and the ones added here, each once by name; unknown until either is there", () => {
+  const reported = [{ name: 'graph-skill', description: 'Exports the team' }, { name: 'Court one-pager' }]
+  const added = [{ name: 'court one-pager', description: 'Saved from here' }, { name: 'Invoices' }, { name: ' ' }]
+  assert.deepEqual(skillsInGrok(reported, added), [{ name: 'graph-skill', description: 'Exports the team' }], 'one on both lists shows once, as added here')
+  assert.deepEqual(skillsInGrok(undefined, added), [])
+  assert.equal(skillCount(reported, added), 3, 'graph-skill, Court one-pager and Invoices; a blank row is not a skill')
+  assert.equal(skillCount([], []), 0, 'the bot reported none')
+  assert.equal(skillCount(undefined, []), null, 'not reported and none added: unknown')
+  assert.equal(skillCount(undefined, [{ name: 'Invoices' }]), 1)
+})
+
+test('the Work Chart only shows what Grok Bot runs: no New process, Edit, Copy for Grok Bot, or Simulate; Delete stays', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  for (const gone of ['+ New process', 'Copy for Grok Bot', 'Simulate a run', 'ProcessDrawer', '/simulate', "method: 'PUT'", 'routinePrompt', '>Edit<']) assert.equal(chart.includes(gone), false, gone)
+  assert.match(chart, />Delete<\/Button>/)
+  const docs = readFileSync(new URL('../../src/pages/DocsPage.tsx', import.meta.url), 'utf8')
+  for (const gone of ['+ New process', 'Copy for Grok Bot', 'Simulate a run', 'or when the action contains send, pay, post']) assert.equal(docs.includes(gone), false, gone)
+  assert.ok(docs.includes('Importing again replaces each flow with Grok Bot&apos;s latest version.'))
+  assert.ok(docs.includes('<strong>Delete</strong> removes a flow from this Work Chart only and never changes Grok Bot. It asks first.'))
+  assert.match(chart, /<p>\{deleteFlowText\(removing\)\}<\/p>/)
+})
+
+test('deleting a flow says it changes only this Work Chart, never Grok Bot, and where a routine goes', () => {
+  const at = (type: 'schedule' | 'manual') => ({ trigger: { type, schedule: '', source: '', description: '' } })
+  assert.equal(deleteFlowText(at('schedule')), "This removes the flow from this Work Chart only. Grok Bot doesn't change: the routine keeps running there and moves to Routines without a flow. Importing processes from Grok Bot again brings the flow back.")
+  assert.equal(deleteFlowText(at('manual')), "This removes the flow from this Work Chart only. Grok Bot doesn't change. Importing processes from Grok Bot again brings the flow back.")
+})
+
+test('the import says how many flows are new and how many it updated', () => {
+  assert.equal(importSummary([{ replaced: false }, { replaced: false }]), 'Imported 2 new processes')
+  assert.equal(importSummary([{ replaced: true }]), 'Updated 1 process')
+  assert.equal(importSummary([{ replaced: false }, { replaced: true }, { replaced: true }]), 'Imported 1 new process and updated 2')
+  assert.equal(importSummary([]), 'Nothing imported')
+})
+
+test('a Work Chart with no flows explains itself: the intro, its empty boxes, and the import from Grok Bot, open', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /const empty = processes\.length === 0/)
+  assert.match(chart, /\{empty \? null : <p className="process-fallback">/, 'no fallback line before there is work')
+  assert.equal(chart.includes('be-empty'), false, 'the empty boxes say it instead')
+  assert.equal(chart.includes('process-idle'), false, 'bots without work are a box like the others')
+  assert.match(chart, /<details className="link-panel" open=\{empty\}>/)
+  assert.match(chart, /\{editable && empty \? \(\n\s+<div className="process-intro">/, 'an empty Work Chart explains itself under the title')
+  for (const line of [
+    'The Work Chart shows the work your bots already do in Grok Bot: one flow for each routine or handoff, with its trigger (what starts it), each step in order, and who does it.',
+    'Click <strong>Copy prompt</strong> below and paste it into Grok Bot.',
+    'Grok Bot sends you a file named <code>botseverywhere-processes.json</code>. Save it.',
+    'Click <strong>Import processes file</strong> and pick that file.',
+  ]) assert.ok(chart.includes(line), line)
+  assert.equal(chart.includes('Sync with Grok Bot adds them as flows'), false)
+  assert.equal(chart.includes('process-off-chart'), false, 'routines off the chart are their own segment, not a note')
+})
+
+test('the Work Chart shows routines, handoffs, routines without a flow, and bots without work as boxes, with segmented buttons to show all or one', () => {
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /const routineFlows = processes\.filter\(\(process\) => flowSegment\(process\) === 'routines'\)/)
+  assert.match(chart, /const handoffFlows = processes\.filter\(\(process\) => flowSegment\(process\) === 'handoffs'\)/)
+  assert.match(chart, /const idleBots = seats\.filter\(\(seat\) => seat\.kind === 'bot' && seat\.status !== 'retired' && !used\.has\(seat\.slug\)\)/)
+  assert.match(chart, /<div className="process-show" role="group" aria-label="Show">/, 'one row of buttons, not a dropdown')
+  assert.match(chart, /<Button key=\{item\.value\} variant=\{show === item\.value \? 'primary' : 'secondary'\} type="button" aria-pressed=\{show === item\.value\} onClick=\{\(\) => setShow\(item\.value\)\}>/)
+  assert.equal(chart.includes('aria-label="Show" value={show}'), false)
+  for (const option of [
+    "{ value: 'all', label: 'All' }",
+    "{ value: 'routines', label: 'Routines', count: routineFlows.length }",
+    "{ value: 'handoffs', label: 'Handoffs', count: handoffFlows.length }",
+    "{ value: 'off', label: 'Routines without a flow', count: offChart.length }",
+    "{ value: 'idle', label: 'Bots without work', count: idleBots.length }",
+  ]) assert.ok(chart.includes(option), option)
+  assert.ok(chart.includes("<SegmentHint>{[IDLE_HINT, idleWithRoutines(idleBots.map((seat) => seat.title), offChart)].filter(Boolean).join(' ')}</SegmentHint>"), 'the second line only when it is true')
+  for (const hint of ['{ROUTINES_HINT}', '{HANDOFFS_HINT}', '{OFF_CHART_HINT}']) assert.ok(chart.includes(`<SegmentHint>${hint}</SegmentHint>`), hint)
+  assert.match(chart, /function SegmentHint\(\{ children \}: \{ children: string \}\) \{\n\s+return <p className="process-segment-hint"><InfoIcon \/><span>\{children\}<\/span><\/p>/, 'every box explanation starts with an (i)')
+  assert.match(chart, /function InfoIcon\(\) \{/)
+  assert.match(chart, /\/\/ Manual: a raised hand, someone hands the work on\.\n\s+return \(\n\s+<svg className="process-icon" viewBox="0 0 16 16" aria-hidden="true">\n\s+<path d="M4\.75 4\.5v6c0 2\.1 1\.55 3\.75 3\.5 3\.75s3\.25-1\.65 3\.25-3\.75v-5M7 7\.5V3M9\.25 7\.5V3\.5M4\.75 10 3 8\.25"/, 'the Manual trigger shows a hand: palm, fingers, and thumb')
+  assert.match(chart, /\{show === 'all' \|\| show === 'routines' \? \(/, 'the Routines box shows even with no flows, so the chart explains itself')
+  assert.match(chart, /\{show === 'all' \|\| show === 'handoffs' \? \(/)
+  assert.match(chart, /\{show === 'all' \|\| show === 'off' \? \(/)
+  assert.match(chart, /\{show === 'all' \|\| show === 'idle' \? \(/)
+  for (const line of ['No routines on the Work Chart yet.', 'No handoffs on the Work Chart yet.', 'None. Every routine your bots run has a flow.', 'None. Every bot does a step in a flow.']) assert.ok(chart.includes(line), line)
+  assert.match(chart, /<h2 id="segment-routines">Routines <span className="process-count">\{routineFlows\.length\}<\/span><\/h2>/)
+  assert.match(chart, /<h2 id="segment-off">Routines without a flow <span className="process-count">\{offChart\.length\}<\/span><\/h2>/)
+  assert.match(chart, /<h2 id="segment-idle">Bots without work <span className="process-count">\{idleBots\.length\}<\/span><\/h2>/)
+  assert.equal(chart.includes('Not on the Work Chart yet'), false)
+  assert.match(chart, /<span className="process-kicker">Trigger<\/span>\n\s+<span className="process-chip">/, 'every flow reads Trigger, then its steps, then Done when')
+  assert.match(chart, /<span>\{routine\.bot\} · Trigger: \{routine\.schedule\}<\/span>/)
+  assert.match(chart, /const noRoutine = laneNoRoutine\(process, live\)/)
+  assert.match(chart, /\{noRoutine \? <p>\{noRoutine\}<\/p> : null\}/)
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.process-segment \{ min-width: 0; padding: var\(--space-4\); border: 1px solid var\(--color-line\); border-radius: var\(--control-radius\); \}/, 'each segment is a box with square corners')
+  assert.equal(css.includes('.process-off-chart'), false)
+  assert.equal(css.includes('.process-idle'), false)
+  assert.match(css, /\.process-show \.btn \+ \.btn \{ margin-left: -1px; \}/, 'the buttons join into one segmented row')
+})
+
+test("the Work Chart's flows carry the live routine; Performance and Profile show the account's apps once and the apps each bot uses", () => {
+  const hook = readFileSync(new URL('../../src/live/use-routine-board.ts', import.meta.url), 'utf8')
+  assert.match(hook, /export function useRoutineBoard\(orgId: string, refresh: unknown, enabled: boolean\)/)
+  assert.match(hook, /fetch\(`\/api\/orgs\/\$\{orgId\}\/routines`\)/)
+  assert.equal(existsSync(new URL('../../src/components/RoutineBoard.tsx', import.meta.url)), false, 'no separate list repeating the flows')
+  const chart = readFileSync(new URL('../../src/components/ProcessChart.tsx', import.meta.url), 'utf8')
+  assert.match(chart, /scheduleWords\(process\.trigger\.schedule, live\?\.routine\.timeZone\)/, 'the schedule box reads in words, never a bare cron line')
+  assert.match(chart, /className=\{paused \? 'process-lane is-paused' : 'process-lane'\}/)
+  assert.match(chart, /\{paused === null \? null : <span className=\{paused \? 'routine-state is-paused' : 'routine-state is-active'\}>\{paused \? 'Paused' : 'Active'\}<\/span>\}/)
+  assert.match(chart, /<span>\{stepText\(step\.action\)\}<\/span>/, "steps read without Grok Bot's Needs approval: mark")
+  assert.match(chart, /\{status\?\.status === 'waiting' \|\| \(!status && waitsForYou\(step\)\) \? <em className="process-check">Needs your approval<\/em> : null\}/, 'the tag shows what waits for you today, not the safety asks a copied routine adds')
+  assert.match(chart, /const problems = laneProblems\(process, allSeats, runLines\)/)
+  assert.match(chart, /\{problems\.length \? <span className="routine-state is-problem">Needs attention<\/span> : null\}/)
+  assert.match(chart, /\{problems\.length \? <ul className="process-problems">\{problems\.map\(\(problem\) => <li key=\{problem\}>\{problem\}<\/li>\)\}<\/ul> : null\}/)
+  assert.equal(chart.includes('process-warn'), false, 'the once-an-hour warning is one of the problems now')
+  assert.match(chart, /routinesOffChart\(board, processes\)/)
+  assert.match(chart, /const runs = laneRuns\(live\)/, "runs read from the bot's report; Grok Bot's files never give a next run")
+  const workspace = readFileSync(new URL('../../src/pages/Workspace.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /const routineBoard = useRoutineBoard\(bundle\.id, sync, editable\)/)
+  assert.match(workspace, /board=\{editable \? routineBoard : null\}/)
+  assert.equal(workspace.includes('RoutineBoard board='), false)
+  assert.match(workspace, /<th>Apps used<\/th>/)
+  assert.equal(workspace.includes('<th>Connected</th>'), false, 'no column repeating the same account list on every row')
+  assert.match(workspace, /<AccountApps apps=\{accountApps\} \/>/, "the account's apps once, above the table, as badges")
+  const badges = readFileSync(new URL('../../src/components/AccountApps.tsx', import.meta.url), 'utf8')
+  assert.match(badges, /<strong>Connected to your Grok Bot account:<\/strong>/)
+  assert.match(badges, /className=\{app\.status === 'needsAuth' \? 'app-badge is-needs-auth' : 'app-badge is-connected'\}/)
+  assert.match(badges, /\{app\.name\}\{app\.status === 'needsAuth' \? ' \(needs sign-in\)' : ''\}/)
+  assert.match(workspace, /appsUsed: appsShown\(routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps, seats\.find\(\(item\) => item\.slug === seat\.id\)\?\.apps\)/, "the bot's own report, else what the Connector read onto the seat")
+  assert.match(workspace, /reportedApps=\{chartBot\?\.apps\}/)
+  assert.equal(workspace.includes('<th>Apps</th>'), false)
+  assert.match(workspace, /reportedSkills=\{knownInGrok\(chartBot\?\.grokSkills, chartBot\?\.skills\)\}/, "Profile locks what the Connector's reading shows in Grok Bot, plus what the bot reports it uses")
+  const profile = readFileSync(new URL('../../src/components/BotProfile.tsx', import.meta.url), 'utf8')
+  assert.match(profile, /<h3 className="card-label">Apps used<\/h3>/)
+  assert.match(profile, /<AccountApps apps=\{account\} \/>/, 'the same badges as Performance')
+  assert.equal(profile.includes('Turned on in Grok Bot</h3>'), false, 'one Skills section, not a second one further down')
+  assert.match(profile, /<SkillEditor initial=\{seat\.skills \?\? \[\]\} inGrok=\{reportedSkills\}/)
+  assert.match(profile, /<ProfileLists seat=\{seat\} inGrok=\{reportedSkills\} \/>/)
+  assert.match(profile, /const locked = \[\.\.\.skills\.filter\(isLocked\), \.\.\.skillsInGrok\(inGrok, skills\)\]/, "one list: the bot's skills in Grok Bot, locked, with the ones added here")
+  assert.match(profile, /\{skills\.length === 0 && !locked\.length \? <p className="auth-note">No skills yet\.<\/p> : null\}/, 'No skills yet only when the bot has none')
+  assert.match(workspace, /<th>Skills<\/th>/)
+  assert.match(workspace, /skills: skillCount\(routineBoard\?\.bots\.find\(\(item\) => item\.slug === seat\.id\)\?\.skills, seats\.find\(\(item\) => item\.slug === seat\.id\)\?\.skills\)/)
+  assert.match(workspace, /tasksDone30d: board\?\.routineRuns30d \?\? seat\.tasksDone30d,\n\s+tasksReportedAt: board\?\.routineRuns30d === undefined \? undefined : board\.reportedAt,/, "the bot's own count of routine runs first")
+  const css = readFileSync(new URL('../../src/styles/app.css', import.meta.url), 'utf8')
+  assert.match(css, /\.process-lane\.is-paused \{/)
+  assert.match(css, /\.routine-state\.is-problem \{ background: var\(--color-amber-50\); color: var\(--color-amber-800\); border-color: var\(--color-amber-200\); \}/)
+  assert.equal(css.includes('.routine-board {'), false)
+  assert.match(css, /\.app-badge\.is-connected \{ background: var\(--color-green-50\); color: var\(--color-green-700\); border-color: var\(--color-green-200\); \}/)
+  assert.match(css, /\.app-badge\.is-needs-auth \{ background: var\(--color-amber-50\); color: var\(--color-amber-800\); border-color: var\(--color-amber-200\); \}/)
+})

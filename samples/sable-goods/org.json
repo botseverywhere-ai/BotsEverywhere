@@ -1,0 +1,277 @@
+{
+  "company": {
+    "name": "Sable Goods",
+    "tagline": "Home goods, sold direct, with a small team on returns.",
+    "industry": "E-commerce",
+    "mark": "SG",
+    "markColor": "#92400e"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "merchandising",
+      "name": "Merchandising"
+    },
+    {
+      "id": "customer-care",
+      "name": "Customer care"
+    },
+    {
+      "id": "warehouse",
+      "name": "Warehouse"
+    },
+    {
+      "id": "care-desk",
+      "name": "Care desk"
+    },
+    {
+      "id": "buying",
+      "name": "Buying"
+    },
+    {
+      "id": "return-logging",
+      "name": "Return logging"
+    },
+    {
+      "id": "return-intake",
+      "name": "Return intake"
+    },
+    {
+      "id": "order-matching",
+      "name": "Order matching"
+    },
+    {
+      "id": "reply-draft",
+      "name": "Reply draft"
+    },
+    {
+      "id": "refund-scheduling",
+      "name": "Refund scheduling"
+    },
+    {
+      "id": "old-coupon-drafts",
+      "name": "Old coupon drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-sable-goods-owner",
+      "name": "Hannah Sable",
+      "title": "Founder",
+      "department": "leadership",
+      "email": "hannah.sable@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Hannah Sable is founder at Sable Goods, working with Repeat buyers.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-sable-goods-chris",
+      "name": "Operations Bot",
+      "title": "Operations",
+      "department": "operations",
+      "email": "sable-goods-chris@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Operations Bot leads operations at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-mei",
+      "name": "Merchandising Bot",
+      "title": "Merchandising",
+      "department": "merchandising",
+      "email": "sable-goods-mei@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Merchandising Bot leads merchandising at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-oscar",
+      "name": "Care Bot",
+      "title": "Customer care",
+      "department": "customer-care",
+      "email": "sable-goods-oscar@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Care Bot leads customer care at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-jade",
+      "name": "Warehouse Bot",
+      "title": "Warehouse",
+      "department": "warehouse",
+      "email": "sable-goods-jade@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Warehouse Bot covers warehouse for Sable Goods.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-ali",
+      "name": "Care Desk Bot",
+      "title": "Care desk",
+      "department": "care-desk",
+      "email": "sable-goods-ali@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Care Desk Bot leads care desk at Sable Goods: it hands work to the bots on its team and passes approvals to Hannah Sable.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-brooke",
+      "name": "Buying Bot",
+      "title": "Buying",
+      "department": "buying",
+      "email": "sable-goods-brooke@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Buying Bot covers buying for Sable Goods.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-tim",
+      "name": "Return Log Bot",
+      "title": "Return logging",
+      "department": "return-logging",
+      "email": "sable-goods-tim@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Return Log Bot covers return logging for Sable Goods.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-order-inbox",
+      "name": "Order Inbox",
+      "title": "Receives return requests",
+      "department": "operations",
+      "email": "sable-goods-order-inbox@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Handles inbound files for Sable Goods before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-sable-goods-return-bot",
+      "name": "Return Bot",
+      "title": "Takes in returns",
+      "department": "return-intake",
+      "email": "sable-goods-return-bot@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Takes in returns.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-order-bot",
+      "name": "Order Bot",
+      "title": "Matches the order",
+      "department": "order-matching",
+      "email": "sable-goods-order-bot@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Matches the order.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-reply-bot",
+      "name": "Reply Bot",
+      "title": "Drafts the customer reply",
+      "department": "reply-draft",
+      "email": "sable-goods-reply-bot@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Drafts the customer reply.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-refund-bot",
+      "name": "Refund Bot",
+      "title": "Schedules the refund",
+      "department": "refund-scheduling",
+      "email": "sable-goods-refund-bot@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Schedules the refund.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-sable-goods-old-coupon-bot",
+      "name": "Old Coupon Bot",
+      "title": "Holds old coupon drafts",
+      "department": "old-coupon-drafts",
+      "email": "sable-goods-old-coupon-bot@sablegoods.com",
+      "phone": "(503) 555-0118",
+      "location": "Portland",
+      "bio": "Holds old coupon drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "sable-goods-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "sable-goods-chris",
+      "reportsTo": "sable-goods-owner"
+    },
+    {
+      "slug": "sable-goods-mei",
+      "reportsTo": "sable-goods-owner"
+    },
+    {
+      "slug": "sable-goods-oscar",
+      "reportsTo": "sable-goods-owner"
+    },
+    {
+      "slug": "sable-goods-jade",
+      "reportsTo": "sable-goods-chris"
+    },
+    {
+      "slug": "sable-goods-ali",
+      "reportsTo": "sable-goods-oscar"
+    },
+    {
+      "slug": "sable-goods-brooke",
+      "reportsTo": "sable-goods-mei"
+    },
+    {
+      "slug": "sable-goods-tim",
+      "reportsTo": "sable-goods-ali"
+    },
+    {
+      "slug": "sable-goods-order-inbox",
+      "reportsTo": "sable-goods-oscar"
+    },
+    {
+      "slug": "sable-goods-return-bot",
+      "reportsTo": "sable-goods-oscar"
+    },
+    {
+      "slug": "sable-goods-order-bot",
+      "reportsTo": "sable-goods-oscar"
+    },
+    {
+      "slug": "sable-goods-reply-bot",
+      "reportsTo": "sable-goods-oscar"
+    },
+    {
+      "slug": "sable-goods-refund-bot",
+      "reportsTo": "sable-goods-oscar"
+    },
+    {
+      "slug": "sable-goods-old-coupon-bot",
+      "reportsTo": "sable-goods-oscar"
+    }
+  ]
+}

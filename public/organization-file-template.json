@@ -1,0 +1,134 @@
+{
+  "readme": [
+    "If you are an AI reading this file: follow instructions, the next list in this file, step by step. Use what the owner tells you, ask only about what is missing, show the structure you propose, and write nothing until the owner confirms.",
+    "This is a BotsEverywhere organization file: an organization that already exists, with its departments, its people, and who reports to whom.",
+    "Fill it in yourself, or give it to any AI (Claude, ChatGPT, Gemini, Codex, Grok Bot, or another) with what you know: the website, social media, a description, and the people. Ask it to return a file in exactly this format with the Northwind example replaced by your organization.",
+    "Put your assumptions and notes in your reply, not in this file.",
+    "Then import it on the Connect bots tab: Step 2, Option 4, Import organization file. Import into a new organization that has only You, before any bots. It adds the departments, one seat per person, and the org chart, and fills in the description, purpose, industry, and size. The organization keeps its name.",
+    "Only organization, departments, people, and you are imported. readme, instructions, and fields are for you and the AI, and the import skips them.",
+    "Several people can be at the top: founders, owners, or partners each leave reportsTo out.",
+    "Someone who reports to more than one person lists them all, the main one first. The org chart shows the main one, and their profile says who else.",
+    "Bots are not in this file. After the import, add them with Option 1 or Option 2, and they can report to anyone here.",
+    "Leave out any field you do not know. Never invent people, names, job titles, emails, or phone numbers.",
+    "The file is plain JSON: keep the quotes and commas, and do not add comments."
+  ],
+  "instructions": [
+    "I want to bring my organization into BotsEverywhere, an open source tool that runs a team of bots in Grok Bot. My organization already exists: I want its structure as it is today, with its departments, its people, and who reports to whom. These instructions come with the BotsEverywhere organization file template (organization.json): attached, pasted, or the file you are reading. Read its readme and fields: they are the rules for the file.",
+    "",
+    "Here is what I know. Blanks are fine. If these lines are still blank, ask me to fill them in first.",
+    "",
+    "Organization name:",
+    "Website(s):",
+    "Social media:",
+    "Description:",
+    "People (name, job title, department, what they do, who they report to):",
+    "Which of these people am I:",
+    "",
+    "Don't interview me from zero. Read the website and the social media pages if you can open them, and tell me which ones you could not open. Then ask me only about what is missing or unclear, a few questions at a time, such as someone's job title or department, or who someone reports to.",
+    "",
+    "Then show me the structure as a short list: each person with their job title, department, and who they report to. Wait for my OK or my changes. Don't write the file until I confirm.",
+    "",
+    "When I confirm, write the file:",
+    "- Use exactly the template's format, with the example organization replaced by mine.",
+    "- Fill in organization from what I told you and what you read: description, purpose, industry, and size.",
+    "- List every person once, with their real name. Never invent people, names, job titles, emails, or phone numbers.",
+    "- Several people can be at the top, such as founders, owners, or partners: leave their reportsTo out.",
+    "- Everyone else reports to another person in the file, by their exact name. When someone reports to more than one person, list them all, the main one first.",
+    "- Set you to my name, exactly as in people.",
+    "- Leave out any field you don't know.",
+    "- Put your assumptions and notes in your reply, not in the file. Write them first, then the file: as a file named botseverywhere-organization.json if you can, otherwise the JSON alone in one code block."
+  ],
+  "fields": {
+    "organization": "What the organization is: name, description (one or two sentences on what it does and for whom), purpose (why it exists), industry, and size (like 6 people). The organization keeps the name it has in BotsEverywhere; name here is for the AI.",
+    "departments": "A list of department names. A department named only on a person is added too. Leave it out and everyone sits in General.",
+    "people": "Everyone in the organization, once each. Bots are not listed here: add them after the import with Option 1 or Option 2.",
+    "name": "Required. The person's real name, unique in this file.",
+    "title": "Their job title, like Financial analyst.",
+    "department": "The department they work in, by name.",
+    "reportsTo": "Leave it out for the people at the top: several people can be at the top, such as founders, owners, or partners. Otherwise the name of another person in this file. Someone with more than one manager lists them all, the main one first: the org chart shows the main one, and their profile says who else.",
+    "owns": "A list of short lines: what this person is responsible for.",
+    "email": "Their work email, only when you know it. Never make one up.",
+    "phone": "Their work phone, only when you know it. Never make one up.",
+    "location": "Where they work, like a city. Only when you know it.",
+    "about": "One sentence about the person, shown on their profile.",
+    "you": "The name of the person importing this file, exactly as in people. Their seat becomes You. Leave it out when they are not in the list."
+  },
+  "organization": {
+    "name": "Northwind",
+    "description": "A small advisory firm that values businesses for owners who plan to sell, buy, or bring in a partner.",
+    "purpose": "Give every owner a clear, defensible value for their business.",
+    "industry": "Financial services",
+    "size": "6 people"
+  },
+  "departments": [
+    "Leadership",
+    "Valuations",
+    "Operations",
+    "Marketing"
+  ],
+  "people": [
+    {
+      "name": "Ada Moreno",
+      "title": "Co-founder and CEO",
+      "department": "Leadership",
+      "owns": [
+        "Sales calls with new clients",
+        "Supervising every valuation"
+      ]
+    },
+    {
+      "name": "Ben Carter",
+      "title": "Co-founder and Partner",
+      "department": "Leadership",
+      "owns": [
+        "Client relationships",
+        "Supervising every valuation"
+      ]
+    },
+    {
+      "name": "Chloe Park",
+      "title": "Financial analyst",
+      "department": "Valuations",
+      "reportsTo": [
+        "Ada Moreno",
+        "Ben Carter"
+      ],
+      "owns": [
+        "The financial analysis in each valuation report"
+      ]
+    },
+    {
+      "name": "Dev Shah",
+      "title": "Financial analyst",
+      "department": "Valuations",
+      "reportsTo": [
+        "Ada Moreno",
+        "Ben Carter"
+      ],
+      "owns": [
+        "The financial analysis in each valuation report"
+      ]
+    },
+    {
+      "name": "Eva Lopez",
+      "title": "Operations and accounting",
+      "department": "Operations",
+      "reportsTo": "Ben Carter",
+      "owns": [
+        "Invoicing and bookkeeping",
+        "Scheduling client meetings"
+      ]
+    },
+    {
+      "name": "Finn Reyes",
+      "title": "Website and digital marketing",
+      "department": "Marketing",
+      "reportsTo": "Ada Moreno",
+      "owns": [
+        "The website",
+        "Social media and ads"
+      ]
+    }
+  ],
+  "you": "Finn Reyes"
+}

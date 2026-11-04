@@ -1,0 +1,46 @@
+{
+  "bots": [
+    {
+      "name": "Http Bot",
+      "grokBotUrl": "https://example.com/grok/http-bot",
+      "reportsTo": "You",
+      "owns": "Match the invoice to the purchase order",
+      "may": "Read the bill\n- Read the purchase order",
+      "needsApproval": "Pay the vendor; Send a legal notice",
+      "doneWhen": ["The match is recorded", "The vendor is paid"],
+      "mood": "careful"
+    },
+    {
+      "name": "App Bot",
+      "grokBotUrl": "grokbot://app/v1/agent?id=abc123",
+      "reportsTo": "Http Bot",
+      "may": [1, true],
+      "needsApproval": null,
+      "doneWhen": 12
+    },
+    {
+      "name": "Plain Bot",
+      "grokBotUrl": "not a link",
+      "owns": null,
+      "doneWhen": null
+    },
+    {
+      "name": "Sketch Bot",
+      "grokBotUrl": "see the bot",
+      "owns": "- Chase the unpaid invoice\n* Record the reply"
+    },
+    {
+      "name": "Mail Bot",
+      "grokBotUrl": "mailto:ops@example.com",
+      "may": ["Read the inbox"]
+    },
+    {
+      "name": "Ledger Bot",
+      "reportsTo": "App Bot",
+      "owns": ["Keep the books"],
+      "may": ["Read the ledger"],
+      "needsApproval": ["Close the month"],
+      "doneWhen": "The books are closed"
+    }
+  ]
+}

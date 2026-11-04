@@ -1,0 +1,187 @@
+{
+  "triggers": [
+    {
+      "id": "halvorsen-ruiz-trigger",
+      "source": "email",
+      "label": "A new matter arrives",
+      "example": "Sutter & Co. asks the firm to review a supplier agreement before Friday."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "halvorsen-ruiz-main",
+      "triggerId": "halvorsen-ruiz-trigger",
+      "outcome": "The matter is opened and the engagement letter is signed, or the work is declined.",
+      "ownerSeatId": "halvorsen-ruiz-owner",
+      "kind": "main",
+      "stepIds": [
+        "halvorsen-ruiz-step-extract",
+        "halvorsen-ruiz-step-match",
+        "halvorsen-ruiz-step-draft",
+        "halvorsen-ruiz-step-approve",
+        "halvorsen-ruiz-step-schedule"
+      ]
+    },
+    {
+      "id": "halvorsen-ruiz-exception",
+      "triggerId": "halvorsen-ruiz-trigger",
+      "outcome": "The hit is cleared or the matter is declined.",
+      "ownerSeatId": "halvorsen-ruiz-owner",
+      "kind": "contingency",
+      "stepIds": [
+        "halvorsen-ruiz-step-query",
+        "halvorsen-ruiz-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "halvorsen-ruiz-step-extract",
+      "workstreamId": "halvorsen-ruiz-main",
+      "name": "Screen conflicts",
+      "level": 4,
+      "executorSeatId": "halvorsen-ruiz-conflict-check",
+      "inputs": [
+        "Sutter & Co. Retail source document"
+      ],
+      "outputs": [
+        "Screen conflicts for Sutter & Co. Retail"
+      ]
+    },
+    {
+      "id": "halvorsen-ruiz-step-match",
+      "workstreamId": "halvorsen-ruiz-main",
+      "name": "Match clauses to the playbook",
+      "level": 4,
+      "executorSeatId": "halvorsen-ruiz-clause-bot",
+      "inputs": [
+        "Sutter & Co. Retail source document"
+      ],
+      "outputs": [
+        "Match clauses to the playbook for Sutter & Co. Retail"
+      ]
+    },
+    {
+      "id": "halvorsen-ruiz-step-draft",
+      "workstreamId": "halvorsen-ruiz-main",
+      "name": "Draft the engagement letter",
+      "level": 2,
+      "executorSeatId": "halvorsen-ruiz-letter-bot",
+      "inputs": [
+        "Sutter & Co. Retail source document"
+      ],
+      "outputs": [
+        "Draft the engagement letter for Sutter & Co. Retail"
+      ]
+    },
+    {
+      "id": "halvorsen-ruiz-step-approve",
+      "workstreamId": "halvorsen-ruiz-main",
+      "name": "Partner approves the letter",
+      "level": 3,
+      "executorSeatId": "halvorsen-ruiz-owner",
+      "inputs": [
+        "Sutter & Co. Retail source document"
+      ],
+      "outputs": [
+        "Partner approves the letter for Sutter & Co. Retail"
+      ],
+      "checkpointId": "halvorsen-ruiz-cp-approve"
+    },
+    {
+      "id": "halvorsen-ruiz-step-schedule",
+      "workstreamId": "halvorsen-ruiz-main",
+      "name": "Send the letter for signature",
+      "level": 4,
+      "executorSeatId": "halvorsen-ruiz-closing-bot",
+      "inputs": [
+        "Sutter & Co. Retail source document"
+      ],
+      "outputs": [
+        "Send the letter for signature for Sutter & Co. Retail"
+      ]
+    },
+    {
+      "id": "halvorsen-ruiz-step-query",
+      "workstreamId": "halvorsen-ruiz-exception",
+      "name": "Draft the conflicts question",
+      "level": 4,
+      "executorSeatId": "halvorsen-ruiz-letter-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the conflicts question"
+      ]
+    },
+    {
+      "id": "halvorsen-ruiz-step-msg",
+      "workstreamId": "halvorsen-ruiz-exception",
+      "name": "Approve the question",
+      "level": 3,
+      "executorSeatId": "halvorsen-ruiz-owner",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the question"
+      ],
+      "checkpointId": "halvorsen-ruiz-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "halvorsen-ruiz-hand-1",
+      "fromStepId": "halvorsen-ruiz-step-extract",
+      "toStepId": "halvorsen-ruiz-step-match"
+    },
+    {
+      "id": "halvorsen-ruiz-hand-2",
+      "fromStepId": "halvorsen-ruiz-step-match",
+      "toStepId": "halvorsen-ruiz-step-draft"
+    },
+    {
+      "id": "halvorsen-ruiz-hand-3",
+      "fromStepId": "halvorsen-ruiz-step-draft",
+      "toStepId": "halvorsen-ruiz-step-approve"
+    },
+    {
+      "id": "halvorsen-ruiz-hand-4",
+      "fromStepId": "halvorsen-ruiz-step-approve",
+      "toStepId": "halvorsen-ruiz-step-schedule"
+    },
+    {
+      "id": "halvorsen-ruiz-hand-exception",
+      "fromStepId": "halvorsen-ruiz-step-match",
+      "toStepId": "halvorsen-ruiz-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "halvorsen-ruiz-hand-extra",
+      "fromStepId": "halvorsen-ruiz-step-query",
+      "toStepId": "halvorsen-ruiz-step-msg"
+    },
+    {
+      "id": "halvorsen-ruiz-hand-rejoin",
+      "fromStepId": "halvorsen-ruiz-step-msg",
+      "toStepId": "halvorsen-ruiz-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "halvorsen-ruiz-cp-approve",
+      "stepId": "halvorsen-ruiz-step-approve",
+      "rule": "Opening a matter, sending a letter, or declining a client.",
+      "approverSeatId": "halvorsen-ruiz-owner",
+      "required": true
+    },
+    {
+      "id": "halvorsen-ruiz-cp-msg",
+      "stepId": "halvorsen-ruiz-step-msg",
+      "rule": "Any note that names another client.",
+      "approverSeatId": "halvorsen-ruiz-owner",
+      "required": true
+    }
+  ]
+}

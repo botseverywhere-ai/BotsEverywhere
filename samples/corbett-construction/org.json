@@ -1,0 +1,277 @@
+{
+  "company": {
+    "name": "Corbett Construction Group",
+    "tagline": "Commercial builds for owners who want one accountable superintendent.",
+    "industry": "Construction",
+    "mark": "CC",
+    "markColor": "#9a3412"
+  },
+  "departments": [
+    {
+      "id": "leadership",
+      "name": "Leadership"
+    },
+    {
+      "id": "operations",
+      "name": "Operations"
+    },
+    {
+      "id": "estimating",
+      "name": "Estimating"
+    },
+    {
+      "id": "projects",
+      "name": "Projects"
+    },
+    {
+      "id": "site-coordination",
+      "name": "Site coordination"
+    },
+    {
+      "id": "project-engineering",
+      "name": "Project engineering"
+    },
+    {
+      "id": "site-safety",
+      "name": "Site safety"
+    },
+    {
+      "id": "document-control",
+      "name": "Document control"
+    },
+    {
+      "id": "rfi-intake",
+      "name": "RFI intake"
+    },
+    {
+      "id": "spec-matching",
+      "name": "Spec matching"
+    },
+    {
+      "id": "response-draft",
+      "name": "Response draft"
+    },
+    {
+      "id": "distribution",
+      "name": "Distribution"
+    },
+    {
+      "id": "old-submittal-drafts",
+      "name": "Old submittal drafts"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-corbett-construction-owner",
+      "name": "Patrick Corbett",
+      "title": "President",
+      "department": "leadership",
+      "email": "patrick.corbett@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Patrick Corbett is president at Corbett Construction Group, working with Front Range Schools.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-dana",
+      "name": "Operations Bot",
+      "title": "Operations",
+      "department": "operations",
+      "email": "corbett-construction-dana@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Operations Bot leads operations at Corbett Construction Group: it hands work to the bots on its team and passes approvals to Patrick Corbett.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-mike",
+      "name": "Estimate Bot",
+      "title": "Estimating",
+      "department": "estimating",
+      "email": "corbett-construction-mike@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Estimate Bot covers estimating for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-helen",
+      "name": "Project Bot",
+      "title": "Projects",
+      "department": "projects",
+      "email": "corbett-construction-helen@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Project Bot leads projects at Corbett Construction Group: it hands work to the bots on its team and passes approvals to Patrick Corbett.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-andy",
+      "name": "Site Bot",
+      "title": "Site coordination",
+      "department": "site-coordination",
+      "email": "corbett-construction-andy@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Site Bot covers site coordination for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-rosa",
+      "name": "Engineering Bot",
+      "title": "Project engineering",
+      "department": "project-engineering",
+      "email": "corbett-construction-rosa@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Engineering Bot leads project engineering at Corbett Construction Group: it hands work to the bots on its team and passes approvals to Patrick Corbett.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-tom",
+      "name": "Safety Bot",
+      "title": "Site safety",
+      "department": "site-safety",
+      "email": "corbett-construction-tom@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Safety Bot covers site safety for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-kim",
+      "name": "Document Bot",
+      "title": "Document control",
+      "department": "document-control",
+      "email": "corbett-construction-kim@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Document Bot covers document control for Corbett Construction Group.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-email-inbox",
+      "name": "Project Email Inbox",
+      "title": "Receives project email",
+      "department": "operations",
+      "email": "corbett-construction-email-inbox@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Handles inbound files for Corbett Construction Group before a person or a bot touches them.",
+      "startedOn": "2019-06-17"
+    },
+    {
+      "id": "person-corbett-construction-request-bot",
+      "name": "Request Bot",
+      "title": "Takes in project questions",
+      "department": "rfi-intake",
+      "email": "corbett-construction-request-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Takes in project questions.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-spec-bot",
+      "name": "Spec Bot",
+      "title": "Matches the spec",
+      "department": "spec-matching",
+      "email": "corbett-construction-spec-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Matches the spec.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-reply-bot",
+      "name": "Reply Bot",
+      "title": "Drafts the reply",
+      "department": "response-draft",
+      "email": "corbett-construction-reply-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Drafts the reply.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-send-bot",
+      "name": "Send Bot",
+      "title": "Sends the approved reply",
+      "department": "distribution",
+      "email": "corbett-construction-send-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Sends the approved reply.",
+      "startedOn": "2026-03-02"
+    },
+    {
+      "id": "person-corbett-construction-old-draft-bot",
+      "name": "Old Draft Bot",
+      "title": "Holds old drafts",
+      "department": "old-submittal-drafts",
+      "email": "corbett-construction-old-draft-bot@corbettconstruction.com",
+      "phone": "(303) 555-0194",
+      "location": "Denver",
+      "bio": "Holds old drafts.",
+      "startedOn": "2026-03-02"
+    }
+  ],
+  "seats": [
+    {
+      "slug": "corbett-construction-owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "corbett-construction-dana",
+      "reportsTo": "corbett-construction-owner"
+    },
+    {
+      "slug": "corbett-construction-mike",
+      "reportsTo": "corbett-construction-owner"
+    },
+    {
+      "slug": "corbett-construction-helen",
+      "reportsTo": "corbett-construction-owner"
+    },
+    {
+      "slug": "corbett-construction-andy",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-rosa",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-tom",
+      "reportsTo": "corbett-construction-dana"
+    },
+    {
+      "slug": "corbett-construction-kim",
+      "reportsTo": "corbett-construction-rosa"
+    },
+    {
+      "slug": "corbett-construction-email-inbox",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-request-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-spec-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-reply-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-send-bot",
+      "reportsTo": "corbett-construction-helen"
+    },
+    {
+      "slug": "corbett-construction-old-draft-bot",
+      "reportsTo": "corbett-construction-helen"
+    }
+  ]
+}

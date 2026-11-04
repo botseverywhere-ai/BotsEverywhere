@@ -1,0 +1,206 @@
+{
+  "triggers": [
+    {
+      "id": "rowan-accountants-trigger",
+      "source": "schedule",
+      "label": "Month-end binder arrives",
+      "example": "Piedmont Mills uploads the October binder the morning after close."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "rowan-accountants-main",
+      "triggerId": "rowan-accountants-trigger",
+      "outcome": "The binder is tied out, exceptions are listed, and a partner signs the review.",
+      "ownerSeatId": "rowan-accountants-owner",
+      "kind": "main",
+      "stepIds": [
+        "rowan-accountants-step-extract",
+        "rowan-accountants-step-match",
+        "rowan-accountants-step-draft",
+        "rowan-accountants-step-approve",
+        "rowan-accountants-step-schedule",
+        "rowan-accountants-step-file"
+      ]
+    },
+    {
+      "id": "rowan-accountants-exception",
+      "triggerId": "rowan-accountants-trigger",
+      "outcome": "The difference is explained or booked.",
+      "ownerSeatId": "rowan-accountants-owner",
+      "kind": "contingency",
+      "stepIds": [
+        "rowan-accountants-step-query",
+        "rowan-accountants-step-msg"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "rowan-accountants-step-extract",
+      "workstreamId": "rowan-accountants-main",
+      "name": "Index the binder",
+      "level": 4,
+      "executorSeatId": "rowan-accountants-client-inbox",
+      "inputs": [
+        "Piedmont Mills source document"
+      ],
+      "outputs": [
+        "Index the binder for Piedmont Mills"
+      ]
+    },
+    {
+      "id": "rowan-accountants-step-match",
+      "workstreamId": "rowan-accountants-main",
+      "name": "Tie out the lead sheet",
+      "level": 4,
+      "executorSeatId": "rowan-accountants-tie-out-bot",
+      "inputs": [
+        "Piedmont Mills source document"
+      ],
+      "outputs": [
+        "Tie out the lead sheet for Piedmont Mills"
+      ]
+    },
+    {
+      "id": "rowan-accountants-step-draft",
+      "workstreamId": "rowan-accountants-main",
+      "name": "Draft the exception memo",
+      "level": 2,
+      "executorSeatId": "rowan-accountants-exception-bot",
+      "inputs": [
+        "Piedmont Mills source document"
+      ],
+      "outputs": [
+        "Draft the exception memo for Piedmont Mills"
+      ]
+    },
+    {
+      "id": "rowan-accountants-step-approve",
+      "workstreamId": "rowan-accountants-main",
+      "name": "Partner review",
+      "level": 3,
+      "executorSeatId": "rowan-accountants-owner",
+      "inputs": [
+        "Piedmont Mills source document"
+      ],
+      "outputs": [
+        "Partner review for Piedmont Mills"
+      ],
+      "checkpointId": "rowan-accountants-cp-approve"
+    },
+    {
+      "id": "rowan-accountants-step-schedule",
+      "workstreamId": "rowan-accountants-main",
+      "name": "Issue the review notes",
+      "level": 4,
+      "executorSeatId": "rowan-accountants-close-bot",
+      "inputs": [
+        "Piedmont Mills source document"
+      ],
+      "outputs": [
+        "Issue the review notes for Piedmont Mills"
+      ]
+    },
+    {
+      "id": "rowan-accountants-step-file",
+      "workstreamId": "rowan-accountants-main",
+      "name": "File the signed review",
+      "level": 4,
+      "executorSeatId": "rowan-accountants-nina",
+      "inputs": [
+        "Piedmont Mills source document"
+      ],
+      "outputs": [
+        "File the signed review for Piedmont Mills"
+      ]
+    },
+    {
+      "id": "rowan-accountants-step-query",
+      "workstreamId": "rowan-accountants-exception",
+      "name": "Draft the question to the controller",
+      "level": 4,
+      "executorSeatId": "rowan-accountants-exception-bot",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Draft the question to the controller"
+      ]
+    },
+    {
+      "id": "rowan-accountants-step-msg",
+      "workstreamId": "rowan-accountants-exception",
+      "name": "Approve the question",
+      "level": 3,
+      "executorSeatId": "rowan-accountants-owner",
+      "inputs": [
+        "Exception from the main stream"
+      ],
+      "outputs": [
+        "Approve the question"
+      ],
+      "checkpointId": "rowan-accountants-cp-msg"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "rowan-accountants-hand-1",
+      "fromStepId": "rowan-accountants-step-extract",
+      "toStepId": "rowan-accountants-step-match"
+    },
+    {
+      "id": "rowan-accountants-hand-2",
+      "fromStepId": "rowan-accountants-step-match",
+      "toStepId": "rowan-accountants-step-draft"
+    },
+    {
+      "id": "rowan-accountants-hand-3",
+      "fromStepId": "rowan-accountants-step-draft",
+      "toStepId": "rowan-accountants-step-approve"
+    },
+    {
+      "id": "rowan-accountants-hand-4",
+      "fromStepId": "rowan-accountants-step-approve",
+      "toStepId": "rowan-accountants-step-schedule"
+    },
+    {
+      "id": "rowan-accountants-hand-5",
+      "fromStepId": "rowan-accountants-step-schedule",
+      "toStepId": "rowan-accountants-step-file"
+    },
+    {
+      "id": "rowan-accountants-hand-exception",
+      "fromStepId": "rowan-accountants-step-match",
+      "toStepId": "rowan-accountants-step-query",
+      "condition": "mismatch"
+    },
+    {
+      "id": "rowan-accountants-hand-extra",
+      "fromStepId": "rowan-accountants-step-query",
+      "toStepId": "rowan-accountants-step-msg"
+    },
+    {
+      "id": "rowan-accountants-hand-rejoin",
+      "fromStepId": "rowan-accountants-step-msg",
+      "toStepId": "rowan-accountants-step-approve",
+      "condition": "resolved"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "rowan-accountants-cp-approve",
+      "stepId": "rowan-accountants-step-approve",
+      "rule": "Any adjustment, or a disclosure the client will file.",
+      "approverSeatId": "rowan-accountants-owner",
+      "required": true
+    },
+    {
+      "id": "rowan-accountants-cp-msg",
+      "stepId": "rowan-accountants-step-msg",
+      "rule": "Any question that leaves the firm.",
+      "approverSeatId": "rowan-accountants-owner",
+      "required": true
+    }
+  ]
+}
