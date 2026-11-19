@@ -653,7 +653,6 @@ export function createExistingBot(
   const base = explicit || slugify(name)
   if (!base || !SEAT_SLUG.test(base)) return { ok: false, errors: ['Pick a bot name that becomes a file name.'] }
   const slug = nextFreeSeatSlug(root, base)
-  if (explicit && slug !== explicit) return { ok: false, errors: [`Refusing to overwrite seats/${explicit}.md.`] }
   if (!slug) return { ok: false, errors: ['Could not pick a free file name for that seat.'] }
   const grokBotUrl = (input.grokBotUrl || '').trim()
   if (!isSeatGrokLink(grokBotUrl)) return { ok: false, errors: ['Grok Bot link must be an http, https, or grokbot:// link.'] }

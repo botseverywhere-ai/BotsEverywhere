@@ -145,3 +145,23 @@ test('POST /seats/existing reloads onto the chart and does not overwrite', async
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('a taken slug given by name is saved as <slug>-2, and the first file is left alone', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'botseverywhere-taken-slug-'))
+  try {
+    const created = createOrgFiles(dir, 'Acme Bots', 'Ana')
+    assert.equal(created.ok, true)
+    if (!created.ok) return
+    const root = join(dir, created.slug)
+    const first = createExistingBot(root, created.slug, { name: 'Helper', slug: 'helper', grokBotUrl: link, reportsTo: 'you', ...card })
+    assert.equal(first.ok, true)
+    const file = readFileSync(join(root, 'seats', 'helper.md'), 'utf8')
+    const second = createExistingBot(root, created.slug, { name: 'Helper', slug: 'helper', grokBotUrl: 'https://notes.example/bots/helper', reportsTo: 'you', ...card })
+    assert.equal(second.ok, true, JSON.stringify(second))
+    if (!second.ok) return
+    assert.equal(second.slug, 'helper-2')
+    assert.equal(readFileSync(join(root, 'seats', 'helper.md'), 'utf8'), file)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
