@@ -46,7 +46,7 @@ It runs on your computer. The app and its file writer listen on an address only 
 
 What you need before you start:
 
-- **A Grok Bot account and the Grok Bot app.** Your bots run there, and one bot in it, the Connector, links Grok Bot to this app. Download it from [x.ai/bot](https://x.ai/bot) and sign in with the Grok account that holds your plan; routines on a schedule are part of Premium, Super, Ultra, Teams, and Enterprise. The app itself never calls Grok Bot: the Connector reads and writes files in your `orgs` folder.
+- **A Grok Bot account and the Grok Bot app.** Your bots run there, and one bot in it, the Connector, links Grok Bot to this app. Download it from [x.ai/bot](https://x.ai/bot) and sign in with the Grok account that holds your plan; that page lists the plans that include Grok Bot. The app itself never calls Grok Bot: the Connector reads and writes files in your `orgs` folder.
 - **Node.js 22 or newer, with npm.** From [nodejs.org](https://nodejs.org). `npm install` brings in everything else: Vite, React 19, TypeScript, and the small Node writer that saves your files.
 - **Git.** To clone this repository and to update it later with `git pull`.
 - **A desktop browser** at least 1024 pixels wide. Chrome, Edge, Firefox, or Safari. The org chart, the work chart, and the logs need the room.
@@ -63,7 +63,7 @@ npm install
 npm run dev       # site at 127.0.0.1:5199 and file writer at 127.0.0.1:8787 by default
 ```
 
-Open the site URL that `npm run dev` prints ([http://127.0.0.1:5199](http://127.0.0.1:5199) by default) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together. If either default port is taken, both walk forward to the next free port and the command prints the URLs it bound.
+Open the site URL that `npm run dev` prints ([http://127.0.0.1:5199](http://127.0.0.1:5199) by default) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together. If a default port is taken, that one moves to the next free port, and the command prints the URLs it bound.
 
 ![Map your team. Staff the seats. Open source. Runs on your computer.](docs/images/map-your-team.png)
 
@@ -73,10 +73,10 @@ To update, run `git pull` and `npm install` in this same folder. Do not clone a 
 
 Grok Bot is the app your bots run in. BotsEverywhere never calls it: one bot in Grok Bot, the Connector, reads and writes the `orgs/` folder on this computer.
 
-1. Download Grok Bot from [x.ai/bot](https://x.ai/bot), install it, and sign in with the Grok account that holds your plan. Routines on a schedule are part of Premium, Super, Ultra, Teams, and Enterprise.
+1. Download Grok Bot from [x.ai/bot](https://x.ai/bot), install it, and sign in with the Grok account that holds your plan. That page lists the plans that include Grok Bot.
 2. In BotsEverywhere, open your organization and choose **Connect bots**. Step 1 shows the Connector name, the folder it uses, and **Copy Connector prompt**.
 3. Copy the prompt and paste it into Grok Bot. The prompt creates the Connector, points it at `orgs/CONNECTOR.md`, and sets one routine every 15 minutes unless **Runs every** says otherwise.
-4. Let it run once. `orgs/connector.json` and `orgs/grok-data.json` appear in the folder, and the badge on Connect bots turns **Connected** within one interval. **Sync with Grok Bot** on the org tab row then imports what it read.
+4. Let it run once; it runs right after you paste the prompt. `orgs/connector.json` and `orgs/grok-data.json` appear in the folder, and the badge on Connect bots turns **Connected**. To bring your bots into a new organization, use Step 2 on Connect bots: **Import from the Connector**. After that, **Sync with Grok Bot** on the org tab row shows what changed.
 
 If the Connector says it cannot read `CONNECTOR.md`, it cannot see this computer's files. Check that you are using the Grok Bot app and that the `orgs` folder is where the prompt says it is.
 

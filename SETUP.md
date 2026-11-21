@@ -36,7 +36,7 @@ npm run dev
 
 Leave that window open. `npm run dev` starts the site and the file writer together. Open the site URL it prints (http://127.0.0.1:5199 by default) and choose **Open your org** to create your first organization.
 
-The web server starts on port 5199 and the dev API on 127.0.0.1 port 8787; Vite proxies `/api` to it. If either port is taken, both walk forward to the next free port and `npm run dev` prints the URLs it bound. The file writer refuses any other host and refuses to start when `NODE_ENV=production`.
+The web server starts on port 5199 and the dev API on 127.0.0.1 port 8787; Vite proxies `/api` to it. If a port is taken, that one moves to the next free port, and `npm run dev` prints the URLs it bound. The file writer refuses any other host and refuses to start when `NODE_ENV=production`.
 
 ## Update to a newer version
 
@@ -105,10 +105,10 @@ npm run validate:org
 
 Grok Bot is where your bots run. BotsEverywhere never calls it: one bot in Grok Bot, the Connector, reads and writes the `orgs/` folder on this computer.
 
-1. Download Grok Bot from [x.ai/bot](https://x.ai/bot), install it, and sign in with the Grok account that holds your plan. Routines on a schedule are part of Premium, Super, Ultra, Teams, and Enterprise.
+1. Download Grok Bot from [x.ai/bot](https://x.ai/bot), install it, and sign in with the Grok account that holds your plan. That page lists the plans that include Grok Bot.
 2. In BotsEverywhere, open your organization and choose **Connect bots**. Step 1 shows the Connector name and the folder it uses.
 3. Choose **Copy Connector prompt** and paste it into Grok Bot. The prompt creates the Connector, points it at `orgs/CONNECTOR.md`, and sets one routine every 15 minutes unless **Runs every** says otherwise.
-4. Let it run once. `orgs/connector.json` and `orgs/grok-data.json` appear in the folder, and the badge on Connect bots turns **Connected** within one interval. **Sync with Grok Bot** then imports what it read.
+4. Let it run once; it runs right after you paste the prompt. `orgs/connector.json` and `orgs/grok-data.json` appear in the folder, and the badge on Connect bots turns **Connected**. To bring your bots into a new organization, use Step 2 on Connect bots: **Import from the Connector**. After that, **Sync with Grok Bot** on the org tab row shows what changed.
 
 If the Connector answers that it cannot read `CONNECTOR.md`, it cannot see this computer's files. Check that you installed the Grok Bot app and that the `orgs` folder has not moved since you copied the prompt.
 

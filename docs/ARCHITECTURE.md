@@ -14,7 +14,7 @@ Organizations use it to see their bots in one place: who owns what, how work mov
 
 One codebase. `VITE_APP_MODE` picks the build.
 
-**Template** is the local build, and it is the default. This is the full app: hire a bot, save files, keep more than one org, and read the logs of that org. `npm run dev` starts the site at `http://127.0.0.1:5199` and the file writer at `http://127.0.0.1:8787` by default. If either port is taken, both walk forward to the next free port and the command prints the URLs it bound. The writer only accepts connections from this computer. Saving and hiring write into `orgs/<slug>/` and nowhere else.
+**Template** is the local build, and it is the default. This is the full app: hire a bot, save files, keep more than one org, and read the logs of that org. `npm run dev` starts the site at `http://127.0.0.1:5199` and the file writer at `http://127.0.0.1:8787` by default. If a port is taken, that one moves to the next free port, and the command prints the URLs it bound. The writer only accepts connections from this computer. Saving and hiring write into `orgs/<slug>/` and nowhere else.
 
 **Showcase** is the public site, botseverywhere.ai, served as static files. It is read-only. Visitors can browse the bot directory, use **Add to Grok Bot** and **Copy prompt**, open Templates, and read Docs. The header button says **Get it on GitHub**, not **Open your org**. Hire is hidden. The site does not save an org and does not write seats or logs.
 

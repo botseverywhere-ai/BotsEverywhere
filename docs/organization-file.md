@@ -2,7 +2,7 @@
 
 Option 4: **Import an existing organization .json (describe your organization to an LLM)** brings in an organization that already exists: its departments, its people, and who reports to whom. Option 2 builds bots from an idea through an interview; Option 4 starts from what the organization already is.
 
-Option 4 is not offered on Connect bots yet. Step 2 shows only Option 1 and Option 2. The panel (`src/components/OrgFileImport.tsx`) and the import route (`POST /api/orgs/<slug>/org-file`) are in the code, off for now, and this page describes the file they will read.
+Option 4 is not offered on Connect bots yet. Step 2 shows only Option 1 and Option 2. The panel (`src/components/OrgFileImport.tsx`) is in the code but not shown. The import route (`POST /api/orgs/<slug>/org-file`) still answers. This page describes the file they read.
 
 The template is `public/organization-file-template.json`: a `readme`, an `instructions` list that is the prompt below line for line, a `fields` guide, and a Northwind example with two founders at the top and analysts who report to both. The import skips `readme`, `instructions`, and `fields`.
 
