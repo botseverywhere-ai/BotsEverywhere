@@ -1,6 +1,6 @@
 # Status
 
-Where the app stands as of 4 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
+Where the app stands as of 21 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
 
 ## Branch
 
@@ -28,7 +28,7 @@ npm run build
 npx playwright test e2e/org-chart-scroll.spec.ts e2e/owner-org-chart.spec.ts   # needs npm run dev running
 ```
 
-On 4 November 2026: 603 tests, 602 pass, 1 skipped, 0 fail; build clean.
+On 21 November 2026: 606 tests, 605 pass, 1 skipped, 0 fail; build clean.
 
 The Connector suites are `server/test/connector-*.test.ts`, `connector-guide.test.ts` (the rules file), `connector-todo.test.ts` (the list), `profile-asks.test.ts`, and `request-progress.test.ts`. Performance and Profile are `performance-status.test.ts`, `profile-skills.test.ts`, `routine-board*.test.ts`, and `auto-performance.test.ts`.
 
