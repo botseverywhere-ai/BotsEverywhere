@@ -1,10 +1,12 @@
 # Organization file
 
-Connect bots → Step 2 → **Option 4: Import an existing organization .json (describe your organization to an LLM)** brings in an organization that already exists: its departments, its people, and who reports to whom. Option 2 builds bots from an idea through an interview; Option 4 starts from what the organization already is.
+Option 4: **Import an existing organization .json (describe your organization to an LLM)** brings in an organization that already exists: its departments, its people, and who reports to whom. Option 2 builds bots from an idea through an interview; Option 4 starts from what the organization already is.
 
-**Download organization file template** gives `organization.json` (`public/organization-file-template.json`): a `readme`, an `instructions` list that is the prompt below line for line, a `fields` guide, and a Northwind example with two founders at the top and analysts who report to both. The import skips `readme`, `instructions`, and `fields`.
+Option 4 is not offered on Connect bots yet. Step 2 shows only Option 1 and Option 2. The panel (`src/components/OrgFileImport.tsx`) and the import route (`POST /api/orgs/<slug>/org-file`) are in the code, off for now, and this page describes the file they will read.
 
-**Import organization file** reads the file the AI writes, shows a preview, and waits for **Import**. Nothing is written before that.
+The template is `public/organization-file-template.json`: a `readme`, an `instructions` list that is the prompt below line for line, a `fields` guide, and a Northwind example with two founders at the top and analysts who report to both. The import skips `readme`, `instructions`, and `fields`.
+
+The panel's **Import organization file** reads the file the AI writes, shows a preview, and waits for **Import**. Nothing is written before that.
 
 ## Paste this into any AI
 
