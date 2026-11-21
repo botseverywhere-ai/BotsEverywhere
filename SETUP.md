@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Leave that window open. `npm run dev` starts the site and the file writer together. Open http://127.0.0.1:5199 and choose **Open your org** to create your first organization.
+Leave that window open. `npm run dev` starts the site and the file writer together. Open the site URL it prints (http://127.0.0.1:5199 by default) and choose **Open your org** to create your first organization.
 
 ### macOS and Linux
 
@@ -34,9 +34,9 @@ npm install
 npm run dev
 ```
 
-Leave that window open. `npm run dev` starts the site and the file writer together. Open http://127.0.0.1:5199 and choose **Open your org** to create your first organization.
+Leave that window open. `npm run dev` starts the site and the file writer together. Open the site URL it prints (http://127.0.0.1:5199 by default) and choose **Open your org** to create your first organization.
 
-The web server listens on port 5199. The dev API listens on 127.0.0.1 port 8787 and Vite proxies `/api` to it. The file writer refuses any other host and refuses to start when `NODE_ENV=production`.
+The web server starts on port 5199 and the dev API on 127.0.0.1 port 8787; Vite proxies `/api` to it. If either port is taken, both walk forward to the next free port and `npm run dev` prints the URLs it bound. The file writer refuses any other host and refuses to start when `NODE_ENV=production`.
 
 ## Update to a newer version
 
@@ -56,7 +56,7 @@ If you must move to another folder, move `orgs/` with it. Then copy the Connecto
 
 ## Edit the org and commit
 
-A fresh clone has no organization yet. Open http://127.0.0.1:5199, choose **Open your org**, and create your first one: it gets a folder under `orgs/` named by its ID, with one person, You. `samples/` holds the read-only organizations, including botseverywhere. They are not your organization.
+A fresh clone has no organization yet. Open the site URL that `npm run dev` prints (http://127.0.0.1:5199 by default), choose **Open your org**, and create your first one: it gets a folder under `orgs/` named by its ID, with one person, You. `samples/` holds the read-only sample organizations. They are not your organization.
 
 In the app, while `npm run dev` is running:
 
@@ -140,6 +140,6 @@ npm run build
 npm run preview
 ```
 
-`npm run preview` serves `dist/` on port 5199. On a server, copy `dist/` to the web root. Hash routes need the host to fall back to `index.html`.
+`npm run preview` serves `dist/` on port 5199 (fixed: it fails rather than moving to another port). On a server, copy `dist/` to the web root. Routes are hash routes such as `#/org/<slug>/overview`, so the host needs no rewrite to `index.html`.
 
 To publish a change, commit `orgs/` (with `git add -f orgs`) and run the build again.
