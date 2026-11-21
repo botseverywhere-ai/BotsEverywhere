@@ -1,6 +1,6 @@
 # Bots file
 
-The same `bots` objects described here are what the Connector writes into `orgs/<slug>/grok/snapshot.json` on every run, next to `syncedAt` and a `processes` list in the processes-file format. **Sync with Grok Bot** reads that snapshot; this page describes the one-off import and export.
+On every Connector run, the app writes the same `bots` objects described here into `orgs/<slug>/grok/snapshot.json`, from the Connector's `orgs/grok-data.json`, next to `syncedAt` and a `processes` list in the processes-file format. The Connector writes `orgs/grok-data.json`; the app writes the snapshot. **Sync with Grok Bot** reads that snapshot; this page describes the one-off import and export.
 
 Organization Overview → **How to link your organization to BotsEverywhere** uses one JSON file both ways. **Import from a template .json (build an organization from an interview with an LLM)** downloads the template and imports a file. Once the organization has bots, Step 2 is locked for import and holds **Export bots file**. Zip **Backup** (Export, Import zip, Import folder) sits under the organization fields and replaces the whole org.
 
