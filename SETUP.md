@@ -4,9 +4,9 @@ BotsEverywhere is an open source team management tool for bots.
 
 Organizations copy it to map their team of bots in one place: an org chart, a work chart of who does what and when, and a directory of ready-made bots they can add to Grok Bot. Their data stays on their own computer.
 
-No accounts, no paid services, and no API keys. BotsEverywhere is open source under the MIT License; see `LICENSE`.
+BotsEverywhere itself needs no accounts, no paid service, and no API keys. Grok Bot has its own account and plans. BotsEverywhere is open source under the MIT License; see `LICENSE`.
 
-You need Node.js 22 and npm.
+You need Node.js 22 and npm, and Grok Bot to run bots. See [Connect Grok Bot](#connect-grok-bot).
 
 Documentation updated 4 November 2026.
 
@@ -100,6 +100,17 @@ Check the files before you commit:
 ```bash
 npm run validate:org
 ```
+
+## Connect Grok Bot
+
+Grok Bot is where your bots run. BotsEverywhere never calls it: one bot in Grok Bot, the Connector, reads and writes the `orgs/` folder on this computer.
+
+1. Download Grok Bot from [x.ai/bot](https://x.ai/bot), install it, and sign in with the Grok account that holds your plan. Routines on a schedule are part of Premium, Super, Ultra, Teams, and Enterprise.
+2. In BotsEverywhere, open your organization and choose **Connect bots**. Step 1 shows the Connector name and the folder it uses.
+3. Choose **Copy Connector prompt** and paste it into Grok Bot. The prompt creates the Connector, points it at `orgs/CONNECTOR.md`, and sets one routine every 15 minutes unless **Runs every** says otherwise.
+4. Let it run once. `orgs/connector.json` and `orgs/grok-data.json` appear in the folder, and the badge on Connect bots turns **Connected** within one interval. **Sync with Grok Bot** then imports what it read.
+
+If the Connector answers that it cannot read `CONNECTOR.md`, it cannot see this computer's files. Check that you installed the Grok Bot app and that the `orgs` folder has not moved since you copied the prompt.
 
 ## Public site mode (showcase)
 
