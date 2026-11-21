@@ -32,9 +32,9 @@ Deloitte describes the same shift, from the org chart to the work chart:
 
 ![A work chart: when a lead arrives, Sales Bot qualifies the lead, Scheduler Bot books a call, and a human approves the reply.](docs/images/work-chart-idea.png)
 
-The work chart of a sample organization, Bot Company E: four workstreams, each a row of bots with the owner's approval where the money or the message leaves.
+The work chart of an example organization: four workstreams, each a row of bots with the owner's approval where the money or the message leaves.
 
-![Bot Company E work chart: weekly report, new lead follow-up, support ticket, and monthly invoices, each a row of bot steps ending in the owner's approval.](docs/images/work-chart-example.png)
+![Example work chart: weekly report, new lead follow-up, support ticket, and monthly invoices, each a row of bot steps ending in the owner's approval.](docs/images/work-chart-example.png)
 
 ## Private by design
 
@@ -60,10 +60,10 @@ Template mode is the default.
 
 ```bash
 npm install
-npm run dev       # site on http://127.0.0.1:5199 and the file writer on http://127.0.0.1:8787
+npm run dev       # site at 127.0.0.1:5199 and file writer at 127.0.0.1:8787 by default
 ```
 
-Open [http://127.0.0.1:5199](http://127.0.0.1:5199) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together.
+Open the site URL that `npm run dev` prints ([http://127.0.0.1:5199](http://127.0.0.1:5199) by default) and choose **Open your org** to create your first organization. `npm run dev` starts the site and the local file writer together. If either default port is taken, both walk forward to the next free port and the command prints the URLs it bound.
 
 ![Map your team. Staff the seats. Open source. Runs on your computer.](docs/images/map-your-team.png)
 
