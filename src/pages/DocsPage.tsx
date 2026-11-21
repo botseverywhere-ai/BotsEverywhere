@@ -372,6 +372,10 @@ npm run dev`}</CodeBlock>
         </p>
         <ol>
           <li>
+            Download Grok Bot from <a href="https://x.ai/bot" target="_blank" rel="noreferrer">x.ai/bot</a>, install it, and sign in with the Grok account
+            that holds your plan. Routines on a schedule are part of Premium, Super, Ultra, Teams, and Enterprise.
+          </li>
+          <li>
             Open any organization and choose the <strong>Connect bots</strong> tab. Step 1 shows the Connector name, the folder it uses, its <strong>Status file</strong>, and its status.
           </li>
           <li>Choose <strong>Copy Connector prompt</strong>.</li>
