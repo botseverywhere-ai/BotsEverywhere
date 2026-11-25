@@ -2676,9 +2676,24 @@ function allowLoopback(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('vary', 'origin')
 }
 
+/** Why a request is refused before any route, or '' when it may go on. The writer serves this computer only. */
+function refusal(req: IncomingMessage): string {
+  // A name another site points at this computer still arrives with that name in Host.
+  const host = req.headers.host
+  if (typeof host !== 'string' || !/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i.test(host)) return 'The file writer answers only requests addressed to this computer.'
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return ''
+  // A browser names the page a request comes from, and a page cannot change that. A tool with no browser sends neither header.
+  const origin = req.headers.origin
+  if (typeof origin === 'string' && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return 'Only a page on this computer may change the files.'
+  if (req.headers['sec-fetch-site'] === 'cross-site') return 'Only a page on this computer may change the files.'
+  return ''
+}
+
 async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string, hub: { publish: (slug: string, kind: LiveKind) => void; subscribe: (slug: string, res: ServerResponse) => () => void }) {
   try {
     allowLoopback(req, res)
+    const refused = refusal(req)
+    if (refused) return send(res, 403, { error: refused })
     if (req.method === 'OPTIONS') {
       res.statusCode = 204
       res.end()
