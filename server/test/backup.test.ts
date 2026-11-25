@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { deflateRawSync } from 'node:zlib'
-import { createOrgFiles, importOrgBackup, orgZip, readOrgDir, startTemplateServer } from '../src/template-server.ts'
+import { createExistingBot, createOrgFiles, importOrgBackup, orgZip, readOrgDir, startTemplateServer } from '../src/template-server.ts'
 import { unzipStore, zipStore } from '../src/zip-store.ts'
 
 const PROCESS = `---
@@ -410,6 +410,32 @@ test('the larger limit is for Import only, and Import has a limit too', async ()
     assert.ok(huge === 413 || huge === 'cut', `refused, got ${huge}`)
   } finally {
     await server.close()
+    p.done()
+  }
+})
+
+test('Import restores a bot whose seat card is empty, as Export wrote it', () => {
+  const p = project()
+  try {
+    const desk = org(p.orgs, 'Desk')
+    const root = join(p.orgs, desk)
+    // A bot that came from Grok Bot has no seat card yet, and the organization is saved and read that way.
+    const bot = createExistingBot(root, desk, { name: 'Brand Bot', grokBotUrl: 'grokbot://app/v1/agent?id=1', reportsTo: 'you', allowEmptyCard: true })
+    assert.equal(bot.ok, true)
+    if (!bot.ok) return
+    const full = orgZip(root, desk)
+    if (!full.ok) throw new Error('no zip')
+    // Another computer: a new organization takes the backup.
+    const copy = org(p.orgs, 'Copy')
+    const imported = importOrgBackup(join(p.orgs, copy), copy, full.body)
+    assert.equal(imported.ok, true, imported.ok ? '' : imported.errors.join(' '))
+    const restored = readOrgDir(join(p.orgs, copy), copy)
+    if (!restored.ok) throw new Error('the copy cannot be read')
+    const seat = restored.bundle.seats.find((item) => item.slug === bot.slug)
+    assert.equal(seat?.title, 'Brand Bot')
+    assert.equal(seat?.status, 'active')
+    assert.deepEqual([seat?.owns, seat?.may, seat?.mustAskBefore, seat?.doneWhen], [[], [], [], []])
+  } finally {
     p.done()
   }
 })

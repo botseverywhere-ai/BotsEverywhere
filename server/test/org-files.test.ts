@@ -362,7 +362,7 @@ describe('template file API', () => {
     }
   })
 
-  it('rejects an active bot with an empty Owns section', async () => {
+  it('imports an active bot with an empty Owns section: a bot from Grok Bot is saved that way, so a backup holds it', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'be-org-api-'))
     const started = await startTemplateServer({ port: 0, orgsDir: dir, host: '127.0.0.1' })
     const research = seat({ slug: 'research', title: 'Research', kind: 'bot', personId: '', reportsTo: 'you', owns: [] })
@@ -372,9 +372,8 @@ describe('template file API', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(bundle([seat(), research])),
       })
-      assert.equal(imported.status, 422)
-      const body = (await imported.json()) as { errors?: string[] }
-      assert.match(body.errors?.join('\n') ?? '', /research\.md: Owns: an active bot needs at least one line/)
+      assert.equal(imported.status, 200, await imported.text())
+      assert.equal(existsSync(join(dir, 'your-company', 'seats', 'research.md')), true)
     } finally {
       await started.close()
     }

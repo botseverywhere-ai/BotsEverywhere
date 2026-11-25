@@ -3375,9 +3375,8 @@ function importOrgBundle(root: string, slug: string, parsed: OrgBundle, extras: 
   for (const seat of bundle.seats) {
     const check = parseSeatMarkdown(seat.slug, seat.source || serializeSeat(seat))
     if (!check.ok) return { ok: false, status: 422, errors: check.errors.map((error) => `${seat.slug}.md: ${error}`) }
+    // No seat card check here: a bot that came from Grok Bot is saved with an empty card, and a backup must restore it.
     Object.assign(seat, check.seat)
-    const cardErrors = activeBotCardErrors(seat)
-    if (cardErrors.length) return { ok: false, status: 422, errors: cardErrors }
   }
   const activityErrors = bundle.activity.flatMap((event, index) => validateActivity(event, slug).map((error) => error.replace('activity.jsonl:', `activity.jsonl line ${index + 1}:`)))
   if (activityErrors.length) return { ok: false, status: 422, errors: activityErrors }
