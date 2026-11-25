@@ -19,7 +19,9 @@ Grok Bot itself is not in scope here; report problems in Grok Bot to its maker.
 
 - The app runs on your own computer. The file writer binds to `127.0.0.1` only, refuses other hosts, refuses to start when `NODE_ENV=production`, and writes only inside your `orgs/` folder.
 - There are no accounts, no API keys in the frontend, and no telemetry. Nothing is uploaded.
-- Routes that lead to a message or a change in Grok Bot accept requests only from this computer and only as JSON, so a page on another site cannot trigger them.
+- The file writer answers only requests addressed to this computer, and refuses any request that changes files when it comes from a page on another site. Routes that lead to a message or a change in Grok Bot also take only JSON.
+- The showcase build never includes the organizations under `orgs/`: it leaves them out, and it stops if a file from that folder gets in.
+- Import on the Backup tab checks a backup before it changes anything, and unpacking a zip is limited in files and in size.
 - The Connector never reads outside `orgs/`, never edits the app's files, and sends a bot only the text the app wrote for it.
 - Your organizations, logs, profiles, and the Connector's files are all under `orgs/`, which git ignores. Never commit that folder to a public repository.
 

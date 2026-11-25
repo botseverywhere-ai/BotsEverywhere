@@ -16,7 +16,7 @@ export function AppFooter({ hidden = false, variant = 'public' }: { hidden?: boo
       <footer className="be-footer be-footer-compact">
         <p className="be-footer-line">
           <Logo />
-          <span>BotsEverywhere · open source · <a href={license}>LICENSE</a> · v1.0.0</span>
+          <span>BotsEverywhere · open source · <a href={license}>LICENSE</a> · v1.0.1</span>
         </p>
         <p className="be-footer-links">
           {repo ? <a href={repo}>GitHub</a> : null}
@@ -35,7 +35,7 @@ export function AppFooter({ hidden = false, variant = 'public' }: { hidden?: boo
           </a>
           <p className="be-footer-name">BotsEverywhere</p>
           <p className="be-footer-meta">
-            Open source · <a href={license}>License</a> · v1.0.0
+            Open source · <a href={license}>License</a> · v1.0.1
           </p>
         </div>
         <div className="be-footer-col">

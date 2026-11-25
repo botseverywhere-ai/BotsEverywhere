@@ -1,10 +1,10 @@
 # Status
 
-Where the app stands as of 21 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
+Where the app stands as of 25 November 2026, written for whoever picks it up next. Facts about a running organization come from a real `orgs/` folder, which is uncommitted user data.
 
 ## Branch
 
-The main branch is `main`, the only long-lived branch, and it is protected: a change lands through a pull request on GitHub, squash-merged once CI is green and a maintainer has approved it. Release 1.0.0 is the tag `v1.0.0`. Never push to `main` directly.
+The main branch is `main`, the only long-lived branch, and it is protected: a change lands through a pull request on GitHub, squash-merged once CI is green and a maintainer has approved it. The latest release is 1.0.1, the tag `v1.0.1`. Never push to `main` directly.
 
 The rules for working on the code are in `AGENTS.md`.
 
@@ -28,14 +28,14 @@ npm run build
 npx playwright test e2e/org-chart-scroll.spec.ts e2e/owner-org-chart.spec.ts   # needs npm run dev running
 ```
 
-On 21 November 2026: 606 tests, 605 pass, 1 skipped, 0 fail; build clean.
+On 25 November 2026: 630 tests, 629 pass, 1 skipped, 0 fail; build clean.
 
 The Connector suites are `server/test/connector-*.test.ts`, `connector-guide.test.ts` (the rules file), `connector-todo.test.ts` (the list), `profile-asks.test.ts`, and `request-progress.test.ts`. Performance and Profile are `performance-status.test.ts`, `profile-skills.test.ts`, `routine-board*.test.ts`, and `auto-performance.test.ts`.
 
 ## Known quirks
 
 - The writer is `tsx` without a watcher. Any change under `server/src/` needs `npm run dev` restarted. Restarting while a file is half-written loads that half-written file; restart again.
-- `server/test/connector-cycle.test.ts` "a new manager reaches the to-do list within seconds" waits on the file watcher, up to 20 seconds. Under heavy load on Windows it can still miss; it passes alone and on CI.
+- `server/test/connector-cycle.test.ts` "a new manager reaches the to-do list within seconds" waits on the file watcher, up to 20 seconds. Under heavy load on Windows it can still miss; it passes alone and on CI. "once Grok Bot shows the new blocks, the waiting update clears and logs Updated in Grok Bot" in the same file waits the same way and can miss too. On 25 November 2026 one of the two failed in 7 of 37 full runs on one Windows computer, with and without the tests added that day.
 - A Connector may still stop and ask the owner before a list that changes many bots at once, despite the rule. Answer "do all" in its chat; the rules now say a long list is normal.
 - An older Connector keeps a run script and may ignore a new rule until told once to rebuild it from `CONNECTOR.md`; the rules now ask for that at every run.
 - The Connector counts profile answers as missing because bots answer by writing a file, not a chat line; the rules now say so. The app reads the files.

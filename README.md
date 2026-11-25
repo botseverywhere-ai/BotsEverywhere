@@ -159,7 +159,7 @@ directoryId: ""
 
 `addToGrokBotUrl` must be empty or match `https://x.ai/bot/…`. Do not invent a link. When it is set, the seat card shows **Add to Grok Bot**. An empty link hides that button. Saving never deletes a seat file; retire the seat instead. Each log event is one file under `orgs/<slug>/log/`.
 
-The static build loads these files with Vite `import.meta.glob`. The file writer binds to `127.0.0.1` only, refuses `NODE_ENV=production`, and is not part of the hosted site.
+The static build loads these files with Vite `import.meta.glob`; a showcase build leaves `orgs/` out. The file writer binds to `127.0.0.1` only, answers only requests from this computer, refuses `NODE_ENV=production`, and is not part of the hosted site.
 
 ## Checks
 
