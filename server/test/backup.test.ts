@@ -364,3 +364,52 @@ test('Import refuses a small zip that unpacks to far more than a backup holds, a
     p.done()
   }
 })
+
+/** What the writer answered, or 'cut' when it closed the connection on a body past its limit. */
+function sent(url: string, type: string, body: Buffer): Promise<number | 'cut'> {
+  return fetch(url, { method: 'POST', headers: { 'content-type': type }, body }).then(
+    (response) => response.status,
+    () => 'cut' as const,
+  )
+}
+
+test('Import takes a backup that grew past what the other routes accept', async () => {
+  const p = project()
+  const server = await startTemplateServer({ port: 0, orgsDir: p.orgs })
+  try {
+    const desk = org(p.orgs, 'Desk')
+    const root = join(p.orgs, desk)
+    mkdirSync(join(root, 'log'), { recursive: true })
+    // About what a Connector that runs every 15 minutes logs in a month.
+    const long = `# Run log 2026-10-18\n\n${'- 15:35 | Connector | Sync | Wrote snapshots | done | -\n'.repeat(2500)}`
+    writeFileSync(join(root, 'log', '2026-10-18.md'), long)
+    const full = orgZip(root, desk)
+    if (!full.ok) throw new Error('no zip')
+    assert.ok(full.body.length > 100_000, 'the backup is larger than the other routes accept')
+    rmSync(join(root, 'log', '2026-10-18.md'))
+    assert.equal(await sent(`http://127.0.0.1:${server.port}/api/orgs/${desk}/import`, 'application/zip', full.body), 200)
+    assert.equal(readFileSync(join(root, 'log', '2026-10-18.md'), 'utf8'), long)
+  } finally {
+    await server.close()
+    p.done()
+  }
+})
+
+test('the larger limit is for Import only, and Import has a limit too', async () => {
+  const p = project()
+  const server = await startTemplateServer({ port: 0, orgsDir: p.orgs })
+  try {
+    const desk = org(p.orgs, 'Desk')
+    const base = `http://127.0.0.1:${server.port}/api/orgs`
+    // 150 KB that would make an organization, sent to a route that is not Import.
+    const big = Buffer.from(JSON.stringify({ name: 'Other', owner: 'Ada', filler: 'x'.repeat(150_000) }))
+    const other = await sent(base, 'application/json', big)
+    assert.ok(other === 413 || other === 'cut', `refused, got ${other}`)
+    assert.equal(readdirSync(p.orgs).filter((name) => name.startsWith('org-')).length, 1, 'no organization was made')
+    const huge = await sent(`${base}/${desk}/import`, 'application/zip', Buffer.alloc(21 * 1024 * 1024))
+    assert.ok(huge === 413 || huge === 'cut', `refused, got ${huge}`)
+  } finally {
+    await server.close()
+    p.done()
+  }
+})

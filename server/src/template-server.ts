@@ -64,6 +64,8 @@ import { REQUESTS_PATH, addAlsoChange, addManagerChange, addRequest, canDelete, 
 export const TEMPLATE_HOST = '127.0.0.1'
 export const DEFAULT_ORG_SLUG = 'your-company'
 const MAX_BODY = 100_000
+// Import takes a whole backup: every seat, process, log event, and daily run log. It stays under what unzipStore unpacks.
+const MAX_IMPORT = 20 * 1024 * 1024
 
 export function orgsDirFromEnv(): string {
   return resolve(process.env.ORGS_DIR || resolve(process.cwd(), 'orgs'))
@@ -3283,7 +3285,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, orgsDir: string
       const slug = importMatch[1]!
       const root = orgRoot(orgsDir, slug)
       if (!root) return send(res, 400, { error: 'Bad org slug.' })
-      const raw = await readRaw(req)
+      const raw = await readRaw(req, MAX_IMPORT)
       if (raw === 'too-big') return send(res, 413, { error: 'Request is too large.' })
       const zip = String(req.headers['content-type'] || '').includes('zip') || (raw.length >= 4 && raw.readUInt32LE(0) === 0x04034b50)
       if (zip) {
@@ -3512,13 +3514,13 @@ function zipPrefix(names: string[]): string {
   return names.some((name) => name === `${top}org.json` || name === `${top}org.md`) ? top : ''
 }
 
-function readRaw(req: IncomingMessage): Promise<Buffer | 'too-big'> {
+function readRaw(req: IncomingMessage, max = MAX_BODY): Promise<Buffer | 'too-big'> {
   return new Promise((resolveBody, reject) => {
     const chunks: Buffer[] = []
     let total = 0
     req.on('data', (chunk: Buffer) => {
       total += chunk.length
-      if (total > MAX_BODY) {
+      if (total > max) {
         req.destroy()
         resolveBody('too-big')
         return
