@@ -3379,6 +3379,10 @@ function importOrgBundle(root: string, slug: string, parsed: OrgBundle, extras: 
   }
   const activityErrors = bundle.activity.flatMap((event, index) => validateActivity(event, slug).map((error) => error.replace('activity.jsonl:', `activity.jsonl line ${index + 1}:`)))
   if (activityErrors.length) return { ok: false, status: 422, errors: activityErrors }
+  // What writeOrgDir checks, before the first log file is removed: a backup it would refuse leaves the log as it is.
+  const kept = keepOmittedSeats(root, bundle)
+  const refused = kept.errors.length ? kept.errors : validateBundle(bundleFromState(bundle.id, kept.bundle.org, kept.bundle.seats, kept.bundle.work, kept.bundle.activity))
+  if (refused.length) return { ok: false, status: 422, errors: refused }
   const logDir = resolve(root, 'log')
   if (existsSync(logDir)) {
     // Log events are replaced. Daily run logs are only replaced when the backup carries them.

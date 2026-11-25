@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
+import { deflateRawSync } from 'node:zlib'
 import { createOrgFiles, importOrgBackup, orgZip, readOrgDir, startTemplateServer } from '../src/template-server.ts'
 import { unzipStore, zipStore } from '../src/zip-store.ts'
 
@@ -214,6 +215,152 @@ test('Import folder (the JSON route) restores processes and run logs too', async
     assert.deepEqual(requestsIn(root), [request('you', join(root, 'seats', 'you.md'))], 'Import folder restores waiting requests too')
   } finally {
     await server.close()
+    p.done()
+  }
+})
+
+const EVENT = `---
+id: "later-edit"
+type: edit
+actorSeatId: "you"
+actorType: human
+timestamp: "2026-10-19T09:00:00.000Z"
+---
+
+Changed the card after the backup.
+`
+
+function logFiles(dir: string): [string, string][] {
+  return readdirSync(dir)
+    .sort()
+    .map((name) => [name, readFileSync(join(dir, name), 'utf8')])
+}
+
+/** A zip with one packed (deflated) file, which zipStore never writes. Every name in its directory points at that same packed data. */
+function packedZip(names: string[], data: Buffer): Buffer {
+  const packed = deflateRawSync(data)
+  const first = Buffer.from(names[0]!)
+  const local = Buffer.alloc(30)
+  local.writeUInt32LE(0x04034b50, 0)
+  local.writeUInt16LE(20, 4)
+  local.writeUInt16LE(8, 8)
+  local.writeUInt32LE(packed.length, 18)
+  local.writeUInt32LE(data.length, 22)
+  local.writeUInt16LE(first.length, 26)
+  const central: Buffer[] = []
+  for (const text of names) {
+    const name = Buffer.from(text)
+    const cen = Buffer.alloc(46)
+    cen.writeUInt32LE(0x02014b50, 0)
+    cen.writeUInt16LE(8, 10)
+    cen.writeUInt32LE(packed.length, 20)
+    cen.writeUInt32LE(data.length, 24)
+    cen.writeUInt16LE(name.length, 28)
+    cen.writeUInt32LE(0, 42)
+    central.push(cen, name)
+  }
+  const centralBuf = Buffer.concat(central)
+  const end = Buffer.alloc(22)
+  end.writeUInt32LE(0x06054b50, 0)
+  end.writeUInt16LE(names.length, 8)
+  end.writeUInt16LE(names.length, 10)
+  end.writeUInt32LE(centralBuf.length, 12)
+  end.writeUInt32LE(30 + first.length + packed.length, 16)
+  return Buffer.concat([local, first, packed, centralBuf, end])
+}
+
+/** An organization with a backup, then an event and a run log the backup does not hold: what a refused Import must leave alone. */
+function orgWithLaterLog(orgs: string) {
+  const desk = org(orgs, 'Desk')
+  const root = join(orgs, desk)
+  const logDir = join(root, 'log')
+  mkdirSync(logDir, { recursive: true })
+  writeFileSync(join(logDir, '2026-10-18.md'), RUN_LOG)
+  const full = orgZip(root, desk)
+  if (!full.ok) throw new Error('no zip')
+  writeFileSync(join(logDir, 'later-edit.md'), EVENT)
+  writeFileSync(join(logDir, '2026-10-19.md'), RUN_LOG.replace('2026-10-18', '2026-10-19'))
+  return { desk, root, logDir, backup: full.body }
+}
+
+test('Import refused because a seat file here is damaged leaves the log as it was', () => {
+  const p = project()
+  try {
+    const o = orgWithLaterLog(p.orgs)
+    // A seat made after the backup whose file got damaged: each file in the backup is fine, and the organization as a whole cannot be saved.
+    writeFileSync(join(o.root, 'seats', 'broken.md'), 'no frontmatter')
+    const before = logFiles(o.logDir)
+    const imported = importOrgBackup(o.root, o.desk, o.backup)
+    assert.equal(imported.ok, false)
+    if (imported.ok) return
+    assert.match(imported.errors.join(' '), /broken\.md: seat files are kept/)
+    assert.deepEqual(logFiles(o.logDir), before)
+  } finally {
+    p.done()
+  }
+})
+
+test('Import of a backup with a seat that reports to nobody known is refused and leaves the log as it was', () => {
+  const p = project()
+  try {
+    const o = orgWithLaterLog(p.orgs)
+    const entries = unzipStore(o.backup)
+    const seat = entries.find((entry) => entry.name.startsWith('seats/'))
+    if (!seat) throw new Error('no seat in the backup')
+    const helper = seat.data.toString('utf8').replace(/^reportsTo:.*$/m, 'reportsTo: nobody')
+    assert.match(helper, /^reportsTo: nobody$/m)
+    const bad = zipStore([...entries, { name: 'seats/helper.md', data: Buffer.from(helper) }])
+    const before = logFiles(o.logDir)
+    const imported = importOrgBackup(o.root, o.desk, bad)
+    assert.equal(imported.ok, false)
+    if (imported.ok) return
+    assert.match(imported.errors.join(' '), /helper reports to missing seat nobody/)
+    assert.deepEqual(logFiles(o.logDir), before)
+  } finally {
+    p.done()
+  }
+})
+
+test('a zip with more files than the limit is refused', () => {
+  const three = zipStore(['a.md', 'b.md', 'c.md'].map((name) => ({ name, data: Buffer.from('x') })))
+  assert.throws(() => unzipStore(three, { entries: 2, bytes: 1000 }), /too many files/)
+  assert.equal(unzipStore(three, { entries: 3, bytes: 1000 }).length, 3)
+})
+
+test('a zip that unpacks past the limit is refused, stored or packed', () => {
+  const stored = zipStore([
+    { name: 'a.md', data: Buffer.alloc(600, 'a') },
+    { name: 'b.md', data: Buffer.alloc(600, 'b') },
+  ])
+  assert.throws(() => unzipStore(stored, { entries: 10, bytes: 1000 }), /too large/)
+  assert.equal(unzipStore(stored, { entries: 10, bytes: 1200 }).length, 2)
+  const packed = packedZip(['a.md'], Buffer.alloc(5000))
+  assert.ok(packed.length < 200, 'five thousand zeros pack into a few bytes')
+  assert.throws(() => unzipStore(packed, { entries: 10, bytes: 1000 }), /too large/)
+  assert.equal(unzipStore(packed, { entries: 10, bytes: 5000 })[0]!.data.length, 5000)
+})
+
+test('names that share the same packed data count every time', () => {
+  const shared = packedZip(['a.md', 'b.md', 'c.md', 'd.md', 'e.md'], Buffer.alloc(1000))
+  assert.throws(() => unzipStore(shared, { entries: 10, bytes: 3000 }), /too large/)
+  assert.equal(unzipStore(shared, { entries: 10, bytes: 5000 }).length, 5)
+})
+
+test('Import refuses a small zip that unpacks to far more than a backup holds, and changes nothing', () => {
+  const p = project()
+  try {
+    const desk = org(p.orgs, 'Desk')
+    const root = join(p.orgs, desk)
+    const small = packedZip(['seats/big.md'], Buffer.alloc(60 * 1024 * 1024))
+    assert.ok(small.length < 100_000, 'small enough for the writer to take')
+    const before = readFileSync(join(root, 'org.md'), 'utf8')
+    const imported = importOrgBackup(root, desk, small)
+    assert.equal(imported.ok, false)
+    if (imported.ok) return
+    assert.equal(imported.status, 422)
+    assert.match(imported.errors.join(' '), /too large/)
+    assert.equal(readFileSync(join(root, 'org.md'), 'utf8'), before)
+  } finally {
     p.done()
   }
 })

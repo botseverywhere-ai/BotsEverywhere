@@ -1,6 +1,9 @@
 import { inflateRawSync } from 'node:zlib'
 
-export function unzipStore(body: Buffer): { name: string; data: Buffer }[] {
+/** A backup is a few hundred small text files. These stop a zip made to fill the memory when it is unpacked. */
+export const ZIP_LIMIT = { entries: 10_000, bytes: 50 * 1024 * 1024 }
+
+export function unzipStore(body: Buffer, limit: { entries: number; bytes: number } = ZIP_LIMIT): { name: string; data: Buffer }[] {
   let eocd = -1
   const min = Math.max(0, body.length - 22 - 65535)
   for (let i = body.length - 22; i >= min; i -= 1) {
@@ -11,7 +14,10 @@ export function unzipStore(body: Buffer): { name: string; data: Buffer }[] {
   }
   if (eocd < 0) throw new Error('Zip is missing its directory.')
   const count = body.readUInt16LE(eocd + 8)
+  if (count > limit.entries) throw new Error('Zip has too many files.')
   let cursor = body.readUInt32LE(eocd + 16)
+  // Bytes still allowed once unpacked. Names may share the same packed data, so every file counts.
+  let left = limit.bytes
   const files: { name: string; data: Buffer }[] = []
   for (let n = 0; n < count; n += 1) {
     if (cursor + 46 > body.length || body.readUInt32LE(cursor) !== 0x02014b50) throw new Error('Zip directory is unreadable.')
@@ -30,11 +36,27 @@ export function unzipStore(body: Buffer): { name: string; data: Buffer }[] {
     const localExtraLen = body.readUInt16LE(localOff + 28)
     const start = localOff + 30 + localNameLen + localExtraLen
     const compressed = body.subarray(start, start + compSize)
-    if (method === 0) files.push({ name, data: Buffer.from(compressed) })
-    else if (method === 8) files.push({ name, data: inflateRawSync(compressed) })
+    let data: Buffer
+    if (method === 0) data = Buffer.from(compressed)
+    else if (method === 8) data = inflate(compressed, left)
     else throw new Error(`Zip method ${method} is not supported.`)
+    left -= data.length
+    if (left < 0) throw new Error(TOO_LARGE)
+    files.push({ name, data })
   }
   return files
+}
+
+const TOO_LARGE = 'Zip is too large when unpacked.'
+
+/** Unpacks one file and stops as soon as it passes the bytes still allowed, before the memory is used. */
+function inflate(packed: Buffer, left: number): Buffer {
+  try {
+    return inflateRawSync(packed, { maxOutputLength: Math.max(1, left) })
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ERR_BUFFER_TOO_LARGE') throw new Error(TOO_LARGE)
+    throw error
+  }
 }
 
 export function zipStore(files: { name: string; data: Buffer }[], when = new Date()): Buffer {
