@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
 import { webPort, writerOrigin } from './scripts/dev-ports.ts'
 import { quietOrgFiles } from './scripts/quiet-org-files.ts'
+import { showcaseWithoutOrgs } from './scripts/showcase-orgs.ts'
 
 function contentIndexes(): Plugin {
   const generate = () => {
@@ -29,7 +30,7 @@ function contentIndexes(): Plugin {
 // Static demo, served from the root of botseverywhere.ai.
 export default defineConfig({
   base: '/',
-  plugins: [contentIndexes(), quietOrgFiles(), react()],
+  plugins: [contentIndexes(), quietOrgFiles(), showcaseWithoutOrgs(), react()],
   server: {
     host: '127.0.0.1',
     port: webPort(),

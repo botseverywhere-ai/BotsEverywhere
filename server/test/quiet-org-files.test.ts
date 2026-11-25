@@ -58,5 +58,5 @@ test('a quiet file sends no hot update, but marks its modules stale for the next
 
 test('the dev server uses it', () => {
   const vite = readFileSync(fileURLToPath(new URL('../../vite.config.ts', import.meta.url)), 'utf8')
-  assert.match(vite, /plugins: \[contentIndexes\(\), quietOrgFiles\(\), react\(\)\]/)
+  assert.match(vite, /plugins: \[contentIndexes\(\), quietOrgFiles\(\), showcaseWithoutOrgs\(\), react\(\)\]/)
 })
