@@ -1,0 +1,61 @@
+{
+  "triggers": [
+    {
+      "id": "depwatch-trigger",
+      "source": "schedule",
+      "label": "Morning audit",
+      "example": "The daily 07:30 routine wakes Dependency Verifier."
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "depwatch-main",
+      "triggerId": "depwatch-trigger",
+      "outcome": "Every dependency has a verdict, and no upgrade is merged without you.",
+      "ownerSeatId": "owner",
+      "kind": "main",
+      "stepIds": [
+        "depwatch-verify",
+        "depwatch-approve"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "depwatch-verify",
+      "workstreamId": "depwatch-main",
+      "name": "Verify each dependency",
+      "level": 2,
+      "executorSeatId": "dependency-verifier",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "id": "depwatch-approve",
+      "workstreamId": "depwatch-main",
+      "name": "Approve the upgrade",
+      "level": 2,
+      "executorSeatId": "owner",
+      "inputs": [],
+      "outputs": [],
+      "checkpointId": "depwatch-cp"
+    }
+  ],
+  "handoffs": [
+    {
+      "id": "depwatch-hand-1",
+      "fromStepId": "depwatch-verify",
+      "toStepId": "depwatch-approve",
+      "condition": "affected: upgrade brief"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "depwatch-cp",
+      "stepId": "depwatch-approve",
+      "rule": "Any upgrade: you merge, the bot never does.",
+      "approverSeatId": "owner",
+      "required": true
+    }
+  ]
+}

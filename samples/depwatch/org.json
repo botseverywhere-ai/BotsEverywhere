@@ -1,0 +1,37 @@
+{
+  "company": {
+    "name": "Depwatch",
+    "tagline": "The daily dependency audit, ready to adopt.",
+    "industry": "SaaS",
+    "mark": "DW",
+    "markColor": "#0e7490"
+  },
+  "departments": [
+    {
+      "id": "general",
+      "name": "General"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-owner",
+      "name": "Owner",
+      "title": "Owner",
+      "department": "general",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "bio": "You. The bot verifies; you approve every upgrade."
+    }
+  ],
+  "seats": [
+    {
+      "slug": "owner",
+      "reportsTo": null
+    },
+    {
+      "slug": "dependency-verifier",
+      "reportsTo": "owner"
+    }
+  ]
+}
